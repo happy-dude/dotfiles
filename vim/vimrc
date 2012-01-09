@@ -1,0 +1,313 @@
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""         vimrc Configuration
+"""
+"""     Author: Stanley Chan
+"""     Version: 12 December 2011
+"""
+""" Based on configurations from:
+"""	amix the lucky stiff:	http://amix.dk/blog/post/19486#The-ultimate-vim-configuration-vimrc
+"""	Jan C. Ebersbach:	http://github.com/jceb/vimrc
+"""	phuzz:			http://phuzz.org/vimrc.html
+"""	Robert Melton:		http://vi-improved.org/vimrc.php
+"""	Uwe Hermann:		http://www.hermann-uwe.de/files/vimrc
+"""	Padraig Brady:		http://www.pixelbeat.org/settings/.vimrc
+"""	cliffsjunk:		http://mysettopbox.tv/phpBB2/viewtopic.php?t=18986
+"""	Jeremy Edberg:		http://www.jedberg.net/jedberg_vimrc
+"""	gaving:			https://github.com/gaving/dotfiles/blob/master/.vimrc
+"""	askedrelic:		https://github.com/askedrelic/homedir/blob/master/.vimrc
+"""	Janus:			https://github.com/carlhuda/janus
+"""
+"""
+"""	StackOverflow:		http://stackoverflow.com/questions/164847/what-is-in-your-vimrc
+"""	Hacker News:		http://news.ycombinator.com/item?id=856051
+"""	Reddit:			http://www.reddit.com/r/linux/comments/9zq8h/vim_users_what_are_some_interesting_hacks_or/
+"""
+"""
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+set nocompatible        "Use VIM defaults
+
+set ttyscroll=0         "Number of lines to scroll; 0 for terminals where scrolling is slow and redrawing is fast
+set ttyfast             "Fast terminal connection; more chars will be sent to screen for redrawing
+
+set encoding=utf-8      "Default to UTF-8 encoding
+set termencoding=utf-8
+set fileencoding=utf-8
+set fileformats=unix,dos,mac
+"Default filetypes
+
+set expandtab           "Default tabs into spaces
+set shiftwidth=4        "Auto-indent amount when using cindent, >>, << and stuff like that
+set softtabstop=4       "When hitting a tab or backspace- spaces should a tab should be
+set tabstop=8           "VIM's default tabstop is 8
+set smarttab            "A <Tab> in front of a line inserts blanks according to settings; <BS> deletes a shiftwidth
+
+set autoindent          "Set Autoindent
+set smartindent         "Set Smartindent
+set nowrap              "Do not wrap lines
+"set wrap               "Wrap lines
+
+set cursorcolumn        "Highlight the current column
+set cursorline          "Highlight the current line
+set esckeys             "Function keys that start with <Esc> are recognized in insert mode
+
+set showmatch           "Show matching brackets
+set linespace=0         "Don't insert any extra pixel lines between rows
+set linebreak
+"set tw=500             "Word wrapping text width
+
+set list                "List mode: show special characters -- what is displayed is changed by listchars
+set listchars=tab:>-,trail:-   "eol:$
+"We want to show tabs to ensure we get them out of files
+"Shows tabs and trailing with '-'
+
+set ignorecase          "Ignore case when searching
+set infercase           "Case inferred by default
+set smartcase           "If there are caps, go case-sensitive
+set hlsearch            "Highlight search things
+set incsearch           "Make search act like search in modern browsers
+
+set clipboard+=unnamed  "Share Window's clipboard
+set formatoptions=rw    "Automatically insert command leader on return and let gq format comments
+set shiftround          "When at 3 spaces and hit > ... go to 4, not 5
+
+"colorscheme tango2
+syntax on               "Enable syntax highlighting
+filetype plugin on      "Enable filetype plugin
+filetype indent on
+"""From Frew's configuration on StackOverflow
+" Needed for Syntax Highlighting and stuff
+filetype on
+syntax enable
+set grepprg=/bin/grep\ -nH
+"VIM grep
+
+set laststatus=2        "Always show the statusline
+set statusline=%F%m%r%h%w[FORMAT=%{&ff}][TYPE=%Y][POS=L%04l/%L,C%04v][%p%%][UNICODE=utf_0x%02.B/ascii_%03.3b]
+"               | | | | |           |          |      |      |     |   |                      |            |
+"               | | | | |           |          |      |      |     |   |                      |    ASCII --+
+"               | | | | |           |          |      |      |     |   |                      +-- HEX value
+"               | | | | |           |          |      |      |     |   +-- Current position in file
+"               | | | | |           |          |      |      |     +-- Column
+"               | | | | |           |          |      |      +-- Total number of lines
+"               | | | | |           |          |      +-- Current line (row)
+"               | | | | |           |          +-- filetype as VIM recognized
+"               | | | | |           +-- current fileformat
+"               | | | | +-- preview flag in square brackets
+"               | | | +-- help flag in square brackets
+"               | | +-- readonly flag in square brackets
+"               | +-- modified flag in square brackets
+"               +-- %F: full path to file in the buffer; %f: file in the buffer (in the buffer title bar -- unnecessary)
+
+set wildmenu            "Turn on wild menu
+set wildignore=*.dll,*.o,*.obj,*.bak,*.exe,*.pyc,*.jpg,*.gif,*.png
+"Ignore these list file extensions
+set wildmode=list:longest,full
+"Turn on wild mode huge list
+set wildchar=<TAB>
+"Path/file expansion in colon mode
+
+"set title "Show title in console title bar
+set guioptions=em       "e ensures tab bar is displayed in GUI; m ensures menu bar is displaye
+set showcmd             "Display commands as they are typed
+set cmdheight=1         "Set the commandbar height
+set showtabline=2       "Display tab line even if single file opened
+set guitablabel=%t      "Display buffer name on tab label
+"set nohidden           "When I close a tab, remove from buffer
+set tm=500              "Set tooltip menu
+
+set ruler               "Show cursor position all times
+set number              "Show line numbers
+set numberwidth=5       "Aesthetic uses only... and for displaying large line numbers
+set more                "Use more propmt -- pausing screen when too many items are displayed
+set noautowrite         "Don't automagically write on :next
+set hid                 "Change buffer - without saving
+
+set nolazyredraw        "Don't redraw while executing macros
+
+set magic               "Set magic on, for regular expressions
+set mat=5               "How many tenths of a second to blink
+
+set backspace=indent,eol,start
+"Set backspace config -- same as "set bs=2"
+set whichwrap=b,s,h,l,<,>,[,]
+"Move freely between file
+
+set report=0            "Tell us when anything is changed via :...
+
+set history=350         "Sets how many lines of history VIM will remember
+set undolevels=500      "Number of undo levels
+
+"set scrolloff=12       "Set 5 lines to the cursors - when moving verticle
+"set sidescrolloff=12   "Keep at least 5 lines left/right
+
+" Folding
+set foldenable          "Turn on folding
+set foldmarker={,}      "Fold C-style code (only user this as default if you use a high foldlevel
+set foldmethod=marker   "Fold on the marker
+set foldlevel=100       "Don't autofold anything (but Ican still fold manually)
+set foldopen=block,hor,mark,percent,quickfix,tag
+"What movement open folds
+
+set noerrorbells
+set novisualbell
+set vb t_vb=            "When no beep or flash is wanted
+"No sound on errors
+
+set cpoptions=aABceFsmq
+"             |||||||||
+"             ||||||||+-- When joining lines, leave the cursor
+"             |||||||      between joined lines
+"             |||||||+-- When a new match is created (showmatch)
+"             ||||||      pause for .5
+"             ||||||+-- Set buffer options when entering the
+"             |||||      buffer
+"             |||||+-- :write command updates current file name
+"             ||||+-- Automatically add <CR> to the last line
+"             |||      when using :@r
+"             |||+-- Searching continues at the end of the match
+"             ||      at the cursor position
+"             ||+-- A backslash has no special meaning in mappings
+"             |+-- :write updates alternative file name
+"             +-- :read updates alternative file name
+
+" Smart way to move between windows
+map <C-j> <C-W>j
+map <C-k> <C-W>k
+map <C-h> <C-W>h
+map <C-l> <C-W>l
+
+"From Harley's configuration on StackOverflow
+"set backup
+"set backupdir=~/.vim/backup
+"set directory=~/.vim/tmp
+
+set nobackup
+set nowb
+set noswapfile
+"Turn backup off
+
+
+
+if has("autocmd")
+    " Restore cursor position
+    au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
+
+        " Filetypes (au = autocmd)
+        au FileType helpfile set nonumber      " no line numbers when viewing help
+        au FileType helpfile nnoremap <buffer><cr> <c-]>   " Enter selects subject
+        au FileType helpfile nnoremap <buffer><bs> <c-T>   " Backspace to go back
+
+        " When using mutt, text width=72
+        au FileType mail,tex set textwidth=72
+        au FileType cpp,c,java,sh,pl,php,asp  set autoindent
+        au FileType cpp,c,java,sh,pl,php,asp  set smartindent
+        au FileType cpp,c,java,sh,pl,php,asp  set cindent
+        "au BufRead mutt*[0-9] set tw=72
+
+        " Automatically chmod +x Shell and Perl scripts
+        "au BufWritePost   *.sh             !chmod +x %
+        "au BufWritePost   *.pl             !chmod +x %
+
+        " File formats
+        au BufNewFile,BufRead  *.pls    set syntax=dosini
+        au BufNewFile,BufRead  modprobe.conf    set syntax=modconf
+
+
+        "From Uwe Hermann's configuration
+        " Drupal *.module and *.engine files.
+        augroup module
+            autocmd BufRead                 *.module,*.engine set filetype=php
+        augroup END
+
+        " Python code.
+        augroup python
+            autocmd BufReadPre,FileReadPre  *.py set tabstop=4
+            autocmd BufReadPre,FileReadPre  *.py set expandtab
+        augroup END
+
+        " Ruby code.
+        augroup ruby
+            autocmd BufReadPre,FileReadPre  *.rb set tabstop=2
+            autocmd BufReadPre,FileReadPre  *.rb set expandtab
+        augroup END
+
+        " PHP code.
+        augroup php
+            autocmd BufReadPre,FileReadPre  *.php set tabstop=4
+            autocmd BufReadPre,FileReadPre  *.php set expandtab
+        augroup END
+
+        " Java code.
+        augroup java
+            autocmd BufReadPre,FileReadPre  *.java set tabstop=4
+            autocmd BufReadPre,FileReadPre  *.java set expandtab
+        augroup END
+
+        " ANT build.xml files.
+        augroup xml
+            autocmd BufReadPre,FileReadPre  build.xml set tabstop=4
+        augroup END
+
+        " (J)Flex files.
+        augroup lex
+            " autocmd BufRead,BufNewFile    *.flex,*.jflex set filetype=lex
+            autocmd BufRead,BufNewFile      *.flex,*.jflex set filetype=jflex
+        augroup END
+
+        " (Nu)SMV files.
+        augroup smv
+            autocmd BufRead,BufNewFile      *.smv set filetype=smv
+        augroup END
+
+    endif
+
+
+    "From Frew's configuration on StackOverflow
+    "{{{Frew's Auto Commands, Misc Commands, and Functions
+
+    " Automatically cd into the directory that the file is in
+    autocmd BufEnter * execute "chdir ".escape(expand("%:p:h"), ' ')
+
+    " Remove any trailing whitespace that is in the file and indent entire file
+    autocmd BufRead,BufWrite * if ! &bin | :exe ":normal! ma" | :exe ":normal! gg=G" | silent! %s/\s\+$//ge | :exe ":normal! 'a" | endif
+
+    " Restore cursor position to where it was before
+    augroup JumpCursorOnEdit
+        au!
+        autocmd BufReadPost *
+                    \ if expand("<afile>:p:h") !=? $TEMP |
+                    \   if line("'\"") > 1 && line("'\"") <= line("$") |
+                    \     let JumpCursorOnEdit_foo = line("'\"") |
+                    \     let b:doopenfold = 1 |
+                    \     if (foldlevel(JumpCursorOnEdit_foo) > foldlevel(JumpCursorOnEdit_foo - 1)) |
+                    \        let JumpCursorOnEdit_foo = JumpCursorOnEdit_foo - 1 |
+                    \        let b:doopenfold = 2 |
+                    \     endif |
+                    \     exe JumpCursorOnEdit_foo |
+                    \   endif |
+                    \ endif
+        " Need to postpone using "zv" until after reading the modelines.
+        autocmd BufWinEnter *
+                    \ if exists("b:doopenfold") |
+                    \   exe "normal zv" |
+                    \   if(b:doopenfold > 1) |
+                    \       exe  "+".1 |
+                    \   endif |
+                    \   unlet b:doopenfold |
+                    \ endif
+    augroup END
+
+    " Use english for spellchecking, but don't spellcheck by default
+    if version >= 700
+        set spl=en spell
+        set nospell
+    endif
+
+    " Real men use gcc
+    "compiler gcc
+
+    " Enable mouse support in console
+    set mouse=a
