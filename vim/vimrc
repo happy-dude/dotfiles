@@ -272,9 +272,8 @@ if has("autocmd")
     autocmd BufEnter * execute "chdir ".escape(expand("%:p:h"), ' ')
 
     " Remove any trailing whitespace that is in the file and indent entire file
-    autocmd BufWrite * if ! &bin && &filetype != "" | :exe ":normal! gg=G" | endif
-    autocmd BufRead,BufWrite * :exe ":normal! ma" | silent! %s/\s\+$//ge
-    autocmd BufRead,BufWrite * :exe ":normal! 'a"
+    autocmd BufRead,BufWrite * :exe ":normal! ma" | silent! %s/\s\+$//ge | :exe ":normal! 'a"
+    autocmd BufWrite * if ! &bin && &filetype != "" | :exe ":normal! gg=G" | :exe ":normal! 'a" | endif
 
     " Restore cursor position to where it was before
     augroup JumpCursorOnEdit
