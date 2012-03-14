@@ -49,8 +49,8 @@ set smartindent         "Set Smartindent
 set nowrap              "Do not wrap lines
 "set wrap               "Wrap lines
 
-set cursorcolumn        "Highlight the current column
 set cursorline          "Highlight the current line
+"set cursorcolumn        "Highlight the current column
 set esckeys             "Function keys that start with <Esc> are recognized in insert mode
 
 set showmatch           "Show matching brackets
@@ -73,7 +73,7 @@ set clipboard+=unnamed  "Share Window's clipboard
 set formatoptions=rw    "Automatically insert command leader on return and let gq format comments
 set shiftround          "When at 3 spaces and hit > ... go to 4, not 5
 
-"colorscheme tango2
+"colorscheme tango2,torte,murphy
 syntax on               "Enable syntax highlighting
 filetype plugin on      "Enable filetype plugin
 filetype indent on
