@@ -73,7 +73,9 @@ set clipboard+=unnamed  "Share Window's clipboard
 set formatoptions=rw    "Automatically insert command leader on return and let gq format comments
 set shiftround          "When at 3 spaces and hit > ... go to 4, not 5
 
-"colorscheme tango2,torte,murphy
+"colorscheme tango2,desert,solarized,torte,murphy
+set background=dark
+
 syntax on               "Enable syntax highlighting
 filetype plugin on      "Enable filetype plugin
 filetype indent on
