@@ -32,12 +32,15 @@
 """	syntastic:		https://github.com/scrooloose/syntastic
 """	nerdtree:		https://github.com/scrooloose/nerdtree
 """	nerdcommenter:		https://github.com/scrooloose/nerdcommenter
+"""	easymotion:		https://github.com/Lokaltog/vim-easymotion
+"""	gundo:			https://github.com/sjl/gundo.vim
 """
 """	slimv:			https://bitbucket.org/kovisoft/slimv/ & https://github.com/vim-scripts/slimv.vim
 """	vim-latex:		http://vim-latex.sourceforge.net/
 """	matchtag:		https://github.com/gregsexton/MatchTag
 """
 """	unbundle:		https://github.com/sunaku/vim-unbundle
+"""	solarized:		https://github.com/altercation/vim-colors-solarized
 """
 """ Interesting (unused) plugins:
 """	vundle:			https://github.com/gmarik/vundle
@@ -48,13 +51,9 @@
 
 set nocompatible        "Use VIM defaults
 
+""""""""""
 """"" Plugin Configuration"""""
-
-""" Plugins to install/ checkout """
-""" vim-surround: https://github.com/tpope/vim-surround
-""" easymotion: https://github.com/vim-scripts/EasyMotion
-""" gundo: http://sjl.bitbucket.org/gundo.vim/ & https://github.com/sjl/gundo.vim/
-
+""""""""""
 "pathogen settings
 runtime bundle/pathogen-tpope/autoload/pathogen.vim     "Unconventional path to plugin (inside submodule)
 call pathogen#infect()      "pathogen: Activate plugin
@@ -87,6 +86,8 @@ endfunction
 
 autocmd BufRead,BufNewFile *.c call SyntasC()
 autocmd BufRead,BufNewFile *.cpp call SyntasCPP()
+""""""""""
+""""""""""
 """"""""""
 
 set ttyscroll=0         "Number of lines to scroll; 0 for terminals where scrolling is slow and redrawing is fast
