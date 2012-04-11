@@ -29,6 +29,11 @@
 
 set nocompatible        "Use VIM defaults
 
+""""" Plugin Compatibility """""
+set shellslash              "vim-latex: Windows feature: forward slash when expanding filenames
+let g:tex_flavor='latex'    "vim-latex: Default .tex filetype to 'tex' instead of 'plaintex'
+""""""""""
+
 set ttyscroll=0         "Number of lines to scroll; 0 for terminals where scrolling is slow and redrawing is fast
 set ttyfast             "Fast terminal connection; more chars will be sent to screen for redrawing
 
@@ -46,6 +51,7 @@ set smarttab            "A <Tab> in front of a line inserts blanks according to 
 
 set autoindent          "Set Autoindent
 set smartindent         "Set Smartindent
+set cindent             "Set cindent
 set nowrap              "Do not wrap lines
 "set wrap               "Wrap lines
 
