@@ -13,3 +13,12 @@
 [submodule "vim/ftbundle/html/matchtag-gregsexton"]
 	path = vim/ftbundle/html/matchtag-gregsexton
 	url = https://github.com/gregsexton/MatchTag.git
+[submodule "vim/bundle/nerdtree-scrooloose"]
+	path = vim/bundle/nerdtree-scrooloose
+	url = https://github.com/scrooloose/nerdtree.git
+[submodule "vim/bundle/syntastic-scrooloose"]
+	path = vim/bundle/syntastic-scrooloose
+	url = https://github.com/scrooloose/syntastic.git
+[submodule "vim/bundle/nerdcommenter-scrooloose"]
+	path = vim/bundle/nerdcommenter-scrooloose
+	url = https://github.com/scrooloose/nerdcommenter.git
