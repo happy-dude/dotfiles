@@ -22,3 +22,12 @@
 [submodule "vim/bundle/nerdcommenter-scrooloose"]
 	path = vim/bundle/nerdcommenter-scrooloose
 	url = https://github.com/scrooloose/nerdcommenter.git
+[submodule "vim/bundle/slimv-kovisoft"]
+	path = vim/bundle/slimv-kovisoft
+	url = https://github.com/vim-scripts/slimv.vim.git
+[submodule "vim/bundle/latex-tmaas"]
+	path = vim/bundle/latex-tmaas
+	url = git://vim-latex.git.sourceforge.net/gitroot/vim-latex/vim-latex
+[submodule "vim/bundle/surround-tpope"]
+	path = vim/bundle/surround-tpope
+	url = https://github.com/tpope/vim-surround.git
