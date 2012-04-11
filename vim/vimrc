@@ -66,8 +66,8 @@ let g:tex_flavor='latex'    "vim-latex: Default .tex filetype to 'tex' instead o
 let g:syntastic_mode_map = { 'mode': 'active' }     "syntastic: Active syntax checking
 """ NOTE:: in a later revision, put this all into a function definition and sort by filetype detection
 """"""" Checkout http://www.ibm.com/developerworks/linux/library/l-vim-script-5/index.html
-function! SyntasC ()
-    let g:syntastic_c_check_header = 1              "syntastic: C
+function! SyntasC ()                                "syntastic: C
+    let g:syntastic_c_check_header = 1
     let g:syntastic_c_no_include_search = 1
     let g:syntastic_c_auto_refresh_includes = 1
     let g:syntastic_c_compiler_options = ' -Wall -Wextra -pedantic -g -ggdb -ansi'
