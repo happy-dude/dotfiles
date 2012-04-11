@@ -29,7 +29,9 @@
 
 set nocompatible        "Use VIM defaults
 
-""""" Plugin Compatibility """""
+""""" Plugin Configuratoin"""""
+runtime bundle/pathogen-tpope/autoload/pathogen.vim
+
 set shellslash              "vim-latex: Windows feature: forward slash when expanding filenames
 let g:tex_flavor='latex'    "vim-latex: Default .tex filetype to 'tex' instead of 'plaintex'
 """"""""""
