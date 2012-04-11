@@ -1,3 +1,6 @@
 [submodule "vim/bundle/pathogen-tpope"]
 	path = vim/bundle/pathogen-tpope
 	url = https://github.com/tpope/vim-pathogen.git
+[submodule "vim/bundle/unbundle-sunaku"]
+	path = vim/bundle/unbundle-sunaku
+	url = https://github.com/sunaku/vim-unbundle.git

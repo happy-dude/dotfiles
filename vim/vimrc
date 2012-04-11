@@ -24,13 +24,20 @@
 """	Reddit:			http://www.reddit.com/r/linux/comments/9zq8h/vim_users_what_are_some_interesting_hacks_or/
 """
 """
+""" Plugin Homepages:
+"""	pathogen:		https://github.com/tpope/vim-pathogen
+"""	unbundle:		https://github.com/sunaku/vim-unbundle
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 set nocompatible        "Use VIM defaults
 
-""""" Plugin Configuratoin"""""
-runtime bundle/pathogen-tpope/autoload/pathogen.vim
+""""" Plugin Configuration"""""
+runtime bundle/pathogen-tpope/autoload/pathogen.vim   "pathogen: Unconventional path to plugin (inside submodule)
+call pathogen#infect()      "pathogen: Activate plugin
+call pathogen#helptags()
+
+"runtime bundle/unbundle-sunaku/unbundle.vim           "unbundle: Alternative plugin manager
 
 set shellslash              "vim-latex: Windows feature: forward slash when expanding filenames
 let g:tex_flavor='latex'    "vim-latex: Default .tex filetype to 'tex' instead of 'plaintex'
