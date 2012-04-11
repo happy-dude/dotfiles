@@ -4,3 +4,6 @@
 [submodule "vim/bundle/unbundle-sunaku"]
 	path = vim/bundle/unbundle-sunaku
 	url = https://github.com/sunaku/vim-unbundle.git
+[submodule "vim/bundle/fugitive-tpope"]
+	path = vim/bundle/fugitive-tpope
+	url = https://github.com/tpope/vim-fugitive.git
