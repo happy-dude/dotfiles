@@ -1,6 +1,12 @@
 Version controlled dotfiles directory.
 Perhaps I can get this working cross-platform and as minimalistic as possible.
 
+To install:
+    * Make symbolic links to the vim configuration files (vimrc and gvimrc)
+    *** For example:
+        ln -s ~/dotfiles/vim/vimrc ~/.vimrc
+        ln -s ~/dotfiles/vim/gvimrc ~/.gvimrc
+
 TO DO:
 Add more dotfile configurations
 
