@@ -46,14 +46,24 @@
 set nocompatible        "Use VIM defaults
 
 """"" Plugin Configuration"""""
-runtime bundle/pathogen-tpope/autoload/pathogen.vim   "pathogen: Unconventional path to plugin (inside submodule)
+runtime bundle/pathogen-tpope/autoload/pathogen.vim     "pathogen: Unconventional path to plugin (inside submodule)
 call pathogen#infect()      "pathogen: Activate plugin
 call pathogen#helptags()
-
-"runtime bundle/unbundle-sunaku/unbundle.vim           "unbundle: Alternative plugin manager
+"runtime bundle/unbundle-sunaku/unbundle.vim            "unbundle: Alternative plugin manager
 
 set shellslash              "vim-latex: Windows feature: forward slash when expanding filenames
 let g:tex_flavor='latex'    "vim-latex: Default .tex filetype to 'tex' instead of 'plaintex'
+
+" syntastic settings
+let g:syntastic_mode_map = { 'mode': 'active' }         "syntastic: Active syntax checking
+let g:syntastic_c_check_header = 1                      "syntastic: C
+let g:syntastic_c_no_include_search = 1
+let g:syntastic_c_auto_refresh_includes = 1
+let g:syntastic_c_compiler_options = ' -Wall -Wextra -pedantic -g -ggdb -ansi'
+let g:syntastic_cpp_check_header = 1                    "syntastic: C++
+let g:syntastic_cpp_no_include_search = 1
+let g:syntastic_cpp_auto_refresh_includes = 1
+let g:syntastic_cpp_compiler_options = ' -Wall -Wextra -pedantic -g -ggdb -std=c++0x'
 """"""""""
 
 set ttyscroll=0         "Number of lines to scroll; 0 for terminals where scrolling is slow and redrawing is fast
@@ -115,8 +125,8 @@ set grepprg=/bin/grep\ -nH
 "VIM grep
 
 set laststatus=2        "Always show the statusline
-set statusline=%F%m%r%h%w[FORMAT=%{&ff}][TYPE=%Y][POS=L%04l/%L,C%04v][%p%%][UNICODE=utf_0x%02.B/ascii_%03.3b]
-"               | | | | |           |          |      |      |     |   |                      |            |
+set statusline=%F%m%r%h%w[FORMAT=%{&ff}][TYPE=%Y][POS=L%04l/%L,C%04v][%p%%][UNICODE=utf_0x%02.B/ascii_%03.3b]%#warningmsg#%{SyntasticStatuslineFlag()}%*
+"               | | | | |           |          |      |      |     |   |                      |            | +-- syntastic plugin
 "               | | | | |           |          |      |      |     |   |                      |    ASCII --+
 "               | | | | |           |          |      |      |     |   |                      +-- HEX value
 "               | | | | |           |          |      |      |     |   +-- Current position in file
