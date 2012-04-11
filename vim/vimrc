@@ -27,6 +27,13 @@
 """ Plugin Homepages:
 """	pathogen:		https://github.com/tpope/vim-pathogen
 """	unbundle:		https://github.com/sunaku/vim-unbundle
+"""	fugitive:		https://github.com/tpope/vim-fugitive
+"""	matchtag:		https://github.com/gregsexton/MatchTag
+"""
+""" Interesting (unused) plugins:
+"""	vundle:			https://github.com/gmarik/vundle
+"""	vim-addon-manager:	https://github.com/MarcWeber/vim-addon-manager
+"""
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
