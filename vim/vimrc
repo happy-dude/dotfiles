@@ -46,6 +46,14 @@
 set nocompatible        "Use VIM defaults
 
 """"" Plugin Configuration"""""
+
+""" Plugins to install/ checkout """
+""" slimv: https://bitbucket.org/sjl/slimv & http://www.vim.org/scripts/script.php?script_id=2531
+""" vim-latex: http://vim-latex.sourceforge.net/ & http://www.vim.org/script.php?script_id=475
+""" vim-surround: https://github.com/tpope/vim-surround
+""" easymotion: https://github.com/vim-scripts/EasyMotion
+""" gundo: http://sjl.bitbucket.org/gundo.vim/ & https://github.com/sjl/gundo.vim/
+
 runtime bundle/pathogen-tpope/autoload/pathogen.vim     "pathogen: Unconventional path to plugin (inside submodule)
 call pathogen#infect()      "pathogen: Activate plugin
 call pathogen#helptags()
@@ -55,6 +63,8 @@ set shellslash              "vim-latex: Windows feature: forward slash when expa
 let g:tex_flavor='latex'    "vim-latex: Default .tex filetype to 'tex' instead of 'plaintex'
 
 " syntastic settings
+""" NOTE:: in a later revision, put this all into a function definition and sort by filetype detection
+""""""" Checkout http://www.ibm.com/developerworks/linux/library/l-vim-script-5/index.html
 let g:syntastic_mode_map = { 'mode': 'active' }         "syntastic: Active syntax checking
 let g:syntastic_c_check_header = 1                      "syntastic: C
 let g:syntastic_c_no_include_search = 1
