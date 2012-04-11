@@ -331,7 +331,6 @@ if has("autocmd")
     " Automatically cd into the directory that the file is in
     autocmd BufEnter * if expand('%:p') !~ '://' | execute "chdir ".escape(expand("%:p:h"), ' ') | endif
 
-
     " Remove any trailing whitespace that is in the file and indent entire file
     autocmd BufRead,BufWrite * :exe ":normal! ma" | silent! %s/\s\+$//ge | :exe ":normal! 'a"
     autocmd BufWrite * if ! &bin && &filetype != "" | :exe ":normal! gg=G" | :exe ":normal! 'a" | endif
