@@ -95,17 +95,17 @@ set fileencoding=utf-8
 set fileformats=unix,dos,mac
 "Default filetypes
 
-set expandtab           "Default tabs into spaces
-set shiftwidth=4        "Auto-indent amount when using cindent, >>, << and stuff like that
-set softtabstop=4       "When hitting a tab or backspace- spaces should a tab should be
-set tabstop=8           "VIM's default tabstop is 8
-set smarttab            "A <Tab> in front of a line inserts blanks according to settings; <BS> deletes a shiftwidth
-
 set autoindent          "Set Autoindent
 set smartindent         "Set Smartindent
 set cindent             "Set cindent
 set nowrap              "Do not wrap lines
 "set wrap               "Wrap lines
+
+set expandtab           "Default tabs into spaces
+set shiftwidth=4        "Auto-indent amount when using cindent, >>, << and stuff like that
+set softtabstop=4       "When hitting a tab or backspace- spaces should a tab should be
+set tabstop=8           "VIM's default tabstop is 8
+set smarttab            "A <Tab> in front of a line inserts blanks according to settings; <BS> deletes a shiftwidth
 
 set cursorline          "Highlight the current line
 "set cursorcolumn        "Highlight the current column
