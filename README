@@ -21,7 +21,7 @@ Tmux configurations:
         ln -s ~/dotfiles/tmux.conf ~/.tmux.conf
 
 NOTE:
-In .zshrc (whenever that will be made), keep emacs bindings... Commands are easier with consistent emacs implementations.
+In .zshrc or .bashrc (whenever that will be made), keep emacs bindings... Commands are easier with consistent emacs implementations.
 A modal terminal doesn't work too well... (And I like vim!)
 
 TO DO:
