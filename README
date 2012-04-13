@@ -2,12 +2,29 @@ Version controlled dotfiles directory.
 Perhaps I can get this working cross-platform and as minimalistic as possible.
 
 To install:
+Clone this repository from Github:
+*** For example:
+    git clone https://github.com/Happy-Dude/dotfiles.git ~/dotfiles
+
+Vim configurations:
     * Make symbolic links to the vim configuration files (vimrc and gvimrc)
     *** For example:
         ln -s ~/dotfiles/vim/vimrc ~/.vimrc
         ln -s ~/dotfiles/vim/gvimrc ~/.gvimrc
+    * Make symbolic link to vim directory
+    *** For example:
+        ln -s ~/dotfiles/vim ~/.vim
+
+Tmux configurations:
+    * Make symbolic link to tmux configuration
+    *** For example:
+        ln -s ~/dotfiles/tmux.conf ~/.tmux.conf
 
 TO DO:
+Continue learning about tmux
+Learn zsh
+Learn xmonad
+Learn markdown for documentation (like for this readme)
 Add more dotfile configurations
 
 --Stan
