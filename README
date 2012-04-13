@@ -20,6 +20,10 @@ Tmux configurations:
     *** For example:
         ln -s ~/dotfiles/tmux.conf ~/.tmux.conf
 
+NOTE:
+In .zshrc (whenever that will be made), keep emacs bindings... Commands are easier with consistent emacs implementations.
+A modal terminal doesn't work too well... (And I like vim!)
+
 TO DO:
 Continue learning about tmux
 Learn zsh
