@@ -122,6 +122,7 @@ set cursorline          "Highlight the current line
 set esckeys             "Function keys that start with <Esc> are recognized in insert mode
 
 set showmatch           "Show matching brackets
+set matchtime=5         "How many tenths of a second to show matching paren with showmatch set
 set linespace=0         "Don't insert any extra pixel lines between rows
 set linebreak
 "set tw=500             "Word wrapping text width
@@ -144,6 +145,7 @@ set shiftround          "When at 3 spaces and hit > ... go to 4, not 5
 "colorscheme solarized   "tango2,desert,torte,murphy
 set background=dark
 
+set magic               "Set magic on, for regular expressions
 syntax on               "Enable syntax highlighting
 filetype plugin on      "Enable filetype plugin
 filetype indent on
@@ -180,7 +182,7 @@ set wildchar=<TAB>
 "Path/file expansion in colon mode
 
 "set title "Show title in console title bar
-set guioptions=em       "e ensures tab bar is displayed in GUI; m ensures menu bar is displaye
+set guioptions=em       "e ensures tab bar is displayed in GUI; m ensures menu bar is displayed
 set showcmd             "Display commands as they are typed
 set cmdheight=1         "Set the commandbar height
 set showtabline=2       "Display tab line even if single file opened
@@ -197,9 +199,6 @@ set hid                 "Change buffer - without saving
 
 set nolazyredraw        "Don't redraw while executing macros
 
-set magic               "Set magic on, for regular expressions
-set mat=5               "How many tenths of a second to blink
-
 set backspace=indent,eol,start
 "Set backspace config -- same as "set bs=2"
 set whichwrap=b,s,h,l,<,>,[,]
@@ -210,8 +209,8 @@ set report=0            "Tell us when anything is changed via :...
 set history=350         "Sets how many lines of history VIM will remember
 set undolevels=500      "Number of undo levels
 
-"set scrolloff=12       "Set 5 lines to the cursors - when moving verticle
-"set sidescrolloff=12   "Keep at least 5 lines left/right
+"set scrolloff=0        "Set 'x' lines to the cursors position - when moving verticle
+"set sidescrolloff=0    "Keep at least 'x' lines left/right
 
 " Folding
 set foldenable          "Turn on folding
