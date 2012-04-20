@@ -27,6 +27,7 @@ A modal terminal doesn't work too well... (And I like vim!)
 TO DO:
 Continue learning about tmux
 Learn zsh -- and oh-my-zsh?
+Make installation script -- its easier that way :)
 Learn xmonad
 Learn markdown for documentation (like for this readme)
 Add more dotfile configurations
