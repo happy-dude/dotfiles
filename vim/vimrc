@@ -88,9 +88,9 @@ autocmd BufRead,BufNewFile *.cpp call SyntasCPP()
 " Solarized colorscheme settings
 if !has("gui_running")                          " Use these settings if terminal vim; otherwise, gvimrc settings should take over
     let g:solarized_termcolors = 256            " Enable 256 color support
-    let g:solarized_termtrans = 0               " 1: Tell Solarized to use the default transparant terminal background; 0: Background handled by Solarized
-    let g:solarized_visibility = "normal"       " set list characters can be set to one of three levels depending on your needs.
-    let g:solarized_contract = "normal"         " Shifts some values up or down in order to expand or compress the tonal range displayed.
+    let g:solarized_termtrans = 1               " 1: Tell Solarized to use the default transparant terminal background; 0: Background handled by Solarized
+    let g:solarized_visibility = "normal"       " Set list characters can be set to one of three levels depending on your needs.
+    let g:solarized_contrast = "normal"         " High/ Low: Shifts some values up or down in order to expand or compress the tonal range displayed.
     "g:solarized_bold | g:solarized_underline | g:solarized_italic  " Set to 0 to turn of stylized typefaces
 endif
 """"""""""""""""""""""""""""""
@@ -141,7 +141,7 @@ set clipboard+=unnamed  "Share Window's clipboard
 set formatoptions=rw    "Automatically insert command leader on return and let gq format comments
 set shiftround          "When at 3 spaces and hit > ... go to 4, not 5
 
-"colorscheme solarized   "tango2,desert,torte,murphy
+colorscheme solarized   "tango2,desert,torte,murphy
 set background=dark
 
 syntax on               "Enable syntax highlighting
