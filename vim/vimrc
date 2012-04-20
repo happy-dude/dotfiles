@@ -148,9 +148,6 @@ set clipboard+=unnamed  "Share Window's clipboard
 set formatoptions=rw    "Automatically insert command leader on return and let gq format comments
 set shiftround          "When at 3 spaces and hit > ... go to 4, not 5
 
-"colorscheme solarized   "tango2,desert,torte,murphy
-set background=dark
-
 set magic               "Set magic on, for regular expressions
 syntax on               "Enable syntax highlighting
 filetype plugin on      "Enable filetype plugin
@@ -161,6 +158,9 @@ filetype on
 syntax enable
 set grepprg=/bin/grep\ -nH
 "VIM grep
+
+set background=dark
+"colorscheme solarized   "tango2,desert,torte,murphy
 
 set laststatus=2        "Always show the statusline
 set statusline=%F%m%r%h%w[FORMAT=%{&ff}][TYPE=%Y][POS=L%04l/%L,C%04v][%p%%][UNICODE=utf_0x%02.B/ascii_%03.3b]%#warningmsg#%{SyntasticStatuslineFlag()}%*
