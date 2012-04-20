@@ -89,10 +89,10 @@ autocmd BufRead,BufNewFile *.cpp call SyntasCPP()
 if has("gui_running")
     set colorscheme solarized
 else
-    let g:solarized_termcolors = 256     " Enable 256 color support
-    let g:solarized_termtrans = 1        " 1: Tell Solarized to use the default transparant terminal background; 0: Let Solarized handle the background
-    let g:solarized_contract = "normal"  " Use for testing: shifts some values up or down in order to expand or compress the tonal range displayed.
-    let g:solarized_visibility = "normal " set list characters can be set to one of three levels depending on your needs. 
+    let g:solarized_termcolors = 256         " Enable 256 color support
+    let g:solarized_termtrans = 1            " 1: Tell Solarized to use the default transparant terminal background; 0: Let Solarized handle the background
+    let g:solarized_contract = "normal"      " Use for testing: shifts some values up or down in order to expand or compress the tonal range displayed.
+    let g:solarized_visibility = "normal"    " set list characters can be set to one of three levels depending on your needs. 
     "g:solarized_bold | g:solarized_underline | g:solarized_italic    " Set to 0 to turn of stylized typefaces
 endif
 """"""""""""""""""""""""""""""
