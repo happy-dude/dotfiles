@@ -50,7 +50,7 @@
 set nocompatible        "Use VIM defaults
 
 """"""""""""""""""""""""""""""
-""""" Plugin Configuration """""
+"""" Plugin Configuration """"
 """"""""""""""""""""""""""""""
 "pathogen settings
 runtime bundle/pathogen-tpope/autoload/pathogen.vim     "Unconventional path to plugin (inside submodule)
@@ -99,7 +99,7 @@ let g:indent_guides_guide_size = 1              " Instead of having the indent g
 let g:indent_guides_start_level = 2             " Start indent guides at 2nd-level of indents (we don't really need it in the first level)
 
 """"""""""""""""""""""""""""""
-""" End Plugin Configuration """
+"" End Plugin Configuration ""
 """"""""""""""""""""""""""""""
 
 set ttyscroll=0         "Number of lines to scroll; 0 for terminals where scrolling is slow and redrawing is fast
