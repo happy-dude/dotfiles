@@ -72,7 +72,7 @@ function! SyntasC ()                                "syntastic: C
     let g:syntastic_c_check_header = 1
     let g:syntastic_c_no_include_search = 1
     let g:syntastic_c_auto_refresh_includes = 1
-    let g:syntastic_c_compiler_options = ' -Wall -Wextra -pedantic -g -ggdb -ansi'
+    let g:syntastic_c_compiler_options = ' -Wall -Wextra -pedantic -g -ggdb -std=c99'
 endfunction
 
 function! SyntasCPP ()                              "syntastic: C++
