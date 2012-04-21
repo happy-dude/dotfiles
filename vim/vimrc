@@ -60,6 +60,10 @@ call pathogen#infect()      "pathogen: Activate plugin
 call pathogen#helptags()
 "runtime bundle/unbundle-sunaku/unbundle.vim            "unbundle: Alternative plugin manager
 
+" indent-guides settings
+let g:indent_guides_guide_size = 1              " Instead of having the indent guide be the size of a tabwidth, size it to just 1 character
+let g:indent_guides_start_level = 2             " Start indent guides at 2nd-level of indents (we don't really need it in the first level)
+
 "vim-latex settings
 let g:tex_flavor='latex'    "Default .tex filetype to 'tex' instead of 'plaintex'
 set shellslash              "Windows feature: forward slash when expanding filenames
@@ -95,10 +99,6 @@ if !has("gui_running")                          " Use these settings if terminal
     let g:solarized_contrast = "normal"         " High/ Low: Shifts some values up or down in order to expand or compress the tonal range displayed.
     "g:solarized_bold | g:solarized_underline | g:solarized_italic  " Set to 0 to turn of stylized typefaces
 endif
-
-" indent-guides settings
-let g:indent_guides_guide_size = 1              " Instead of having the indent guide be the size of a tabwidth, size it to just 1 character
-let g:indent_guides_start_level = 2             " Start indent guides at 2nd-level of indents (we don't really need it in the first level)
 
 """"""""""""""""""""""""""""""
 "" End Plugin Configuration ""
