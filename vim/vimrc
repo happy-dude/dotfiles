@@ -7,7 +7,7 @@
 """     Version: 12 April 2012
 """
 """ Based on configurations from:
-"""	amix the lucky stiff:	http://amix.dk/blog/post/19486#The-ultimate-vim-configuration-vimrc
+"""    amix the lucky stiff:	http://amix.dk/blog/post/19486#The-ultimate-vim-configuration-vimrc
 """	Jan C. Ebersbach:	http://github.com/jceb/vimrc
 """	phuzz:			http://phuzz.org/vimrc.html
 """	Robert Melton:		http://vi-improved.org/vimrc.php
@@ -18,8 +18,8 @@
 """	gaving:			https://github.com/gaving/dotfiles/blob/master/.vimrc
 """	askedrelic:		https://github.com/askedrelic/homedir/blob/master/.vimrc
 """	Janus:			https://github.com/carlhuda/janus
-"""     Seth Brown:		http://www.drbunsen.org/text-triumvirate.html
-"""     Wincent Colaiuta:	https://wincent.com/blog/tweaking-command-t-and-vim-for-use-in-the-terminal-and-tmux
+"""	Seth Brown:		http://www.drbunsen.org/text-triumvirate.html
+"""	Wincent Colaiuta:	https://wincent.com/blog/tweaking-command-t-and-vim-for-use-in-the-terminal-and-tmux
 """
 """
 """	StackOverflow:		http://stackoverflow.com/questions/164847/what-is-in-your-vimrc
@@ -390,16 +390,16 @@ if has("autocmd")
     "compiler gcc
 
     " Enable mouse support in console
-if has('mouse')
-  set mouse=a
-  if &term =~ "xterm" || &term =~ "screen"
-    " for some reason, doing this directly with 'set ttymouse=xterm2'
-    " doesn't work -- 'set ttymouse?' returns xterm2 but the mouse
-    " makes tmux enter copy mode instead of selecting or scrolling
-    " inside Vim -- but luckily, setting it up from within autocmds
-    " works                   
-    autocmd VimEnter * set ttymouse=xterm2
-    autocmd FocusGained * set ttymouse=xterm2
-    autocmd BufEnter * set ttymouse=xterm2
-  endif
-endif
+    if has('mouse')
+        set mouse=a
+        if &term =~ "xterm" || &term =~ "screen"
+            " for some reason, doing this directly with 'set ttymouse=xterm2'
+            " doesn't work -- 'set ttymouse?' returns xterm2 but the mouse
+            " makes tmux enter copy mode instead of selecting or scrolling
+            " inside Vim -- but luckily, setting it up from within autocmds
+            " works
+            autocmd VimEnter * set ttymouse=xterm2
+            autocmd FocusGained * set ttymouse=xterm2
+            autocmd BufEnter * set ttymouse=xterm2
+        endif
+    endif
