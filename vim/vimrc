@@ -7,7 +7,7 @@
 """     Version: 12 April 2012
 """
 """ Based on configurations from:
-"""    amix the lucky stiff:	http://amix.dk/blog/post/19486#The-ultimate-vim-configuration-vimrc
+"""    amix the lucky stiff:    http://amix.dk/blog/post/19486#The-ultimate-vim-configuration-vimrc
 """	Jan C. Ebersbach:	http://github.com/jceb/vimrc
 """	phuzz:			http://phuzz.org/vimrc.html
 """	Robert Melton:		http://vi-improved.org/vimrc.php
