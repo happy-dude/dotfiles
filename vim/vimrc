@@ -96,7 +96,7 @@ autocmd BufRead,BufNewFile *.cpp call SyntasCPP()
 " Solarized colorscheme settings
 if !has("gui_running")                          " Use these settings if terminal vim; otherwise, gvimrc settings should take over
     let g:solarized_termcolors = 256            " Enable 256 color support
-    let g:solarized_termtrans = 0               " 1: Tell Solarized to use the default transparant terminal background; 0: Background handled by Solarized
+    let g:solarized_termtrans = 0               " 1: Tell Solarized to use the default transparant terminal background; 0: Background handled by VIM
     let g:solarized_visibility = "normal"       " Set list characters can be set to one of three levels depending on your needs.
     let g:solarized_contrast = "normal"         " High/ Low: Shifts some values up or down in order to expand or compress the tonal range displayed.
     "g:solarized_bold | g:solarized_underline | g:solarized_italic  " Set to 0 to turn of stylized typefaces
@@ -210,7 +210,7 @@ set hid                 "Change buffer - without saving
 set nolazyredraw        "Don't redraw while executing macros
 
 set backspace=indent,eol,start
-"Set backspace config -- same as "set bs=2"
+"Set backspace config -- same as set bs=2
 set whichwrap=b,s,h,l,<,>,[,]
 "Move freely between file
 
