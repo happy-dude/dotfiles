@@ -46,3 +46,6 @@
 [submodule "vim/bundle/ack-mileszs"]
 	path = vim/bundle/ack-mileszs
 	url = https://github.com/mileszs/ack.vim.git
+[submodule "vim/bundle/ctrlp-kien"]
+	path = vim/bundle/ctrlp-kien
+	url = https://github.com/kien/ctrlp.vim.git

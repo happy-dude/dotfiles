@@ -34,6 +34,7 @@
 """	syntastic:		https://github.com/scrooloose/syntastic
 """	easymotion:		https://github.com/Lokaltog/vim-easymotion
 """	nerdtree:		https://github.com/scrooloose/nerdtree
+"""	ctrlp:			https://github.com/kien/ctrlp.vim
 """	nerdcommenter:		https://github.com/scrooloose/nerdcommenter
 """	gundo:			https://github.com/sjl/gundo.vim
 """	ack:			https://github.com/mileszs/ack.vim
