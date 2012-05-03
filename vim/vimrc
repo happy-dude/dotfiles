@@ -173,15 +173,16 @@ set grepprg=/bin/grep\ -nH
 set background=dark
 "colorscheme solarized   "tango2,desert,torte,murphy
 
+""" Using Lokaltog's vim-powerline plugin now; contains almost everything desired in own statusline
 set laststatus=2        "Always show the statusline
 set statusline=%F%m%r%h%w[FORMAT=%{&ff}][TYPE=%Y][LN=%03l:%02v/%L][%p%%][UNICODE=utf_0x%02.B/ascii_%03.3b]%#warningmsg#%{SyntasticStatuslineFlag()}%*
-"               | | | | |           |          |      |      |     |   |                      |            | +-- syntastic plugin
-"               | | | | |           |          |      |      |     |   |                      |    ASCII --+
-"               | | | | |           |          |      |      |     |   |                      +-- HEX value
-"               | | | | |           |          |      |      |     |   +-- Current position in file
-"               | | | | |           |          |      |      |     +-- Total number of lines
-"               | | | | |           |          |      |      +-- Column
-"               | | | | |           |          |      +-- Current line (row)
+"               | | | | |           |          |        |    |  |   |                      |            |  +-- syntastic plugin
+"               | | | | |           |          |        |    |  |   |                      |    ASCII --+
+"               | | | | |           |          |        |    |  |   |                      +-- HEX value
+"               | | | | |           |          |        |    |  |   +-- Current position in file
+"               | | | | |           |          |        |    |  +-- Total number of lines
+"               | | | | |           |          |        |    +-- Column
+"               | | | | |           |          |        +-- Current line (row)
 "               | | | | |           |          +-- filetype as VIM recognized
 "               | | | | |           +-- current fileformat
 "               | | | | +-- preview flag in square brackets
@@ -189,7 +190,6 @@ set statusline=%F%m%r%h%w[FORMAT=%{&ff}][TYPE=%Y][LN=%03l:%02v/%L][%p%%][UNICODE
 "               | | +-- readonly flag in square brackets
 "               | +-- modified flag in square brackets
 "               +-- %F: full path to file in the buffer; %f: file in the buffer (in the buffer title bar -- unnecessary)
-" Using Lokaltog's vim-powerline plugin now; interestingly, it contains almost everything that I desire in my own statusline
 
 set wildmenu            "Turn on wild menu
 set wildignore=*.dll,*.o,*.obj,*.bak,*.exe,*.pyc,*.jpg,*.gif,*.png
