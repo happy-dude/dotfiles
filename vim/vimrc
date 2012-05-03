@@ -174,13 +174,13 @@ set background=dark
 "colorscheme solarized   "tango2,desert,torte,murphy
 
 set laststatus=2        "Always show the statusline
-set statusline=%F%m%r%h%w[FORMAT=%{&ff}][TYPE=%Y][LN L%04l/%L:C%04v][%p%%][UNICODE=utf_0x%02.B/ascii_%03.3b]%#warningmsg#%{SyntasticStatuslineFlag()}%*
+set statusline=%F%m%r%h%w[FORMAT=%{&ff}][TYPE=%Y][LN=%03l:%02v/%L][%p%%][UNICODE=utf_0x%02.B/ascii_%03.3b]%#warningmsg#%{SyntasticStatuslineFlag()}%*
 "               | | | | |           |          |      |      |     |   |                      |            | +-- syntastic plugin
 "               | | | | |           |          |      |      |     |   |                      |    ASCII --+
 "               | | | | |           |          |      |      |     |   |                      +-- HEX value
 "               | | | | |           |          |      |      |     |   +-- Current position in file
-"               | | | | |           |          |      |      |     +-- Column
-"               | | | | |           |          |      |      +-- Total number of lines
+"               | | | | |           |          |      |      |     +-- Total number of lines
+"               | | | | |           |          |      |      +-- Column
 "               | | | | |           |          |      +-- Current line (row)
 "               | | | | |           |          +-- filetype as VIM recognized
 "               | | | | |           +-- current fileformat
