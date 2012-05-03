@@ -103,11 +103,12 @@ if !has("gui_running")                          " Use these settings if terminal
     "g:solarized_bold | g:solarized_underline | g:solarized_italic  " Set to 0 to turn of stylized typefaces
 endif
 
+""" Not using Lokaltog's vim powerline plugin; customzied my own
 " Powerline settings
-let g:Powerline_symbols = "compatible"          " compatible: don't use any special characters; unicode: use unicode glyphs; fancy: use custom font
-let g:Powerline_stl_path_style = "full"         " Display current path; most desired: short, full, relative, filename
-let g:Powerline_theme = "default"               " use default theme
-let g:Powerline_colorscheme = "default"         " use default colorscheme
+"let g:Powerline_symbols = "compatible"          " compatible: don't use any special characters; unicode: use unicode glyphs; fancy: use custom font
+"let g:Powerline_stl_path_style = "full"         " Display current path; most desired: short, full, relative, filename
+"let g:Powerline_theme = "default"               " use default theme
+"let g:Powerline_colorscheme = "default"         " use default colorscheme
 
 """"""""""""""""""""""""""""""
 "" End Plugin Configuration ""
@@ -173,19 +174,19 @@ set grepprg=/bin/grep\ -nH
 set background=dark
 "colorscheme solarized   "tango2,desert,torte,murphy
 
-""" Using Lokaltog's vim-powerline plugin now; contains almost everything desired in own statusline
 set laststatus=2        "Always show the statusline
-set statusline=%F%m%r%h%w[FORMAT=%{&ff}][TYPE=%Y][%{&enc}][utf_0x%02.B/ascii_%03.3b][LN=%03l:%02v/%L][%p%%]%#warningmsg#%{SyntasticStatuslineFlag()}%*
-"               | | | | |           |          |     |                |            |      |    |  |    |    +-- syntastic plugin
-"               | | | | |           |          |     |                |            |      |    |  |    +-- Current position in file
-"               | | | | |           |          |     |                |            |      |    |  +-- Total number of lines
-"               | | | | |           |          |     |                |            |      |    +-- Column
-"               | | | | |           |          |     |                |            |      +-- Current line (row)
-"               | | | | |           |          |     |                |            +-- ASCII
-"               | | | | |           |          |     |                +-- HEX value
-"               | | | | |           |          |     +-- File encoding
-"               | | | | |           |          +-- filetype as VIM recognized
-"               | | | | |           +-- current fileformat
+set statusline=%F%m%r%h%w\ \ %#warningmsg#%{SyntasticStatuslineFlag()}%*%=\ %{&ff}\ \|\ %{&enc}\ \|\ %Y\ [utf_0x%02.B/ascii_%03.3b]\ [LN\ %03l:%02v/%L][%p%%]
+"               | | | | |     |                                         |   |             |           |           |            |             |    |  |   +-- Current position in file
+"               | | | | |     |                                         |   |             |           |           |            |             |    |  +-- Total number of lines
+"               | | | | |     |                                         |   |             |           |           |            |             |    +-- Column
+"               | | | | |     |                                         |   |             |           |           |            |             +-- Current line (row)
+"               | | | | |     |                                         |   |             |           |           |            +-- ASCII value
+"               | | | | |     |                                         |   |             |           |           +-- HEX value
+"               | | | | |     |                                         |   |             |           +-- Filetype as VIM recognized
+"               | | | | |     |                                         |   |             +-- File encoding
+"               | | | | |     |                                         |   +-- Current fileformat
+"               | | | | |     |                                         +-- Right justify from here
+"               | | | | |     +-- syntastic plugin
 "               | | | | +-- preview flag in square brackets
 "               | | | +-- help flag in square brackets
 "               | | +-- readonly flag in square brackets
