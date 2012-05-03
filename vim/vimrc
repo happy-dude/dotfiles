@@ -175,10 +175,11 @@ set background=dark
 
 """ Using Lokaltog's vim-powerline plugin now; contains almost everything desired in own statusline
 set laststatus=2        "Always show the statusline
-set statusline=%F%m%r%h%w[FORMAT=%{&ff}][TYPE=%Y][LN=%03l:%02v/%L][%p%%][UNICODE=utf_0x%02.B/ascii_%03.3b]%#warningmsg#%{SyntasticStatuslineFlag()}%*
-"               | | | | |           |          |        |    |  |   |                      |            |  +-- syntastic plugin
-"               | | | | |           |          |        |    |  |   |                      |    ASCII --+
-"               | | | | |           |          |        |    |  |   |                      +-- HEX value
+set statusline=%F%m%r%h%w[FORMAT=%{&ff}][TYPE=%Y][LN=%03l:%02v/%L][%p%%][%{&enc}][UNICODE=utf_0x%02.B/ascii_%03.3b]%#warningmsg#%{SyntasticStatuslineFlag()}%*
+"               | | | | |           |          |        |    |  |   |       |                   |           |      +-- syntastic plugin
+"               | | | | |           |          |        |    |  |   |       |                   |   ASCII --+
+"               | | | | |           |          |        |    |  |   |       |                   +-- HEX value
+"               | | | | |           |          |        |    |  |   |       +-- File encoding
 "               | | | | |           |          |        |    |  |   +-- Current position in file
 "               | | | | |           |          |        |    |  +-- Total number of lines
 "               | | | | |           |          |        |    +-- Column
