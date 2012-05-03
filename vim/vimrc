@@ -176,15 +176,15 @@ set background=dark
 
 set laststatus=2        "Always show the statusline
 set statusline=%F%m%r%h%w\ \ %#warningmsg#%{SyntasticStatuslineFlag()}%*%=\ %{&ff}\ \|\ %{&enc}\ \|\ %Y\ [utf_0x%02.B/ascii_%03.3b]\ [LN\ %03l:%02v/%L][%p%%]
-"               | | | | |     |                                         |   |             |           |           |            |             |    |  |   +-- Current position in file
-"               | | | | |     |                                         |   |             |           |           |            |             |    |  +-- Total number of lines
-"               | | | | |     |                                         |   |             |           |           |            |             |    +-- Column
-"               | | | | |     |                                         |   |             |           |           |            |             +-- Current line (row)
-"               | | | | |     |                                         |   |             |           |           |            +-- ASCII value
-"               | | | | |     |                                         |   |             |           |           +-- HEX value
-"               | | | | |     |                                         |   |             |           +-- Filetype as VIM recognized
-"               | | | | |     |                                         |   |             +-- File encoding
-"               | | | | |     |                                         |   +-- Current fileformat
+"               | | | | |     |                                         |     |           |           |           |            |             |    |  |   +-- Current position in file
+"               | | | | |     |                                         |     |           |           |           |            |             |    |  +-- Total number of lines
+"               | | | | |     |                                         |     |           |           |           |            |             |    +-- Column
+"               | | | | |     |                                         |     |           |           |           |            |             +-- Current line (row)
+"               | | | | |     |                                         |     |           |           |           |            +-- ASCII value
+"               | | | | |     |                                         |     |           |           |           +-- HEX value
+"               | | | | |     |                                         |     |           |           +-- Filetype as VIM recognized
+"               | | | | |     |                                         |     |           +-- File encoding
+"               | | | | |     |                                         |     +-- Current fileformat
 "               | | | | |     |                                         +-- Right justify from here
 "               | | | | |     +-- syntastic plugin
 "               | | | | +-- preview flag in square brackets
