@@ -96,12 +96,18 @@ autocmd BufRead,BufNewFile *.cpp call SyntasCPP()
 
 " Solarized colorscheme settings
 if !has("gui_running")                          " Use these settings if terminal vim; otherwise, gvimrc settings should take over
-    let g:solarized_termcolors = 256            " Enable 256 color support
+    let g:solarized_termcolors = 256            " Enable 256 color support and don't rely on terminal settings
     let g:solarized_termtrans = 0               " 1: Tell Solarized to use the default transparant terminal background; 0: Background handled by VIM
     let g:solarized_visibility = "normal"       " Set list characters can be set to one of three levels depending on your needs.
-    let g:solarized_contrast = "normal"         " High/ Low: Shifts some values up or down in order to expand or compress the tonal range displayed.
+    let g:solarized_contrast = "normal"         " high/ low: Shifts some values up or down in order to expand or compress the tonal range displayed.
     "g:solarized_bold | g:solarized_underline | g:solarized_italic  " Set to 0 to turn of stylized typefaces
 endif
+
+" Powerline settings
+let g:Powerline_symbols = "compatible"          " compatible: don't use any special characters; unicode: use unicode glyphs; fancy: use custom font
+let g:Powerline_stl_path_style = "full"         " Display current path; most desired: short, full, relative, filename
+let g:Powerline_theme = "default"               " use default theme
+let g:Powerline_colorscheme = "default"         " use default colorscheme
 
 """"""""""""""""""""""""""""""
 "" End Plugin Configuration ""
@@ -168,7 +174,7 @@ set background=dark
 "colorscheme solarized   "tango2,desert,torte,murphy
 
 set laststatus=2        "Always show the statusline
-set statusline=%F%m%r%h%w[FORMAT=%{&ff}][TYPE=%Y][POS=L%04l/%L,C%04v][%p%%][UNICODE=utf_0x%02.B/ascii_%03.3b]%#warningmsg#%{SyntasticStatuslineFlag()}%*
+set statusline=%F%m%r%h%w[FORMAT=%{&ff}][TYPE=%Y][LN L%04l/%L:C%04v][%p%%][UNICODE=utf_0x%02.B/ascii_%03.3b]%#warningmsg#%{SyntasticStatuslineFlag()}%*
 "               | | | | |           |          |      |      |     |   |                      |            | +-- syntastic plugin
 "               | | | | |           |          |      |      |     |   |                      |    ASCII --+
 "               | | | | |           |          |      |      |     |   |                      +-- HEX value
@@ -183,6 +189,7 @@ set statusline=%F%m%r%h%w[FORMAT=%{&ff}][TYPE=%Y][POS=L%04l/%L,C%04v][%p%%][UNIC
 "               | | +-- readonly flag in square brackets
 "               | +-- modified flag in square brackets
 "               +-- %F: full path to file in the buffer; %f: file in the buffer (in the buffer title bar -- unnecessary)
+" Using Lokaltog's vim-powerline plugin now; interestingly, it contains almost everything that I desire in my own statusline
 
 set wildmenu            "Turn on wild menu
 set wildignore=*.dll,*.o,*.obj,*.bak,*.exe,*.pyc,*.jpg,*.gif,*.png
