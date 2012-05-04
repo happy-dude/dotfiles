@@ -175,18 +175,18 @@ set background=dark
 "colorscheme solarized   "tango2,desert,torte,murphy
 
 set laststatus=2        "Always show the statusline
-set statusline=[%n]\ %F%m%r%h%w\ %#warningmsg#%{SyntasticStatuslineFlag()}%*\ %<%=%{&ff}\ \|\ %{&enc}\ \|\ %Y\ [utf_0x%02.B/ascii_%03.3b]\ [LN\ %03l:%02v/%L][%p%%]
-"                |    | | | | |   |                                            | |   |           |           |             |            |           |    |  |   +-- Current position in file
-"                |    | | | | |   |                                            | |   |           |           |             |            |           |    |  +-- Total number of lines
-"                |    | | | | |   |                                            | |   |           |           |             |            |           |    +-- Column
-"                |    | | | | |   |                                            | |   |           |           |             |            |           +-- Current line (row)
-"                |    | | | | |   |                                            | |   |           |           |             |            +-- ASCII value
-"                |    | | | | |   |                                            | |   |           |           |             +-- HEX value
-"                |    | | | | |   |                                            | |   |           |           +-- Filetype as VIM recognized
-"                |    | | | | |   |                                            | |   |           +-- File encoding
-"                |    | | | | |   |                                            | |   +-- Current fileformat
-"                |    | | | | |   |                                            | +-- Right justify from here
-"                |    | | | | |   |                                            +-- Truncate statusline from here
+set statusline=[%n]\ %F%m%r%h%w\ %#warningmsg#%{SyntasticStatuslineFlag()}%*\ %=%{&ff}\ \|\ %{&enc}\ \|\ %Y\ %<[utf_0x%02.B/ascii_%03.3b]\ [LN\ %03l:%02v/%L][%p%%]
+"                |    | | | | |   |                                            |   |           |          |   |           |            |           |    |  |   +-- Current position in file
+"                |    | | | | |   |                                            |   |           |          |   |           |            |           |    |  +-- Total number of lines
+"                |    | | | | |   |                                            |   |           |          |   |           |            |           |    +-- Column
+"                |    | | | | |   |                                            |   |           |          |   |           |            |           +-- Current line (row)
+"                |    | | | | |   |                                            |   |           |          |   |           |            +-- ASCII value
+"                |    | | | | |   |                                            |   |           |          |   |           +-- HEX value
+"                |    | | | | |   |                                            |   |           |          |   +-- Truncate statusline from here
+"                |    | | | | |   |                                            |   |           |          +-- Filetype as VIM recognized
+"                |    | | | | |   |                                            |   |           +-- File encoding
+"                |    | | | | |   |                                            |   +-- Current fileformat
+"                |    | | | | |   |                                            +-- Right justify from here
 "                |    | | | | |   +-- syntastic plugin
 "                |    | | | | +-- preview flag in square brackets
 "                |    | | | +-- help flag in square brackets
