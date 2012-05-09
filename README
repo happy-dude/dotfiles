@@ -3,7 +3,9 @@ Perhaps I can get this working cross-platform and as minimalistic as possible.
 
 To install:
 Clone this repository from Github:
-*** For example:
+*** For example (to get everything in this directory, including submodules):
+    git clone --recursive https://github.com/Happy-Dude/dotfiles.git ~/dotfiles
+    or (to get only my self-configured files)
     git clone https://github.com/Happy-Dude/dotfiles.git ~/dotfiles
 
 Vim configurations:

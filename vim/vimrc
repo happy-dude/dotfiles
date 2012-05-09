@@ -16,7 +16,7 @@
 """	cliffsjunk:		http://mysettopbox.tv/phpBB2/viewtopic.php?t=18986
 """	Jeremy Edberg:		http://www.jedberg.net/jedberg_vimrc
 """	gaving:			https://github.com/gaving/dotfiles/blob/master/.vimrc
-"""	askedrelic:		https://github.com/askedrelic/homedir/blob/master/.vimrc
+"""	askedrelic:		https://github.com/askedrelic/Homedir/blob/master/.vimrc
 """	Janus:			https://github.com/carlhuda/janus
 """	Seth Brown:		http://www.drbunsen.org/text-triumvirate.html
 """	Wincent Colaiuta:	https://wincent.com/blog/tweaking-command-t-and-vim-for-use-in-the-terminal-and-tmux
@@ -127,7 +127,7 @@ set autoindent          "Set Autoindent
 set smartindent         "Set Smartindent
 set cindent             "Set cindent
 set nowrap              "Do not wrap lines
-"set wrap               "Wrap lines
+"set wrap                "Wrap lines
 
 set expandtab           "Default tabs into spaces
 set shiftwidth=4        "Auto-indent amount when using cindent, >>, << and stuff like that
@@ -269,6 +269,25 @@ map <C-j> <C-W>j
 map <C-k> <C-W>k
 map <C-h> <C-W>h
 map <C-l> <C-W>l
+
+" To move up and down logical lines instead of physical lines
+" Instead of changing the Home row keys, use the arrow keys
+nnoremap <Down> gj
+nnoremap <Up> gk
+vnoremap <Down> gj
+vnoremap <Up> gk
+inoremap <Down> <C-o>gj
+inoremap <Up> <C-o>gk
+noremap <silent> <Up> gk
+noremap <silent> <Down> gj
+inoremap <silent> <Up> <C-o>gk
+inoremap <silent> <Down> <C-o>gj
+" Home and end keys are broken -- dependent of TERM variable;
+" Dunno how to fix reliably
+"noremap <silent> <Home> g<Home>
+"noremap <silent> <End> g<End>
+"inoremap <silent> <Home> <C-o>g<Home>
+"inoremap <silent> <End> <C-o>g<End>
 
 "From Harley's configuration on StackOverflow
 "set backup
