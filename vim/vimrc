@@ -264,7 +264,9 @@ set cpoptions=aABceFsmq
 "             |+-- :write updates alternative file name
 "             +-- :read updates alternative file name
 
-" Map Ctrl-Backspace to delete previous word in insert mode like Ctrl-W
+" Map Ctrl-Backspace to delete previous word in insert mode like Ctrl-w
+" Note how this mapping does not work in terminal vim because of term-keys
+" However, this mapping will work just fine in gvim
 inoremap <C-BS> <C-w>
 
 " To move up and down logical lines instead of physical lines
