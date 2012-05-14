@@ -264,11 +264,8 @@ set cpoptions=aABceFsmq
 "             |+-- :write updates alternative file name
 "             +-- :read updates alternative file name
 
-" Smart way to move between windows
-map <C-j> <C-W>j
-map <C-k> <C-W>k
-map <C-h> <C-W>h
-map <C-l> <C-W>l
+" Map Ctrl-Backspace to delete previous word in insert mode like Ctrl-W
+inoremap <C-BS> <C-W>
 
 " To move up and down logical lines instead of physical lines
 " Instead of changing the Home row keys, use the arrow keys
@@ -284,10 +281,17 @@ inoremap <silent> <Up> <C-o>gk
 inoremap <silent> <Down> <C-o>gj
 " Home and end keys are broken -- dependent of TERM variable;
 " Dunno how to fix reliably
-"noremap <silent> <Home> g<Home>
-"noremap <silent> <End> g<End>
-"inoremap <silent> <Home> <C-o>g<Home>
-"inoremap <silent> <End> <C-o>g<End>
+noremap <silent> <Home> g<Home>
+noremap <silent> <End> g<End>
+inoremap <silent> <Home> <C-o>g<Home>
+inoremap <silent> <End> <C-o>g<End>
+
+" Smart way to move between windows
+" Also noted how they don't seem to work... Need to investigate.
+noremap <C-j> <C-W>j
+noremap <C-k> <C-W>k
+noremap <C-h> <C-W>h
+noremap <C-l> <C-W>l
 
 "From Harley's configuration on StackOverflow
 "set backup
