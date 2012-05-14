@@ -288,10 +288,10 @@ inoremap <silent> <End> <C-o>g<End>
 
 " Smart way to move between windows
 " Also noted how they don't seem to work... Need to investigate.
-noremap <C-j> <C-w>j
-noremap <C-k> <C-w>k
-noremap <C-h> <C-w>h
-noremap <C-l> <C-w>l
+"noremap <C-j> <C-w>j
+"noremap <C-k> <C-w>k
+"noremap <C-h> <C-w>h
+"noremap <C-l> <C-w>l
 
 "From Harley's configuration on StackOverflow
 "set backup
