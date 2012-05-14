@@ -265,7 +265,7 @@ set cpoptions=aABceFsmq
 "             +-- :read updates alternative file name
 
 " Map Ctrl-Backspace to delete previous word in insert mode like Ctrl-W
-inoremap <C-BS> <C-W>
+inoremap <C-BS> <C-w>
 
 " To move up and down logical lines instead of physical lines
 " Instead of changing the Home row keys, use the arrow keys
@@ -288,10 +288,10 @@ inoremap <silent> <End> <C-o>g<End>
 
 " Smart way to move between windows
 " Also noted how they don't seem to work... Need to investigate.
-noremap <C-j> <C-W>j
-noremap <C-k> <C-W>k
-noremap <C-h> <C-W>h
-noremap <C-l> <C-W>l
+noremap <C-j> <C-w>j
+noremap <C-k> <C-w>k
+noremap <C-h> <C-w>h
+noremap <C-l> <C-w>l
 
 "From Harley's configuration on StackOverflow
 "set backup
