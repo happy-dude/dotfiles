@@ -137,7 +137,7 @@ set smarttab            "A <Tab> in front of a line inserts blanks according to 
 
 set cursorline          "Highlight the current line
 "set cursorcolumn        "Highlight the current column
-set esckeys             "Function keys that start with <Esc> are recognized in insert mode
+set colorcolumn=81      "Highlight column 81 for old-school 80 character terminal widths
 
 set showmatch           "Show matching brackets
 set matchtime=5         "How many tenths of a second to show matching paren with showmatch set
@@ -145,6 +145,7 @@ set linespace=0         "Don't insert any extra pixel lines between rows
 set linebreak
 "set tw=500             "Word wrapping text width
 
+set esckeys             "Function keys that start with <Esc> are recognized in insert mode
 set list                "List mode: show special characters -- what is displayed is changed by listchars
 set listchars=tab:>-,trail:-   "eol:$
 "We want to show tabs to ensure we get them out of files
