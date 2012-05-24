@@ -135,10 +135,6 @@ set softtabstop=4       "When hitting a tab or backspace- spaces should a tab sh
 set tabstop=8           "VIM's default tabstop is 8
 set smarttab            "A <Tab> in front of a line inserts blanks according to settings; <BS> deletes a shiftwidth
 
-set cursorline          "Highlight the current line
-"set cursorcolumn        "Highlight the current column
-set colorcolumn=81      "Highlight column 81 for old-school 80 character terminal widths
-
 set showmatch           "Show matching brackets
 set matchtime=5         "How many tenths of a second to show matching paren with showmatch set
 set linespace=0         "Don't insert any extra pixel lines between rows
@@ -174,6 +170,17 @@ set grepprg=/bin/grep\ -nH
 
 set background=dark
 "colorscheme solarized   "tango2,desert,torte,murphy
+
+set cursorline          "Highlight the current line
+"set cursorcolumn        "Highlight the current column
+""""Highlight column 81 for old-school 80 character terminal widths
+""" The elseif hack is from http://stackoverflow.com/a/235970
+if exists('+colorcolumn')
+    set colorcolumn=81
+else
+    highlight ColorColumn ctermbg=235
+    match ColorColumn /\%81v/
+endif
 
 set laststatus=2        "Always show the statusline
 set statusline=[%n]\ %F%m%r%h%w\ %#warningmsg#%{SyntasticStatuslineFlag()}%*\ %=%{&ff}\ \|\ %{&enc}\ \|\ %Y\ %<[utf8_0x%02.B/ascii_%03.3b]\ [LN\ %03l:%02v/%L][%p%%]
