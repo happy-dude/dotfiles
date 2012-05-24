@@ -176,7 +176,7 @@ set background=dark
 "colorscheme solarized   "tango2,desert,torte,murphy
 
 set laststatus=2        "Always show the statusline
-set statusline=[%n]\ %F%m%r%h%w\ %#warningmsg#%{SyntasticStatuslineFlag()}%*\ %=%{&ff}\ \|\ %{&enc}\ \|\ %Y\ %<[utf_0x%02.B/ascii_%03.3b]\ [LN\ %03l:%02v/%L][%p%%]
+set statusline=[%n]\ %F%m%r%h%w\ %#warningmsg#%{SyntasticStatuslineFlag()}%*\ %=%{&ff}\ \|\ %{&enc}\ \|\ %Y\ %<[utf8_0x%02.B/ascii_%03.3b]\ [LN\ %03l:%02v/%L][%p%%]
 "                |    | | | | |   |                                            |   |           |          |   |           |            |           |    |  |   +-- Current position in file
 "                |    | | | | |   |                                            |   |           |          |   |           |            |           |    |  +-- Total number of lines
 "                |    | | | | |   |                                            |   |           |          |   |           |            |           |    +-- Column
