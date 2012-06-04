@@ -57,11 +57,17 @@ set nocompatible        "Use VIM defaults
 """"""""""""""""""""""""""""""
 """" Plugin Configuration """"
 """"""""""""""""""""""""""""""
+filetype off            "Turn filetype plugin off until Pathogen loads
+
 "pathogen settings
 runtime bundle/pathogen-tpope/autoload/pathogen.vim     "Unconventional path to plugin (inside submodule)
 call pathogen#infect()      "pathogen: Activate plugin
 call pathogen#helptags()
 "runtime bundle/unbundle-sunaku/unbundle.vim            "unbundle: Alternative plugin manager
+
+filetype plugin indent on   "Enable filetype plugin
+syntax on               "Enable syntax highlighting
+syntax enable
 
 " indent-guides settings
 let g:indent_guides_guide_size = 1              " Instead of having the indent guide be the size of a tabwidth, size it to just 1 character
@@ -127,7 +133,9 @@ set autoindent          "Set Autoindent
 set smartindent         "Set Smartindent
 set cindent             "Set cindent
 set nowrap              "Do not wrap lines
-"set wrap                "Wrap lines
+"set tw=500             "Word wrapping text width
+set linespace=0         "Don't insert any extra pixel lines between rows
+set linebreak
 
 set expandtab           "Default tabs into spaces
 set shiftwidth=4        "Auto-indent amount when using cindent, >>, << and stuff like that
@@ -137,9 +145,8 @@ set smarttab            "A <Tab> in front of a line inserts blanks according to 
 
 set showmatch           "Show matching brackets
 set matchtime=5         "How many tenths of a second to show matching paren with showmatch set
-set linespace=0         "Don't insert any extra pixel lines between rows
-set linebreak
-"set tw=500             "Word wrapping text width
+set magic               "Set magic on, for regular expressions
+set grepprg=/bin/grep\ -nH  "VIM grep
 
 set esckeys             "Function keys that start with <Esc> are recognized in insert mode
 set list                "List mode: show special characters -- what is displayed is changed by listchars
@@ -156,17 +163,6 @@ set incsearch           "Make search act like search in modern browsers
 set clipboard+=unnamed  "Share Window's clipboard
 set formatoptions=rw    "Automatically insert command leader on return and let gq format comments
 set shiftround          "When at 3 spaces and hit > ... go to 4, not 5
-
-set magic               "Set magic on, for regular expressions
-syntax on               "Enable syntax highlighting
-filetype plugin on      "Enable filetype plugin
-filetype indent on
-"""From Frew's configuration on StackOverflow
-" Needed for Syntax Highlighting and stuff
-filetype on
-syntax enable
-set grepprg=/bin/grep\ -nH
-"VIM grep
 
 set background=dark
 "colorscheme solarized   "tango2,desert,torte,murphy
