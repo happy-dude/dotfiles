@@ -49,3 +49,15 @@
 [submodule "vim/bundle/ctrlp-kien"]
 	path = vim/bundle/ctrlp-kien
 	url = https://github.com/kien/ctrlp.vim.git
+[submodule "vim/bundle/python-mode-klen"]
+	path = vim/bundle/python-mode-klen
+	url = https://github.com/klen/python-mode.git
+[submodule "vim/bundle/clam-sjl"]
+	path = vim/bundle/clam-sjl
+	url = https://github.com/sjl/clam.vim.git
+[submodule "vim/ftbundle/html/html5-othree"]
+	path = vim/ftbundle/html/html5-othree
+	url = https://github.com/othree/html5.vim.git
+[submodule "vim/bundle/tslime-kikijump"]
+	path = vim/bundle/tslime-kikijump
+	url = https://github.com/kikijump/tslime.vim.git
