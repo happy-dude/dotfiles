@@ -21,6 +21,7 @@
 """	Seth Brown:		http://www.drbunsen.org/text-triumvirate.html
 """	Wincent Colaiuta:	https://wincent.com/blog/tweaking-command-t-and-vim-for-use-in-the-terminal-and-tmux
 """	Steve Losh:		http://stevelosh.com/blog/2010/09/coming-home-to-vim/
+"""	Jeff Kreeftmeijer:	http://jeffkreeftmeijer.com/2012/relative-line-numbers-in-vim-for-super-fast-movement/
 """
 """
 """	StackOverflow:		http://stackoverflow.com/questions/164847/what-is-in-your-vimrc
@@ -138,9 +139,9 @@ set fileencoding=utf-8
 set fileformats=unix,dos,mac
 "Default filetypes
 
-set autoindent          "Set Autoindent
-set smartindent         "Set Smartindent
-set cindent             "Set cindent
+"set cindent             "No need to set cindent since it is automatic for C-based files
+set smartindent         "Smartindent: auto inserts one extra level of indentation for C-like files.
+set autoindent          "Autoindent: auto indents a new line to the same indentation used by previous line
 set nowrap              "Do not wrap lines
 "set tw=500             "Word wrapping text width
 set linespace=0         "Don't insert any extra pixel lines between rows
@@ -152,6 +153,12 @@ set softtabstop=4       "When hitting a tab or backspace- spaces should a tab sh
 set tabstop=8           "VIM's default tabstop is 8
 set smarttab            "A <Tab> in front of a line inserts blanks according to settings; <BS> deletes a shiftwidth
 
+set ignorecase          "Ignore case when searching
+set smartcase           "If there are caps, go case-sensitive
+set infercase           "Case inferred by default
+set hlsearch            "Highlight search things
+set incsearch           "Make search act like search in modern browsers
+
 set showmatch           "Show matching brackets
 set matchtime=5         "How many tenths of a second to show matching paren with showmatch set
 set magic               "Set magic on, for regular expressions
@@ -159,15 +166,9 @@ set grepprg=/bin/grep\ -nH  "VIM grep
 
 set esckeys             "Function keys that start with <Esc> are recognized in insert mode
 set list                "List mode: show special characters -- what is displayed is changed by listchars
-set listchars=tab:>-,trail:-   "eol:$
+set listchars=tab:>-,trail:-,eol:¬	"eol:$
 "We want to show tabs to ensure we get them out of files
 "Shows tabs and trailing with '-'
-
-set ignorecase          "Ignore case when searching
-set infercase           "Case inferred by default
-set smartcase           "If there are caps, go case-sensitive
-set hlsearch            "Highlight search things
-set incsearch           "Make search act like search in modern browsers
 
 set clipboard+=unnamed  "Share Window's clipboard
 set formatoptions=rw    "Automatically insert command leader on return and let gq format comments
@@ -225,8 +226,16 @@ set guitablabel=%t      "Display buffer name on tab label
 "set nohidden           "When I close a tab, remove from buffer
 set tm=500              "Set tooltip menu
 
+set relativenumber      "Display how far away each line is from the current one by default
+"set number              "Show line numbers -- not useful when navigating
+"Switch to absolute line numbers whenever Vim loses focus
+autocmd FocusLost * :set number
+autocmd FocusGained * :set relativenumber
+"Use absolute line numbers when in insert mode and relative numbers when in normal mode
+autocmd InsertEnter * :set number
+autocmd InsertLeave * :set relativenumber
+
 set ruler               "Show cursor position all times
-set number              "Show line numbers
 set numberwidth=5       "Aesthetic uses only... and for displaying large line numbers
 set more                "Use more propmt -- pausing screen when too many items are displayed
 set noautowrite         "Don't automagically write on :next
@@ -241,6 +250,7 @@ set whichwrap=b,s,h,l,<,>,[,]
 
 set report=0            "Tell us when anything is changed via :...
 
+"set undofile            "Have VIM save undo history to file and restore it on open
 set history=350         "Sets how many lines of history VIM will remember
 set undolevels=500      "Number of undo levels
 
