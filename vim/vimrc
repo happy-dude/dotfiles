@@ -166,9 +166,8 @@ set grepprg=/bin/grep\ -nH  "VIM grep
 
 set esckeys             "Function keys that start with <Esc> are recognized in insert mode
 set list                "List mode: show special characters -- what is displayed is changed by listchars
-set listchars=tab:>-,trail:-,eol:¬	"eol:$
-"We want to show tabs to ensure we get them out of files
-"Shows tabs and trailing with '-'
+set listchars=tab:>-,trail:-    ",eol:¬ or eol:$
+"Display tabs to know we put them where we want them
 
 set clipboard+=unnamed  "Share Window's clipboard
 set formatoptions=rw    "Automatically insert command leader on return and let gq format comments
