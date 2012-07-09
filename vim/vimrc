@@ -225,14 +225,22 @@ set guitablabel=%t      "Display buffer name on tab label
 "set nohidden           "When I close a tab, remove from buffer
 set tm=500              "Set tooltip menu
 
-set relativenumber      "Display how far away each line is from the current one by default
-"set number              "Show line numbers -- not useful when navigating
-"Switch to absolute line numbers whenever Vim loses focus
-autocmd FocusLost * :set number
-autocmd FocusGained * :set relativenumber
-"Use absolute line numbers when in insert mode and relative numbers when in normal mode
-autocmd InsertEnter * :set number
-autocmd InsertLeave * :set relativenumber
+"relativenumber is a VIM 7.3 option, so configure accordingly
+if exists('+relativenumber')
+    set relativenumber      "Display how far away each line is from the current one by default
+    
+    "Switch to absolute line numbers whenever Vim loses focus
+    autocmd FocusLost * :set number
+    autocmd FocusGained * :set relativenumber
+    
+    "Use absolute line numbers when in insert mode and relative numbers when in normal mode
+    autocmd InsertEnter * :set number
+    autocmd InsertLeave * :set relativenumber
+
+else
+    set number              "Show line numbers -- not useful when navigating
+
+endif
 
 set ruler               "Show cursor position all times
 set numberwidth=5       "Aesthetic uses only... and for displaying large line numbers
