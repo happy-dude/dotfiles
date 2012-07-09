@@ -20,6 +20,7 @@
 """	Janus:			https://github.com/carlhuda/janus
 """	Seth Brown:		http://www.drbunsen.org/text-triumvirate.html
 """	Wincent Colaiuta:	https://wincent.com/blog/tweaking-command-t-and-vim-for-use-in-the-terminal-and-tmux
+""" Steve Losh:     http://stevelosh.com/blog/2010/09/coming-home-to-vim/
 """
 """
 """	StackOverflow:		http://stackoverflow.com/questions/164847/what-is-in-your-vimrc
@@ -57,6 +58,7 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 set nocompatible        "Use VIM defaults
+set modelines = 0       "Set modelines to 0 to prevent several security exploits
 
 """"""""""""""""""""""""""""""
 """" Plugin Configuration """"
@@ -100,6 +102,9 @@ function! SyntasCPP ()                              "syntastic: C++
     let g:syntastic_cpp_auto_refresh_includes = 1
     let g:syntastic_cpp_compiler_options = ' -Wall -Wextra -pedantic -g -ggdb -std=c++0x'
 endfunction
+
+"syntastic: Perl
+"let g:perl_lib_path = './lib'
 
 autocmd BufRead,BufNewFile *.c call SyntasC()
 autocmd BufRead,BufNewFile *.cpp call SyntasCPP()
