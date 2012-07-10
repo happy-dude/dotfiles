@@ -225,7 +225,7 @@ set guitablabel=%t      "Display buffer name on tab label
 "set nohidden           "When I close a tab, remove from buffer
 set tm=500              "Set tooltip menu
 
-"relativenumber is a VIM 7.3 option, so configure accordingly
+"relativenumber is a VIM 7.3 option, code defensively
 if exists('+relativenumber')
     set relativenumber  "Display how far away each line is from the current one by default
 
