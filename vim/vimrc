@@ -4,7 +4,7 @@
 """
 """     Author: Stanley Chan
 """     Github: https://github.com/Happy-Dude
-"""     Version: 12 April 2012
+"""     Version: 09 July 2012
 """
 """ Based on configurations from:
 """	amix the lucky stiff:	http://amix.dk/blog/post/19486#The-ultimate-vim-configuration-vimrc
@@ -227,18 +227,18 @@ set tm=500              "Set tooltip menu
 
 "relativenumber is a VIM 7.3 option, so configure accordingly
 if exists('+relativenumber')
-    set relativenumber      "Display how far away each line is from the current one by default
-    
+    set relativenumber  "Display how far away each line is from the current one by default
+
     "Switch to absolute line numbers whenever Vim loses focus
     autocmd FocusLost * :set number
     autocmd FocusGained * :set relativenumber
-    
+
     "Use absolute line numbers when in insert mode and relative numbers when in normal mode
     autocmd InsertEnter * :set number
     autocmd InsertLeave * :set relativenumber
 
 else
-    set number              "Show line numbers -- not useful when navigating
+    set number          "Show line numbers -- not useful when navigating
 
 endif
 
@@ -335,6 +335,29 @@ set nowb
 set noswapfile
 "Turn backup off
 
+" Use english for spellchecking, but don't spellcheck by default
+if version >= 700
+    set spl=en spell
+    set nospell
+endif
+
+" Enable mouse support in console
+if has('mouse')
+    set mouse=a
+    if &term =~ "xterm" || &term =~ "screen"
+        " for some reason, doing this directly with 'set ttymouse=xterm2'
+        " doesn't work -- 'set ttymouse?' returns xterm2 but the mouse
+        " makes tmux enter copy mode instead of selecting or scrolling
+        " inside Vim -- but luckily, setting it up from within autocmds
+        " works
+        autocmd VimEnter * set ttymouse=xterm2
+        autocmd FocusGained * set ttymouse=xterm2
+        autocmd BufEnter * set ttymouse=xterm2
+    endif
+endif
+"
+" Real men use gcc
+"compiler gcc
 
 
 if has("autocmd")
@@ -447,26 +470,3 @@ if has("autocmd")
                     \ endif
     augroup END
 
-    " Use english for spellchecking, but don't spellcheck by default
-    if version >= 700
-        set spl=en spell
-        set nospell
-    endif
-
-    " Real men use gcc
-    "compiler gcc
-
-    " Enable mouse support in console
-    if has('mouse')
-        set mouse=a
-        if &term =~ "xterm" || &term =~ "screen"
-            " for some reason, doing this directly with 'set ttymouse=xterm2'
-            " doesn't work -- 'set ttymouse?' returns xterm2 but the mouse
-            " makes tmux enter copy mode instead of selecting or scrolling
-            " inside Vim -- but luckily, setting it up from within autocmds
-            " works
-            autocmd VimEnter * set ttymouse=xterm2
-            autocmd FocusGained * set ttymouse=xterm2
-            autocmd BufEnter * set ttymouse=xterm2
-        endif
-    endif
