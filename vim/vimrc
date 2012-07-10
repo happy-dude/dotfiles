@@ -178,7 +178,7 @@ set background=dark
 
 set cursorline          "Highlight the current line
 "set cursorcolumn        "Highlight the current column
-""""Highlight column 81 for old-school 80 character terminal widths
+""" Highlight column 81 for old-school 80 character terminal widths
 """ The elseif hack is from http://stackoverflow.com/a/235970
 if exists('+colorcolumn')
     set colorcolumn=81
@@ -225,7 +225,8 @@ set guitablabel=%t      "Display buffer name on tab label
 "set nohidden           "When I close a tab, remove from buffer
 set tm=500              "Set tooltip menu
 
-"relativenumber is a VIM 7.3 option, code defensively
+""" relativenumber is a VIM 7.3 option
+""" If the option doesn't exist, fall back to just absolute line numbers
 if exists('+relativenumber')
     set relativenumber  "Display how far away each line is from the current one by default
 
@@ -238,7 +239,7 @@ if exists('+relativenumber')
     autocmd InsertLeave * :set relativenumber
 
 else
-    set number          "Show line numbers -- not useful when navigating
+    set number          "Show absolute line numbers
 
 endif
 
