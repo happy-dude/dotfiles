@@ -59,7 +59,7 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 set nocompatible        "Use VIM defaults
-set modelines=0       "Set modelines to 0 to prevent several security exploits
+set modelines=0         "Set modelines to 0 to prevent several security exploits
 
 """"""""""""""""""""""""""""""
 """" Plugin Configuration """"
@@ -73,7 +73,7 @@ call pathogen#helptags()
 "runtime bundle/unbundle-sunaku/unbundle.vim            "unbundle: Alternative plugin manager
 
 filetype plugin indent on   "Enable filetype plugin
-syntax on               "Enable syntax highlighting
+syntax on                   "Enable syntax highlighting
 syntax enable
 
 " indent-guides settings
