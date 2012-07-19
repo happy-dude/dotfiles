@@ -119,13 +119,6 @@ if !has("gui_running")                          " Use these settings if terminal
     "g:solarized_bold | g:solarized_underline | g:solarized_italic  " Set to 0 to turn of stylized typefaces
 endif
 
-""" Not using Lokaltog's vim powerline plugin; customzied my own
-" Powerline settings
-"let g:Powerline_symbols = "compatible"          " compatible: don't use any special characters; unicode: use unicode glyphs; fancy: use custom font
-"let g:Powerline_stl_path_style = "full"         " Display current path; most desired: short, full, relative, filename
-"let g:Powerline_theme = "default"               " use default theme
-"let g:Powerline_colorscheme = "default"         " use default colorscheme
-
 """"""""""""""""""""""""""""""
 "" End Plugin Configuration ""
 """"""""""""""""""""""""""""""
@@ -173,13 +166,14 @@ set clipboard+=unnamed  "Share Window's clipboard
 set formatoptions=rw    "Automatically insert command leader on return and let gq format comments
 set shiftround          "When at 3 spaces and hit > ... go to 4, not 5
 
-set background=dark
 if (&t_Co == 256 || &t_Co == 88) && (!has("gui_running")) && ((&term =~ "xterm") || (&term =~ "screen"))
     " Colorscheme preferences:
     " solarized, Tomorrow-Night, tango2, desert, torte, murphy
     if filereadable(expand("$HOME/.vim/bundle/solarized-altercation/colors/solarized.vim"))
+        set background=dark
         colorscheme solarized
     elseif filereadable(expand("$HOME/.vim/bundle/tomorrow-chriskempson/colors/Tomorrow-Night.vim"))
+        set background=light
         colorscheme Tomorrow-Night
     endif
 endif
