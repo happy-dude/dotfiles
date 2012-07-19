@@ -179,7 +179,7 @@ if (&t_Co == 256 || &t_Co == 88) && (!has("gui_running")) && ((&term =~ "xterm")
     " solarized, Tomorrow-Night, tango2, desert, torte, murphy
     if filereadable(expand("$HOME/.vim/bundle/solarized-altercation/colors/solarized.vim"))
         colorscheme solarized
-    elseif filereadable(expand("$HOME/.vim/bundle/tomorrow-chriskempson/colors/Toomorrow-Night.vim"))
+    elseif filereadable(expand("$HOME/.vim/bundle/tomorrow-chriskempson/colors/Tomorrow-Night.vim"))
         colorscheme Tomorrow-Night
     endif
 endif
