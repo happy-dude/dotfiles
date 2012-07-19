@@ -9,4 +9,8 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-colorscheme solarized
+if filereadable(expand("$HOME/.vim/bundle/solarized-altercation/colors/solarized.vim"))
+    colorscheme solarized
+elseif filereadable(expand("$HOME/.vim/bundle/tomorrow-chriskempson/colors/Toomorrow-Night.vim"))
+    colorscheme Tomorrow-Night
+endif

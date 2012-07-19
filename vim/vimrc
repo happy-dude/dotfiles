@@ -174,7 +174,15 @@ set formatoptions=rw    "Automatically insert command leader on return and let g
 set shiftround          "When at 3 spaces and hit > ... go to 4, not 5
 
 set background=dark
-"colorscheme solarized   "Tomorrow-Night,tango2,desert,torte,murphy
+if (&t_Co == 256 || &t_Co == 88) && (!has("gui_running")) && ((&term =~ "xterm") || (&term =~ "screen"))
+    " Colorscheme preferences:
+    " solarized, Tomorrow-Night, tango2, desert, torte, murphy
+    if filereadable(expand("$HOME/.vim/bundle/solarized-altercation/colors/solarized.vim"))
+        colorscheme solarized
+    elseif filereadable(expand("$HOME/.vim/bundle/tomorrow-chriskempson/colors/Toomorrow-Night.vim"))
+        colorscheme Tomorrow-Night
+    endif
+endif
 
 set cursorline          "Highlight the current line
 "set cursorcolumn        "Highlight the current column
