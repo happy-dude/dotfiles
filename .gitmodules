@@ -61,3 +61,9 @@
 [submodule "vim/bundle/tslime-kikijump"]
 	path = vim/bundle/tslime-kikijump
 	url = https://github.com/kikijump/tslime.vim.git
+[submodule "vim/bundle/tomorrow-chriskempson"]
+	path = vim/bundle/tomorrow-chriskempson
+	url = https://github.com/chriskempson/vim-tomorrow-theme.git
+[submodule "vim/bundle/cocoa-jgoulah_msanders"]
+	path = vim/bundle/cocoa-jgoulah_msanders
+	url = https://github.com/jgoulah/cocoa.vim.git
