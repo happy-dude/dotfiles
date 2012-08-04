@@ -67,3 +67,9 @@
 [submodule "vim/bundle/cocoa-jgoulah_msanders"]
 	path = vim/bundle/cocoa-jgoulah_msanders
 	url = https://github.com/jgoulah/cocoa.vim.git
+[submodule "vim/bundle/jellybeans-nanotech"]
+	path = vim/bundle/jellybeans-nanotech
+	url = https://github.com/nanotech/jellybeans.vim.git
+[submodule "vim/bundle/Lucius-jonathanfilip"]
+	path = vim/bundle/Lucius-jonathanfilip
+	url = https://github.com/vim-scripts/Lucius.git
