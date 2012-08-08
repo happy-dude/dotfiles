@@ -176,6 +176,9 @@ if (&t_Co == 256 || &t_Co == 88) && (!has("gui_running")) && ((&term =~ "xterm")
     if filereadable(expand("$HOME/.vim/bundle/solarized-altercation/colors/solarized.vim"))
         set background=dark
         colorscheme solarized
+    elseif filereadable(expand("$HOME/.vim/bundle/jellybeans-nanotech/colors/jellybeans.vim"))
+        set background=dark
+        colorscheme jellybeans
     elseif filereadable(expand("$HOME/.vim/bundle/tomorrow-chriskempson/colors/Tomorrow-Night.vim"))
         set background=light
         colorscheme Tomorrow-Night
