@@ -57,4 +57,33 @@ configurations to their proper locations.
 
     ln -s ~/dotfiles/tmux.conf ~/.tmux.conf;
 
+Notes
+-----
+
+### Vim settings
+
+For my vim configurations to work properly, it needs to be compiled with various
+language support. These features (such as Python and Ruby support) usually are
+not included with the default Linux repository versions.
+
+I prefer to do it by checking out the latest Vim source code from Bram
+Moolenaar's repository. Make sure that the `~/sources` directory already exists,
+if not, make it by executing the command `mkdir ~/sources`.
+
+    hg clone https://code.google.com/p/vim/ ~/sources/vim; \
+    cd ~/sources/vim; \
+    hg pull; \
+    hg update default;
+
+Once the repository is checked out, compile and install it using the following
+commands:
+
+    cd ~/sources/vim/src; \
+    make distclean; \
+    ./configure --with-features=huge --enable-gui=auto --enable-cscope
+    --enable-luainterp --enable-mzschemeinterp --enable-perlinterp
+    --enable-pythoninterp --enable-python3interp --enable-rubyinterp
+    --enable-tclinterp
+
+
 For my own use, I also
