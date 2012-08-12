@@ -1,0 +1,112 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          iptables
+# Required-Start:    mountkernfs $local_fs
+# Required-Stop:     $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Set up iptables rules
+### END INIT INFO
+
+PATH="/sbin:/bin:/usr/sbin:/usr/bin"
+
+# This script has been tested on BackTrack 5R2, an Ubuntu-based Ditro
+# Extract directory of IPtable configurations
+#   7za x <archive>
+# Make iptables (this file) executable
+#   chmod +x iptables
+# Copy this file into /etc/init.d/iptables
+#   cp iptables /etc/init.d/iptables
+# Symbolically link the init.d file into rc.d
+#   ln -s /etc/init.d/iptables /etc/rc2.d/iptables
+# Run
+#   update-rc.d /etc/init.d/iptables defaults
+
+# Include config file
+. /etc/iptables/iptables.conf
+
+case "$1" in
+
+    start)
+        if [ -e /var/run/iptables ]; then
+            echo "iptables is already started!"
+            exit 1
+        else
+            touch /var/run/iptables
+        fi
+
+        if [ $ENABLE_ROUTING -ne 0 ]; then
+            # Enable Routing
+            echo 1 > /proc/sys/net/ipv4/ip_forward
+        fi
+
+        # Load Modules
+        modprobe -a $MODULES
+
+        # Load saved rules
+        if [ -f /etc/iptables/iptables.current ]; then
+            iptables-restore </etc/iptables/iptables.current
+        fi
+        ;;
+
+    stop|force-stop)
+        if [ ! -e /var/run/iptables ]; then
+            echo "iptables is already stopped!"
+            exit 1
+        else
+            rm /var/run/iptables
+        fi
+
+        if [ $SAVE_NEW_RULES -ne 0 ]; then
+            # Backup old rules
+            cp /etc/iptables/rules /etc/iptables/rules.bak
+            # Save new rules
+            iptables-save >/etc/iptables/iptables.current
+        fi
+
+        # Restore Default Policies
+        iptables -P INPUT ACCEPT
+        iptables -P FORWARD ACCEPT
+        iptables -P OUTPUT ACCEPT
+
+        # Flush rules on default tables
+        iptables -F
+        iptables -t nat -F
+        iptables -t mangle -F
+
+        # Unload previously loaded modules
+        modprobe -r $MODULES
+
+        # Disable Routing if enabled
+        if [ $ENABLE_ROUTING -ne 0 ]; then
+            # Disable Routing
+            echo 0 > /proc/sys/net/ipv4/ip_forward
+        fi
+
+        ;;
+
+    restart|force-reload)
+        $0 stop
+        $0 start
+        ;;
+
+    status)
+        echo "Filter Rules:"
+        echo "--------------"
+        iptables -L -v
+        echo ""
+        echo "NAT Rules:"
+        echo "-------------"
+        iptables -t nat -L -v
+        echo ""
+        echo "Mangle Rules:"
+        echo "----------------"
+        iptables -t mangle -L -v
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|force-stop|restart|force-reload|status}" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

@@ -57,6 +57,15 @@ configurations to their proper locations.
 
     ln -s ~/dotfiles/tmux.conf ~/.tmux.conf;
 
+### IPTables configuration
+
+***NOTE*** that this has only worked on Ubuntu-based Linux distributions. I need
+to learn more about the boot process in other distributions to make them work
+right. I'm looking into seeing how it works for Arch Linux.
+
+    ln -s ~/dotfiles/iptables /etc/iptables; \
+    ln -s ~/dotfiles/iptables/iptables /etc/init.d/iptables;
+
 Notes
 -----
 
@@ -83,7 +92,13 @@ commands:
     ./configure --with-features=huge --enable-gui=auto --enable-cscope \
     --enable-luainterp --enable-mzschemeinterp --enable-perlinterp \
     --enable-pythoninterp --enable-python3interp --enable-rubyinterp \
-    --enable-tclinterp; \
+    --enable-tclinterp;
+
+Also note that --enable-python interp assumes that /usr/bin/python is aliased to
+python2, NOT python3 (which is what --enable-python3interp uses). Make sure to
+alias /usr/bin/python properly or else Vim will not compile with python2 support.
+(I am aware this is an issue in Arch Linux distributions, but I am not sure
+where else.)
 
 Now that it is configured, compile it, test to see if everything is okay, and
 then install it:
@@ -97,10 +112,41 @@ to your user by adding the `--prefix=/usr/local` flag when configuring.
 
 ### Adding plugins and submodules
 
-### IPTable configuration
+It's best to add plugins to the repository and let Tim Pope's awesome
+[fugitive.vim](https://github.com/tpope/vim-fugitive) take care of the vim
+runtime path.
+
+Since fugitive is already installed with the vim configurations, just add it via
+a submodule by executing `git submodule add <git url> <directory name>` inside
+the `dotfiles` directory. You can also use repositories that are managed by other
+version control systems, but I personally have not experimented with that much.
+
+### IPTables configuration
+
+I decided to include my IPTable configuration with this repository, located in
+the `dotfiles/iptables` directory.
+
+Inside this directory are
+
+* iptables, the executable script
+* iptables.complete, the full list of iptable rules I have made and exported
+* iptables.current, the list of iptable rules after importing iptables.complete
+* iptables.conf, a configuration file used by the executable script
+
+In Ubuntu, the entire iptables directory should be symlinked into /etc/iptables
+and the `iptables` script should be symlinked to `/etc/init.d/iptables`. Once
+this is done, you can start and stop your IPTable rules like any other running
+service.
+
+On Arch Linux, this seems to be a little bit different due to how Arch decides
+to simply some of the configuration and boot process. I have not implemented the
+scripts on a Arch Linux installtion yet, so I have to do a little bit of reading
+about the [boot process](https://wiki.archlinux.org/index.php/Arch_Boot_Process).
 
 TO DO
 -----
 
+LICENSE
+-------
 
 For my own use, I also
