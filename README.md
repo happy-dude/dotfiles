@@ -12,17 +12,18 @@ modified: Sun 12 Aug 2012
 Stan's dotfiles
 ===============
 
-Version controlled dot configuration files for (currently) vim and tmux.
-Zshell and xmonad configurations will be developed and merged in.
+Version controlled dot configuration files for (currently) vim, tmux, and iptables.
+Zshell, Xmonad, and Bash configurations will be developed soon (hopefully).
 Hopefully, I make a conscious effort to also make the configurations cross
 platform for Linux, Windows, and OS X.
-
 
 Installation
 ------------
 
 To install the configuration, just execute the install script (yet to be
-written). Since I have not written it yet, I think I'll call it linkify.sh or
+written).
+
+Since I have not written it yet, I think I'll call it `linkify.sh` or
 something like that... After all, all installation entails is just the linking
 of the files to the right places.
 
@@ -55,16 +56,23 @@ configurations to their proper locations.
 
 ### Tmux configuration
 
-    ln -s ~/dotfiles/tmux.conf ~/.tmux.conf;
+    ln -s ~/dotfiles/tmux/tmux.conf ~/.tmux.conf;
 
 ### IPTables configuration
 
-***NOTE*** that this has only worked on Ubuntu-based Linux distributions. I need
+***NOTE***
+
+This has only worked on Ubuntu-based Linux distributions. I need
 to learn more about the boot process in other distributions to make them work
 right. I'm looking into seeing how it works for Arch Linux.
 
     ln -s ~/dotfiles/iptables /etc/iptables; \
     ln -s ~/dotfiles/iptables/iptables /etc/init.d/iptables;
+    chmod +x /etc/init.d/iptables
+    sudo update-rc.d iptables
+
+Execute the script with `service iptables start`. Again, this so far has only
+been tested on Ubuntu-based distributions.
 
 Notes
 -----
@@ -146,7 +154,17 @@ about the [boot process](https://wiki.archlinux.org/index.php/Arch_Boot_Process)
 TO DO
 -----
 
+* Make a bash installation script for the files; makes things much easier
+* Fix up IPTable configuration and script; make it work with Arch Linux
+* Learn more markdown and fix up this README
+* Create a proper zshell configuration; see how far I can go with vi keybindings
+instead of emacs ones
+* Learn Zshell and get a nice oh-my-zsh setup working
+* Learn Xmonad
+* Learn Arch Linux
+* Add more dotfile configurations
+
 LICENSE
 -------
 
-For my own use, I also
+This work is licensed under a [Creative Commons Attribution-ShareAlike 3.0 Unported License](http://creativecommons.org/licenses/by-sa/3.0/).
