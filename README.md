@@ -60,7 +60,7 @@ configurations to their proper locations.
 Notes
 -----
 
-### Vim settings
+### Compiled Vim settings
 
 For my vim configurations to work properly, it needs to be compiled with various
 language support. These features (such as Python and Ruby support) usually are
@@ -80,10 +80,27 @@ commands:
 
     cd ~/sources/vim/src; \
     make distclean; \
-    ./configure --with-features=huge --enable-gui=auto --enable-cscope
-    --enable-luainterp --enable-mzschemeinterp --enable-perlinterp
-    --enable-pythoninterp --enable-python3interp --enable-rubyinterp
-    --enable-tclinterp
+    ./configure --with-features=huge --enable-gui=auto --enable-cscope \
+    --enable-luainterp --enable-mzschemeinterp --enable-perlinterp \
+    --enable-pythoninterp --enable-python3interp --enable-rubyinterp \
+    --enable-tclinterp; \
+
+Now that it is configured, compile it, test to see if everything is okay, and
+then install it:
+
+    make; \
+    make test; \
+    make install;
+
+Also, if Vim cannot be installed in /usr/bin, you can try to install it locally
+to your user by adding the `--prefix=/usr/local` flag when configuring.
+
+### Adding plugins and submodules
+
+### IPTable configuration
+
+TO DO
+-----
 
 
 For my own use, I also

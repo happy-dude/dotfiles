@@ -73,3 +73,6 @@
 [submodule "vim/bundle/Lucius-jonathanfilip"]
 	path = vim/bundle/Lucius-jonathanfilip
 	url = https://github.com/vim-scripts/Lucius.git
+[submodule "vim/bundle/markdown-tpope"]
+	path = vim/bundle/markdown-tpope
+	url = https://github.com/tpope/vim-markdown.git

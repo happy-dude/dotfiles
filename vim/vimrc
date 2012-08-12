@@ -44,6 +44,7 @@
 """	clam:			https://github.com/sjl/clam.vim
 """	tslime:			https://github.com/kikijump/tslime.vim
 """	slimv:			https://bitbucket.org/kovisoft/slimv/ & https://github.com/vim-scripts/slimv.vim
+"""	vim-markdown		https://github.com/tpope/vim-markdown
 """	vim-latex:		http://vim-latex.sourceforge.net/
 """	cocoa			https://github.com/jgoulah/cocoa.vim
 """	html5:			https://github.com/othree/html5.vim
