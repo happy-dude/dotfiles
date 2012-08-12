@@ -18,13 +18,16 @@ Hopefully, I make a conscious effort to also make the configurations cross
 platform for Linux, Windows, and OS X.
 
 
-Installtion
------------
+Installation
+------------
 
 To install the configuration, just execute the install script (yet to be
-written).
+written). Since I have not written it yet, I think I'll call it linkify.sh or
+something like that... After all, all installation entails is just the linking
+of the files to the right places.
 
-All installation entails is just the linking of the files to the right places.
+Manually install
+----------------
 
 To manually install the configurations, first you must check out the repository
 using the following command:
@@ -41,11 +44,17 @@ folowed by
     git submodule init; \
     git submodule update;
 
-After the repository has been downloaded, execute the following commands:
+After the repository has been downloaded, you can link the different
+configurations to their proper locations.
+
+### Vim configuration
 
     ln -s ~/dotfiles/vim ~/.vim; \
     ln -s ~/dotfiles/vim/vimrc ~/.vimrc; \
     ln -s ~/dotfiles/vim/gvimrc ~/.gvimrc; \
+
+### Tmux configuration
+
     ln -s ~/dotfiles/tmux.conf ~/.tmux.conf;
 
-
+For my own use, I also
