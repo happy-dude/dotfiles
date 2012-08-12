@@ -13,7 +13,9 @@ Stan's dotfiles
 ===============
 
 Version controlled dot configuration files for (currently) vim, tmux, and iptables.
-Zshell, Xmonad, and Bash configurations will be developed soon (hopefully).
+
+Zshell, Xmonad, and Bash configurations will be developed soon.
+
 Hopefully, I make a conscious effort to also make the configurations cross
 platform for Linux, Windows, and OS X.
 
@@ -131,7 +133,7 @@ version control systems, but I personally have not experimented with that much.
 
 ### IPTables configuration
 
-I decided to include my IPTable configuration with this repository, located in
+I decided to include my IPTables configuration with this repository, located in
 the `dotfiles/iptables` directory.
 
 Inside this directory are
@@ -144,7 +146,8 @@ Inside this directory are
 In Ubuntu, the entire iptables directory should be symlinked into /etc/iptables
 and the `iptables` script should be symlinked to `/etc/init.d/iptables`. Once
 this is done, you can start and stop your IPTable rules like any other running
-service.
+service by issuing commands such as `service iptables start` or `service iptables
+stop`.
 
 On Arch Linux, this seems to be a little bit different due to how Arch decides
 to simply some of the configuration and boot process. I have not implemented the
@@ -162,6 +165,7 @@ instead of emacs ones
 * Learn Zshell and get a nice oh-my-zsh setup working
 * Learn Xmonad
 * Learn Arch Linux
+* Make configuration files platform independent
 * Add more dotfile configurations
 
 LICENSE
