@@ -171,6 +171,12 @@ instead of emacs ones
 LICENSE
 -------
 
-This work is licensed under a [Creative Commons Attribution-ShareAlike 3.0 Unported License](http://creativecommons.org/licenses/by-sa/3.0/).
+Happy-Dude/dotfiles repository (c) by Stanley Chan
 
 [![Creative Commons License](http://i.creativecommons.org/l/by-sa/3.0/88x31.png)](http://creativecommons.org/licenses/by-sa/3.0/)
+
+This work is licensed under the [Creative Commons Attribution-ShareAlike 3.0 Unported License](http://creativecommons.org/licenses/by-sa/3.0/). 
+
+You should have received a copy of the license along with this
+work. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send
+a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
