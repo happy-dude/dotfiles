@@ -14,7 +14,7 @@ Stan's dotfiles
 
 Version controlled dot configuration files for (currently) vim, tmux, and iptables.
 
-Zshell, Xmonad, and Bash configurations will be developed soon.
+zshell, xmonad, and bash configurations will be developed soon.
 
 Hopefully, I make a conscious effort to also make the configurations cross
 platform for Linux, Windows, and OS X.
@@ -120,6 +120,48 @@ then install it:
 Also, if Vim cannot be installed in /usr/bin, you can try to install it locally
 to your user by adding the `--prefix=/usr/local` flag when configuring.
 
+### tmux and Mac OS X
+
+Installing tmux on OS X on using Homebrew (and likely Macports also) would cause
+a message saying `launch_msg("SetUserEnvironment"): Socket is not connected`
+error. According to a
+[StackOverflow](http://stackoverflow.com/questions/10193561/tmux-socket-is-not-connected-error-on-os-x-lion)
+answer, and ChrisJohnsen's
+[tmux-MacOSX-pasteboard](https://github.com/ChrisJohnsen/tmux-MacOSX-pasteboard),
+it seems that OS X's pbcopy and pbpaste "fail to function properly" for
+applicationsthat run on Terminal emulators and have clipboard access (like vim,
+tmux, and screen).
+
+Chris Johnsen's patch should fix this problem. Install his
+reattach-to-user-namespace wrapper/patch using the following command (if you're
+using Homebrew):
+
+    brew install reattach-to-user-namespace
+
+If you are using Macports, execute
+
+    port install tmux-pasteboard
+
+### Vim and Tmux terminal colors
+
+Colored terminal applications, like vim, tmux, and screen, need the proper
+settings enabled to have colored output. These settings usually are found in your
+`zshrc`, `bashrc`, or whatever shell-rc/init file you have.
+
+In those files, the `$TERM` variable should be set to either `xterm-256color` or
+`screen-256color` depending on your environment. Also remember that these settings
+are only meanigful if have the proper `terminfo` files (located in
+/usr/share/terminfo/ directy in Ubuntu-based Linux -- I will check out how is in
+on Arch and OS X on a later date).
+
+Your <shell>rc files should have one of these following settings:
+
+    export TERM='xterm-256color'
+
+or for tmux/screen environments:
+
+    export TERM='screen-256color'
+
 ### Adding plugins and submodules
 
 It's best to add plugins to the repository and let Tim Pope's awesome
@@ -175,7 +217,7 @@ Happy-Dude/dotfiles repository (c) by Stanley Chan
 
 [![Creative Commons License](http://i.creativecommons.org/l/by-sa/3.0/88x31.png)](http://creativecommons.org/licenses/by-sa/3.0/)
 
-This work is licensed under the [Creative Commons Attribution-ShareAlike 3.0 Unported License](http://creativecommons.org/licenses/by-sa/3.0/). 
+This work is licensed under the [Creative Commons Attribution-ShareAlike 3.0 Unported License](http://creativecommons.org/licenses/by-sa/3.0/).
 
 You should have received a copy of the license along with this
 work. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send
