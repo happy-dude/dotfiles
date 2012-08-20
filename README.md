@@ -44,21 +44,42 @@ Or, to get just my files (without the submodules), just execute
 folowed by
 
     cd ~/dotfiles; \
-    git submodule init; \
-    git submodule update;
+    git submodule update --init --recursive;
+
+The --init and --recursive will make sure to initialize nested submodules.
 
 After the repository has been downloaded, you can link the different
 configurations to their proper locations.
 
-### Vim configuration
+### Vim
 
     ln -s ~/dotfiles/vim ~/.vim; \
     ln -s ~/dotfiles/vim/vimrc ~/.vimrc; \
     ln -s ~/dotfiles/vim/gvimrc ~/.gvimrc;
 
-### Tmux configuration
+### Tmux
 
     ln -s ~/dotfiles/tmux/tmux.conf ~/.tmux.conf;
+
+### Zsh
+
+Basically, my zsh configuration happens to be Sorin Ionescu's prezto repository
+(his oh-my-zsh fork). Basically, read his rational and follow the instructions
+in his [README](https://github.com/sorin-ionescu/prezto/blob/master/README.md).
+
+For some reason, his command to copy the zsh runcoms files over to the home
+directory didn't work, so I executed the following:
+
+    ln -s ~/dotfiles/zsh/prezto ~/.oh-my-zsh; \
+    for rcfile in ~/.oh-my-zsh/runcoms/z{shenv,shrc,login,logout}; do \
+        export newrc=$(basename $rcfile); \
+        cp -f $rcfile ~/.$newrc;  \
+    done; \
+    chsh -s /bin/zsh;
+
+Also, if you happen to be running Mac OS X, execute the following:
+
+    sudo chmod ugo-x /usr/libexec/path_helper
 
 ### IPTables configuration
 
@@ -69,12 +90,34 @@ to learn more about the boot process in other distributions to make them work
 right. I'm looking into seeing how it works for Arch Linux.
 
     ln -s ~/dotfiles/iptables /etc/iptables; \
-    ln -s ~/dotfiles/iptables/iptables /etc/init.d/iptables;
-    chmod +x /etc/init.d/iptables
+    ln -s ~/dotfiles/iptables/iptables /etc/init.d/iptables; \
+    chmod +x /etc/init.d/iptables; \
     sudo update-rc.d iptables
 
 Execute the script with `service iptables start`. Again, this so far has only
 been tested on Ubuntu-based distributions.
+
+Updating
+--------
+
+To get new changes into your repository, execute `git fetch`.
+
+To pull those changes in, execute `git pull`.
+
+For the submodules, I do one of two things. The first one is the more correct
+way:
+
+    cd ~/dotfiles; \
+    git submodule update --init --recursive;
+
+I also do this way to manually pull in changes and see what files have changed
+and such:
+
+    git submodule foreach --recursive git checkout master; \
+    git submodule foreach --recursive git pull;
+
+I am not sure which way is the more correct method. If anything, I wish `git
+submodule` commands would give me more information about the new changes.
 
 Notes
 -----
@@ -172,6 +215,21 @@ Since fugitive is already installed with the vim configurations, just add it via
 a submodule by executing `git submodule add <git url> <directory name>` inside
 the `dotfiles` directory. You can also use repositories that are managed by other
 version control systems, but I personally have not experimented with that much.
+
+### Zsh configuration
+
+"My" zsh configuration is simply Sorin Ionescu's
+[prezto](https://github.com/sorin-ionescu/prezto) repository, which is in turn a
+fork of Robby Russell's popular
+[oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh) repository. Basically,
+both are a community-driven configuration of zsh that happens to add a lot of
+useful to the shell environment.
+
+I choose Sorin's fork because he has made extensive changes to the origin Rob
+Russel version that were not merged into the master branch. More of this is
+discussed in [Issue #337](https://github.com/robbyrussell/oh-my-zsh/issues/377)
+in oh-my-zsh's issue tracker. The series of fixes and bugs are highly appreciated
+and thus I settled with his version.
 
 ### IPTables configuration
 
