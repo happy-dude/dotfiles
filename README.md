@@ -70,7 +70,7 @@ in his [README](https://github.com/sorin-ionescu/prezto/blob/master/README.md).
 For some reason, his command to copy the zsh runcoms files over to the home
 directory didn't work, so I executed the following:
 
-    ln -s ~/dotfiles/zsh/prezto ~/.oh-my-zsh; \
+    ln -s ~/dotfiles/zsh/prezto-sorin ~/.oh-my-zsh; \
     for rcfile in ~/.oh-my-zsh/runcoms/z{shenv,shrc,login,logout}; do \
         export newrc=$(basename $rcfile); \
         cp -f $rcfile ~/.$newrc;  \
