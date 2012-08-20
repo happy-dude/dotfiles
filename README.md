@@ -104,8 +104,8 @@ To get new changes into your repository, execute `git fetch`.
 
 To pull those changes in, execute `git pull`.
 
-For the submodules, I do one of two things. The first one is the more correct
-way:
+For the submodules, I do one of two things. I am not sure which is the  more
+correct way, but here they are anyways:
 
     cd ~/dotfiles; \
     git submodule update --init --recursive;
@@ -116,8 +116,14 @@ and such:
     git submodule foreach --recursive git checkout master; \
     git submodule foreach --recursive git pull;
 
-I am not sure which way is the more correct method. If anything, I wish `git
-submodule` commands would give me more information about the new changes.
+Again, I am not sure which way is the more correct method. If anything, I wish
+`git submodule` commands would give me more information about the new changes.
+
+***TIP***
+
+If there are changes inside the submodules, use due dilligence in reading about
+the changes and patches before actually incorporating them into your
+configuration; that got me once or twice...
 
 Notes
 -----
