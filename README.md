@@ -97,6 +97,21 @@ right. I'm looking into seeing how it works for Arch Linux.
 Execute the script with `service iptables start`. Again, this so far has only
 been tested on Ubuntu-based distributions.
 
+Branches
+--------
+
+There are (currently) two branches of this repository, `master` and `osx`. Mac OS X
+users should checkout the osx branch by executing:
+
+    git checkout -b osx origin/osx
+
+Linux users can use the `master` branch without any problems.
+
+### Creating new branches
+
+To add a new branch, use `git branch -b <branch name>`. To add it to the remote
+repository, use `git push origin <branch name>`.
+
 Updating
 --------
 
