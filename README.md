@@ -112,6 +112,14 @@ Linux users can use the `master` branch without any problems.
 To add a new branch, use `git branch -b <branch name>`. To add it to the remote
 repository, use `git push origin <branch name>`.
 
+If this branch were official, you would also need to add a remote url with
+
+    git remote add <branch name> <repository url>
+
+and verify the changes, use
+
+    git remote -v
+
 Updating
 --------
 
