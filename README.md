@@ -46,7 +46,8 @@ folowed by
     cd ~/dotfiles; \
     git submodule update --init --recursive;
 
-The --init and --recursive will make sure to initialize nested submodules.
+The --init flag will initialize the submodule repositories and the --recursive
+flag will make sure that nested submodules are also initialized and updated.
 
 After the repository has been downloaded, you can link the different
 configurations to their proper locations.
@@ -127,20 +128,45 @@ To get new changes into your repository, execute `git fetch`.
 
 To pull those changes in, execute `git pull`.
 
-For the submodules, I do one of two things. I am not sure which is the  more
-correct way, but here they are anyways:
+### Submodules
+
+For the submodules, the proper workflow is to get the repository changes from
+the top-level repository. Execute the following:
 
     cd ~/dotfiles; \
-    git submodule update --init --recursive;
+    git pull; \
+    git submodule update --recursive;
 
-I also do this way to manually pull in changes and see what files have changed
-and such:
+The above commands would grab the contents of the submodule repositories,
+checking out the changes from the commit entry in the `.gitmodules` file.
+
+To further update the submodules beyond what the top-level repository/ branch
+has, go into the repository and issue a git pull to get the changes you want or
+checkout the branches you need, which also modifies the `.gitmodules` file.
+If you wish to incorporate those changes into the top-level branch, go back
+into the top level directory and `commit`.
+
+    cd <submodule directory>; \
+    git pull <branch, commit, rebase, whatever>; \
+    cd ~/dotfiles; \
+    git commit;
+
+If you want to update all the submodules, you can use the following
+commands:
 
     git submodule foreach --recursive git checkout master; \
     git submodule foreach --recursive git pull;
 
-Again, I am not sure which way is the more correct method. If anything, I wish
-`git submodule` commands would give me more information about the new changes.
+Since the changes to the `.gitmodules` are commited, if you want them in
+another computer, just do a `pull` in the top level directory and then
+`update`:
+
+    cd ~/dotfiles; \
+    git pull; \
+    git submodule update --recursive;
+
+There is not a way in Git (yet?) that can do a pull from the top-level
+repository and also update the submodules; you have to do them separately.
 
 ***TIP***
 
