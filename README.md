@@ -141,7 +141,7 @@ The above commands would grab the contents of the submodule repositories,
 checking out the changes from the commit entry in the `.gitmodules` file.
 
 To further update the submodules beyond what the top-level repository/ branch
-has, go into the repository and issue a git pull to get the changes you want or
+has, go into the repository and issue a `pull` to get the changes you want or
 checkout the branches you need, which also modifies the `.gitmodules` file.
 If you wish to incorporate those changes into the top-level branch, go back
 into the top level directory and `commit`.
