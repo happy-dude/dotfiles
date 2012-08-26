@@ -79,3 +79,9 @@
 [submodule "zsh/prezto-sorin"]
 	path = zsh/prezto-sorin
 	url = https://github.com/sorin-ionescu/prezto.git
+[submodule "themes/solarized_theme-altercation"]
+	path = themes/solarized_theme-altercation
+	url = http://github.com/altercation/solarized.git
+[submodule "themes/tomorrow_theme-chriskempson"]
+	path = themes/tomorrow_theme-chriskempson
+	url = http://github.com/chriskempson/tomorrow-theme.git
