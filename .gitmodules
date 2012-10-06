@@ -85,3 +85,6 @@
 [submodule "themes/tomorrow_theme-chriskempson"]
 	path = themes/tomorrow_theme-chriskempson
 	url = http://github.com/chriskempson/tomorrow-theme.git
+[submodule "grml-etc-core"]
+	path = grml-etc-core
+	url = https://github.com/grml/grml-etc-core.git
