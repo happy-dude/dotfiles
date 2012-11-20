@@ -8,6 +8,11 @@
 *.netrwhist
 *~
 
+# Ignore xmonad compiled files and executables
+*.hi
+*.errors
+xmonad-x86*
+
 # Recommended rules from https://help.github.com/articles/ignoring-files
 # Compiled source #
 ###################
