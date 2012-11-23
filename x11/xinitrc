@@ -1,0 +1,26 @@
+#! /bin/sh
+
+# Start a urxvt daemon
+# With urxvt client launched from xmonad, attach to it
+/usr/bin/urxvtd -q -f -o &
+
+# Set some basic xorg settings
+xsetroot -cursor_name left_ptr
+setxkbmap -layout us -variant colemak
+
+# Start several background programs
+#{ sleep 2; /usr/bin/dropboxd; } &
+#{ sleep 10; /usr/bin/droidcam; } &
+#{ sleep 2; /usr/bin/pavucontrol; } &
+#{ sleep 10; /usr/bin/pasystray; } &
+#{ sleep 2; /usr/bin/skype; } &
+#{ sleep 10; /usr/bin/specto; } &
+#{ sleep 2; /usr/bin/clipit; } &
+#{ sleep 2; /usr/bin/remmina; } &
+#{ sleep 10; /usr/bin/pidgin; } &
+#{ sleep 10; /usr/bin/googsystray; } &
+#{ sleep 2; /usr/bin/krusader; } &
+#{ sleep 10; /usr/bin/weechat-curses; } &
+
+# Window manager should always be the last thing run
+xmonad
