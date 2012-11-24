@@ -26,27 +26,6 @@ import XMonad.Layout.NoBorders
 import XMonad.Util.Run(spawnPipe)
 import XMonad.Util.WorkspaceCompare
 
-myLogHook :: X ()
-myLogHook = fadeInactiveLogHook fadeAmount where fadeAmount = 0.92
-
-myWorkspaces = withScreens 1 [ "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
-
-gsconfig1 = defaultGSConfig { gs_cellheight = 45, gs_cellwidth = 250 }
-
-myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $ [
-    ] ++
-    [ ((m .|. modm, k), windows $ onCurrentScreen f i)
-         | (i, k) <- zip (workspaces' conf) [xK_1 .. xK_9]
-         , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]]
-    ++
-    [((modm .|. mask, key), f sc)
-     | (key, sc) <- zip [xK_w, xK_e, xK_s, xK_d] [0..]
-     , (f, mask) <- [(viewScreen, 0), (sendToScreen, shiftMask)]]
-    ++
-    [((mod4Mask, xK_Tab), goToSelected $ gsconfig1)]
-
-myTerminal = "~/dotfiles/xmonad/urxvtdc.sh"
-
 main = do
     --trayerKill <- spawnPipe "pkill trayer"
     xmproc <- spawnPipe "/usr/bin/xmobar ~/.xmobarrc"
@@ -70,4 +49,25 @@ main = do
         , workspaces = myWorkspaces
         , keys = \c -> myKeys c `M.union` keys defaultConfig c
     }
+
+myLogHook :: X ()
+myLogHook = fadeInactiveLogHook fadeAmount where fadeAmount = 0.92
+
+myWorkspaces = withScreens 1 [ "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
+
+myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $ [
+    ] ++
+    [ ((m .|. modm, k), windows $ onCurrentScreen f i)
+         | (i, k) <- zip (workspaces' conf) [xK_1 .. xK_9]
+         , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]]
+    ++
+    [((modm .|. mask, key), f sc)
+     | (key, sc) <- zip [xK_w, xK_e, xK_s, xK_d] [0..]
+     , (f, mask) <- [(viewScreen, 0), (sendToScreen, shiftMask)]]
+    ++
+    [((mod4Mask, xK_Tab), goToSelected $ gsconfig1)]
+
+myTerminal = "~/dotfiles/xmonad/urxvtdc.sh"
+
+gsconfig1 = defaultGSConfig { gs_cellheight = 45, gs_cellwidth = 250 }
 
