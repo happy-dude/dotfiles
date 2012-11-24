@@ -22,11 +22,12 @@ import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.FadeInactive
 import XMonad.Hooks.ManageDocks
 import XMonad.Layout.IndependentScreens
+import XMonad.Layout.NoBorders
 import XMonad.Util.Run(spawnPipe)
 import XMonad.Util.WorkspaceCompare
 
 myLogHook :: X ()
-myLogHook = fadeInactiveLogHook fadeAmount where fadeAmount = 0.925
+myLogHook = fadeInactiveLogHook fadeAmount where fadeAmount = 0.92
 
 myWorkspaces = withScreens 1 [ "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
 
@@ -52,7 +53,7 @@ main = do
     trayerProc <- spawnPipe "pkill trayer; trayer --edge top --align right --SetDockType true --SetPartialStrut true --widthtype percent --width 10 --heighttype pixel --height 18 --transparent true --alpha 0 --tint 0x000000 --padding 0"
     xmonad $ defaultConfig
         { manageHook = manageDocks <+> manageHook defaultConfig
-        , layoutHook = avoidStruts $ layoutHook defaultConfig
+        , layoutHook = avoidStruts $ smartBorders $ layoutHook defaultConfig
         , logHook = myLogHook <+> dynamicLogWithPP xmobarPP
                 { ppOutput = hPutStrLn xmproc
                 , ppTitle = xmobarColor "green" "" . shorten 50
@@ -64,6 +65,7 @@ main = do
         , borderWidth = 1
         , normalBorderColor = "#0088ff"
         , focusedBorderColor = "ff0000"
+        , modMask = mod4Mask
         , terminal = myTerminal
         , workspaces = myWorkspaces
         , keys = \c -> myKeys c `M.union` keys defaultConfig c
