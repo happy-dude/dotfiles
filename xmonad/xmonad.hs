@@ -42,7 +42,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $ [
      | (key, sc) <- zip [xK_w, xK_e, xK_s, xK_d] [0..]
      , (f, mask) <- [(viewScreen, 0), (sendToScreen, shiftMask)]]
     ++
-    [((mod4Mask, xK_space), goToSelected $ gsconfig1)]
+    [((mod4Mask, xK_Tab), goToSelected $ gsconfig1)]
 
 myTerminal = "~/dotfiles/xmonad/urxvtdc.sh"
 
