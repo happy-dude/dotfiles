@@ -1,5 +1,10 @@
 #! /bin/sh
 
+# D-Bus
+if which dbus-launch > /dev/null && test -z "$DBUS_SESSION_BUS_ADDRESS"; then
+    eval "$(dbus-launch --sh-syntax  --exit-with-session)"
+fi
+
 # Start a urxvt daemon
 # With urxvt client launched from xmonad, attach to it
 /usr/bin/urxvtd -q -f -o &
@@ -14,6 +19,7 @@ setxkbmap -layout us -variant colemak
 
 # Start several background programs
 sh ~/.fehbg &
+xmodmap ~/.Xmodmap &
 { sleep 2; /usr/bin/dropboxd; } &
 #{ sleep 2; /usr/bin/skype; } &
 
