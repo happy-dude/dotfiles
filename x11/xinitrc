@@ -5,15 +5,21 @@
 /usr/bin/urxvtd -q -f -o &
 
 # Set some basic xorg settings
+xcompmgr &
 xsetroot -cursor_name left_ptr
 setxkbmap -layout us -variant colemak
 
+# Load Solarized Xresources
+[[ -f ~/.Xresources ]] && xrdb -merge ~/.Xresources &
+
 # Start several background programs
-#{ sleep 2; /usr/bin/dropboxd; } &
+sh ~/.fehbg &
+{ sleep 2; /usr/bin/dropboxd; } &
+#{ sleep 2; /usr/bin/skype; } &
+
 #{ sleep 10; /usr/bin/droidcam; } &
 #{ sleep 2; /usr/bin/pavucontrol; } &
 #{ sleep 10; /usr/bin/pasystray; } &
-#{ sleep 2; /usr/bin/skype; } &
 #{ sleep 10; /usr/bin/specto; } &
 #{ sleep 2; /usr/bin/clipit; } &
 #{ sleep 2; /usr/bin/remmina; } &
@@ -23,4 +29,4 @@ setxkbmap -layout us -variant colemak
 #{ sleep 10; /usr/bin/weechat-curses; } &
 
 # Window manager should always be the last thing run
-xmonad
+exec xmonad

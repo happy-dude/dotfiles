@@ -19,37 +19,18 @@ import XMonad.Actions.GridSelect
 import XMonad.Actions.PhysicalScreens
 import XMonad.Actions.UpdatePointer
 import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.FadeInactive
 import XMonad.Hooks.ManageDocks
 import XMonad.Layout.IndependentScreens
 import XMonad.Util.Run(spawnPipe)
 import XMonad.Util.WorkspaceCompare
 
+myLogHook :: X ()
+myLogHook = fadeInactiveLogHook fadeAmount where fadeAmount = 0.925
+
+myWorkspaces = withScreens 1 [ "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
+
 gsconfig1 = defaultGSConfig { gs_cellheight = 45, gs_cellwidth = 250 }
-
-main = do
-    trayerKill <- spawnPipe "pkill trayer"
-    xmproc <- spawnPipe "/usr/bin/xmobar ~/.xmobarrc"
-    trayerProc <- spawnPipe "trayer --edge top --align right --SetDockType true --SetPartialStrut true --widthtype percent --width 10 --heighttype pixel --height 18 --transparent true --alpha 1000 --tint 0x000000 --padding 0"
-    xmonad $ defaultConfig
-        { terminal = myTerminal
-        , manageHook = manageDocks <+> manageHook defaultConfig
-        , layoutHook = avoidStruts $ layoutHook defaultConfig
-        , logHook = dynamicLogWithPP xmobarPP
-                { ppOutput = hPutStrLn xmproc
-                , ppTitle = xmobarColor "green" "" . shorten 50
-                , ppSort = getSortByTag
-                } >> updatePointer (TowardsCentre 0.2 0.2)
-        , focusFollowsMouse = True
-        --, normalBorderColor = "#D1D1D1"
-        --, focusedBorderColor = "#856042"
-        , borderWidth = 2
-        , normalBorderColor = "#0088ff"
-        , focusedBorderColor = "ff0000"
-        , workspaces = myWorkspaces
-        , keys = \c -> myKeys c `M.union` keys defaultConfig c
-    }
-
-myWorkspaces = withScreens 1 [ "1", "2", "3", "4" ]
 
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $ [
     ] ++
@@ -64,3 +45,27 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $ [
     [((mod4Mask, xK_space), goToSelected $ gsconfig1)]
 
 myTerminal = "~/dotfiles/xmonad/urxvtdc.sh"
+
+main = do
+    --trayerKill <- spawnPipe "pkill trayer"
+    xmproc <- spawnPipe "/usr/bin/xmobar ~/.xmobarrc"
+    trayerProc <- spawnPipe "pkill trayer; trayer --edge top --align right --SetDockType true --SetPartialStrut true --widthtype percent --width 10 --heighttype pixel --height 18 --transparent true --alpha 0 --tint 0x000000 --padding 0"
+    xmonad $ defaultConfig
+        { manageHook = manageDocks <+> manageHook defaultConfig
+        , layoutHook = avoidStruts $ layoutHook defaultConfig
+        , logHook = myLogHook <+> dynamicLogWithPP xmobarPP
+                { ppOutput = hPutStrLn xmproc
+                , ppTitle = xmobarColor "green" "" . shorten 50
+                , ppSort = getSortByTag
+                } >> updatePointer (TowardsCentre 0.2 0.2)
+        , focusFollowsMouse = True
+        --, normalBorderColor = "#D1D1D1"
+        --, focusedBorderColor = "#856042"
+        , borderWidth = 1
+        , normalBorderColor = "#0088ff"
+        , focusedBorderColor = "ff0000"
+        , terminal = myTerminal
+        , workspaces = myWorkspaces
+        , keys = \c -> myKeys c `M.union` keys defaultConfig c
+    }
+
