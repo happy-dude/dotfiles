@@ -13,6 +13,7 @@ fi
 xcompmgr &
 xsetroot -cursor_name left_ptr
 setxkbmap -layout us -variant colemak
+setxkbmap -option "" -layout "us(colemak),us,us(dvorak)" -option grp:alt_space_toggle
 
 # Load Solarized Xresources
 [[ -f ~/.Xresources ]] && xrdb -merge ~/.Xresources &

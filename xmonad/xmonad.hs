@@ -39,11 +39,11 @@ main = do
                 , ppSort = getSortByTag
                 } >> updatePointer (TowardsCentre 0.2 0.2)
         , focusFollowsMouse = True
-        --, normalBorderColor = "#D1D1D1"
-        --, focusedBorderColor = "#856042"
         , borderWidth = 1
         , normalBorderColor = "#0088ff"
         , focusedBorderColor = "ff0000"
+        --, normalBorderColor = "#D1D1D1"
+        --, focusedBorderColor = "#856042"
         , modMask = mod4Mask
         , terminal = myTerminal
         , workspaces = myWorkspaces

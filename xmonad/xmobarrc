@@ -1,11 +1,9 @@
 Config {
         font = "-misc-dejavu sans mono-medium-r-normal-*-10-120-100-100-m-0-iso10646-1"
        , position = TopSize L 90 18
-       , commands = [ Run Network "eth0" ["-L","0","-H","32","--normal","green","--high","red"] 10
-                   , Run Wireless "wlan0" ["-L","0","-H","32","--normal","green","--high","red"] 10
-                   , Run MultiCpu ["-t","<total0>% <total1>%"] 10
-                   , Run Memory ["-t","Mem: <usedratio>%"] 10
-                   , Run Swap [] 10
+       , commands = [ Run CoreTemp ["-t", "Temp: <core0> <core1>C",
+                                "-L", "40", "-H", "65",
+                                "-l", "lightblue", "-n"   , "gray90", "-h", "red"] 50
                    , Run BatteryP ["BAT0"]
                                 ["-t", "<left>% <acstatus> ",
                                 "-L", "10", "-H", "80", "-p", "3",
@@ -13,13 +11,14 @@ Config {
                                 "-L", "-15", "-H", "-5",
                                 "-l", "red", "-m", "blue", "-h", "green"]
                                 180
+                   , Run MultiCpu ["-t","<total0>% <total1>%"] 10
+                   , Run Memory ["-t","Mem: <usedratio>%"] 10
+                   , Run Swap [] 10
+                   , Run Wireless "wlan0" ["-L","0","-H","32","--normal","green","--high","red"] 10
+                   , Run Network "eth0" ["-L","0","-H","32","--normal","green","--high","red"] 10
                    , Run Date "%H:%M:%S %a %_d %b %Y" "date" 10
-                   , Run CoreTemp ["-t", "Temp: <core0> <core1>C",
-                                "-L", "40", "-H", "65",
-                                "-l", "lightblue", "-n"   , "gray90", "-h", "red"] 50
-                   -- , Run Kbd [("ru", "RU"), ("us", "US")]
+                   , Run Kbd [("us(colemak)", "CO"), ("us(dvorak)", "DV"), ("us", "US")]
                    , Run StdinReader
                    ]
-                   , template = "%StdinReader% }{ %multicpu% | %battery% | %coretemp% | %memory% | %swap% | %wlan0wi% | %eth0% | <fc=#ee9a00>%date%</fc>"
-                   --, template = "%StdinReader% }{ %multicpu% | %coretemp% | %memory% | %swap% | %eth0% | %kbd% | <fc=#ee9a00>%date%</fc>"
+                   , template = "%StdinReader% }{ %multicpu% | %coretemp% | %memory% | %swap% | %wlan0wi% | %eth0% | %battery% | %kbd% | <fc=#ee9a00>%date%</fc>"
       }
