@@ -12,7 +12,7 @@ Config {
                                 "--", "-O", "<fc=green>Charging</fc>", "-o", "<fc=red>Discharging</fc>",
                                 "-L", "-15", "-H", "-5",
                                 "-l", "red", "-m", "blue", "-h", "green"]
-                                720
+                                180
                    , Run Date "%H:%M:%S %a %_d %b %Y" "date" 10
                    , Run CoreTemp ["-t", "Temp: <core0> <core1>C",
                                 "-L", "40", "-H", "65",
