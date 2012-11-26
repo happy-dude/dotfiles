@@ -68,7 +68,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $ [
     -- Enable grid select with mod-tab
     [((mod4Mask, xK_Tab), goToSelected $ gsconfig1)]
     ++
-    -- Use scrot for printscreen snapshot
+    -- Use scrot for printscreen snapshot of single window and desktop
     [((controlMask, xK_Print), spawn "sleep 0.2; scrot -s")
      , ((0, xK_Print), spawn "scrot")]
     ++
