@@ -39,7 +39,7 @@ main = do
                 , ppSort = getSortByTag
                 } >> updatePointer (TowardsCentre 0.2 0.2)
         , focusFollowsMouse = True
-        , borderWidth = 1
+        , borderWidth = 2
         , normalBorderColor = "#0088ff"
         , focusedBorderColor = "ff0000"
         --, normalBorderColor = "#D1D1D1"
