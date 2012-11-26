@@ -65,7 +65,15 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $ [
      | (key, sc) <- zip [xK_w, xK_e, xK_s, xK_d] [0..]
      , (f, mask) <- [(viewScreen, 0), (sendToScreen, shiftMask)]]
     ++
+    -- Enable grid select with mod-tab
     [((mod4Mask, xK_Tab), goToSelected $ gsconfig1)]
+    ++
+    -- Use scrot for printscreen snapshot
+    [((controlMask, xK_Print), spawn "sleep 0.2; scrot -s")
+     , ((0, xK_Print), spawn "scrot")]
+    ++
+    -- Lock screen with xlockmore
+    [((mod4Mask .|. shiftMask, xK_l), spawn "xlock -mode blank")]
 
 myTerminal = "~/dotfiles/xmonad/urxvtdc.sh"
 
