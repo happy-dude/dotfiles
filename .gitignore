@@ -16,6 +16,7 @@ xmonad-x86*
 # Recommended rules from https://help.github.com/articles/ignoring-files
 # Compiled source #
 ###################
+core
 *.com
 *.class
 *.dll
