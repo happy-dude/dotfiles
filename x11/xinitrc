@@ -22,6 +22,7 @@ setxkbmap -option "" -layout "us(colemak),us,us(dvorak)" -option grp:alt_space_t
 sh ~/.fehbg &
 xmodmap ~/.Xmodmap &
 { sleep 2; /usr/bin/dropboxd; } &
+{ sleep 2; /usr/bin/xflux -z 11229; } &
 #{ sleep 2; /usr/bin/skype; } &
 
 #{ sleep 10; /usr/bin/droidcam; } &
