@@ -15,15 +15,17 @@ import qualified Data.Map as M
 import qualified XMonad.StackSet as W
 import System.IO
 import XMonad
-import XMonad.Actions.GridSelect
-import XMonad.Actions.PhysicalScreens
-import XMonad.Actions.UpdatePointer
-import XMonad.Hooks.DynamicLog
-import XMonad.Hooks.FadeInactive
-import XMonad.Hooks.ManageDocks
-import XMonad.Layout.IndependentScreens
-import XMonad.Layout.NoBorders
-import XMonad.Util.Run(spawnPipe)
+import XMonad.Actions.CycleWindows      -- Window cycling with Alt+Tab
+import XMonad.Actions.CycleWS           -- Workspace cycling
+import XMonad.Actions.GridSelect        -- Display open windows in 2D grid
+import XMonad.Actions.PhysicalScreens   -- Manipulate screens ordered by location instead of ID
+import XMonad.Actions.UpdatePointer     -- Change pointer to follow whichever window focus changes to
+import XMonad.Hooks.DynamicLog          -- Call loghook with every internal state update
+import XMonad.Hooks.FadeInactive        -- Make inactive windows translucent
+import XMonad.Hooks.ManageDocks         -- Tools to automatically manage dock programs, such as xmobar and dzen
+import XMonad.Layout.IndependentScreens -- Simulate independent sets of workspaces on each screen
+import XMonad.Layout.NoBorders          -- Make a given layout display without borders
+import XMonad.Util.Run(spawnPipe)       -- Run commands as external processes
 import XMonad.Util.WorkspaceCompare
 
 main = do
@@ -55,25 +57,41 @@ myLogHook = fadeInactiveLogHook fadeAmount where fadeAmount = 0.92
 
 myWorkspaces = withScreens 1 [ "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
 
-myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $ [
+myKeys conf@(XConfig {XMonad.modMask = modM}) = M.fromList $ [
     ] ++
-    [ ((m .|. modm, k), windows $ onCurrentScreen f i)
+    [((m .|. modM, k), windows $ onCurrentScreen f i)
          | (i, k) <- zip (workspaces' conf) [xK_1 .. xK_9]
          , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]]
     ++
-    [((modm .|. mask, key), f sc)
+    [((modM .|. mask, key), f sc)
      | (key, sc) <- zip [xK_w, xK_e, xK_s, xK_d] [0..]
      , (f, mask) <- [(viewScreen, 0), (sendToScreen, shiftMask)]]
     ++
-    -- Enable grid select with mod-tab
-    [((mod4Mask, xK_Tab), goToSelected $ gsconfig1)]
+    -- Enable grid select with Mod+<Grave> -- the backtick
+    [((modM, xK_grave), goToSelected $ gsconfig1)]
     ++
-    -- Use scrot for printscreen snapshot of single window and desktop
-    [((controlMask, xK_Print), spawn "sleep 0.2; scrot -s")
-     , ((0, xK_Print), spawn "scrot")]
+    -- Use scrot for printscreen snapshot of desktop and single window
+    [((0, xK_Print), spawn "scrot")
+     , ((controlMask, xK_Print), spawn "sleep 0.2; scrot -s")]
     ++
-    -- Lock screen with xlockmore
-    [((mod4Mask .|. shiftMask, xK_l), spawn "xlock -mode blank")]
+    -- Lock screen with xlockmore with Mod+<Shift>+L
+    [((modM .|. shiftMask, xK_l), spawn "xlock -mode blank")]
+    ++
+    -- Use Mod+<Right/Left> arrow keys to move workspaces
+    -- Also use Mod+<Shift>+<Right/Left> to move windows to workspace to left/right
+    [((modM, xK_Left), prevWS)
+     , ((modM, xK_Right), nextWS)
+     , ((modM .|. shiftMask, xK_Left), shiftToPrev)
+     , ((modM .|. shiftMask, xK_Right), shiftToNext)]
+    ++
+    -- Use volume media buttons to raise/lower volume and mute sound
+    [((0, 0x1008FF11), spawn "amixer set Master 1-")        -- Volume Down
+     , ((0, 0x1008FF13), spawn "amixer set Master 1+")      -- Volume Up
+     , ((0, 0x1008FF12), spawn "amixer set Master toggle")] -- Mute
+    ++
+    -- Mimic Alt-Tab focus switching behavior; don't know how to mimic Alt-Shift-Tab completely just yet...
+    [((mod1Mask, xK_Tab), cycleRecentWindows [xK_Alt_L] xK_Tab xK_Tab)
+     , ((mod1Mask .|. shiftMask, xK_Tab), rotFocusedDown)]
 
 myTerminal = "~/dotfiles/xmonad/urxvtdc.sh"
 
