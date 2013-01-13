@@ -15,7 +15,7 @@ iptables -A OUTPUT -o lo -j ACCEPT
 
 # Allow connections with a valid state
 iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT      # Allow connections that we established
-iptables -A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT     # and potentially new (but already permitted)
+iptables -A OUTPUT -m conntrack --ctstate NEW,RELATED,ESTABLISHED -j ACCEPT # and potentially new (but already permitted)
 iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT    # Forward all legitimate response to forwarded traffic
 iptables -A FORWARD -i eth0 -o ppp0 -j ACCEPT                               # Forward point-to-point connections
 iptables -A FORWARD -i ppp0 -o eth0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT    # Allow new/already established point-to-point connections
