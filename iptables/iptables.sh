@@ -28,9 +28,6 @@ iptables -A INPUT -p icmp -m icmp --icmp-type 8 -m limit --limit 1/sec -j ACCEPT
 iptables -A INPUT -p icmp -m icmp --icmp-type 11 -j ACCEPT   # ICMP Time Exceeded inbound
 iptables -A OUTPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT   # ICMP Echo Request outbound
 
-# Allow DHCP
-iptables -A INPUT -i eth0 -p udp -m udp --sport 67 -j DROP
-
 # TCP Filter
 iptables -N tcpfilter
 iptables -A INPUT -p tcp -j tcpfilter
@@ -43,12 +40,13 @@ iptables -A tcpfilter -p tcp -m tcp --tcp-flags FIN,SYN FIN,SYN -j DROP
 
 # PREROUTING
 iptables -N PREROUTING
-iptables -A PREROUTING -d 10.0.0stio.1/32 -i eth0 -p tcp -m tcp --dport 25 -j DNAT --to-destination 192.168.1.254
-iptables -A PREROUTING -d 10.0.0.1/32 -i eth0 -p tcp -m tcp --dport 110 -j DNAT --to-destination 192.168.10.254
-iptables -A PREROUTING -d 10.0.0.1/32 -i eth0 -p tcp -m tcp --dport 444 -j DNAT --to-destination 192.168.10.254:443
-iptables -A PREROUTING -d 10.0.0.1/32 -i eth0 -p tcp -m tcp --dport 80 -j DNAT --to-destination 192.168.10.253
-iptables -A POSTROUTING -s 192.168.1.0/24 -o eth0 -j SNAT --to-source 10.0.0.1
-iptables -A POSTROUTING -o eth0 -j MASQUERADE
+iptables -N POSTROUTING
+iptables -A PREROUTING -d 10.0.0.1/32 -p tcp -m tcp --dport 25 -j DNAT --to-destination 192.168.1.254
+iptables -A PREROUTING -d 10.0.0.1/32 -p tcp -m tcp --dport 110 -j DNAT --to-destination 192.168.10.254
+iptables -A PREROUTING -d 10.0.0.1/32 -p tcp -m tcp --dport 444 -j DNAT --to-destination 192.168.10.254:443
+iptables -A PREROUTING -d 10.0.0.1/32 -p tcp -m tcp --dport 80 -j DNAT --to-destination 192.168.10.253
+iptables -A POSTROUTING -s 192.168.1.0/24 -j SNAT --to-source 10.0.0.1
+iptables -A POSTROUTING -j MASQUERADE
 
 # Filter IRC traffic
 iptables -A INPUT -p tcp -m tcp --dport 194 -j DROP     # IRC
