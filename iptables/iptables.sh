@@ -38,15 +38,13 @@ iptables -A tcpfilter -p tcp -m tcp --tcp-flags FIN,SYN,RST,PSH,ACK,URG NONE -j 
 iptables -A tcpfilter -p tcp -m tcp --tcp-flags SYN,RST SYN,RST -j DROP
 iptables -A tcpfilter -p tcp -m tcp --tcp-flags FIN,SYN FIN,SYN -j DROP
 
-# PREROUTING
-iptables -N PREROUTING
-iptables -N POSTROUTING
-iptables -A PREROUTING -d 10.0.0.1/32 -p tcp -m tcp --dport 25 -j DNAT --to-destination 192.168.1.254
-iptables -A PREROUTING -d 10.0.0.1/32 -p tcp -m tcp --dport 110 -j DNAT --to-destination 192.168.10.254
-iptables -A PREROUTING -d 10.0.0.1/32 -p tcp -m tcp --dport 444 -j DNAT --to-destination 192.168.10.254:443
-iptables -A PREROUTING -d 10.0.0.1/32 -p tcp -m tcp --dport 80 -j DNAT --to-destination 192.168.10.253
-iptables -A POSTROUTING -s 192.168.1.0/24 -j SNAT --to-source 10.0.0.1
-iptables -A POSTROUTING -j MASQUERADE
+# PREROUTING and POSTROUTING with NAT
+iptables -t nat -A PREROUTING -d 10.0.0.1/32 -p tcp -m tcp --dport 25 -j DNAT --to-destination 192.168.1.254
+iptables -t nat -A PREROUTING -d 10.0.0.1/32 -p tcp -m tcp --dport 80 -j DNAT --to-destination 192.168.10.253
+iptables -t nat -A PREROUTING -d 10.0.0.1/32 -p tcp -m tcp --dport 110 -j DNAT --to-destination 192.168.10.254
+iptables -t nat -A PREROUTING -d 10.0.0.1/32 -p tcp -m tcp --dport 444 -j DNAT --to-destination 192.168.10.254:443
+iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -j SNAT --to-source 10.0.0.1
+iptables -t nat -A POSTROUTING -j MASQUERADE
 
 # Filter IRC traffic
 iptables -A INPUT -p tcp -m tcp --dport 194 -j DROP     # IRC
