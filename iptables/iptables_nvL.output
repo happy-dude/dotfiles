@@ -1,9 +1,13 @@
 Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
  pkts bytes target     prot opt in     out     source               destination         
-    0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0            icmptype 3
+   27  6480 ACCEPT     all  --  lo     *       0.0.0.0/0            0.0.0.0/0            ctstate NEW
+    0     0 ACCEPT     all  --  lo     *       0.0.0.0/0            0.0.0.0/0           
+  190 59382 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
     0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0            icmptype 0
-    0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0            icmptype 8
     0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0            icmptype 3
+    1    28 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0            icmptype 8 limit: avg 1/sec burst 5
+    0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0            icmptype 11
+  187  9241 tcpfilter  tcp  --  *      *       0.0.0.0/0            0.0.0.0/0           
     0     0 DROP       tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:194
     0     0 DROP       udp  --  *      *       0.0.0.0/0            0.0.0.0/0            udp dpt:194
     0     0 DROP       tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:529
@@ -12,50 +16,31 @@ Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
     0     0 DROP       udp  --  *      *       0.0.0.0/0            0.0.0.0/0            udp dpt:994
     0     0 DROP       tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:6667
     0     0 DROP       udp  --  *      *       0.0.0.0/0            0.0.0.0/0            udp dpt:6667
-    0     0 DROP       all  --  eth0   *       10.220.232.0/24      0.0.0.0/0           
-    0     0 DROP       all  --  eth0   *       10.220.231.236       0.0.0.0/0           
-    2   283 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
-    0     0 ACCEPT     all  --  lo     *       0.0.0.0/0            0.0.0.0/0            ctstate NEW
-    0     0 DROP       tcp  --  eth0   *       0.0.0.0/0            0.0.0.0/0            tcp flags:0x17/0x02
-    0     0 DROP       tcp  --  eth0   *       0.0.0.0/0            0.0.0.0/0            tcp dpt:0
-    0     0 DROP       tcp  --  eth0   *       0.0.0.0/0            0.0.0.0/0            tcp dpt:1
-    0     0 DROP       udp  --  eth0   *       0.0.0.0/0            0.0.0.0/0            udp dpt:0
-    0     0 DROP       udp  --  eth0   *       0.0.0.0/0            0.0.0.0/0            udp dpt:1
-  120 18355 DROP       all  --  *      *       0.0.0.0/0            0.0.0.0/0           
-    0     0 tcpfilter  tcp  --  *      *       0.0.0.0/0            0.0.0.0/0           
-    0     0 ACCEPT     all  --  lo     *       0.0.0.0/0            0.0.0.0/0           
-    0     0 ACCEPT     all  --  -s     *       0.0.0.0/0            0.0.0.0/0           
-    0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0            icmptype 0
-    0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0            icmptype 3
-    0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0            icmptype 11
-    0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0            icmptype 8 limit: avg 1/sec burst 5
-    0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0            icmptype 3
-    0     0 DROP       udp  --  eth0   *       0.0.0.0/0            0.0.0.0/0            udp spt:67
-    0     0 DROP       tcp  --  *      *       0.0.0.0/0            0.0.0.0/0           
+  145  7512 DROP       tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp flags:0x17/0x02
+    0     0 DROP       tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:0
+    0     0 DROP       udp  --  *      *       0.0.0.0/0            0.0.0.0/0            udp dpt:0
+    0     0 DROP       tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:1
+    0     0 DROP       udp  --  *      *       0.0.0.0/0            0.0.0.0/0            udp dpt:1
+  158 15269 DROP       all  --  *      *       0.0.0.0/0            0.0.0.0/0           
 
 Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
  pkts bytes target     prot opt in     out     source               destination         
-    0     0 DROP       all  --  eth0   *       10.220.232.0/24      10.0.0.1            
-    0     0 DROP       all  --  eth0   *       10.220.231.236       0.0.0.0/0           
     0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
-    0     0 ACCEPT     all  --  -o     *       0.0.0.0/0            0.0.0.0/0           
-    0     0 ACCEPT     all  --  ppp0   eth0    0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
-    0     0 ACCEPT     all  --  eth0   ppp0    0.0.0.0/0            0.0.0.0/0           
+    0     0 ACCEPT     all  --  *      ppp0    0.0.0.0/0            0.0.0.0/0           
+    0     0 ACCEPT     all  --  ppp0   *       0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
     0     0 DROP       all  --  *      *       0.0.0.0/0            0.0.0.0/0           
-    0     0 ACCEPT     all  --  -o     *       0.0.0.0/0            0.0.0.0/0           
 
-Chain OUTPUT (policy ACCEPT 2 packets, 358 bytes)
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
  pkts bytes target     prot opt in     out     source               destination         
-    0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0            icmptype 8
-    1   336 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
-    0     0 ACCEPT     all  --  *      lo      0.0.0.0/0            0.0.0.0/0            ctstate NEW
+   27  6480 ACCEPT     all  --  *      lo      0.0.0.0/0            0.0.0.0/0            ctstate NEW
     0     0 ACCEPT     all  --  *      lo      0.0.0.0/0            0.0.0.0/0           
-    0     0 ACCEPT     all  --  *      -d      0.0.0.0/0            0.0.0.0/0           
+  232 65172 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            ctstate NEW,RELATED,ESTABLISHED
     0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0            icmptype 8
+    0     0 DROP       all  --  *      *       0.0.0.0/0            0.0.0.0/0           
 
 Chain tcpfilter (1 references)
  pkts bytes target     prot opt in     out     source               destination         
-    0     0 DROP       tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp flags:!0x17/0x02 ctstate NEW
+    1    89 DROP       tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp flags:!0x17/0x02 ctstate NEW
     0     0 DROP       tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp flags:0x3F/0x29
     0     0 DROP       tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp flags:0x3F/0x3F
     0     0 DROP       tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp flags:0x3F/0x00

@@ -1,0 +1,35 @@
+Chain INPUT (policy DROP)
+target     prot opt source               destination         
+DROP       udp      anywhere             anywhere            
+DROP       tcp      anywhere             anywhere             tcp flags:FIN,SYN,RST,ACK/SYN
+DROP       all      anywhere             anywhere             rt type:0 segsleft:0
+ACCEPT     all      anywhere             anywhere            
+ACCEPT     all      anywhere             anywhere             ctstate RELATED,ESTABLISHED
+ACCEPT     all      anywhere             anywhere            
+ACCEPT     all      fe80::/10            anywhere            
+ACCEPT     all      anywhere             ff00::/8            
+
+Chain FORWARD (policy DROP)
+target     prot opt source               destination         
+DROP       udp      anywhere             anywhere            
+DROP       tcp      anywhere             anywhere             tcp flags:FIN,SYN,RST,ACK/SYN
+DROP       all      anywhere             anywhere             rt type:0 segsleft:0
+ACCEPT     all      anywhere             anywhere             ctstate RELATED,ESTABLISHED
+
+Chain OUTPUT (policy DROP)
+target     prot opt source               destination         
+DROP       all      anywhere             anywhere             rt type:0 segsleft:0
+ACCEPT     all      anywhere             anywhere            
+ACCEPT     all      anywhere             anywhere            
+ACCEPT     all      anywhere             anywhere            
+ACCEPT     all      fe80::/10            anywhere            
+ACCEPT     all      anywhere             ff00::/8            
+
+Chain AllowICMPs (0 references)
+target     prot opt source               destination         
+ACCEPT     ipv6-icmp    anywhere             anywhere             ipv6-icmp destination-unreachable
+ACCEPT     ipv6-icmp    anywhere             anywhere             ipv6-icmp packet-too-big
+ACCEPT     ipv6-icmp    anywhere             anywhere             ipv6-icmp time-exceeded
+ACCEPT     ipv6-icmp    anywhere             anywhere             ipv6-icmp parameter-problem
+ACCEPT     ipv6-icmp    anywhere             anywhere             ipv6-icmp echo-request limit: avg 5/sec burst 10
+ACCEPT     ipv6-icmp    anywhere             anywhere             ipv6-icmp echo-reply

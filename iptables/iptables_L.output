@@ -1,9 +1,13 @@
 Chain INPUT (policy ACCEPT)
 target     prot opt source               destination         
-ACCEPT     icmp --  anywhere             anywhere             icmp destination-unreachable
+ACCEPT     all  --  anywhere             anywhere             ctstate NEW
+ACCEPT     all  --  anywhere             anywhere            
+ACCEPT     all  --  anywhere             anywhere             ctstate RELATED,ESTABLISHED
 ACCEPT     icmp --  anywhere             anywhere             icmp echo-reply
-ACCEPT     icmp --  anywhere             anywhere             icmp echo-request
 ACCEPT     icmp --  anywhere             anywhere             icmp destination-unreachable
+ACCEPT     icmp --  anywhere             anywhere             icmp echo-request limit: avg 1/sec burst 5
+ACCEPT     icmp --  anywhere             anywhere             icmp time-exceeded
+tcpfilter  tcp  --  anywhere             anywhere            
 DROP       tcp  --  anywhere             anywhere             tcp dpt:irc
 DROP       udp  --  anywhere             anywhere             udp dpt:irc
 DROP       tcp  --  anywhere             anywhere             tcp dpt:irc-serv
@@ -12,46 +16,27 @@ DROP       tcp  --  anywhere             anywhere             tcp dpt:994
 DROP       udp  --  anywhere             anywhere             udp dpt:994
 DROP       tcp  --  anywhere             anywhere             tcp dpt:6667
 DROP       udp  --  anywhere             anywhere             udp dpt:6667
-DROP       all  --  10.220.232.0/24      anywhere            
-DROP       all  --  10.220.231.236       anywhere            
-ACCEPT     all  --  anywhere             anywhere             ctstate RELATED,ESTABLISHED
-ACCEPT     all  --  anywhere             anywhere             ctstate NEW
 DROP       tcp  --  anywhere             anywhere             tcp flags:FIN,SYN,RST,ACK/SYN
 DROP       tcp  --  anywhere             anywhere             tcp dpt:0
-DROP       tcp  --  anywhere             anywhere             tcp dpt:tcpmux
 DROP       udp  --  anywhere             anywhere             udp dpt:0
+DROP       tcp  --  anywhere             anywhere             tcp dpt:tcpmux
 DROP       udp  --  anywhere             anywhere             udp dpt:tcpmux
 DROP       all  --  anywhere             anywhere            
-tcpfilter  tcp  --  anywhere             anywhere            
-ACCEPT     all  --  anywhere             anywhere            
-ACCEPT     all  --  anywhere             anywhere            
-ACCEPT     icmp --  anywhere             anywhere             icmp echo-reply
-ACCEPT     icmp --  anywhere             anywhere             icmp destination-unreachable
-ACCEPT     icmp --  anywhere             anywhere             icmp time-exceeded
-ACCEPT     icmp --  anywhere             anywhere             icmp echo-request limit: avg 1/sec burst 5
-ACCEPT     icmp --  anywhere             anywhere             icmp destination-unreachable
-DROP       udp  --  anywhere             anywhere             udp spt:bootps
-DROP       tcp  --  anywhere             anywhere            
 
 Chain FORWARD (policy ACCEPT)
 target     prot opt source               destination         
-DROP       all  --  10.220.232.0/24      10.0.0.1            
-DROP       all  --  10.220.231.236       anywhere            
 ACCEPT     all  --  anywhere             anywhere             ctstate RELATED,ESTABLISHED
 ACCEPT     all  --  anywhere             anywhere            
 ACCEPT     all  --  anywhere             anywhere             ctstate RELATED,ESTABLISHED
-ACCEPT     all  --  anywhere             anywhere            
 DROP       all  --  anywhere             anywhere            
-ACCEPT     all  --  anywhere             anywhere            
 
 Chain OUTPUT (policy ACCEPT)
 target     prot opt source               destination         
-ACCEPT     icmp --  anywhere             anywhere             icmp echo-request
-ACCEPT     all  --  anywhere             anywhere             ctstate RELATED,ESTABLISHED
 ACCEPT     all  --  anywhere             anywhere             ctstate NEW
 ACCEPT     all  --  anywhere             anywhere            
-ACCEPT     all  --  anywhere             anywhere            
+ACCEPT     all  --  anywhere             anywhere             ctstate NEW,RELATED,ESTABLISHED
 ACCEPT     icmp --  anywhere             anywhere             icmp echo-request
+DROP       all  --  anywhere             anywhere            
 
 Chain tcpfilter (1 references)
 target     prot opt source               destination         
