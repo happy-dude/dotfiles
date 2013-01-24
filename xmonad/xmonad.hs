@@ -12,10 +12,9 @@
 {-# OPTIONS_GHC -W -fwarn-unused-imports -fno-warn-missing-signatures #-}
 
 import qualified Data.Map as M
-import qualified XMonad.StackSet as W
+import qualified XMonad.StackSet as W   -- Window cycling with Alt+Tab
 import System.IO
 import XMonad
-import XMonad.Actions.CycleWindows      -- Window cycling with Alt+Tab
 import XMonad.Actions.CycleWS           -- Workspace cycling
 import XMonad.Actions.GridSelect        -- Display open windows in 2D grid
 import XMonad.Actions.PhysicalScreens   -- Manipulate screens ordered by location instead of ID
@@ -89,9 +88,9 @@ myKeys conf@(XConfig {XMonad.modMask = modM}) = M.fromList $ [
      , ((0, 0x1008FF13), spawn "amixer set Master 1+")      -- Volume Up
      , ((0, 0x1008FF12), spawn "amixer set Master toggle")] -- Mute
     ++
-    -- Mimic Alt-Tab focus switching behavior; don't know how to mimic Alt-Shift-Tab completely just yet...
-    [((mod1Mask, xK_Tab), cycleRecentWindows [xK_Alt_L] xK_Tab xK_Tab)
-     , ((mod1Mask .|. shiftMask, xK_Tab), rotFocusedDown)]
+    -- Mimic Alt-Tab focus switching behavior
+    [((mod1Mask, xK_Tab), windows W.swapDown)
+     , ((mod1Mask .|. shiftMask, xK_Tab), windows W.swapUp)]
 
 myTerminal = "~/dotfiles/xmonad/urxvtdc.sh"
 
