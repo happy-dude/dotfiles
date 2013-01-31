@@ -110,7 +110,7 @@ function! SyntasCPP ()                              "syntastic: C++
 endfunction
 
 "syntastic: Perl
-"let g:syntastic_perl_lib_path = './lib'
+let g:syntastic_perl_lib_path = './lib'
 
 autocmd BufRead,BufNewFile *.c call SyntasC()
 autocmd BufRead,BufNewFile *.cpp call SyntasCPP()
