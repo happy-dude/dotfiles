@@ -85,6 +85,8 @@ $IPTABLES -t nat -A PREROUTING -d 10.0.0.1/32 -p tcp -m tcp --dport 25 -j DNAT -
 $IPTABLES -t nat -A PREROUTING -d 10.0.0.1/32 -p tcp -m tcp --dport 80 -j DNAT --to-destination 192.168.10.253
 $IPTABLES -t nat -A PREROUTING -d 10.0.0.1/32 -p tcp -m tcp --dport 110 -j DNAT --to-destination 192.168.10.254
 $IPTABLES -t nat -A PREROUTING -d 10.0.0.1/32 -p tcp -m tcp --dport 444 -j DNAT --to-destination 192.168.10.254:443
+$IPTABLES -t nat -A POSTROUTING -p tcp -m tcp -s 193.168.1.0/24 -j SNAT --to-source :10000-20000
+$IPTABLES -t nat -A POSTROUTING -p udp -m udp -s 193.168.1.0/24 -j SNAT --to-source :10000-20000
 $IPTABLES -t nat -A POSTROUTING -s 192.168.1.0/24 -j SNAT --to-source 10.0.0.1
 $IPTABLES -t nat -A POSTROUTING -j MASQUERADE
 
