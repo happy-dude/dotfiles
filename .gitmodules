@@ -88,3 +88,6 @@
 [submodule "grml-etc-core"]
 	path = grml-etc-core
 	url = https://github.com/grml/grml-etc-core.git
+[submodule "xcode/xvim"]
+	path = xcode/xvim
+	url = https://github.com/JugglerShu/XVim.git
