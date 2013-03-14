@@ -1,3 +1,10 @@
+!!! Set right Alt key to actl Alt_R
 keycode 108 = Alt_R
-keycode 135 = Super_R
+!!! Add Mod1, used by Xmonad, to right Alt
 add Mod1 = Alt_R
+
+!!! Set right Menu key to right Super key
+keycode 135 = Super_R
+!
+!!! Reverse scrolling -- similar to Mac OS X's default
+pointer = 1 2 3 5 4 7 6 8 9 10 11 12
