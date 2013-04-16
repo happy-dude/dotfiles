@@ -19,9 +19,15 @@ GIT_IS_AVAILABLE=$?
 if [ $GIT_IS_AVAILABLE -eq 0 ]; then
     GIT_PATH=`which git`
     GIT_OPTS="clone --recursive https://github.com/Happy-Dude/dotfiles.git $HOME/dotfiles"
+    GIT_SUB_OPTS="submodule init"
+    GIT_UPDATE_OPTS="submodule update"
+    GIT_SUB_CHECKOUT="submodule foreach $GIT_PATH checkout master"
 
     echo "Git found: cloning dotfiles repository into $HOME/dotfiles"
     echo $GIT_PATH $GIT_OPTS
+    echo $GIT_PATH $GIT_SUB_OPTS
+    echo $GIT_PATH $GIT_UPDATE_OPTS
+    echo $GIT_PATH $GIT_SUB_CHECKOUT
 
 else
     echo "Git not found; please install git or download the zip archive of repo"
@@ -31,7 +37,7 @@ fi
 VIM_IS_AVAILABLE=$?
 
 if [ $VIM_IS_AVAILABLE -eq 0 ]; then
-    echo "Vim found\n"
+    echo "Vim found"
 
     if [ -f $HOME/.vimrc ]; then
         echo "Backing up existing .vimrc file to .vimrc.bak"
