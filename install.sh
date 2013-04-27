@@ -100,4 +100,21 @@ if [ $IP6TABLES_IS_AVAILABLE -eq 0 ]; then
     echo "systemctl enable ip6tables.service"
 fi
 
+`which slim` -v 2>&1 >/dev/null
+SLIM_IS_AVAILABLE=$?
+if [ $SLIM_IS_AVAILABLE -eq 0 ]; then
+    echo "slim found"
+
+    if [ -f "/etc/slim.conf" ]; then
+        echo "Backing up existing slim configuration"
+        echo "mv /etc/slim.conf /etc/slim.conf.bak"
+    fi
+
+    echo "Linking $HOME/dotfiles/slim/slim.conf to /etc/slim/slim.conf"
+    echo "ln -s $HOME/dotfiles/slim/slim.conf /etc/slim/slim.conf"
+
+    echo "Enabling slim systemd unit"
+    echo "systemctl enable slim.service"
+fi
+
 
