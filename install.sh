@@ -61,4 +61,43 @@ if [ $TMUX_IS_AVAILABLE -eq 0 ]; then
         echo "Backing up existing .tmux.conf file to .tmux.conf.bak"
         echo "mv $HOME/.tmux.conf $HOME/.tmux.conf.bak"
     fi
+
+    echo "Linking $HOME/dotfiles/tmux/tmux.conf to $HOME/.tmux.conf"
+    echo "ln -s $HOME/dotfiles/tmux/tmux.conf $HOME/.tmux.conf"
 fi
+
+`which iptables` -V 2>&1 >/dev/null
+IPTABLES_IS_AVAILABLE=$?
+if [ $IPTABLES_IS_AVAILABLE -eq 0 ]; then
+    echo "IPTables found"
+
+    if [ -f "/etc/iptables/iptables.rules" ]; then
+        echo "Backing up existing IPTables ruleset"
+        echo "mv /etc/iptables/iptables.rules /etc/iptables/iptables.rules.bak"
+    fi
+
+    echo "Linking $HOME/dotfiles/iptables/iptables.rules to /etc/iptables/iptables.rules"
+    echo "ln -s $HOME/dotfiles/iptables/iptables.rules /etc/iptables/iptables.rules"
+
+    echo "Enabling iptables systemd unit"
+    echo "systemctl enable iptables.service"
+fi
+
+`which ip6tables` -V 2>&1 >/dev/null
+IP6TABLES_IS_AVAILABLE=$?
+if [ $IP6TABLES_IS_AVAILABLE -eq 0 ]; then
+    echo "IP6Tables found"
+
+    if [ -f "/etc/iptables/ip6tables.rules" ]; then
+        echo "Backing up existing IP6Tables ruleset"
+        echo "mv /etc/iptables/ip6tables.rules /etc/iptables/ip6tables.rules.bak"
+    fi
+
+    echo "Linking $HOME/dotfiles/iptables/ip6tables.rules to /etc/ip6tables/iptables.rules"
+    echo "ln -s $HOME/dotfiles/iptables/ip6tables.rules /etc/ip6tables/iptables.rules"
+
+    echo "Enabling ip6tables systemd unit"
+    echo "systemctl enable ip6tables.service"
+fi
+
+

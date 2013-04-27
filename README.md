@@ -98,6 +98,12 @@ right. I'm looking into seeing how it works for Arch Linux.
 Execute the script with `service iptables start`. Again, this so far has only
 been tested on Ubuntu-based distributions.
 
+To install on Arch Linux (as of April 2013, running systemd), execute the following commands:
+
+    ln -s ~/dotfiles/iptables/iptables.rules /etc/iptables/iptables.rules
+    ln -s ~/dotfiles/iptables/ip6tables.rules /etc/ip6tables/ip6tables.rules
+    sudo systemctl enable iptables.service
+
 Branches
 --------
 
