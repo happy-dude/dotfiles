@@ -1,0 +1,3 @@
+#! /usr/bin/env bash
+
+feh  --bg-scale '/home/stahn_mchan/Wallpapers/wallpaper-580883.jpg'
