@@ -245,14 +245,21 @@ set tm=500              "Set tooltip menu
 """ If the option doesn't exist, fall back to just absolute line numbers
 if exists('+relativenumber')
     set relativenumber  "Display how far away each line is from the current one by default
+    set number          "When used with relativenumber, the absolute line of the current
 
-    "Switch to absolute line numbers whenever Vim loses focus
-    autocmd FocusLost * :set number
-    autocmd FocusGained * :set relativenumber
+    """ As of VIM version < 7.3.100x, relativenumber and number do not cancel
+    """ each other. Rather, set relativenumber would retain the zero in the
+    """ current line. With number also set, then the zero would become the
+    """ number of the current line. Without relativenumber, it would all just
+    """ be absolute line numbers.
 
-    "Use absolute line numbers when in insert mode and relative numbers when in normal mode
-    autocmd InsertEnter * :set number
-    autocmd InsertLeave * :set relativenumber
+    ""Switch to absolute line numbers whenever Vim loses focus
+    "autocmd FocusLost * :set number
+    "autocmd FocusGained * :set relativenumber
+
+    ""Use absolute line numbers when in insert mode and relative numbers when in normal mode
+    "autocmd InsertEnter * :set norelativenumber | set number
+    "autocmd InsertLeave * :set relativenumber
 
 else
     set number          "Show absolute line numbers
