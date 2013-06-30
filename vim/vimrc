@@ -248,6 +248,8 @@ if exists('+relativenumber') && has("patch1115")
     set number          "When used with relativenumber, the absolute line of the current
 
 elseif exists('+relativenumber')
+    set relativenumber  "Display how far away each line is from the current one by default
+
     ""Switch to absolute line numbers whenever Vim loses focus
     autocmd FocusLost * :set number
     autocmd FocusGained * :set relativenumber
