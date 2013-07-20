@@ -1,24 +1,23 @@
 Config {
-        font = "-misc-dejavu sans mono-medium-r-normal-*-10-120-100-100-m-0-iso10646-1"
-       , position = TopSize L 90 18
-       , commands = [ Run CoreTemp ["-t", "Temp: <core0> <core1>C",
-                                "-L", "40", "-H", "65",
-                                "-l", "lightblue", "-n"   , "gray90", "-h", "red"] 50
-                   , Run BatteryP ["BAT0"]
-                                ["-t", "<left>% <acstatus> ",
-                                "-L", "10", "-H", "80", "-p", "3",
-                                "--", "-O", "<fc=green>Charging</fc>", "-o", "<fc=red>Discharging</fc>",
-                                "-L", "-15", "-H", "-5",
-                                "-l", "red", "-m", "blue", "-h", "green"]
-                                180
+    font = "-misc-dejavu sans mono-medium-r-normal-*-10-120-100-100-m-0-iso10646-1"
+        , position = TopSize L 90 18
+        , commands = [ Run CoreTemp ["-t", "Temp: <core0> <core1>C",
+                        "-L", "40", "-H", "65",
+                        "-l", "lightblue", "-n"   , "gray90", "-h", "red"] 50
+                    , Run BatteryP ["BAT0"]
+                        ["-t", "<left>% <acstatus>",
+                        "-L", "10", "-H", "80", "-p", "3",
+                        "--", "-i", "<fc=green>AC</fc>", "-O", "<fc=blue>Charging</fc>", "-o", "<fc=purple>Discharging</fc>",
+                        "-L", "-30", "-H", "-10",
+                        "-l", "red", "-m", "blue", "-h", "green"] 180
                    , Run MultiCpu ["-t","<total0>% <total1>%"] 10
                    , Run Memory ["-t","Mem: <usedratio>%"] 10
                    , Run Swap [] 10
-                   , Run Wireless "wlan0" ["-L","0","-H","32","--normal","green","--high","red"] 10
-                   , Run Network "eth0" ["-L","0","-H","32","--normal","green","--high","red"] 10
+                   , Run Wireless "wlan0" ["-L","0","-H","32","--normal","lightblue","--high","lightgreen"] 10
+                   , Run Network "eth0" ["-L","0","-H","32","--normal","lightblue","--high","lightgreen"] 10
                    , Run Date "%H:%M:%S %a %_d %b %Y" "date" 10
                    , Run Kbd [("us(colemak)", "CO"), ("us(dvorak)", "DV"), ("us", "US")]
                    , Run StdinReader
                    ]
-                   , template = "%StdinReader% }{ %multicpu% | %coretemp% | %memory% | %swap% | %wlan0wi% | %eth0% |%battery%| %kbd% | <fc=#ee9a00>%date%</fc>"
+        , template = "%StdinReader% }{ %multicpu% | %coretemp% | %memory% | %swap% | %wlan0wi% | %eth0% | %battery% | %kbd% | <fc=#ee9a00>%date%</fc>"
       }
