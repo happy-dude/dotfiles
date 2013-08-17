@@ -10,37 +10,49 @@ if [ -d /etc/X11/xinit/xinitrc.d ]; then
   unset f
 fi
 
-# Start a urxvt daemon
-# With urxvt client launched from xmonad, attach to it
-/usr/bin/urxvtd -q -f -o &
+if [ -f /etc/os-release ]; then
+    NAME=$(grep "^NAME" /etc/os-release | awk -F = '{print $2}')
+    case "$NAME" in
+        "\"Arch Linux\"")
+            # Start a urxvt daemon
+            # With urxvt client launched from xmonad, attach to it
+            /usr/bin/urxvtd -q -f -o &
 
-# Set some basic xorg settings
-xcompmgr &
-xset m 4 2 &
-xsetroot -cursor_name left_ptr &
-setxkbmap -layout us -variant colemak &
-setxkbmap -option "" -layout "us(colemak),us,us(dvorak)" -option grp:alt_space_toggle &
+            # Set some basic xorg settings
+            xcompmgr &
+            xset m 4 2 &
+            xsetroot -cursor_name left_ptr &
+            setxkbmap -layout us -variant colemak &
+            setxkbmap -option "" -layout "us(colemak),us,us(dvorak)" -option grp:alt_space_toggle &
 
-# Load Solarized Xresources
-[[ -f ~/.Xresources ]] && xrdb -merge ~/.Xresources &
+            # Load Solarized Xresources
+            [[ -f ~/.Xresources ]] && xrdb -merge ~/.Xresources &
 
-# Start several background programs
-sh ~/.fehbg &
-xmodmap ~/.Xmodmap &
-{ sleep 2; /usr/bin/dropboxd; } &
-{ sleep 2; /usr/bin/xflux -z 11229; } &
-#{ sleep 2; /usr/bin/skype; } &
+            # Start several background programs
+            sh ~/.fehbg &
+            xmodmap ~/.Xmodmap &
+            { sleep 2; /usr/bin/dropboxd; } &
+            { sleep 2; /usr/bin/xflux -z 11229; } &
+            #{ sleep 2; /usr/bin/skype; } &
 
-#{ sleep 10; /usr/bin/droidcam; } &
-#{ sleep 2; /usr/bin/pavucontrol; } &
-#{ sleep 10; /usr/bin/pasystray; } &
-#{ sleep 10; /usr/bin/specto; } &
-#{ sleep 2; /usr/bin/clipit; } &
-#{ sleep 2; /usr/bin/remmina; } &
-#{ sleep 10; /usr/bin/pidgin; } &
-#{ sleep 10; /usr/bin/googsystray; } &
-#{ sleep 2; /usr/bin/krusader; } &
-#{ sleep 10; /usr/bin/weechat-curses; } &
+            #{ sleep 10; /usr/bin/droidcam; } &
+            #{ sleep 2; /usr/bin/pavucontrol; } &
+            #{ sleep 10; /usr/bin/pasystray; } &
+            #{ sleep 10; /usr/bin/specto; } &
+            #{ sleep 2; /usr/bin/clipit; } &
+            #{ sleep 2; /usr/bin/remmina; } &
+            #{ sleep 10; /usr/bin/pidgin; } &
+            #{ sleep 10; /usr/bin/googsystray; } &
+            #{ sleep 2; /usr/bin/krusader; } &
+            #{ sleep 10; /usr/bin/weechat-curses; } &
 
-# Window manager should always be the last thing run
-exec xmonad
+            # Window manager should always be the last thing run
+            exec xmonad
+            ;;
+        "\"elementary OS\"")
+            exit 0
+            ;;
+        *)
+            echo "No Linux distribution matched"
+    esac
+fi
