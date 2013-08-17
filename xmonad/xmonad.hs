@@ -92,7 +92,7 @@ myKeys conf@(XConfig {XMonad.modMask = modM}) = M.fromList $ [
     [((mod1Mask, xK_Tab), windows W.swapDown)
      , ((mod1Mask .|. shiftMask, xK_Tab), windows W.swapUp)]
 
-myTerminal = "~/dotfiles/xmonad/urxvtdc.sh"
+myTerminal = "~/.xmonad/urxvtdc.sh"
 
 gsconfig1 = defaultGSConfig { gs_cellheight = 45, gs_cellwidth = 250 }
 
