@@ -31,7 +31,8 @@ if [ -f /etc/os-release ]; then
             #xset m default &  # System Default
             #xset m 0 10 &     # Glacial
             #xset m <pixels to move when going fast> <pixels threshold before moving fast>
-            /usr/bin/xset m 10 1 &
+            # Read: http://linuxreviews.org/howtos/xfree/mouse_speed_in_x/
+            /usr/bin/xset m 27/2 1 &
 
             # Load Solarized Xresources
             [[ -f ~/.Xresources ]] && /usr/bin/xrdb -merge ~/.Xresources &
