@@ -20,10 +20,18 @@ if [ -f /etc/os-release ]; then
 
             # Set some basic xorg settings
             /usr/bin/xcompmgr &
-            /usr/bin/xset m 4 2 &
             /usr/bin/xsetroot -cursor_name left_ptr &
             /usr/bin/setxkbmap -layout us -variant colemak &
             /usr/bin/setxkbmap -option "" -layout "us(colemak),us,us(dvorak)" -option grp:alt_space_toggle &
+
+            # Mouse control
+            #xset m 7 10 &     # Very Fast
+            #xset m 5 4 &     # Faster
+            #xset m 3 10 &     # Normal(Fast)
+            #xset m default &  # System Default
+            #xset m 0 10 &     # Glacial
+            #xset m <pixels to move when going fast> <pixels threshold before moving fast>
+            /usr/bin/xset m 10 1 &
 
             # Load Solarized Xresources
             [[ -f ~/.Xresources ]] && /usr/bin/xrdb -merge ~/.Xresources &
