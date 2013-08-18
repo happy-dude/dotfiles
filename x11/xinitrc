@@ -19,18 +19,18 @@ if [ -f /etc/os-release ]; then
             /usr/bin/urxvtd -q -f -o &
 
             # Set some basic xorg settings
-            xcompmgr &
-            xset m 4 2 &
-            xsetroot -cursor_name left_ptr &
-            setxkbmap -layout us -variant colemak &
-            setxkbmap -option "" -layout "us(colemak),us,us(dvorak)" -option grp:alt_space_toggle &
+            /usr/bin/xcompmgr &
+            /usr/bin/xset m 4 2 &
+            /usr/bin/xsetroot -cursor_name left_ptr &
+            /usr/bin/setxkbmap -layout us -variant colemak &
+            /usr/bin/setxkbmap -option "" -layout "us(colemak),us,us(dvorak)" -option grp:alt_space_toggle &
 
             # Load Solarized Xresources
-            [[ -f ~/.Xresources ]] && xrdb -merge ~/.Xresources &
+            [[ -f ~/.Xresources ]] && /usr/bin/xrdb -merge ~/.Xresources &
 
             # Start several background programs
-            sh ~/.fehbg &
-            xmodmap ~/.Xmodmap &
+            /usr/bin/sh ~/.fehbg &
+            /usr/bin/xmodmap ~/.Xmodmap &
             { sleep 2; /usr/bin/dropboxd; } &
             { sleep 2; /usr/bin/xflux -z 11229; } &
             #{ sleep 2; /usr/bin/skype; } &
@@ -47,7 +47,7 @@ if [ -f /etc/os-release ]; then
             #{ sleep 10; /usr/bin/weechat-curses; } &
 
             # Window manager should always be the last thing run
-            exec xmonad
+            exec /usr/bin/xmonad
             ;;
         "\"elementary OS\"")
             exit 0
