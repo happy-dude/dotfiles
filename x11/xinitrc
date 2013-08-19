@@ -24,6 +24,9 @@ if [ -f /etc/os-release ]; then
             /usr/bin/setxkbmap -layout us -variant colemak &
             /usr/bin/setxkbmap -option "" -layout "us(colemak),us,us(dvorak)" -option grp:alt_space_toggle &
 
+            # Load Solarized Xresources
+            [[ -f ~/.Xresources ]] && /usr/bin/xrdb -merge ~/.Xresources &
+
             # Mouse control
             #xset m 7 10 &     # Very Fast
             #xset m 5 4 &     # Faster
@@ -32,10 +35,7 @@ if [ -f /etc/os-release ]; then
             #xset m 0 10 &     # Glacial
             #xset m <pixels to move when going fast> <pixels threshold before moving fast>
             # Read: http://linuxreviews.org/howtos/xfree/mouse_speed_in_x/
-            /usr/bin/xset m 15 1 &
-
-            # Load Solarized Xresources
-            [[ -f ~/.Xresources ]] && /usr/bin/xrdb -merge ~/.Xresources &
+            #/usr/bin/xset m 15 1 &
 
             # Start several background programs
             /usr/bin/sh ~/.fehbg &
