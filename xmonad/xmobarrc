@@ -14,10 +14,10 @@ Config {
                    , Run Memory ["-t","Mem: <usedratio>%"] 10
                    , Run Swap [] 10
                    , Run Wireless "wlp3s0" ["-L","10","-H","32","--normal","lightred","--high","blue"] 10
-                   , Run Network "eth0" ["-L","0","-H","32","--normal","lightblue","--high","lightgreen"] 10
+                   , Run Network "enp0s25" ["-L","0","-H","32","--normal","lightblue","--high","lightgreen"] 10
                    , Run Date "%H:%M:%S %a %_d %b %Y" "date" 10
                    , Run Kbd [("us(colemak)", "CO"), ("us(dvorak)", "DV"), ("us", "US")]
                    , Run StdinReader
                    ]
-        , template = "%StdinReader% }{ %multicpu% | %coretemp% | %memory% | %swap% | %wlp3s0wi% | %eth0% | %battery% | %kbd% | <fc=#ee9a00>%date%</fc>"
+        , template = "%StdinReader% }{ %multicpu% | %coretemp% | %memory% | %swap% | %wlp3s0wi% | %enp0s25% | %battery% | %kbd% | <fc=#ee9a00>%date%</fc>"
       }
