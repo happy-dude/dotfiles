@@ -18,15 +18,15 @@ if [ -f /etc/os-release ]; then
             # With urxvt client launched from xmonad, attach to it
             /usr/bin/urxvtd -q -f -o &
 
-            # Set some basic xorg settings
-            /usr/bin/xmodmap ~/.Xmodmap &
-            /usr/bin/setxkbmap -layout us -variant colemak &
-            /usr/bin/setxkbmap -layout "us(colemak),us,us(dvorak)" -option grp:alt_space_toggle &
-            /usr/bin/xcompmgr &
-            /usr/bin/xsetroot -cursor_name left_ptr &
-
             # Load Solarized Xresources
             [[ -f ~/.Xresources ]] && /usr/bin/xrdb -merge ~/.Xresources &
+
+            # Set some basic xorg settings
+            /usr/bin/setxkbmap -layout us -variant colemak &
+            /usr/bin/setxkbmap -option "" -layout "us(colemak),us,us(dvorak)" -option grp:alt_space_toggle &
+            /usr/bin/xcompmgr &
+            /usr/bin/xsetroot -cursor_name left_ptr &
+            /usr/bin/xmodmap ~/.Xmodmap &
 
             # Mouse control
             #xset m 7 10 &     # Very Fast

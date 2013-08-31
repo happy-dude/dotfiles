@@ -1,10 +1,9 @@
 !!! Set right Alt key to actl Alt_R
 keycode 108 = Alt_R
-!!! Add Mod1, used by Xmonad, to right Alt
-add Mod1 = Alt_R
-
 !!! Set right Menu key to right Super key
 keycode 135 = Super_R
+!!! Add Mod1, used by Xmonad, to right Alt
+add Mod1 = Alt_R
 
 !!! Reverse scrolling -- similar to Mac OS X's default
 !!! Configured in X11 driver conf files
