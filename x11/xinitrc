@@ -19,10 +19,11 @@ if [ -f /etc/os-release ]; then
             /usr/bin/urxvtd -q -f -o &
 
             # Set some basic xorg settings
+            /usr/bin/xmodmap ~/.Xmodmap &
+            /usr/bin/setxkbmap -layout us -variant colemak &
+            /usr/bin/setxkbmap -layout "us(colemak),us,us(dvorak)" -option grp:alt_space_toggle &
             /usr/bin/xcompmgr &
             /usr/bin/xsetroot -cursor_name left_ptr &
-            setxkbmap -option "" -layout "us(colemak),us,us(dvorak)" -option grp:alt_space_toggle &
-            setxkbmap -layout us -variant colemak &
 
             # Load Solarized Xresources
             [[ -f ~/.Xresources ]] && /usr/bin/xrdb -merge ~/.Xresources &
@@ -39,7 +40,6 @@ if [ -f /etc/os-release ]; then
 
             # Start several background programs
             /usr/bin/sh ~/.fehbg &
-            /usr/bin/xmodmap ~/.Xmodmap &
             { sleep 2; /usr/bin/dropboxd; } &
             { sleep 2; /usr/bin/xflux -z 11229; } &
             #{ sleep 2; /usr/bin/skype; } &
