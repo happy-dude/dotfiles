@@ -36,7 +36,7 @@
 	ignore = dirty
 [submodule "vim/bundle/latex-tmaas"]
 	path = vim/bundle/latex-tmaas
-	url = git://vim-latex.git.sourceforge.net/gitroot/vim-latex/vim-latex
+	url = git://git.code.sf.net/p/vim-latex/vim-latex
 	ignore = dirty
 [submodule "vim/bundle/surround-tpope"]
 	path = vim/bundle/surround-tpope
