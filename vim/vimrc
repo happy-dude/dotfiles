@@ -193,7 +193,7 @@ if (&t_Co == 256 || &t_Co == 88) && (!has("gui_running")) && ((&term =~ "xterm")
 endif
 
 set cursorline          "Highlight the current line
-"set cursorcolumn        "Highlight the current column
+set cursorcolumn        "Highlight the current column
 """ Highlight column 81 for old-school 80 character terminal widths
 """ The elseif hack is from http://stackoverflow.com/a/235970
 if exists('+colorcolumn')
