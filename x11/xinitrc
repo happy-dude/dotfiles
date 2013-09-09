@@ -22,8 +22,8 @@ if [ -f /etc/os-release ]; then
             [[ -f ~/.Xresources ]] && /usr/bin/xrdb -merge ~/.Xresources &
 
             # Set some basic xorg settings
-            /usr/bin/setxkbmap -layout us -variant colemak &
             /usr/bin/setxkbmap -option "" -layout "us(colemak),us,us(dvorak)" -option grp:alt_space_toggle &
+            #/usr/bin/setxkbmap -layout us -variant colemak &
             /usr/bin/xcompmgr &
             /usr/bin/xsetroot -cursor_name left_ptr &
             /usr/bin/xmodmap ~/.Xmodmap &
