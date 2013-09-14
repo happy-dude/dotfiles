@@ -463,7 +463,7 @@ if has("autocmd")
 
     " Remove any trailing whitespace that is in the file and indent entire file and return to position
     autocmd BufRead,BufWrite * :exe ":normal! ma" | silent! %s/\s\+$//ge | :exe ":normal! 'azz"
-    autocmd BufWrite * if ! &bin && &filetype != "" && &filetype !~ '\(conf\|text\|markdown\|make\|perl\|python\|haskell\|sh\)' | :exe ":normal! gg=G" | :exe ":normal! 'azz" | endif
+    autocmd BufWrite * if ! &bin && &filetype != "" && &filetype !~ '\(conf\|text\|markdown\|make\|perl\|python\|haskell\|sh\|asm\)' | :exe ":normal! gg=G" | :exe ":normal! 'azz" | endif
 
     " Restore cursor position to where it was before
     augroup JumpCursorOnEdit
