@@ -44,6 +44,15 @@ if [ $VIM_IS_AVAILABLE -eq 0 ]; then
         echo "mv $HOME/.vimrc $HOME/.vimrc.bak"
     fi
 
+    if [ -d $HOME/.cache ]; then
+        if [ -d $HOME/.cache/vim ]; then
+            echo "Backing up existing vim cache directory in .cache"
+            echo "mv $HOME/.cache/vim $HOME/.cache/vim.bak"
+        fi
+
+        echo "mkdir -p $HOME/.cache/vim $HOME/.cache/vim/backup $HOME/.cache/vim/swap $HOME/.cache/vim/undo"
+    fi
+
     echo "Linking $HOME/dotfiles/vim to $HOME/.vim"
     echo "ln -s $HOME/dotfiles/vim $HOME/.vim"
 

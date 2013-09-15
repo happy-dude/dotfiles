@@ -22,6 +22,8 @@
 """	Wincent Colaiuta:	https://wincent.com/blog/tweaking-command-t-and-vim-for-use-in-the-terminal-and-tmux
 """	Steve Losh:		http://stevelosh.com/blog/2010/09/coming-home-to-vim/
 """	Jeff Kreeftmeijer:	http://jeffkreeftmeijer.com/2012/relative-line-numbers-in-vim-for-super-fast-movement/
+"""	Dave Eddy:		https://github.com/bahamas10/dotfiles/blob/master/vimrc
+"""	Erik Harmon:		https://github.com/eharmon/dotfiles/blob/master/vimrc
 """
 """
 """	StackOverflow:		http://stackoverflow.com/questions/164847/what-is-in-your-vimrc
@@ -95,6 +97,7 @@ let g:slimv_repl_syntax = 1 "Enable syntax highlighting in Slimv REPL buffer
 
 " syntastic settings
 let g:syntastic_mode_map = { 'mode': 'active' }     "syntastic: Active syntax checking
+let g:syntastic_check_on_open=1                     "syntastic: Immediately check syntax on open
 function! SyntasC ()                                "syntastic: C
     let g:syntastic_c_check_header = 1
     let g:syntastic_c_no_include_search = 1
@@ -136,12 +139,12 @@ endif
 
 set ttyscroll=0         "Number of lines to scroll; 0 for terminals where scrolling is slow and redrawing is fast
 set ttyfast             "Fast terminal connection; more chars will be sent to screen for redrawing
+set nostartofline       "Do not jump to first character with page navigation commands
 
 set encoding=utf-8      "Default to UTF-8 encoding
 set termencoding=utf-8
 set fileencoding=utf-8
-set fileformats=unix,dos,mac
-"Default filetypes
+set fileformats=unix,dos,mac    "Default file formats
 
 "set cindent             "No need to set cindent since it is automatic for C-based files
 "set smartindent         "Smartindent: auto inserts one extra level of indentation for C-like files.
@@ -171,7 +174,7 @@ set grepprg=/bin/grep\ -nH  "VIM grep
 set esckeys             "Function keys that start with <Esc> are recognized in insert mode
 set list                "List mode: show special characters -- what is displayed is changed by listchars
 set listchars=tab:>-,trail:-    ",eol:¬ or eol:$
-"Display tabs to know we put them where we want them
+"Display tabs to know we put them/ where we want them
 
 set clipboard+=unnamed  "Share Window's clipboard
 set formatoptions=rw    "Automatically insert command leader on return and let gq format comments
@@ -225,14 +228,25 @@ set statusline=[%n]\ %F%m%r%h%w\ %#warningmsg#%{SyntasticStatuslineFlag()}%*\ %=
 "                +-- %n: buffer number
 
 set wildmenu            "Turn on wild menu
-set wildignore=*.dll,*.o,*.obj,*.bak,*.exe,*.pyc,*.jpg,*.gif,*.png
-"Ignore these list file extensions
-set wildmode=list:longest,full
-"Turn on wild mode huge list
-set wildchar=<TAB>
-"Path/file expansion in colon mode
+set wildmode=list:longest,full  "Turn on wild mode huge list
+set wildchar=<TAB>              "Path/file expansion in colon mode
 
-"set title "Show title in console title bar
+"Ignore these list file extensions
+set wildignore=*.bak
+set wildignore+=*.sw?                               "Vim swap files
+set wildignore+=*.DS_Store                          "OS X bullshit
+set wildignore+=*.spl                               "Compiled spelling word lists
+set wildignore+=*.bmp,*.gif,*.jpg,*.jpeg,*.png      "Binary images
+set wildignore+=.hg,.git,.svn                       "Version control
+set wildignore+=*.orig                              "Merge resolution files
+set wildignore+=*.dll,*.exe,*.o,*.obj,*.manifest    "Compiled object files
+set wildignore+=*.pyc                               "Python byte code
+set wildignore+=migrations                          "Django migrations
+set wildignore+=*.luac                              "Lua byte code
+set wildignore+=*.aux,*.out,*.toc                   "LaTeX intermediate files
+"List extended from Erik Harmon's ignore list
+
+set title               "Show title in console title bar
 set guioptions=em       "e ensures tab bar is displayed in GUI; m ensures menu bar is displayed
 set showcmd             "Display commands as they are typed
 set cmdheight=1         "Set the commandbar height
@@ -277,10 +291,6 @@ set whichwrap=b,s,h,l,<,>,[,]
 "Move freely between file
 
 set report=0            "Tell us when anything is changed via :...
-
-"set undofile            "Have VIM save undo history to file and restore it on open
-set history=350         "Sets how many lines of history VIM will remember
-set undolevels=500      "Number of undo levels
 
 "set scrolloff=0        "Set 'x' lines to the cursors position - when moving verticle
 "set sidescrolloff=0    "Keep at least 'x' lines left/right
@@ -346,15 +356,33 @@ inoremap <silent> <End> <C-o>g<End>
 "noremap <C-h> <C-w>h
 "noremap <C-l> <C-w>l
 
-"From Harley's configuration on StackOverflow
-"set backup
-"set backupdir=~/.vim/backup
-"set directory=~/.vim/tmp
+set backup              "Keep backup file after overwriting a file
+set swapfile            "Allow creation of .swp swap files
+set undofile            "Have VIM save undo history to file and restore it on open
+set writebackup         "Make a backup file before overwriting a file
 
-set nobackup
-set nowb
-set noswapfile
-"Turn backup off
+"set history=350         "Sets how many lines of history VIM will remember
+"set undolevels=500      "Number of undo levels
+"Default history and undolevels = 1000
+
+"From Erik Harmon's vimrc
+"Cache things to our homedir, not random places
+if isdirectory(expand('$HOME/cache/vim'))
+    if &backupdir =~# '^\.,'
+        set backupdir^=$HOME/.cache/vim/backup//
+    endif
+
+    if &directory =~# '^\.,'
+        set directory^=$HOME/.cache/vim/swap//
+    endif
+
+    if exists('+undodir') && &undodir =~# '^\.\%(,\|$\)'
+        set undodir^=$HOME/.cache/vim/undo//
+    endif
+endif
+if exists('+undofile')
+    set undofile
+endif
 
 " Use english for spellchecking, but don't spellcheck by default
 if version >= 700
