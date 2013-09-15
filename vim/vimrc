@@ -65,7 +65,7 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-set nocompatible        " Use VIM defaults
+set nocompatible        " Use Vim defaults
 set modelines=0         " Set modelines to 0 to prevent several security exploits
 
 """"""""""""""""""""""""""""""
@@ -127,8 +127,8 @@ autocmd BufRead,BufNewFile *.cpp call SyntasCPP()
 
 " Solarized colorscheme settings
 if !has("gui_running")                          " Use these settings if terminal vim; otherwise, gvimrc settings should take over
-    let g:solarized_termcolors = 256            " Enable 256 color support and don't rely on terminal settings
-    let g:solarized_termtrans = 0               " 1: Tell Solarized to use the default transparant terminal background; 0: Background handled by VIM
+    "let g:solarized_termcolors = 256            " Enable 256 color support and don't rely on terminal settings
+    let g:solarized_termtrans = 0               " 1: Tell Solarized to use the default transparant terminal background; 0: Background handled by Vim
     let g:solarized_visibility = "normal"       " Set list characters can be set to one of three levels depending on your needs.
     let g:solarized_contrast = "normal"         " high/ low: Shifts some values up or down in order to expand or compress the tonal range displayed.
     "g:solarized_bold | g:solarized_underline | g:solarized_italic  " Set to 0 to turn of stylized typefaces
@@ -216,7 +216,7 @@ set statusline=[%n]\ %F%m%r%h%w\ %#warningmsg#%{SyntasticStatuslineFlag()}%*\ %=
 "                |    | | | | |   |                                            |   |           |          |   |           |            +-- ASCII value
 "                |    | | | | |   |                                            |   |           |          |   |           +-- HEX value
 "                |    | | | | |   |                                            |   |           |          |   +-- Truncate statusline from here
-"                |    | | | | |   |                                            |   |           |          +-- Filetype as VIM recognized
+"                |    | | | | |   |                                            |   |           |          +-- Filetype as Vim recognized
 "                |    | | | | |   |                                            |   |           +-- File encoding
 "                |    | | | | |   |                                            |   +-- Current fileformat
 "                |    | | | | |   |                                            +-- Right justify from here
@@ -256,7 +256,7 @@ set guitablabel=%t      " Display buffer name on tab label
 "set nohidden            " When I close a tab, remove from buffer
 set tm=500              " Set tooltip menu
 
-""" relativenumber is a VIM 7.3 option
+""" relativenumber is a Vim 7.3 option
 """ If the option doesn't exist, fall back to just absolute line numbers
 if exists('+relativenumber') && (version >= 704) || (version == 703) && has("patch1115")
     set relativenumber  " Display how far away each line is from the current one by default
@@ -355,10 +355,12 @@ inoremap <silent> <End> <C-o>g<End>
 
 set backup              " Keep backup file after overwriting a file
 set swapfile            " Allow creation of .swp swap files
-set undofile            " Have VIM save undo history to file and restore it on open
 set writebackup         " Make a backup file before overwriting a file
+if exists('+undofile')  " Have Vim save undo history to file and restore it on open
+    set undofile
+endif
 
-"set history=350         " Sets how many lines of history VIM will remember
+"set history=350         " Sets how many lines of history Vim will remember
 "set undolevels=500      " Number of undo levels
 "Default history and undolevels = 1000
 
@@ -376,9 +378,6 @@ if isdirectory(expand('$HOME/.cache/vim'))
     if exists('+undodir') && &undodir =~# '^\.\%(,\|$\)'
         set undodir^=$HOME/.cache/vim/undo//
     endif
-endif
-if exists('+undofile')
-    set undofile
 endif
 
 " Use english for spellchecking, but don't spellcheck by default
