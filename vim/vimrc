@@ -65,40 +65,40 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-set nocompatible        "Use VIM defaults
-set modelines=0         "Set modelines to 0 to prevent several security exploits
+set nocompatible        " Use VIM defaults
+set modelines=0         " Set modelines to 0 to prevent several security exploits
 
 """"""""""""""""""""""""""""""
 """" Plugin Configuration """"
 """"""""""""""""""""""""""""""
-filetype off            "Turn filetype plugin off until Pathogen loads
+filetype off            " Turn filetype plugin off until Pathogen loads
 
-"pathogen settings
-runtime bundle/pathogen-tpope/autoload/pathogen.vim     "Unconventional path to plugin (inside submodule)
-call pathogen#infect()      "pathogen: Activate plugin
+" pathogen settings
+runtime bundle/pathogen-tpope/autoload/pathogen.vim " Unconventional path to plugin (inside submodule)
+call pathogen#infect()                              " pathogen: Activate plugin
 call pathogen#helptags()
-"runtime bundle/unbundle-sunaku/unbundle.vim            "unbundle: Alternative plugin manager
+"runtime bundle/unbundle-sunaku/unbundle.vim        " unbundle: Alternative plugin manager
 
-filetype plugin indent on   "Enable filetype plugin and filetype-based indentation
-syntax on                   "Enable syntax highlighting
+filetype plugin indent on   " Enable filetype plugin and filetype-based indentation
+syntax on                   " Enable syntax highlighting
 syntax enable
 
 " indent-guides settings
-let g:indent_guides_guide_size = 1              " Instead of having the indent guide be the size of a tabwidth, size it to just 1 character
-let g:indent_guides_start_level = 2             " Start indent guides at 2nd-level of indents (we don't really need it in the first level)
+let g:indent_guides_guide_size = 1                  " Instead of having the indent guide be the size of a tabwidth, size it to just 1 character
+let g:indent_guides_start_level = 2                 " Start indent guides at 2nd-level of indents (we don't really need it in the first level)
 
 "vim-latex settings
-let g:tex_flavor='latex'    "Default .tex filetype to 'tex' instead of 'plaintex'
-set shellslash              "Windows feature: forward slash when expanding filenames
+let g:tex_flavor='latex'    " Default .tex filetype to 'tex' instead of 'plaintex'
+set shellslash              " Windows feature: forward slash when expanding filenames
 
 "vim-slimv settings
-let g:slimv_repl_syntax = 1 "Enable syntax highlighting in Slimv REPL buffer
+let g:slimv_repl_syntax = 1 " Enable syntax highlighting in Slimv REPL buffer
 "let g:slimv_swank_cmd = '! xterm -e sbcl --load ~/.vim/bundle/slimv-kovisoft/slime/start-swank.lisp &'
 
 " syntastic settings
-let g:syntastic_mode_map = { 'mode': 'active' }     "syntastic: Active syntax checking
-let g:syntastic_check_on_open=1                     "syntastic: Immediately check syntax on open
-function! SyntasC ()                                "syntastic: C
+let g:syntastic_mode_map = { 'mode': 'active' }     " syntastic: Active syntax checking
+let g:syntastic_check_on_open=1                     " syntastic: Immediately check syntax on open
+function! SyntasC ()                                " syntastic: C
     let g:syntastic_c_check_header = 1
     let g:syntastic_c_no_include_search = 1
     let g:syntastic_c_auto_refresh_includes = 1
@@ -108,7 +108,7 @@ function! SyntasC ()                                "syntastic: C
     "let g:syntastic_c_compiler_options = ' -Weverything -g -std=c99'
 endfunction
 
-function! SyntasCPP ()                              "syntastic: C++
+function! SyntasCPP ()                              " syntastic: C++
     let g:syntastic_cpp_check_header = 1
     let g:syntastic_cpp_no_include_search = 1
     let g:syntastic_cpp_auto_refresh_includes = 1
@@ -118,7 +118,7 @@ function! SyntasCPP ()                              "syntastic: C++
     "let g:syntastic_cpp_compiler_options = ' -Weverything -g -std=c++0x'
 endfunction
 
-"syntastic: Perl
+" syntastic: Perl
 let g:syntastic_perl_lib_path = './lib'
 
 autocmd BufRead,BufNewFile *.c call SyntasC()
@@ -126,7 +126,7 @@ autocmd BufRead,BufNewFile *.cpp call SyntasCPP()
 
 " Solarized colorscheme settings
 if !has("gui_running")                          " Use these settings if terminal vim; otherwise, gvimrc settings should take over
-    let g:solarized_termcolors = 256            " Enable 256 color support and don't rely on terminal settings
+    "let g:solarized_termcolors = 256            " Enable 256 color support and don't rely on terminal settings
     let g:solarized_termtrans = 0               " 1: Tell Solarized to use the default transparant terminal background; 0: Background handled by VIM
     let g:solarized_visibility = "normal"       " Set list characters can be set to one of three levels depending on your needs.
     let g:solarized_contrast = "normal"         " high/ low: Shifts some values up or down in order to expand or compress the tonal range displayed.
@@ -137,48 +137,48 @@ endif
 "" End Plugin Configuration ""
 """"""""""""""""""""""""""""""
 
-set ttyscroll=0         "Number of lines to scroll; 0 for terminals where scrolling is slow and redrawing is fast
-set ttyfast             "Fast terminal connection; more chars will be sent to screen for redrawing
-set nostartofline       "Do not jump to first character with page navigation commands
+set ttyscroll=0         " Number of lines to scroll; 0 for terminals where scrolling is slow and redrawing is fast
+set ttyfast             " Fast terminal connection; more chars will be sent to screen for redrawing
+set nostartofline       " Do not jump to first character with page navigation commands
 
-set encoding=utf-8      "Default to UTF-8 encoding
+set encoding=utf-8      " Default to UTF-8 encoding
 set termencoding=utf-8
 set fileencoding=utf-8
-set fileformats=unix,dos,mac    "Default file formats
+set fileformats=unix,dos,mac    " Default file formats
 
-"set cindent             "No need to set cindent since it is automatic for C-based files
-"set smartindent         "Smartindent: auto inserts one extra level of indentation for C-like files.
-set autoindent          "Autoindent: auto indents a new line to the same indentation used by previous line
-set nowrap              "Do not wrap lines
-"set tw=500             "Word wrapping text width
-set linespace=0         "Don't insert any extra pixel lines between rows
+"set cindent             " No need to set cindent since it is automatic for C-based files
+"set smartindent         " Smartindent: auto inserts one extra level of indentation for C-like files.
+set autoindent          " Autoindent: auto indents a new line to the same indentation used by previous line
+set nowrap              " Do not wrap lines
+"set tw=500              " Word wrapping text width
+set linespace=0         " Don't insert any extra pixel lines between rows
 set linebreak
 
-set expandtab           "Default tabs into spaces
-set shiftwidth=4        "Auto-indent amount when using cindent, >>, << and stuff like that
-set softtabstop=4       "When hitting a tab or backspace- spaces should a tab should be
-set tabstop=8           "VIM's default tabstop is 8
-set smarttab            "A <Tab> in front of a line inserts blanks according to settings; <BS> deletes a shiftwidth
+set expandtab           " Default tabs into spaces
+set shiftwidth=4        " Auto-indent amount when using cindent, >>, << and stuff like that
+set softtabstop=4       " When hitting a tab or backspace- spaces should a tab should be
+set tabstop=8           " Vim's default tabstop is 8
+set smarttab            " A <Tab> in front of a line inserts blanks according to settings; <BS> deletes a shiftwidth
 
-set ignorecase          "Ignore case when searching
-set smartcase           "If there are caps, go case-sensitive
-set infercase           "Case inferred by default
-set hlsearch            "Highlight search things
-set incsearch           "Make search act like search in modern browsers
+set ignorecase          " Ignore case when searching
+set smartcase           " If there are caps, go case-sensitive
+set infercase           " Case inferred by default
+set hlsearch            " Highlight search things
+set incsearch           " Make search act like search in modern browsers
 
-set showmatch           "Show matching brackets
-set matchtime=5         "How many tenths of a second to show matching paren with showmatch set
-set magic               "Set magic on, for regular expressions
-set grepprg=/bin/grep\ -nH  "VIM grep
+set showmatch           " Show matching brackets
+set matchtime=5         " How many tenths of a second to show matching paren with showmatch set
+set magic               " Set magic on, for regular expressions
+set grepprg=/bin/grep\ -nH  " Vim grep
 
-set esckeys             "Function keys that start with <Esc> are recognized in insert mode
-set list                "List mode: show special characters -- what is displayed is changed by listchars
+set esckeys             " Function keys that start with <Esc> are recognized in insert mode
+set list                " List mode: show special characters -- what is displayed is changed by listchars
 set listchars=tab:>-,trail:-    ",eol:¬ or eol:$
-"Display tabs to know we put them/ where we want them
+" Display tabs to know we put them/ where we want them
 
-set clipboard+=unnamed  "Share Window's clipboard
-set formatoptions=rw    "Automatically insert command leader on return and let gq format comments
-set shiftround          "When at 3 spaces and hit > ... go to 4, not 5
+set clipboard+=unnamed  " Share Window's clipboard
+set formatoptions=rw    " Automatically insert command leader on return and let gq format comments
+set shiftround          " When at 3 spaces and hit > ... go to 4, not 5
 
 if (&t_Co == 256 || &t_Co == 88) && (!has("gui_running")) && ((&term =~ "xterm") || (&term =~ "screen") || (&term =~ "color"))
     " Colorscheme preferences:
@@ -195,8 +195,8 @@ if (&t_Co == 256 || &t_Co == 88) && (!has("gui_running")) && ((&term =~ "xterm")
     endif
 endif
 
-set cursorline          "Highlight the current line
-set cursorcolumn        "Highlight the current column
+set cursorline          " Highlight the current line
+set cursorcolumn        " Highlight the current column
 """ Highlight column 81 for old-school 80 character terminal widths
 """ The elseif hack is from http://stackoverflow.com/a/235970
 if exists('+colorcolumn')
@@ -206,7 +206,7 @@ else
     match ColorColumn /\%81v/
 endif
 
-set laststatus=2        "Always show the statusline
+set laststatus=2        " Always show the statusline
 set statusline=[%n]\ %F%m%r%h%w\ %#warningmsg#%{SyntasticStatuslineFlag()}%*\ %=%{&ff}\ \|\ %{&enc}\ \|\ %Y\ %<[utf8_0x%02.B/ascii_%03.3b]\ [LN\ %03l:%02v/%L][%p%%]
 "                |    | | | | |   |                                            |   |           |          |   |           |            |           |    |  |   +-- Current position in file
 "                |    | | | | |   |                                            |   |           |          |   |           |            |           |    |  +-- Total number of lines
@@ -227,86 +227,82 @@ set statusline=[%n]\ %F%m%r%h%w\ %#warningmsg#%{SyntasticStatuslineFlag()}%*\ %=
 "                |    +-- %F: full path to file in the buffer; %f: file in the buffer (in the buffer title bar -- unnecessary)
 "                +-- %n: buffer number
 
-set wildmenu            "Turn on wild menu
-set wildmode=list:longest,full  "Turn on wild mode huge list
-set wildchar=<TAB>              "Path/file expansion in colon mode
+set wildmenu                    " Turn on wild menu
+set wildmode=list:longest,full  " Turn on wild mode huge list
+set wildchar=<TAB>              " Path/file expansion in colon mode
 
-"Ignore these list file extensions
+" Ignore these list file extensions
 set wildignore=*.bak
-set wildignore+=*.sw?                               "Vim swap files
-set wildignore+=*.DS_Store                          "OS X bullshit
-set wildignore+=*.spl                               "Compiled spelling word lists
-set wildignore+=*.bmp,*.gif,*.jpg,*.jpeg,*.png      "Binary images
-set wildignore+=.hg,.git,.svn                       "Version control
-set wildignore+=*.orig                              "Merge resolution files
-set wildignore+=*.dll,*.exe,*.o,*.obj,*.manifest    "Compiled object files
-set wildignore+=*.pyc                               "Python byte code
-set wildignore+=migrations                          "Django migrations
-set wildignore+=*.luac                              "Lua byte code
-set wildignore+=*.aux,*.out,*.toc                   "LaTeX intermediate files
-"List extended from Erik Harmon's ignore list
+set wildignore+=*.sw?                               " Vim swap files
+set wildignore+=*.DS_Store                          " OS X bullshit
+set wildignore+=*.spl                               " Compiled spelling word lists
+set wildignore+=*.bmp,*.gif,*.jpg,*.jpeg,*.png      " Binary images
+set wildignore+=.hg,.git,.svn                       " Version control
+set wildignore+=*.orig                              " Merge resolution files
+set wildignore+=*.dll,*.exe,*.o,*.obj,*.manifest    " Compiled object files
+set wildignore+=*.pyc                               " Python byte code
+set wildignore+=migrations                          " Django migrations
+set wildignore+=*.luac                              " Lua byte code
+set wildignore+=*.aux,*.out,*.toc                   " LaTeX intermediate files
+" wildignore extended from Erik Harmon's ignore list
 
-set title               "Show title in console title bar
-set guioptions=em       "e ensures tab bar is displayed in GUI; m ensures menu bar is displayed
-set showcmd             "Display commands as they are typed
-set cmdheight=1         "Set the commandbar height
-set showtabline=2       "Display tab line even if single file opened
-set guitablabel=%t      "Display buffer name on tab label
-"set nohidden           "When I close a tab, remove from buffer
-set tm=500              "Set tooltip menu
+set title               " Show title in console title bar
+set guioptions=em       " e ensures tab bar is displayed in GUI; m ensures menu bar is displayed
+set showcmd             " Display commands as they are typed
+set cmdheight=1         " Set the commandbar height
+set showtabline=2       " Display tab line even if single file opened
+set guitablabel=%t      " Display buffer name on tab label
+"set nohidden            " When I close a tab, remove from buffer
+set tm=500              " Set tooltip menu
 
 """ relativenumber is a VIM 7.3 option
 """ If the option doesn't exist, fall back to just absolute line numbers
 if exists('+relativenumber') && (version >= 704) || (version == 703) && has("patch1115")
-    set relativenumber  "Display how far away each line is from the current one by default
-    set number          "When used with relativenumber, the absolute line of the current
+    set relativenumber  " Display how far away each line is from the current one by default
+    set number          " When used with relativenumber, the absolute line of the current
 
 elseif exists('+relativenumber')
     set relativenumber  "Display how far away each line is from the current one by default
 
-    ""Switch to absolute line numbers whenever Vim loses focus
+    " Switch to absolute line numbers whenever Vim loses focus
     autocmd FocusLost * :set number
     autocmd FocusGained * :set relativenumber
 
-    ""Use absolute line numbers when in insert mode and relative numbers when in normal mode
+    " Use absolute line numbers when in insert mode and relative numbers when in normal mode
     autocmd InsertEnter * :set norelativenumber | set number
     autocmd InsertLeave * :set relativenumber
 
 else
-    set number          "Show absolute line numbers
-
+    set number          " Show absolute line numbers
 endif
 
-set ruler               "Show cursor position all times
-set numberwidth=5       "Aesthetic uses only... and for displaying large line numbers
-set more                "Use more propmt -- pausing screen when too many items are displayed
-set noautowrite         "Don't automagically write on :next
-set hid                 "Change buffer - without saving
+set ruler               " Show cursor position all times
+set numberwidth=5       " Aesthetic uses only... and for displaying large line numbers
+set more                " Use more propmt -- pausing screen when too many items are displayed
+set noautowrite         " Don't automagically write on :next
+set hid                 " Change buffer - without saving
 
-set nolazyredraw        "Don't redraw while executing macros
+set nolazyredraw        " Don't redraw while executing macros
 
-set backspace=indent,eol,start
-"Set backspace config -- same as set bs=2
-set whichwrap=b,s,h,l,<,>,[,]
-"Move freely between file
+set backspace=indent,eol,start  " Set backspace config -- same as set bs=2
+set whichwrap=b,s,h,l,<,>,[,]   " Move freely between file
 
-set report=0            "Tell us when anything is changed via :...
+set report=0            " Tell us when anything is changed via :...
 
-"set scrolloff=0        "Set 'x' lines to the cursors position - when moving verticle
-"set sidescrolloff=0    "Keep at least 'x' lines left/right
+"set scrolloff=0        " Set 'x' lines to the cursors position - when moving verticle
+"set sidescrolloff=0    " Keep at least 'x' lines left/right
 
 " Folding
-set foldenable          "Turn on folding
-set foldmarker={,}      "Fold C-style code (only user this as default if you use a high foldlevel
-set foldmethod=marker   "Fold on the marker
-set foldlevel=100       "Don't autofold anything (but Ican still fold manually)
-set foldopen=block,hor,mark,percent,quickfix,tag
-"What movement open folds
+set foldenable          " Turn on folding
+set foldmarker={,}      " Fold C-style code (only user this as default if you use a high foldlevel
+set foldmethod=marker   " Fold on the marker
+set foldlevel=100       " Don't autofold anything (but Ican still fold manually)
+set foldopen=block,hor,mark,percent,quickfix,tag    " Define movement that opens folds
 
+" No sound on errors
 set noerrorbells
 set novisualbell
-set vb t_vb=            "When no beep or flash is wanted
-"No sound on errors
+set vb t_vb=            " When no beep or flash is wanted
 
 set cpoptions=aABceFsmq
 "             |||||||||
@@ -343,7 +339,7 @@ noremap <silent> <Down> gj
 inoremap <silent> <Up> <C-o>gk
 inoremap <silent> <Down> <C-o>gj
 " Home and end keys are broken -- dependent of TERM variable;
-" Dunno how to fix reliably
+" Not sure how to fix reliably
 noremap <silent> <Home> g<Home>
 noremap <silent> <End> g<End>
 inoremap <silent> <Home> <C-o>g<Home>
@@ -356,17 +352,17 @@ inoremap <silent> <End> <C-o>g<End>
 "noremap <C-h> <C-w>h
 "noremap <C-l> <C-w>l
 
-set backup              "Keep backup file after overwriting a file
-set swapfile            "Allow creation of .swp swap files
-set undofile            "Have VIM save undo history to file and restore it on open
-set writebackup         "Make a backup file before overwriting a file
+set backup              " Keep backup file after overwriting a file
+set swapfile            " Allow creation of .swp swap files
+set undofile            " Have VIM save undo history to file and restore it on open
+set writebackup         " Make a backup file before overwriting a file
 
-"set history=350         "Sets how many lines of history VIM will remember
-"set undolevels=500      "Number of undo levels
+"set history=350         " Sets how many lines of history VIM will remember
+"set undolevels=500      " Number of undo levels
 "Default history and undolevels = 1000
 
-"From Erik Harmon's vimrc
-"Cache things to our homedir, not random places
+" From Erik Harmon's vimrc
+" Cache things to our homedir, not random places
 if isdirectory(expand('$HOME/.cache/vim'))
     if &backupdir =~# '^\.,'
         set backupdir^=$HOME/.cache/vim/backup//
@@ -404,118 +400,118 @@ if has('mouse')
         autocmd BufEnter * set ttymouse=xterm2
     endif
 endif
-"
+
 " Real men use gcc
 "compiler gcc
 
-
 if has("autocmd")
+    " Don't use bottom restore cursor, Frew's JumpCursorOnEdit works fine
     " Restore cursor position
-    au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
+    "au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
 
-        " Filetypes (au = autocmd)
-        au FileType helpfile set nonumber      " no line numbers when viewing help
-        au FileType helpfile nnoremap <buffer><cr> <c-]>   " Enter selects subject
-        au FileType helpfile nnoremap <buffer><bs> <c-T>   " Backspace to go back
+    " Filetypes (au = autocmd)
+    au FileType helpfile set nonumber      " no line numbers when viewing help
+    au FileType helpfile nnoremap <buffer><cr> <c-]>   " Enter selects subject
+    au FileType helpfile nnoremap <buffer><bs> <c-T>   " Backspace to go back
 
-        " When using mutt, text width=72
-        au FileType mail,tex set textwidth=72
-        au FileType cpp,c,java,sh,pl,php,asp  set autoindent
-        au FileType cpp,c,java,sh,pl,php,asp  set smartindent
-        au FileType cpp,c,java,sh,pl,php,asp  set cindent
-        "au BufRead mutt*[0-9] set tw=72
+    " When using mutt, text width=72
+    au FileType mail,tex set textwidth=72
+    au FileType cpp,c,java,sh,pl,php,asp  set autoindent
+    au FileType cpp,c,java,sh,pl,php,asp  set smartindent
+    au FileType cpp,c,java,sh,pl,php,asp  set cindent
+    "au BufRead mutt*[0-9] set tw=72
 
-        " Automatically chmod +x Shell and Perl scripts
-        "au BufWritePost   *.sh             !chmod +x %
-        "au BufWritePost   *.pl             !chmod +x %
+    " Automatically chmod +x Shell and Perl scripts
+    "au BufWritePost   *.sh             !chmod +x %
+    "au BufWritePost   *.pl             !chmod +x %
 
-        " File formats
-        au BufNewFile,BufRead  *.pls    set syntax=dosini
-        au BufNewFile,BufRead  modprobe.conf    set syntax=modconf
-
-
-        "From Uwe Hermann's configuration
-        " Drupal *.module and *.engine files.
-        augroup module
-            autocmd BufRead                 *.module,*.engine set filetype=php
-        augroup END
-
-        " Python code.
-        augroup python
-            autocmd BufReadPre,FileReadPre  *.py set tabstop=4
-            autocmd BufReadPre,FileReadPre  *.py set expandtab
-        augroup END
-
-        " Ruby code.
-        augroup ruby
-            autocmd BufReadPre,FileReadPre  *.rb set tabstop=2
-            autocmd BufReadPre,FileReadPre  *.rb set expandtab
-        augroup END
-
-        " PHP code.
-        augroup php
-            autocmd BufReadPre,FileReadPre  *.php set tabstop=4
-            autocmd BufReadPre,FileReadPre  *.php set expandtab
-        augroup END
-
-        " Java code.
-        augroup java
-            autocmd BufReadPre,FileReadPre  *.java set tabstop=4
-            autocmd BufReadPre,FileReadPre  *.java set expandtab
-        augroup END
-
-        " ANT build.xml files.
-        augroup xml
-            autocmd BufReadPre,FileReadPre  build.xml set tabstop=4
-        augroup END
-
-        " (J)Flex files.
-        augroup lex
-            " autocmd BufRead,BufNewFile    *.flex,*.jflex set filetype=lex
-            autocmd BufRead,BufNewFile      *.flex,*.jflex set filetype=jflex
-        augroup END
-
-        " (Nu)SMV files.
-        augroup smv
-            autocmd BufRead,BufNewFile      *.smv set filetype=smv
-        augroup END
-
-    endif
+    " File formats
+    au BufNewFile,BufRead  *.pls    set syntax=dosini
+    au BufNewFile,BufRead  modprobe.conf    set syntax=modconf
 
 
-    "From Frew's configuration on StackOverflow
-    "{{{Frew's Auto Commands, Misc Commands, and Functions
-
-    " Automatically cd into the directory that the file is in
-    autocmd BufEnter * if expand('%:p') !~ '://' | execute "chdir ".escape(expand("%:p:h"), ' ') | endif
-
-    " Remove any trailing whitespace that is in the file and indent entire file and return to position
-    autocmd BufRead,BufWrite * :exe ":normal! ma" | silent! %s/\s\+$//ge | :exe ":normal! 'azz"
-    autocmd BufWrite * if ! &bin && &filetype != "" && &filetype !~ '\(conf\|text\|markdown\|make\|perl\|python\|haskell\|sh\|asm\)' | :exe ":normal! gg=G" | :exe ":normal! 'azz" | endif
-
-    " Restore cursor position to where it was before
-    augroup JumpCursorOnEdit
-        au!
-        autocmd BufReadPost *
-                    \ if expand("<afile>:p:h") !=? $TEMP |
-                    \   if line("'\"") > 1 && line("'\"") <= line("$") |
-                    \     let JumpCursorOnEdit_foo = line("'\"") |
-                    \     let b:doopenfold = 1 |
-                    \     if (foldlevel(JumpCursorOnEdit_foo) > foldlevel(JumpCursorOnEdit_foo - 1)) |
-                    \        let JumpCursorOnEdit_foo = JumpCursorOnEdit_foo - 1 |
-                    \        let b:doopenfold = 2 |
-                    \     endif |
-                    \     exe JumpCursorOnEdit_foo |
-                    \   endif |
-                    \ endif
-        " Need to postpone using "zv" until after reading the modelines.
-        autocmd BufWinEnter *
-                    \ if exists("b:doopenfold") |
-                    \   exe "normal zv" |
-                    \   if(b:doopenfold > 1) |
-                    \       exe  "+".1 |
-                    \   endif |
-                    \   unlet b:doopenfold |
-                    \ endif
+    " From Uwe Hermann's configuration
+    " Drupal *.module and *.engine files.
+    augroup module
+        autocmd BufRead                 *.module,*.engine set filetype=php
     augroup END
+
+    " Python code.
+    augroup python
+        autocmd BufReadPre,FileReadPre  *.py set tabstop=4
+        autocmd BufReadPre,FileReadPre  *.py set expandtab
+    augroup END
+
+    " Ruby code.
+    augroup ruby
+        autocmd BufReadPre,FileReadPre  *.rb set tabstop=2
+        autocmd BufReadPre,FileReadPre  *.rb set expandtab
+    augroup END
+
+    " PHP code.
+    augroup php
+        autocmd BufReadPre,FileReadPre  *.php set tabstop=4
+        autocmd BufReadPre,FileReadPre  *.php set expandtab
+    augroup END
+
+    " Java code.
+    augroup java
+        autocmd BufReadPre,FileReadPre  *.java set tabstop=4
+        autocmd BufReadPre,FileReadPre  *.java set expandtab
+    augroup END
+
+    " ANT build.xml files.
+    augroup xml
+        autocmd BufReadPre,FileReadPre  build.xml set tabstop=4
+    augroup END
+
+    " (J)Flex files.
+    augroup lex
+        " autocmd BufRead,BufNewFile    *.flex,*.jflex set filetype=lex
+        autocmd BufRead,BufNewFile      *.flex,*.jflex set filetype=jflex
+    augroup END
+
+    " (Nu)SMV files.
+    augroup smv
+        autocmd BufRead,BufNewFile      *.smv set filetype=smv
+    augroup END
+
+endif
+
+
+" From Frew's configuration on StackOverflow
+" {{{Frew's Auto Commands, Misc Commands, and Functions
+
+" Automatically cd into the directory that the file is in
+autocmd BufEnter * if expand('%:p') !~ '://' | execute "chdir ".escape(expand("%:p:h"), ' ') | endif
+
+" Remove any trailing whitespace that is in the file and indent entire file and return to position
+autocmd BufRead,BufWrite * :exe ":normal! ma" | silent! %s/\s\+$//ge | :exe ":normal! 'azz"
+autocmd BufWrite * if ! &bin && &filetype != "" && &filetype !~ '\(asm\|conf\|haskell\|markdown\|make\|perl\|python\|sh\|text\)' | :exe ":normal! gg=G" | :exe ":normal! 'azz" | endif
+
+" Restore cursor position to where it was before
+augroup JumpCursorOnEdit
+    au!
+    autocmd BufReadPost *
+                \ if expand("<afile>:p:h") !=? $TEMP |
+                \   if line("'\"") > 1 && line("'\"") <= line("$") |
+                \     let JumpCursorOnEdit_foo = line("'\"") |
+                \     let b:doopenfold = 1 |
+                \     if (foldlevel(JumpCursorOnEdit_foo) > foldlevel(JumpCursorOnEdit_foo - 1)) |
+                \        let JumpCursorOnEdit_foo = JumpCursorOnEdit_foo - 1 |
+                \        let b:doopenfold = 2 |
+                \     endif |
+                \     exe JumpCursorOnEdit_foo |
+                \   endif |
+                \ endif
+    " Need to postpone using "zv" until after reading the modelines.
+    autocmd BufWinEnter *
+                \ if exists("b:doopenfold") |
+                \   exe "normal zv" |
+                \   if(b:doopenfold > 1) |
+                \       exe  "+".1 |
+                \   endif |
+                \   unlet b:doopenfold |
+                \ endif
+augroup END
 
