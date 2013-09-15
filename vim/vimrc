@@ -98,6 +98,7 @@ let g:slimv_repl_syntax = 1 " Enable syntax highlighting in Slimv REPL buffer
 " syntastic settings
 let g:syntastic_mode_map = { 'mode': 'active' }     " syntastic: Active syntax checking
 let g:syntastic_check_on_open=1                     " syntastic: Immediately check syntax on open
+
 function! SyntasC ()                                " syntastic: C
     let g:syntastic_c_check_header = 1
     let g:syntastic_c_no_include_search = 1
