@@ -367,7 +367,7 @@ set writebackup         "Make a backup file before overwriting a file
 
 "From Erik Harmon's vimrc
 "Cache things to our homedir, not random places
-if isdirectory(expand('$HOME/cache/vim'))
+if isdirectory(expand('$HOME/.cache/vim'))
     if &backupdir =~# '^\.,'
         set backupdir^=$HOME/.cache/vim/backup//
     endif
