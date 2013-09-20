@@ -2,7 +2,7 @@
 
 ###################################################################################################
 ###################################################################################################
-### Install Script for Happy-Dude's dotfiles repository
+### Git compression script for Happy-Dude's dotfiles repository
 ###
 ### Author: Stanley Chan
 ### Github: https://github.com/Happy-Dude/dotfiles.git
