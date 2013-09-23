@@ -209,30 +209,32 @@ endif
 
 set laststatus=2        " Always show the statusline
 set statusline=[%n]\ %.64F%m%r%h%w\ %#warningmsg#%{SyntasticStatuslineFlag()}%*\ %=%{&ff}\ \|\ %{&enc}\ \|\ %Y\ %<[utf8_0x%02.B/ascii_%03.3b]\ [LN\ %03l:%02v/%L][%p%%]
-"                |    | | | | |   |                                            |   |           |          |   |           |            |           |    |  |   +-- Current position in file
-"                |    | | | | |   |                                            |   |           |          |   |           |            |           |    |  +-- Total number of lines
-"                |    | | | | |   |                                            |   |           |          |   |           |            |           |    +-- Column
-"                |    | | | | |   |                                            |   |           |          |   |           |            |           +-- Current line (row)
-"                |    | | | | |   |                                            |   |           |          |   |           |            +-- ASCII value
-"                |    | | | | |   |                                            |   |           |          |   |           +-- HEX value
-"                |    | | | | |   |                                            |   |           |          |   +-- Truncate statusline from here
-"                |    | | | | |   |                                            |   |           |          +-- Filetype as Vim recognized
-"                |    | | | | |   |                                            |   |           +-- File encoding
-"                |    | | | | |   |                                            |   +-- Current fileformat
-"                |    | | | | |   |                                            +-- Right justify from here
-"                |    | | | | |   +-- syntastic plugin
-"                |    | | | | +-- preview flag in square brackets
-"                |    | | | +-- help flag in square brackets
-"                |    | | +-- readonly flag in square brackets
-"                |    | +-- modified flag in square brackets
-"                |    +-- %F: full path to file in the buffer; %f: file in the buffer (in the buffer title bar -- unnecessary)
-"                +-- %n: buffer number
+"                |     |  | | | | |   |                                            |   |           |          |   |           |            |           |    |  |   +-- Current position in file
+"                |     |  | | | | |   |                                            |   |           |          |   |           |            |           |    |  +-- Total number of lines
+"                |     |  | | | | |   |                                            |   |           |          |   |           |            |           |    +-- Column
+"                |     |  | | | | |   |                                            |   |           |          |   |           |            |           +-- Current line (row)
+"                |     |  | | | | |   |                                            |   |           |          |   |           |            +-- ASCII value
+"                |     |  | | | | |   |                                            |   |           |          |   |           +-- HEX value
+"                |     |  | | | | |   |                                            |   |           |          |   +-- Truncate statusline from here
+"                |     |  | | | | |   |                                            |   |           |          +-- Filetype as Vim recognized
+"                |     |  | | | | |   |                                            |   |           +-- File encoding
+"                |     |  | | | | |   |                                            |   +-- Current fileformat
+"                |     |  | | | | |   |                                            +-- Right justify from here
+"                |     |  | | | | |   +-- Syntastic plugin
+"                |     |  | | | | +-- Preview flag in square brackets
+"                |     |  | | | +-- Help flag in square brackets
+"                |     |  | | +-- Readonly flag in square brackets
+"                |     |  | +-- Modified flag in square brackets
+"                |     |  +-- %F: Full path to file in the buffer; %f: file in the buffer (in the buffer title bar -- unnecessary)
+"                |     +-- Set 64 as maximum width of filepath; truncate from the beginning
+"                +-- %n: Buffer number
 
 set wildmenu                    " Turn on wild menu
 set wildmode=list:longest,full  " Turn on wild mode huge list
 set wildchar=<TAB>              " Path/file expansion in colon mode
 
-" Ignore these list file extensions
+" Ignore this list of file extensions
+" wildignore extended from Erik Harmon's ignore list
 set wildignore=*.bak
 set wildignore+=*.sw?                               " Vim swap files
 set wildignore+=*.DS_Store                          " OS X bullshit
@@ -245,7 +247,6 @@ set wildignore+=*.pyc                               " Python byte code
 set wildignore+=migrations                          " Django migrations
 set wildignore+=*.luac                              " Lua byte code
 set wildignore+=*.aux,*.out,*.toc                   " LaTeX intermediate files
-" wildignore extended from Erik Harmon's ignore list
 
 set title               " Show title in console title bar
 set guioptions=em       " e ensures tab bar is displayed in GUI; m ensures menu bar is displayed
@@ -389,7 +390,7 @@ endif
 " Enable mouse support in console
 if has('mouse')
     set mouse=a
-    if &term =~ "xterm" || &term =~ "screen"
+    if (&term =~ "xterm" || &term =~ "screen" || &term =~ "urxvt")
         " for some reason, doing this directly with 'set ttymouse=xterm2'
         " doesn't work -- 'set ttymouse?' returns xterm2 but the mouse
         " makes tmux enter copy mode instead of selecting or scrolling
@@ -415,10 +416,10 @@ if has("autocmd")
     au FileType helpfile nnoremap <buffer><bs> <c-T>   " Backspace to go back
 
     " When using mutt, text width=72
-    au FileType mail,tex set textwidth=72
-    au FileType cpp,c,java,sh,pl,php,asp  set autoindent
-    au FileType cpp,c,java,sh,pl,php,asp  set smartindent
-    au FileType cpp,c,java,sh,pl,php,asp  set cindent
+    au FileType mail,tex                    set textwidth=72
+    au FileType cpp,c,java,sh,pl,php,asp    set autoindent
+    au FileType cpp,c,java,sh,pl,php,asp    set smartindent
+    au FileType cpp,c,java,sh,pl,php,asp    set cindent
     "au BufRead mutt*[0-9] set tw=72
 
     " Automatically chmod +x Shell and Perl scripts
@@ -426,54 +427,54 @@ if has("autocmd")
     "au BufWritePost   *.pl             !chmod +x %
 
     " File formats
-    au BufNewFile,BufRead  *.pls    set syntax=dosini
-    au BufNewFile,BufRead  modprobe.conf    set syntax=modconf
+    au BufNewFile,BufRead *.pls            set syntax=dosini
+    au BufNewFile,BufRead modprobe.conf    set syntax=modconf
 
 
     " From Uwe Hermann's configuration
     " Drupal *.module and *.engine files.
     augroup module
-        autocmd BufRead                 *.module,*.engine set filetype=php
+        autocmd BufRead *.module,*.engine   set filetype=php
     augroup END
 
     " Python code.
     augroup python
-        autocmd BufReadPre,FileReadPre  *.py set tabstop=4
-        autocmd BufReadPre,FileReadPre  *.py set expandtab
+        autocmd BufReadPre,FileReadPre *.py set tabstop=4
+        autocmd BufReadPre,FileReadPre *.py set expandtab
     augroup END
 
     " Ruby code.
     augroup ruby
-        autocmd BufReadPre,FileReadPre  *.rb set tabstop=2
-        autocmd BufReadPre,FileReadPre  *.rb set expandtab
+        autocmd BufReadPre,FileReadPre *.rb set tabstop=2
+        autocmd BufReadPre,FileReadPre *.rb set expandtab
     augroup END
 
     " PHP code.
     augroup php
-        autocmd BufReadPre,FileReadPre  *.php set tabstop=4
-        autocmd BufReadPre,FileReadPre  *.php set expandtab
+        autocmd BufReadPre,FileReadPre *.php set tabstop=4
+        autocmd BufReadPre,FileReadPre *.php set expandtab
     augroup END
 
     " Java code.
     augroup java
-        autocmd BufReadPre,FileReadPre  *.java set tabstop=4
-        autocmd BufReadPre,FileReadPre  *.java set expandtab
+        autocmd BufReadPre,FileReadPre *.java set tabstop=4
+        autocmd BufReadPre,FileReadPre *.java set expandtab
     augroup END
 
     " ANT build.xml files.
     augroup xml
-        autocmd BufReadPre,FileReadPre  build.xml set tabstop=4
+        autocmd BufReadPre,FileReadPre build.xml    set tabstop=4
     augroup END
 
     " (J)Flex files.
     augroup lex
-        " autocmd BufRead,BufNewFile    *.flex,*.jflex set filetype=lex
-        autocmd BufRead,BufNewFile      *.flex,*.jflex set filetype=jflex
+        "autocmd BufRead,BufNewFile *.flex,*.jflex set filetype=lex
+        autocmd BufRead,BufNewFile *.flex,*.jflex   set filetype=jflex
     augroup END
 
     " (Nu)SMV files.
     augroup smv
-        autocmd BufRead,BufNewFile      *.smv set filetype=smv
+        autocmd BufRead,BufNewFile *.smv            set filetype=smv
     augroup END
 
 endif
