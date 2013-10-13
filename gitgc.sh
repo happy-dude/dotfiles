@@ -20,6 +20,11 @@ if [ $GIT_IS_AVAILABLE -eq 0 ]; then
     GIT_PATH=`which git`
     GIT_OPTS="submodule foreach --recursive"
 
+    echo "Running git prune"
+    $GIT_PATH remote prune origin
+    $GIT_PATH $GIT_OPTS $GIT_PATH $GIT_OPTS $GIT_PATH remote prune origin
+    $GIT_PATH $GIT_OPTS $GIT_PATH remote prune origin
+
     echo "Running git gc"
     $GIT_PATH gc
     $GIT_PATH $GIT_OPTS $GIT_PATH $GIT_OPTS $GIT_PATH gc
