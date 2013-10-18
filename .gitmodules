@@ -54,6 +54,10 @@
 	path = vim/bundle/solarized-altercation
 	url = https://github.com/altercation/vim-colors-solarized.git
 	ignore = dirty
+[submodule "vim/bundle/seoul256-junegunn"]
+	path = vim/bundle/seoul256-junegunn
+	url = https://github.com/junegunn/seoul256.vim.git
+	ignore = dirty
 [submodule "vim/bundle/indent-guides-nathanaelkane"]
 	path = vim/bundle/indent-guides-nathanaelkane
 	url = https://github.com/nathanaelkane/vim-indent-guides.git
