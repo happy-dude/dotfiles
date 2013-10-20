@@ -41,7 +41,7 @@ if [ -f /etc/os-release ]; then
             # Start several background programs
             /usr/bin/sh ~/.fehbg &
             { sleep 2; /usr/bin/dropboxd; } &
-            { sleep 2; /usr/bin/xflux -z 11229; } &
+            { sleep 2; /usr/bin/xflux -z 11229 -k 2700; } &
             #{ sleep 2; /usr/bin/skype; } &
 
             #{ sleep 10; /usr/bin/droidcam; } &
