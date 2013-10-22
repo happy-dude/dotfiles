@@ -177,7 +177,7 @@ set list                " List mode: show special characters -- what is displaye
 set listchars=tab:>-,trail:-    ",eol:¬ or eol:$
 " Display tabs to know we put them/ where we want them
 
-set clipboard+=unnamed  " Share Window's clipboard
+set clipboard^=unnamed  " Share Window's clipboard
 set formatoptions=rw    " Automatically insert command leader on return and let gq format comments
 set shiftround          " When at 3 spaces and hit > ... go to 4, not 5
 
@@ -254,7 +254,7 @@ set wildignore+=*.aux,*.out,*.toc                   " LaTeX intermediate files
 set title               " Show title in console title bar
 set guioptions=em       " e ensures tab bar is displayed in GUI; m ensures menu bar is displayed
 set showcmd             " Display commands as they are typed
-set cmdheight=1         " Set the commandbar height
+"set cmdheight=1         " Set the commandbar height -- default
 set showtabline=2       " Display tab line even if single file opened
 set guitablabel=%t      " Display buffer name on tab label
 "set nohidden            " When I close a tab, remove from buffer
