@@ -168,7 +168,9 @@ set hlsearch            " Highlight search things
 set incsearch           " Make search act like search in modern browsers
 
 set showmatch           " Show matching brackets
-set matchtime=5         " How many tenths of a second to show matching paren with showmatch set
+set matchtime=1         " How many tenths of a second to show matching paren with showmatch set
+let g:matchparen_insert_timeout=5   " Default is 60 -- will lag for extremely large files
+
 set magic               " Set magic on, for regular expressions
 set grepprg=/bin/grep\ -nH  " Vim grep
 
