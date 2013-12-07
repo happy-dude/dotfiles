@@ -24,6 +24,7 @@
 """	Jeff Kreeftmeijer:	http://jeffkreeftmeijer.com/2012/relative-line-numbers-in-vim-for-super-fast-movement/
 """	Dave Eddy:		https://github.com/bahamas10/dotfiles/blob/master/vimrc
 """	Erik Harmon:		https://github.com/eharmon/dotfiles/blob/master/vimrc
+"""	Damien Conway:		http://www.youtube.com/watch?v=aHm36-na4-4
 """
 """
 """	StackOverflow:		http://stackoverflow.com/questions/164847/what-is-in-your-vimrc
@@ -412,6 +413,8 @@ endif
 
 if has("autocmd")
     " Don't use bottom restore cursor, Frew's JumpCursorOnEdit works fine
+    " Discussion: http://stackoverflow.com/questions/164847/what-is-in-your-vimrc/171558#171558
+
     " Restore cursor position
     "au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
 
@@ -487,6 +490,7 @@ endif
 
 " From Frew's configuration on StackOverflow
 " {{{Frew's Auto Commands, Misc Commands, and Functions
+" Discussion: http://stackoverflow.com/questions/164847/what-is-in-your-vimrc/171558#171558
 
 " Automatically cd into the directory that the file is in
 autocmd BufEnter * if expand('%:p') !~ '://' | execute "chdir ".escape(expand("%:p:h"), ' ') | endif
@@ -521,3 +525,24 @@ augroup JumpCursorOnEdit
                 \ endif
 augroup END
 
+
+" From Damien Conway's 'More Instantly Better Vim' OSCON 2013 talk
+" Video: https://www.youtube.com/watch?v=aHm36-na4-4
+" Tarball: http://is.gd/IBV2013
+
+"=====[ Highlight matches when jumping to next ]=============
+" Just highlight the match in red...
+function! HLNext (blinktime)
+    highlight WhiteOnRed ctermfg=white ctermbg=red
+    let [bufnum, lnum, col, off] = getpos('.')
+    let matchlen = strlen(matchstr(strpart(getline('.'),col-1),@/))
+    let target_pat = '\c\%#'.@/
+    let ring = matchadd('WhiteOnRed', target_pat, 101)
+    redraw
+    exec 'sleep ' . float2nr(a:blinktime * 1000) . 'm'
+    call matchdelete(ring)
+    redraw
+endfunction
+
+nnoremap <silent> n   n:call HLNext(0.1)<cr>
+nnoremap <silent> N   N:call HLNext(0.1)<cr>
