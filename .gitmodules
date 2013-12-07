@@ -1,110 +1,6 @@
-[submodule "vim/bundle/pathogen-tpope"]
-	path = vim/bundle/pathogen-tpope
-	url = https://github.com/tpope/vim-pathogen.git
-	ignore = dirty
-[submodule "vim/bundle/unbundle-sunaku"]
-	path = vim/bundle/unbundle-sunaku
-	url = https://github.com/sunaku/vim-unbundle.git
-	ignore = dirty
-[submodule "vim/bundle/fugitive-tpope"]
-	path = vim/bundle/fugitive-tpope
-	url = https://github.com/tpope/vim-fugitive.git
-	ignore = dirty
-[submodule "vim/bundle/matchtag-gregsexton"]
-	path = vim/bundle/matchtag-gregsexton
-	url = https://github.com/gregsexton/MatchTag.git
-	ignore = dirty
-[submodule "vim/ftbundle/html/matchtag-gregsexton"]
-	path = vim/ftbundle/html/matchtag-gregsexton
-	url = https://github.com/gregsexton/MatchTag.git
-	ignore = dirty
-[submodule "vim/bundle/nerdtree-scrooloose"]
-	path = vim/bundle/nerdtree-scrooloose
-	url = https://github.com/scrooloose/nerdtree.git
-	ignore = dirty
-[submodule "vim/bundle/syntastic-scrooloose"]
-	path = vim/bundle/syntastic-scrooloose
-	url = https://github.com/scrooloose/syntastic.git
-	ignore = dirty
-[submodule "vim/bundle/nerdcommenter-scrooloose"]
-	path = vim/bundle/nerdcommenter-scrooloose
-	url = https://github.com/scrooloose/nerdcommenter.git
-	ignore = dirty
-[submodule "vim/bundle/latex-tmaas"]
-	path = vim/bundle/latex-tmaas
-	url = http://git.code.sf.net/p/vim-latex/vim-latex
-	ignore = dirty
-[submodule "vim/bundle/surround-tpope"]
-	path = vim/bundle/surround-tpope
-	url = https://github.com/tpope/vim-surround.git
-	ignore = dirty
-[submodule "vim/bundle/easymotion-lokaltog"]
-	path = vim/bundle/easymotion-lokaltog
-	url = https://github.com/Lokaltog/vim-easymotion.git
-	ignore = dirty
-[submodule "vim/bundle/gundo-sjl"]
-	path = vim/bundle/gundo-sjl
-	url = https://github.com/sjl/gundo.vim.git
-	ignore = dirty
-[submodule "vim/bundle/solarized-altercation"]
-	path = vim/bundle/solarized-altercation
-	url = https://github.com/altercation/vim-colors-solarized.git
-	ignore = dirty
-[submodule "vim/bundle/seoul256-junegunn"]
-	path = vim/bundle/seoul256-junegunn
-	url = https://github.com/junegunn/seoul256.vim.git
-	ignore = dirty
-[submodule "vim/bundle/indent-guides-nathanaelkane"]
-	path = vim/bundle/indent-guides-nathanaelkane
-	url = https://github.com/nathanaelkane/vim-indent-guides.git
-	ignore = dirty
-[submodule "vim/bundle/ack-mileszs"]
-	path = vim/bundle/ack-mileszs
-	url = https://github.com/mileszs/ack.vim.git
-	ignore = dirty
-[submodule "vim/bundle/ctrlp-kien"]
-	path = vim/bundle/ctrlp-kien
-	url = https://github.com/kien/ctrlp.vim.git
-	ignore = dirty
-[submodule "vim/bundle/python-mode-klen"]
-	path = vim/bundle/python-mode-klen
-	url = https://github.com/klen/python-mode.git
-	ignore = dirty
-[submodule "vim/bundle/clam-sjl"]
-	path = vim/bundle/clam-sjl
-	url = https://github.com/sjl/clam.vim.git
-	ignore = dirty
-[submodule "vim/ftbundle/html/html5-othree"]
-	path = vim/ftbundle/html/html5-othree
-	url = https://github.com/othree/html5.vim.git
-	ignore = dirty
-[submodule "vim/bundle/tslime-kikijump"]
-	path = vim/bundle/tslime-kikijump
-	url = https://github.com/kikijump/tslime.vim.git
-	ignore = dirty
-[submodule "vim/bundle/tomorrow-chriskempson"]
-	path = vim/bundle/tomorrow-chriskempson
-	url = https://github.com/chriskempson/vim-tomorrow-theme.git
-	ignore = dirty
-[submodule "vim/bundle/cocoa-jgoulah_msanders"]
-	path = vim/bundle/cocoa-jgoulah_msanders
-	url = https://github.com/jgoulah/cocoa.vim.git
-	ignore = dirty
-[submodule "vim/bundle/jellybeans-nanotech"]
-	path = vim/bundle/jellybeans-nanotech
-	url = https://github.com/nanotech/jellybeans.vim.git
-	ignore = dirty
-[submodule "vim/bundle/Lucius-jonathanfilip"]
-	path = vim/bundle/Lucius-jonathanfilip
-	url = https://github.com/vim-scripts/Lucius.git
-	ignore = dirty
-[submodule "vim/bundle/markdown-tpope"]
-	path = vim/bundle/markdown-tpope
-	url = https://github.com/tpope/vim-markdown.git
-	ignore = dirty
-[submodule "zsh/prezto-sorin"]
-	path = zsh/prezto-sorin
-	url = https://github.com/sorin-ionescu/prezto.git
+[submodule "grml-etc-core"]
+	path = grml-etc-core
+	url = https://github.com/grml/grml-etc-core.git
 	ignore = dirty
 [submodule "themes/solarized_theme-altercation"]
 	path = themes/solarized_theme-altercation
@@ -114,11 +10,119 @@
 	path = themes/tomorrow_theme-chriskempson
 	url = http://github.com/chriskempson/tomorrow-theme.git
 	ignore = dirty
-[submodule "grml-etc-core"]
-	path = grml-etc-core
-	url = https://github.com/grml/grml-etc-core.git
+[submodule "vim/bundle/ack-mileszs"]
+	path = vim/bundle/ack-mileszs
+	url = https://github.com/mileszs/ack.vim.git
+	ignore = dirty
+[submodule "vim/bundle/clam-sjl"]
+	path = vim/bundle/clam-sjl
+	url = https://github.com/sjl/clam.vim.git
+	ignore = dirty
+[submodule "vim/bundle/cocoa-jgoulah_msanders"]
+	path = vim/bundle/cocoa-jgoulah_msanders
+	url = https://github.com/jgoulah/cocoa.vim.git
+	ignore = dirty
+[submodule "vim/bundle/ctrlp-kien"]
+	path = vim/bundle/ctrlp-kien
+	url = https://github.com/kien/ctrlp.vim.git
+	ignore = dirty
+[submodule "vim/bundle/easymotion-lokaltog"]
+	path = vim/bundle/easymotion-lokaltog
+	url = https://github.com/Lokaltog/vim-easymotion.git
+	ignore = dirty
+[submodule "vim/bundle/fugitive-tpope"]
+	path = vim/bundle/fugitive-tpope
+	url = https://github.com/tpope/vim-fugitive.git
+	ignore = dirty
+[submodule "vim/bundle/gundo-sjl"]
+	path = vim/bundle/gundo-sjl
+	url = https://github.com/sjl/gundo.vim.git
+	ignore = dirty
+[submodule "vim/bundle/indent-guides-nathanaelkane"]
+	path = vim/bundle/indent-guides-nathanaelkane
+	url = https://github.com/nathanaelkane/vim-indent-guides.git
+	ignore = dirty
+[submodule "vim/bundle/jellybeans-nanotech"]
+	path = vim/bundle/jellybeans-nanotech
+	url = https://github.com/nanotech/jellybeans.vim.git
+	ignore = dirty
+[submodule "vim/bundle/latex-tmaas"]
+	path = vim/bundle/latex-tmaas
+	url = http://git.code.sf.net/p/vim-latex/vim-latex
+	ignore = dirty
+[submodule "vim/bundle/Lucius-jonathanfilip"]
+	path = vim/bundle/Lucius-jonathanfilip
+	url = https://github.com/vim-scripts/Lucius.git
+	ignore = dirty
+[submodule "vim/bundle/markdown-tpope"]
+	path = vim/bundle/markdown-tpope
+	url = https://github.com/tpope/vim-markdown.git
+	ignore = dirty
+[submodule "vim/bundle/matchtag-gregsexton"]
+	path = vim/bundle/matchtag-gregsexton
+	url = https://github.com/gregsexton/MatchTag.git
+	ignore = dirty
+[submodule "vim/bundle/nerdcommenter-scrooloose"]
+	path = vim/bundle/nerdcommenter-scrooloose
+	url = https://github.com/scrooloose/nerdcommenter.git
+	ignore = dirty
+[submodule "vim/bundle/nerdtree-scrooloose"]
+	path = vim/bundle/nerdtree-scrooloose
+	url = https://github.com/scrooloose/nerdtree.git
+	ignore = dirty
+[submodule "vim/bundle/pathogen-tpope"]
+	path = vim/bundle/pathogen-tpope
+	url = https://github.com/tpope/vim-pathogen.git
+	ignore = dirty
+[submodule "vim/bundle/python-mode-klen"]
+	path = vim/bundle/python-mode-klen
+	url = https://github.com/klen/python-mode.git
+	ignore = dirty
+[submodule "vim/bundle/seoul256-junegunn"]
+	path = vim/bundle/seoul256-junegunn
+	url = https://github.com/junegunn/seoul256.vim.git
+	ignore = dirty
+[submodule "vim/bundle/slimv-kovisoft"]
+	path = vim/bundle/slimv-kovisoft
+	url = https://github.com/kovisoft/slimv.git
+	ignore = dirty
+[submodule "vim/bundle/solarized-altercation"]
+	path = vim/bundle/solarized-altercation
+	url = https://github.com/altercation/vim-colors-solarized.git
+	ignore = dirty
+[submodule "vim/bundle/surround-tpope"]
+	path = vim/bundle/surround-tpope
+	url = https://github.com/tpope/vim-surround.git
+	ignore = dirty
+[submodule "vim/bundle/syntastic-scrooloose"]
+	path = vim/bundle/syntastic-scrooloose
+	url = https://github.com/scrooloose/syntastic.git
+	ignore = dirty
+[submodule "vim/bundle/tomorrow-chriskempson"]
+	path = vim/bundle/tomorrow-chriskempson
+	url = https://github.com/chriskempson/vim-tomorrow-theme.git
+	ignore = dirty
+[submodule "vim/bundle/tslime-kikijump"]
+	path = vim/bundle/tslime-kikijump
+	url = https://github.com/kikijump/tslime.vim.git
+	ignore = dirty
+[submodule "vim/bundle/unbundle-sunaku"]
+	path = vim/bundle/unbundle-sunaku
+	url = https://github.com/sunaku/vim-unbundle.git
+	ignore = dirty
+[submodule "vim/ftbundle/html/html5-othree"]
+	path = vim/ftbundle/html/html5-othree
+	url = https://github.com/othree/html5.vim.git
+	ignore = dirty
+[submodule "vim/ftbundle/html/matchtag-gregsexton"]
+	path = vim/ftbundle/html/matchtag-gregsexton
+	url = https://github.com/gregsexton/MatchTag.git
 	ignore = dirty
 [submodule "xcode/xvim"]
 	path = xcode/xvim
 	url = https://github.com/JugglerShu/XVim.git
+	ignore = dirty
+[submodule "zsh/prezto-sorin"]
+	path = zsh/prezto-sorin
+	url = https://github.com/sorin-ionescu/prezto.git
 	ignore = dirty
