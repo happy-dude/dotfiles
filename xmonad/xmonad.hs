@@ -42,7 +42,7 @@ main = do
         , layoutHook = myLayouts
         , logHook = myLogHook <+> dynamicLogWithPP xmobarPP
                 { ppOutput = hPutStrLn xmproc
-                , ppTitle = xmobarColor "green" "" . shorten 50
+                , ppTitle = xmobarColor "green" "" . shorten 71
                 , ppSort = getSortByTag
                 } >> updatePointer (TowardsCentre 0.2 0.2)
                 --} >> updatePointer (Relative 0.5 0.5)         -- Recenter pointer at window
