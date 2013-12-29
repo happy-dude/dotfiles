@@ -546,3 +546,14 @@ endfunction
 
 nnoremap <silent> n   n:call HLNext(0.1)<cr>
 nnoremap <silent> N   N:call HLNext(0.1)<cr>
+
+" Heads-Up Display for Digraphs
+"inoremap <expr>  <C-K>   HUDG_GetDigraph()
+
+" Dragging virtual blocks
+"vmap  <expr>  h        DVB_Drag('left')
+"vmap  <expr>  l        DVB_Drag('right')
+"vmap  <expr>  j        DVB_Drag('down')
+"vmap  <expr>  k        DVB_Drag('up')
+"vmap  <expr>  D        DVB_Duplicate()
+"let g:DVB_TrimWS = 1
