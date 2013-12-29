@@ -7,7 +7,7 @@ Config {
                     , Run BatteryP ["BAT0"]
                         ["-t", "<left>% <acstatus>",
                         "-L", "10", "-H", "80", "-p", "3",
-                        "--", "-i", "<fc=green>AC</fc>", "-O", "<fc=blue>Charging</fc>", "-o", "<fc=purple>Discharging</fc>",
+                        "--", "-i", "<fc=green>=</fc>", "-O", "<fc=blue>+</fc>", "-o", "<fc=purple>-</fc>",
                         "-L", "-30", "-H", "-10",
                         "-l", "red", "-m", "blue", "-h", "green"] 180
                    , Run MultiCpu ["-t","<total0>% <total1>%"] 10
