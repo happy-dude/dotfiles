@@ -19,5 +19,5 @@ Config {
                    , Run Kbd [("us(colemak)", "CO"), ("us(dvorak)", "DV"), ("us", "US")]
                    , Run StdinReader
                    ]
-        , template = "%StdinReader% }{ %multicpu% | %coretemp% | %memory% | %swap% | %wlp3s0wi% | %enp0s25% |%battery% | %kbd% | <fc=#ee9a00>%date%</fc>"
+        , template = "%StdinReader% }{ %multicpu% | %coretemp% | %memory% | %swap% | %wlp3s0wi% | %enp0s25% | %battery% | %kbd% | <fc=#ee9a00>%date%</fc>"
       }
