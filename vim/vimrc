@@ -81,8 +81,7 @@ call pathogen#helptags()
 "runtime bundle/unbundle-sunaku/unbundle.vim        " unbundle: Alternative plugin manager
 
 filetype plugin indent on   " Enable filetype plugin and filetype-based indentation
-syntax on                   " Enable syntax highlighting
-syntax enable
+syntax enable               " Enable syntax highlighting
 
 " indent-guides settings
 let g:indent_guides_guide_size = 1                  " Instead of having the indent guide be the size of a tabwidth, size it to just 1 character
