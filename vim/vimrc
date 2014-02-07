@@ -360,8 +360,8 @@ inoremap <silent> <End> <C-o>g<End>
 "noremap <C-l> <C-w>l
 
 set backup              " Keep backup file after overwriting a file
-set swapfile            " Allow creation of .swp swap files
 set writebackup         " Make a backup file before overwriting a file
+set swapfile            " Allow creation of .swp swap files
 if exists('+undofile')  " Have Vim save undo history to file and restore it on open
     set undofile
 endif
