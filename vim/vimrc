@@ -289,7 +289,7 @@ set more                " Use more propmt -- pausing screen when too many items 
 set noautowrite         " Don't automagically write on :next
 set hid                 " Change buffer - without saving
 
-set nolazyredraw        " Don't redraw while executing macros
+set lazyredraw          " Do not redraw while running macros; buffers screen updates
 
 set backspace=indent,eol,start  " Set backspace config -- same as set bs=2
 set whichwrap=b,s,h,l,<,>,[,]   " Move freely between file
