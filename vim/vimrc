@@ -179,7 +179,12 @@ set list                " List mode: show special characters -- what is displaye
 set listchars=tab:>-,trail:-    ",eol:¬ or eol:$
 " Display tabs to know we put them/ where we want them
 
-set clipboard^=unnamed  " Share Window's clipboard
+if has('unnamedplus')
+    set clipboard=unnamedplus   " Use the '+' register for all yank, delete, and change operations; the '+' register is the X Windows clipboard
+elseif has('clipboard')
+    set clipboard=unnamed       " Use the '*' register for all yank, delete, and change operations; the '*' register is the system clipboard
+endif
+
 set formatoptions=rw    " Automatically insert command leader on return and let gq format comments
 set shiftround          " When at 3 spaces and hit > ... go to 4, not 5
 
