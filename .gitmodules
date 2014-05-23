@@ -78,6 +78,10 @@
 	path = vim/bundle/python-mode-klen
 	url = https://github.com/klen/python-mode.git
 	ignore = dirty
+[submodule "vim/bundle/rsi-tpope"]
+	path = vim/bundle/rsi-tpope
+	url = https://github.com/tpope/vim-rsi.git
+	ignore = dirty
 [submodule "vim/bundle/seoul256-junegunn"]
 	path = vim/bundle/seoul256-junegunn
 	url = https://github.com/junegunn/seoul256.vim.git
