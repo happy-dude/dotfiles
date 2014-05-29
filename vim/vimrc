@@ -25,6 +25,7 @@
 """	Dave Eddy:		https://github.com/bahamas10/dotfiles/blob/master/vimrc
 """	Erik Harmon:		https://github.com/eharmon/dotfiles/blob/master/vimrc
 """	Damien Conway:		http://www.youtube.com/watch?v=aHm36-na4-4
+"""	tommcdo:		https://github.com/tommcdo/vimfiles/blob/master/config/consistency.vim
 """
 """
 """	StackOverflow:		http://stackoverflow.com/questions/164847/what-is-in-your-vimrc
@@ -363,6 +364,24 @@ inoremap <silent> <End> <C-o>g<End>
 "noremap <C-k> <C-w>k
 "noremap <C-h> <C-w>h
 "noremap <C-l> <C-w>l
+
+" From https://github.com/tommcdo/vimfiles/blob/master/config/consistency.vim
+" Make Y behave like C and D
+nnoremap Y y$
+
+" Make cw behave like dw and yw
+" NOTE: This causes some weird behaviour for end-of-line edge cases:
+"   https://asciinema.org/a/9843
+" To compensate for this edge case, use caw
+"onoremap <silent> w :execute 'normal! '.v:count1.'w'<CR>
+
+" From http://www.reddit.com/r/vim/comments/26nut8/why_does_cw_work_like_ce/chsz0pq
+" What this does is it creates a new operator "z" that forcibly acts as a
+" normal "w". This "w" is then mapped (only for cw, aka the "error") to cw to
+" fix it. However it works perfectly fine with dw as well. It takes just one
+" command history so undo works properly and dot repetition works as expected.
+onoremap <silent> z :<C-U>normal! w<CR>
+"map cw cz
 
 set backup              " Keep backup file after overwriting a file
 set writebackup         " Make a backup file before overwriting a file
