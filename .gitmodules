@@ -94,6 +94,10 @@
 	path = vim/bundle/solarized-altercation
 	url = https://github.com/altercation/vim-colors-solarized.git
 	ignore = dirty
+[submodule "vim/bundle/speeddating-tpope"]
+	path = vim/bundle/speeddating-tpope
+	url = https://github.com/tpope/vim-speeddating.git
+	ignore = dirty
 [submodule "vim/bundle/surround-tpope"]
 	path = vim/bundle/surround-tpope
 	url = https://github.com/tpope/vim-surround.git
@@ -129,4 +133,8 @@
 [submodule "zsh/prezto-sorin"]
 	path = zsh/prezto-sorin
 	url = https://github.com/sorin-ionescu/prezto.git
+	ignore = dirty
+[submodule "vim/bundle/speeddating-tpope"]
+	path = vim/bundle/speeddating-tpope
+	url = https://github.com/tpope/vim-speeddating.git
 	ignore = dirty
