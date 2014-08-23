@@ -122,6 +122,8 @@ function! SyntasCPP ()                              " syntastic: C++
 endfunction
 
 " syntastic: Perl
+let g:syntastic_perl_checkers = ['perl']        " syntastic: Enable perl syntax checking
+let g:syntastic_enable_perl_checker = 1         " syntastic: Enable perl syntax checking; potential security issue if using 3rd-party modules
 let g:syntastic_perl_lib_path = ['./lib']
 
 autocmd BufRead,BufNewFile *.c call SyntasC()
