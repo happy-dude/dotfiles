@@ -2,6 +2,10 @@
 	path = grml-etc-core
 	url = https://github.com/grml/grml-etc-core.git
 	ignore = dirty
+[submodule "lisp/pathogen_infect/slime"]
+	path = lisp/pathogen_infect/slime
+	url = https://github.com/slime/slime.git
+	ignore = dirty
 [submodule "themes/solarized_theme-altercation"]
 	path = themes/solarized_theme-altercation
 	url = http://github.com/altercation/solarized.git
