@@ -4,7 +4,7 @@
 """
 """     Author: Stanley Chan
 """     Github: https://github.com/Happy-Dude
-"""     Version: 07 June 2014
+"""     Version: 19 Sept 2014
 """
 """ Based on configurations from:
 """	amix the lucky stiff:	http://amix.dk/blog/post/19486#The-ultimate-vim-configuration-vimrc
@@ -340,37 +340,40 @@ set cpoptions=aABceFsmq
 " Map Ctrl-Backspace to delete previous word in insert mode like Ctrl-w
 " Note how this mapping does not work in terminal vim because of term-keys
 " However, this mapping will work just fine in gvim
-inoremap <C-BS> <C-w>
+inoremap    <C-BS>      <C-w>
 
 " To move up and down logical lines instead of physical lines
 " Instead of changing the Home row keys, use the arrow keys
-nnoremap <Down> gj
-nnoremap <Up> gk
-vnoremap <Down> gj
-vnoremap <Up> gk
-inoremap <Down> <C-o>gj
-inoremap <Up> <C-o>gk
-noremap <silent> <Up> gk
-noremap <silent> <Down> gj
-inoremap <silent> <Up> <C-o>gk
-inoremap <silent> <Down> <C-o>gj
+nnoremap    <Down>      gj
+nnoremap    <Up>        gk
+vnoremap    <Down>      gj
+vnoremap    <Up>        gk
+inoremap    <Down>      <C-o>gj
+inoremap    <Up>        <C-o>gk
+noremap     <silent> <Up>   gk
+noremap     <silent> <Down> gj
+inoremap    <silent> <Up>   <C-o>gk
+inoremap    <silent> <Down> <C-o>gj
 " Home and end keys are broken -- dependent of TERM variable;
 " Not sure how to fix reliably
-noremap <silent> <Home> g<Home>
-noremap <silent> <End> g<End>
-inoremap <silent> <Home> <C-o>g<Home>
-inoremap <silent> <End> <C-o>g<End>
+noremap     <silent> <Home> g<Home>
+noremap     <silent> <End>  g<End>
+inoremap    <silent> <Home> <C-o>g<Home>
+inoremap    <silent> <End>  <C-o>g<End>
 
 " Smart way to move between windows
 " Also noted how they don't seem to work... Need to investigate.
-"noremap <C-j> <C-w>j
-"noremap <C-k> <C-w>k
-"noremap <C-h> <C-w>h
-"noremap <C-l> <C-w>l
+"noremap    <C-j>       <C-w>j
+"noremap    <C-k>       <C-w>k
+"noremap    <C-h>       <C-w>h
+"noremap    <C-l>       <C-w>l
+
+" Never "accidentally" enter ex mode
+nnoremap    Q           <nop>
 
 " From https://github.com/tommcdo/vimfiles/blob/master/config/consistency.vim
 " Make Y behave like C and D
-nnoremap Y y$
+nnoremap    Y           y$
 
 " Make cw behave like dw and yw
 " NOTE: This causes some weird behaviour for end-of-line edge cases:
@@ -383,8 +386,8 @@ nnoremap Y y$
 " normal "w". This "w" is then mapped (only for cw, aka the "error") to cw to
 " fix it. However it works perfectly fine with dw as well. It takes just one
 " command history so undo works properly and dot repetition works as expected.
-onoremap <silent> z :<C-U>normal! w<CR>
-"map cw cz
+onoremap    <silent> z  :<C-U>normal! w<CR>
+"map        cw          cz
 
 set backup              " Keep backup file after overwriting a file
 set writebackup         " Make a backup file before overwriting a file
@@ -572,16 +575,16 @@ function! HLNext (blinktime)
     redraw
 endfunction
 
-nnoremap <silent> n   n:call HLNext(0.1)<cr>
-nnoremap <silent> N   N:call HLNext(0.1)<cr>
+nnoremap    <silent> n      n:call HLNext(0.1)<cr>
+nnoremap    <silent> N      N:call HLNext(0.1)<cr>
 
 " Heads-Up Display for Digraphs
-"inoremap <expr>  <C-K>   HUDG_GetDigraph()
+"inoremap   <expr>  <C-K>   HUDG_GetDigraph()
 
 " Dragging virtual blocks
-"vmap  <expr>  h        DVB_Drag('left')
-"vmap  <expr>  l        DVB_Drag('right')
-"vmap  <expr>  j        DVB_Drag('down')
-"vmap  <expr>  k        DVB_Drag('up')
-"vmap  <expr>  D        DVB_Duplicate()
+"vmap       <expr>  h       DVB_Drag('left')
+"vmap       <expr>  l       DVB_Drag('right')
+"vmap       <expr>  j       DVB_Drag('down')
+"vmap       <expr>  k       DVB_Drag('up')
+"vmap       <expr>  D       DVB_Duplicate()
 "let g:DVB_TrimWS = 1
