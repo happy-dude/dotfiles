@@ -528,7 +528,8 @@ autocmd BufEnter * if expand('%:p') !~ '://' | execute "chdir ".escape(expand("%
 
 " Remove any trailing whitespace that is in the file and indent entire file and return to position
 autocmd BufRead,BufWrite * :exe ":normal! ma" | silent! %s/\s\+$//ge | :exe ":normal! 'azz"
-autocmd BufWrite * if ! &bin && &filetype != "" && &filetype !~ '\(asm\|conf\|haskell\|html\|js\|markdown\|make\|perl\|python\|sh\|text\)' | :exe ":normal! gg=G" | :exe ":normal! 'azz" | endif
+" Disable autoindent on write for contributing to open source projects with own style guidelines
+"autocmd BufWrite * if ! &bin && &filetype != "" && &filetype !~ '\(asm\|conf\|haskell\|html\|js\|markdown\|make\|perl\|python\|sh\|text\)' | :exe ":normal! gg=G" | :exe ":normal! 'azz" | endif
 
 " Restore cursor position to where it was before
 augroup JumpCursorOnEdit
