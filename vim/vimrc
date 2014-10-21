@@ -292,6 +292,8 @@ else
     set number          " Show absolute line numbers
 endif
 
+set breakindent showbreak=..\   " Set breakindent with .. for wrapped lines
+
 set ruler               " Show cursor position all times
 set numberwidth=5       " Aesthetic uses only... and for displaying large line numbers
 set more                " Use more propmt -- pausing screen when too many items are displayed
