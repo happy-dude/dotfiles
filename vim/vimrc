@@ -183,44 +183,6 @@ set list                " List mode: show special characters -- what is displaye
 set listchars=tab:>-,trail:-    ",eol:¬ or eol:$
 " Display tabs to know we put them/ where we want them
 
-if has('unnamedplus')
-    set clipboard=unnamedplus   " Use the '+' register for all yank, delete, and change operations; the '+' register is the X Windows clipboard
-elseif has('clipboard')
-    set clipboard=unnamed       " Use the '*' register for all yank, delete, and change operations; the '*' register is the system clipboard
-endif
-
-set formatoptions=rw    " Automatically insert command leader on return and let gq format comments
-set shiftround          " When at 3 spaces and hit > ... go to 4, not 5
-
-if (&t_Co == 256 || &t_Co == 88) && (!has("gui_running")) && ((&term =~ "xterm") || (&term =~ "screen") || (&term =~ "color"))
-    " Colorscheme preferences:
-    " solarized, jellybeans, Tomorrow-Night, seoul256, lucius, tango2, desert, torte, murphy
-    if filereadable(expand("$HOME/.vim/bundle/solarized-altercation/colors/solarized.vim"))
-        set background=dark
-        colorscheme solarized
-    elseif filereadable(expand("$HOME/.vim/bundle/jellybeans-nanotech/colors/jellybeans.vim"))
-        set background=dark
-        colorscheme jellybeans
-    elseif filereadable(expand("$HOME/.vim/bundle/tomorrow-chriskempson/colors/Tomorrow-Night.vim"))
-        set background=light
-        colorscheme Tomorrow-Night
-    elseif filereadable(expand("$HOME/.vim/bundle/jellybeans-nanotech/colors/seoul256.vim"))
-        set background=dark
-        colorscheme seoul256
-    endif
-endif
-
-set cursorline          " Highlight the current line
-set cursorcolumn        " Highlight the current column
-""" Highlight column 81 for old-school 80 character terminal widths
-""" The elseif hack is from http://stackoverflow.com/a/235970
-if exists('+colorcolumn')
-    set colorcolumn=81
-else
-    highlight ColorColumn ctermbg=235
-    match ColorColumn /\%81v/
-endif
-
 set laststatus=2        " Always show the statusline
 set statusline=[%n]\ %.64F%m%r%h%w\ %#warningmsg#%{SyntasticStatuslineFlag()}%*\ %=%{&ff}\ \|\ %{&enc}\ \|\ %Y\ %<[utf8_0x%02.B/ascii_%03.3b]\ [LN\ %03l:%02v/%L][%p%%]
 "                |     |  | | | | |   |                                            |   |           |          |   |           |            |           |    |  |   +-- Current position in file
@@ -271,6 +233,75 @@ set guitablabel=%t      " Display buffer name on tab label
 "set nohidden            " When I close a tab, remove from buffer
 set tm=500              " Set tooltip menu
 
+set backup              " Keep backup file after overwriting a file
+set writebackup         " Make a backup file before overwriting a file
+set swapfile            " Allow creation of .swp swap files
+if exists('+undofile')  " Have Vim save undo history to file and restore it on open
+    set undofile
+endif
+
+"set history=350         " Sets how many lines of history Vim will remember
+"set undolevels=500      " Number of undo levels
+"Default history and undolevels = 1000
+
+" From Erik Harmon's vimrc
+" Cache things to our homedir, not random places
+if isdirectory(expand('$HOME/.cache/vim'))
+    if &backupdir =~# '^\.,'
+        set backupdir^=$HOME/.cache/vim/backup//
+    endif
+
+    if &directory =~# '^\.,'
+        set directory^=$HOME/.cache/vim/swap//
+    endif
+
+    if exists('+undodir') && &undodir =~# '^\.\%(,\|$\)'
+        set undodir^=$HOME/.cache/vim/undo//
+    endif
+endif
+
+if has('unnamedplus')
+    set clipboard=unnamedplus   " Use the '+' register for all yank, delete, and change operations; the '+' register is the X Windows clipboard
+elseif has('clipboard')
+    set clipboard=unnamed       " Use the '*' register for all yank, delete, and change operations; the '*' register is the system clipboard
+endif
+
+set formatoptions=rw    " Automatically insert command leader on return and let gq format comments
+set shiftround          " When at 3 spaces and hit > ... go to 4, not 5
+
+if (&t_Co == 256 || &t_Co == 88) && (!has("gui_running")) && ((&term =~ "xterm") || (&term =~ "screen") || (&term =~ "color"))
+    " Colorscheme preferences:
+    " solarized, jellybeans, Tomorrow-Night, seoul256, lucius, tango2, desert, torte, murphy
+    if filereadable(expand("$HOME/.vim/bundle/solarized-altercation/colors/solarized.vim"))
+        set background=dark
+        colorscheme solarized
+    elseif filereadable(expand("$HOME/.vim/bundle/jellybeans-nanotech/colors/jellybeans.vim"))
+        set background=dark
+        colorscheme jellybeans
+    elseif filereadable(expand("$HOME/.vim/bundle/tomorrow-chriskempson/colors/Tomorrow-Night.vim"))
+        set background=light
+        colorscheme Tomorrow-Night
+    elseif filereadable(expand("$HOME/.vim/bundle/jellybeans-nanotech/colors/seoul256.vim"))
+        set background=dark
+        colorscheme seoul256
+    endif
+endif
+
+set cursorline          " Highlight the current line
+set cursorcolumn        " Highlight the current column
+""" Highlight column 81 for old-school 80 character terminal widths
+""" The elseif hack is from http://stackoverflow.com/a/235970
+if exists('+colorcolumn')
+    set colorcolumn=81
+else
+    highlight ColorColumn ctermbg=235
+    match ColorColumn /\%81v/
+endif
+
+if v:version > 704 || v:version == 704 && has("patch338")
+    set breakindent showbreak=..\   " Set breakindent with .. for wrapped lines
+endif
+
 """ relativenumber is a Vim 7.3 option
 """ If the option doesn't exist, fall back to just absolute line numbers
 if exists('+relativenumber') && (version >= 704) || (version == 703) && has("patch1115")
@@ -292,7 +323,13 @@ else
     set number          " Show absolute line numbers
 endif
 
-set breakindent showbreak=..\   " Set breakindent with .. for wrapped lines
+" Use english for spellchecking, but don't spellcheck by default
+if version >= 700
+    set spl=en spell
+    set nospell
+else
+    set spell spelllang=en_us
+endif
 
 set ruler               " Show cursor position all times
 set numberwidth=5       " Aesthetic uses only... and for displaying large line numbers
@@ -390,41 +427,6 @@ nnoremap    Y           y$
 " command history so undo works properly and dot repetition works as expected.
 onoremap    <silent> z  :<C-U>normal! w<CR>
 "map        cw          cz
-
-set backup              " Keep backup file after overwriting a file
-set writebackup         " Make a backup file before overwriting a file
-set swapfile            " Allow creation of .swp swap files
-if exists('+undofile')  " Have Vim save undo history to file and restore it on open
-    set undofile
-endif
-
-"set history=350         " Sets how many lines of history Vim will remember
-"set undolevels=500      " Number of undo levels
-"Default history and undolevels = 1000
-
-" From Erik Harmon's vimrc
-" Cache things to our homedir, not random places
-if isdirectory(expand('$HOME/.cache/vim'))
-    if &backupdir =~# '^\.,'
-        set backupdir^=$HOME/.cache/vim/backup//
-    endif
-
-    if &directory =~# '^\.,'
-        set directory^=$HOME/.cache/vim/swap//
-    endif
-
-    if exists('+undodir') && &undodir =~# '^\.\%(,\|$\)'
-        set undodir^=$HOME/.cache/vim/undo//
-    endif
-endif
-
-" Use english for spellchecking, but don't spellcheck by default
-if version >= 700
-    set spl=en spell
-    set nospell
-else
-    set spell spelllang=en_us
-endif
 
 " Enable mouse support in console
 if has('mouse')
