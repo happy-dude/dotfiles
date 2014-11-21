@@ -23,6 +23,7 @@ core
 *.exe
 *.o
 *.so
+*.pyc
 
 # Packages #
 ############
