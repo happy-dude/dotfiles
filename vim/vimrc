@@ -131,8 +131,8 @@ let g:syntastic_perl_checkers = ['perl']        " syntastic: Enable perl syntax 
 let g:syntastic_enable_perl_checker = 1         " syntastic: Enable perl syntax checking; potential security issue if using 3rd-party modules
 let g:syntastic_perl_lib_path = ['./lib']
 
-autocmd BufRead,BufNewFile \*.c call SyntasC()
-autocmd BufRead,BufNewFile \*.cpp call SyntasCPP()
+autocmd BufRead,BufNewFile *.c call SyntasC()
+autocmd BufRead,BufNewFile *.cpp call SyntasCPP()
 
 " Solarized colorscheme settings
 if !has("gui_running")                          " Use these settings if terminal vim; otherwise, gvimrc settings should take over
@@ -216,18 +216,18 @@ set wildchar=<TAB>              " Path/file expansion in colon mode
 
 " Ignore this list of file extensions
 " wildignore extended from Erik Harmon's ignore list
-set wildignore=\*.bak
-set wildignore+=\*.sw?                               " Vim swap files
-set wildignore+=\*.DS_Store                          " OS X bullshit
-set wildignore+=\*.spl                               " Compiled spelling word lists
-set wildignore+=\*.bmp,\*.gif,\*.jpg,\*.jpeg,\*.png      " Binary images
+set wildignore=*.bak
+set wildignore+=*.sw?                               " Vim swap files
+set wildignore+=*.DS_Store                          " OS X bullshit
+set wildignore+=*.spl                               " Compiled spelling word lists
+set wildignore+=*.bmp,*.gif,*.jpg,*.jpeg,*.png      " Binary images
 set wildignore+=.hg,.git,.svn                       " Version control
-set wildignore+=\*.orig                              " Merge resolution files
-set wildignore+=\*.dll,\*.exe,\*.o,\*.obj,\*.manifest    " Compiled object files
-set wildignore+=\*.pyc                               " Python byte code
+set wildignore+=*.orig                              " Merge resolution files
+set wildignore+=*.dll,*.exe,*.o,*.obj,*.manifest    " Compiled object files
+set wildignore+=*.pyc                               " Python byte code
 set wildignore+=migrations                          " Django migrations
-set wildignore+=\*.luac                              " Lua byte code
-set wildignore+=\*.aux,\*.out,\*.toc                   " LaTeX intermediate files
+set wildignore+=*.luac                              " Lua byte code
+set wildignore+=*.aux,*.out,*.toc                   " LaTeX intermediate files
 
 set title               " Show title in console title bar
 set guioptions=em       " e ensures tab bar is displayed in GUI; m ensures menu bar is displayed
@@ -321,12 +321,12 @@ elseif exists('+relativenumber')
     set relativenumber  "Display how far away each line is from the current one by default
 
     " Switch to absolute line numbers whenever Vim loses focus
-    autocmd FocusLost \* :set number
-    autocmd FocusGained \* :set relativenumber
+    autocmd FocusLost * :set number
+    autocmd FocusGained * :set relativenumber
 
     " Use absolute line numbers when in insert mode and relative numbers when in normal mode
-    autocmd InsertEnter \* :set norelativenumber | set number
-    autocmd InsertLeave \* :set relativenumber
+    autocmd InsertEnter * :set norelativenumber | set number
+    autocmd InsertLeave * :set relativenumber
 
 else
     set number          " Show absolute line numbers
@@ -392,12 +392,12 @@ inoremap    <C-BS>      <C-w>
 
 " To move up and down logical lines instead of physical lines
 " Instead of changing the Home row keys, use the arrow keys
-nnoremap    <Down>      (v:count ? 'gj' : 'j')
-nnoremap    <Up>        (v:count ? 'gk' : 'k')
-vnoremap    <Down>      (v:count ? 'gj' : 'j')
-vnoremap    <Up>        (v:count ? 'gk' : 'k')
-noremap     <silent> <Down> (v:count ? 'gj' : 'j')
-noremap     <silent> <Up>   (v:count ? 'gk' : 'k')
+nnoremap    <expr><Down>      (v:count ? 'gj' : 'j')
+nnoremap    <expr><Up>        (v:count ? 'gk' : 'k')
+vnoremap    <expr><Down>      (v:count ? 'gj' : 'j')
+vnoremap    <expr><Up>        (v:count ? 'gk' : 'k')
+noremap     <silent><expr> <Down> (v:count ? 'gj' : 'j')
+noremap     <silent><expr> <Up>   (v:count ? 'gk' : 'k')
 inoremap    <Down>      <C-o>gj
 inoremap    <Up>        <C-o>gk
 inoremap    <silent> <Up>   <C-o>gk
@@ -446,9 +446,9 @@ if has('mouse')
         " makes tmux enter copy mode instead of selecting or scrolling
         " inside Vim -- but luckily, setting it up from within autocmds
         " works
-        autocmd VimEnter \* set ttymouse=xterm2
-        autocmd FocusGained \* set ttymouse=xterm2
-        autocmd BufEnter \* set ttymouse=xterm2
+        autocmd VimEnter * set ttymouse=xterm2
+        autocmd FocusGained * set ttymouse=xterm2
+        autocmd BufEnter * set ttymouse=xterm2
     endif
 endif
 
@@ -460,7 +460,7 @@ if has("autocmd")
     " Discussion: http://stackoverflow.com/questions/164847/what-is-in-your-vimrc/171558#171558
 
     " Restore cursor position
-    "au BufReadPost \* if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
+    "au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
 
     " Filetypes (au = autocmd)
     au FileType helpfile set nonumber      " no line numbers when viewing help
@@ -475,42 +475,42 @@ if has("autocmd")
     "au BufRead mutt*[0-9] set tw=72
 
     " Automatically chmod +x Shell and Perl scripts
-    "au BufWritePost   \*.sh             !chmod +x %
-    "au BufWritePost   \*.pl             !chmod +x %
+    "au BufWritePost   *.sh             !chmod +x %
+    "au BufWritePost   *.pl             !chmod +x %
 
     " File formats
-    au BufNewFile,BufRead \*.pls            set syntax=dosini
+    au BufNewFile,BufRead *.pls            set syntax=dosini
     au BufNewFile,BufRead modprobe.conf    set syntax=modconf
 
 
     " From Uwe Hermann's configuration
     " Drupal *.module and *.engine files.
     augroup module
-        autocmd BufRead \*.module,\*.engine   set filetype=php
+        autocmd BufRead *.module,*.engine   set filetype=php
     augroup END
 
     " Python code.
     augroup python
-        autocmd BufReadPre,FileReadPre \*.py set tabstop=4
-        autocmd BufReadPre,FileReadPre \*.py set expandtab
+        autocmd BufReadPre,FileReadPre *.py set tabstop=4
+        autocmd BufReadPre,FileReadPre *.py set expandtab
     augroup END
 
     " Ruby code.
     augroup ruby
-        autocmd BufReadPre,FileReadPre \*.rb set tabstop=2
-        autocmd BufReadPre,FileReadPre \*.rb set expandtab
+        autocmd BufReadPre,FileReadPre *.rb set tabstop=2
+        autocmd BufReadPre,FileReadPre *.rb set expandtab
     augroup END
 
     " PHP code.
     augroup php
-        autocmd BufReadPre,FileReadPre \*.php set tabstop=4
-        autocmd BufReadPre,FileReadPre \*.php set expandtab
+        autocmd BufReadPre,FileReadPre *.php set tabstop=4
+        autocmd BufReadPre,FileReadPre *.php set expandtab
     augroup END
 
     " Java code.
     augroup java
-        autocmd BufReadPre,FileReadPre \*.java set tabstop=4
-        autocmd BufReadPre,FileReadPre \*.java set expandtab
+        autocmd BufReadPre,FileReadPre *.java set tabstop=4
+        autocmd BufReadPre,FileReadPre *.java set expandtab
     augroup END
 
     " ANT build.xml files.
@@ -520,13 +520,13 @@ if has("autocmd")
 
     " (J)Flex files.
     augroup lex
-        "autocmd BufRead,BufNewFile \*.flex,\*.jflex set filetype=lex
-        autocmd BufRead,BufNewFile \*.flex,\*.jflex   set filetype=jflex
+        "autocmd BufRead,BufNewFile *.flex,*.jflex set filetype=lex
+        autocmd BufRead,BufNewFile *.flex,*.jflex   set filetype=jflex
     augroup END
 
     " (Nu)SMV files.
     augroup smv
-        autocmd BufRead,BufNewFile \*.smv            set filetype=smv
+        autocmd BufRead,BufNewFile *.smv            set filetype=smv
     augroup END
 
 endif
@@ -537,17 +537,18 @@ endif
 " Discussion: http://stackoverflow.com/questions/164847/what-is-in-your-vimrc/171558#171558
 
 " Automatically cd into the directory that the file is in
-autocmd BufEnter \* if expand('%:p') !~ '://' | execute "chdir ".escape(expand("%:p:h"), ' ') | endif
+set autochdir           " Below BufEnter command errors in paths with \[ because of invalid range eval
+"autocmd BufEnter * if expand('%:\p') !~ '://' | execute "chdir ".escape(expand("%:p:h"), ' ') | endif
 
 " Remove any trailing whitespace that is in the file and indent entire file and return to position
-autocmd BufRead,BufWrite \* :exe ":normal! ma" | silent! %s/\s\+$//ge | :exe ":normal! 'azz"
+autocmd BufRead,BufWrite * :exe ":normal! ma" | silent! %s/\s\+$//ge | :exe ":normal! 'azz"
 " Disable autoindent on write for contributing to open source projects with own style guidelines
-"autocmd BufWrite \* if ! &bin && &filetype != "" && &filetype !~ '\(asm\|conf\|haskell\|html\|js\|markdown\|make\|perl\|python\|sh\|text\)' | :exe ":normal! gg=G" | :exe ":normal! 'azz" | endif
+"autocmd BufWrite * if ! &bin && &filetype != "" && &filetype !~ '\(asm\|conf\|haskell\|html\|js\|markdown\|make\|perl\|python\|sh\|text\)' | :exe ":normal! gg=G" | :exe ":normal! 'azz" | endif
 
 " Restore cursor position to where it was before
 augroup JumpCursorOnEdit
     au!
-    autocmd BufReadPost \*
+    autocmd BufReadPost *
                 \ if expand("<afile>:p:h") !=? $TEMP |
                 \   if line("'\"") > 1 && line("'\"") <= line("$") |
                 \     let JumpCursorOnEdit_foo = line("'\"") |
@@ -560,7 +561,7 @@ augroup JumpCursorOnEdit
                 \   endif |
                 \ endif
     " Need to postpone using "zv" until after reading the modelines.
-    autocmd BufWinEnter \*
+    autocmd BufWinEnter *
                 \ if exists("b:doopenfold") |
                 \   exe "normal zv" |
                 \   if(b:doopenfold > 1) |
