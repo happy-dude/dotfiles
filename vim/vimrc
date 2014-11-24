@@ -70,11 +70,6 @@
 set nocompatible        " Use Vim defaults
 set modelines=0         " Set modelines to 0 to prevent several security exploits
 
-" Enable Python plugins for Neovim
-if has('nvim')
-    runtime! python_setup.vim
-endif
-
 """"""""""""""""""""""""""""""
 """" Plugin Configuration """"
 """"""""""""""""""""""""""""""
