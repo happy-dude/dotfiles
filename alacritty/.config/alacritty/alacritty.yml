@@ -25,9 +25,9 @@ window:
   #
   # Specified in number of pixels.
   # If the position is not set, the window manager will handle the placement.
-  #position:
-  #  x: 450
-  #  y: 300
+  position:
+    x: 450
+    y: 200
 
   # Window padding (changes require restart)
   #
@@ -823,4 +823,3 @@ key_bindings:
 
   # Print all received window events.
   #print_events: false
-
