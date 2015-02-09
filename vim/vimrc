@@ -143,7 +143,7 @@ endif
 """"""""""""""""""""""""""""""
 
 set ttyscroll=0         " Number of lines to scroll; 0 for terminals where scrolling is slow and redrawing is fast
-set ttyfast             " Fast terminal connection; more chars will be sent to screen for redrawing
+"set ttyfast             " Fast terminal connection; more chars will be sent to screen for redrawing
 set nostartofline       " Do not jump to first character with page navigation commands
 
 set encoding=utf-8      " Default to UTF-8 encoding
