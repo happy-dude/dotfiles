@@ -48,9 +48,10 @@ if [ $VIM_IS_AVAILABLE -eq 0 ]; then
             echo "Backing up existing vim cache directory in .cache"
             mv $HOME/.cache/vim $HOME/.cache/vim.bak
         fi
-
-        mkdir -p $HOME/.cache/vim $HOME/.cache/vim/backup $HOME/.cache/vim/swap $HOME/.cache/vim/undo
     fi
+
+    echo "Creating vim backup, cache, and swap directories in $HOME/.cache/vim"
+    mkdir -p $HOME/.cache/vim $HOME/.cache/vim/backup $HOME/.cache/vim/swap $HOME/.cache/vim/undo
 
     echo "Linking $HOME/dotfiles/vim to $HOME/.vim"
     ln -s $HOME/dotfiles/vim $HOME/.vim
@@ -58,6 +59,25 @@ if [ $VIM_IS_AVAILABLE -eq 0 ]; then
     echo "Linking $HOME/dotfiles/vim/vimrc to $HOME/.vimrc"
     ln -s $HOME/dotfiles/vim/vimrc $HOME/.vimrc
 fi
+
+`which nvim` --version 2>&1 >/dev/null
+NVIM_IS_AVAILABLE=$?
+
+if [ $NVIM_IS_AVAILABLE -eq 0 ]; then
+    echo "nvim found"
+
+    if [ -f $HOME/.nvimrc ]; then
+        echo "Backing up existing .nvimrc file to .nvimrc.bak"
+        mv $HOME/.nvimrc $HOME/.nvimrc.bak
+    fi
+
+    echo "Linking $HOME/dotfiles/vim to $HOME/.nvim"
+    ln -s $HOME/dotfiles/vim $HOME/.nvim
+
+    echo "Linking $HOME/dotfiles/vim/vimrc to $HOME/.nvimrc"
+    ln -s $HOME/dotfiles/vim/vimrc $HOME/.nvimrc
+fi
+                                                                                                                
 
 `which tmux` -V 2>&1 >/dev/null
 TMUX_IS_AVAILABLE=$?
