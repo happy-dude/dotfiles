@@ -68,14 +68,13 @@ Basically, my zsh configuration happens to be Sorin Ionescu's prezto repository
 (his oh-my-zsh fork). Basically, read his rational and follow the instructions
 in his [README](https://github.com/sorin-ionescu/prezto/blob/master/README.md).
 
-For some reason, his command to copy the zsh runcoms files over to the home
-directory didn't work, so I executed the following:
+First, start `zsh` and then execute the following commands:
 
-    ln -s ~/dotfiles/zsh/prezto-sorin ~/.oh-my-zsh; \
-    for rcfile in ~/.oh-my-zsh/runcoms/z{shenv,shrc,login,logout}; do \
-        export newrc=$(basename $rcfile); \
-        cp -f $rcfile ~/.$newrc;  \
-    done; \
+    ln -s ~/dotfiles/zsh/prezto-sorin ~/.zprezto; \
+    setopt EXTENDED_GLOB \
+    for rcfile in "${ZDOTDIR:-$HOME}"/.zprezto/runcoms/^README.md(.N); do \
+        ln -s "$rcfile" "${ZDOTDIR:-$HOME}/.${rcfile:t}" \
+    done \
     chsh -s /bin/zsh;
 
 Also, if you happen to be running Mac OS X, execute the following:
