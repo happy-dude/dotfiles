@@ -77,7 +77,6 @@ if [ $NVIM_IS_AVAILABLE -eq 0 ]; then
     echo "Linking $HOME/dotfiles/vim/vimrc to $HOME/.nvimrc"
     ln -s $HOME/dotfiles/vim/vimrc $HOME/.nvimrc
 fi
-                                                                                                                
 
 `which tmux` -V 2>&1 >/dev/null
 TMUX_IS_AVAILABLE=$?
