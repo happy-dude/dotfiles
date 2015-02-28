@@ -50,8 +50,8 @@ if [ $VIM_IS_AVAILABLE -eq 0 ]; then
         fi
     fi
 
-    echo "Creating vim backup, cache, and swap directories in $HOME/.cache/vim"
-    mkdir -p $HOME/.cache/vim $HOME/.cache/vim/backup $HOME/.cache/vim/swap $HOME/.cache/vim/undo
+    echo "Creating vim backup, cache, undo, and view directories in $HOME/.cache/vim"
+    mkdir -p $HOME/.cache/vim $HOME/.cache/vim/backup $HOME/.cache/vim/swap $HOME/.cache/vim/undo $HOME/.cache/vim/view
 
     echo "Linking $HOME/dotfiles/vim to $HOME/.vim"
     ln -s $HOME/dotfiles/vim $HOME/.vim
