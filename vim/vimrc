@@ -23,7 +23,7 @@
 """	Steve Losh:		http://stevelosh.com/blog/2010/09/coming-home-to-vim/
 """	Jeff Kreeftmeijer:	http://jeffkreeftmeijer.com/2012/relative-line-numbers-in-vim-for-super-fast-movement/
 """	Dave Eddy:		https://github.com/bahamas10/dotfiles/blob/master/vimrc
-"""	Erik Harmon:		https://github.com/eharmon/dotfiles/blob/master/vimrc
+"""	Eric Harmon:		https://github.com/eharmon/dotfiles/blob/master/vimrc
 """	Damien Conway:		http://www.youtube.com/watch?v=aHm36-na4-4
 """	tommcdo:		https://github.com/tommcdo/vimfiles/blob/master/config/consistency.vim
 """
@@ -209,7 +209,7 @@ set wildmode=list:longest,full  " Turn on wild mode huge list
 set wildchar=<TAB>              " Path/file expansion in colon mode
 
 " Ignore this list of file extensions
-" wildignore extended from Erik Harmon's ignore list
+" wildignore extended from Eric Harmon's ignore list
 set wildignore=*.bak
 set wildignore+=*.sw?                               " Vim swap files
 set wildignore+=*.DS_Store                          " OS X bullshit
@@ -243,7 +243,7 @@ endif
 "set undolevels=500      " Number of undo levels
 "Default history and undolevels = 1000
 
-" From Erik Harmon's vimrc
+" From Eric Harmon's vimrc
 " Cache things to our homedir, not random places
 if isdirectory(expand('$HOME/.cache/vim'))
     if &backupdir =~# '^\.,'
@@ -256,6 +256,10 @@ if isdirectory(expand('$HOME/.cache/vim'))
 
     if exists('+undodir') && &undodir =~# '^\.\%(,\|$\)'
         set undodir^=$HOME/.cache/vim/undo//
+    endif
+
+    if exists('+viewdir')
+        set viewdir=$HOME/.cache/vim/view//
     endif
 endif
 
