@@ -74,10 +74,6 @@
 	path = vim/bundle/nerdtree-scrooloose
 	url = https://github.com/scrooloose/nerdtree.git
 	ignore = dirty
-[submodule "vim/bundle/niji-amdt"]
-	path = vim/bundle/niji-amdt
-	url = https://github.com/amdt/vim-niji.git
-	ignore = dirty
 [submodule "vim/bundle/pathogen-tpope"]
 	path = vim/bundle/pathogen-tpope
 	url = https://github.com/tpope/vim-pathogen.git
