@@ -118,6 +118,10 @@
 	path = vim/bundle/syntastic-scrooloose
 	url = https://github.com/scrooloose/syntastic.git
 	ignore = dirty
+[submodule "vim/bundle/toml-cespare"]
+	path = vim/bundle/toml-cespare
+	url = https://github.com/cespare/vim-toml.git
+	ignore = dirty
 [submodule "vim/bundle/tomorrow-chriskempson"]
 	path = vim/bundle/tomorrow-chriskempson
 	url = https://github.com/chriskempson/vim-tomorrow-theme.git
