@@ -90,6 +90,10 @@
 	path = vim/bundle/rsi-tpope
 	url = https://github.com/tpope/vim-rsi.git
 	ignore = dirty
+[submodule "vim/bundle/rust-rustlang"]
+	path = vim/bundle/rust-rustlang
+	url = https://github.com/rust-lang/rust.vim.git
+	ignore = dirty
 [submodule "vim/bundle/seoul256-junegunn"]
 	path = vim/bundle/seoul256-junegunn
 	url = https://github.com/junegunn/seoul256.vim.git
