@@ -446,6 +446,9 @@ if has("autocmd")
     " Don't use bottom restore cursor, Frew's JumpCursorOnEdit works fine
     " Discussion: http://stackoverflow.com/questions/164847/what-is-in-your-vimrc/171558#171558
 
+    au FileType rust    set noexpandtab
+    au FileType make    set noexpandtab     " Makefiles are tab sensitive
+
     " Restore cursor position
     "au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
 
