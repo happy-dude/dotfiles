@@ -71,10 +71,10 @@ set nocompatible        " Use Vim defaults
 set modelines=0         " Set modelines to 0 to prevent several security exploits
 
 " Enable Vim-specific, non-Neovim features
-if !has('nvim')
-    " Enable mouse support in console
-    if has('mouse')
-        set mouse=a
+" Enable mouse support in console
+if has('mouse')
+    set mouse=a
+    if !has('nvim')
         if ($TERM =~ "xterm" || $TERM =~ "screen" || $TERM =~ "urxvt")
             " for some reason, doing this directly with 'set ttymouse=xterm2'
             " doesn't work -- 'set ttymouse?' returns xterm2 but the mouse
