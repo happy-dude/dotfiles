@@ -8,6 +8,9 @@
 ### Github: https://github.com/Happy-Dude/dotfiles.git
 ### Version: 14 April 2013
 ###
+### Based on information from:
+###	Christophe Portneuve:	https://medium.com/@porteneuve/mastering-git-submodules-34c65e940407
+###
 ###################################################################################################
 ###################################################################################################
 
@@ -22,8 +25,11 @@ if [ $GIT_IS_AVAILABLE -eq 0 ]; then
 
     echo "Git found: pulling latest updates for Happy-Dude's dotfiles repo"
     $GIT_PATH pull
-    $GIT_PATH $GIT_OPTS $GIT_PATH $GIT_OPTS $GIT_PATH pull
-    $GIT_PATH $GIT_OPTS $GIT_PATH pull
+    $GIT_PATH submodule sync --recursive
+    $GIT_PATH submodule update --init --recursive
+    $GIT_PATH submodule update --remote --rebase --
+    # $GIT_PATH $GIT_OPTS $GIT_PATH $GIT_OPTS $GIT_PATH pull
+    #$GIT_PATH $GIT_OPTS $GIT_PATH pull
 
 else
     echo "Git not found; please get latest updates for repository submodules manually"
