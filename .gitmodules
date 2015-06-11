@@ -126,10 +126,6 @@
 	path = vim/bundle/tomorrow-chriskempson
 	url = https://github.com/chriskempson/vim-tomorrow-theme.git
 	ignore = dirty
-[submodule "vim/bundle/tslime-kikijump"]
-	path = vim/bundle/tslime-kikijump
-	url = https://github.com/kikijump/tslime.vim.git
-	ignore = dirty
 [submodule "vim/bundle/unbundle-sunaku"]
 	path = vim/bundle/unbundle-sunaku
 	url = https://github.com/sunaku/vim-unbundle.git
