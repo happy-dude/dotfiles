@@ -86,6 +86,10 @@
 	path = vim/bundle/racket-wlangstroth
 	url = https://github.com/wlangstroth/vim-racket
 	ignore = dirty
+[submodule "vim/bundle/rainbow-luochen1990"]
+	path = vim/bundle/rainbow-luochen1990
+	url = https://github.com/luochen1990/rainbow.git
+	ignore = dirty
 [submodule "vim/bundle/rsi-tpope"]
 	path = vim/bundle/rsi-tpope
 	url = https://github.com/tpope/vim-rsi.git
