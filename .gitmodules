@@ -26,6 +26,10 @@
 	path = vim/bundle/cocoa-jgoulah_msanders
 	url = https://github.com/jgoulah/cocoa.vim.git
 	ignore = dirty
+[submodule "vim/bundle/ctrlp-ctrlpvim"]
+	path = vim/bundle/ctrlp-ctrlpvim
+	url = https://github.com/ctrlpvim/ctrlp.vim.git
+	ignore = dirty
 [submodule "vim/bundle/easymotion-lokaltog"]
 	path = vim/bundle/easymotion-lokaltog
 	url = https://github.com/Lokaltog/vim-easymotion.git
