@@ -8,6 +8,7 @@
 *.netrwhist
 *~
 *vim/shada
+*vim/init.vim
 
 # Ignore xmonad compiled files and executables
 *.hi
