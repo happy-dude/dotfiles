@@ -78,10 +78,6 @@
 	path = vim/bundle/pathogen-tpope
 	url = https://github.com/tpope/vim-pathogen.git
 	ignore = dirty
-[submodule "vim/bundle/python-mode-klen"]
-	path = vim/bundle/python-mode-klen
-	url = https://github.com/klen/python-mode.git
-	ignore = dirty
 [submodule "vim/bundle/racket-wlangstroth"]
 	path = vim/bundle/racket-wlangstroth
 	url = https://github.com/wlangstroth/vim-racket
@@ -156,3 +152,6 @@
 [submodule "vim/bundle/vim-latex"]
 	path = vim/bundle/vim-latex
 	url = https://github.com/vim-latex/vim-latex.git
+[submodule "vim/bundle/flake8-andviro"]
+	path = vim/bundle/flake8-andviro
+	url = https://github.com/andviro/flake8-vim
