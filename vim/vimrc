@@ -73,6 +73,7 @@ set modelines=0         " Set modelines to 0 to prevent several security exploit
 " Enable Vim-specific, non-Neovim features
 " Enable mouse support in console
 if has('mouse')
+    set esckeys             " Function keys that start with <Esc> are recognized in insert mode
     set mouse=a
     if !has('nvim')
         if ($TERM =~ "xterm" || $TERM =~ "screen" || $TERM =~ "urxvt")
@@ -236,7 +237,6 @@ let g:matchparen_insert_timeout=5   " Default is 60 -- will lag for extremely la
 set magic               " Set magic on, for regular expressions
 set grepprg=/bin/grep\ -nH  " Vim grep
 
-set esckeys             " Function keys that start with <Esc> are recognized in insert mode
 set list                " List mode: show special characters -- what is displayed is changed by listchars
 set listchars=tab:>-,trail:-    ",eol:¬ or eol:$
 " Display tabs to know we put them/ where we want them
