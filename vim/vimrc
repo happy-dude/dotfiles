@@ -71,9 +71,12 @@ set nocompatible        " Use Vim defaults
 set modelines=0         " Set modelines to 0 to prevent several security exploits
 
 " Enable Vim-specific, non-Neovim features
+if !has('nvim')
+    set esckeys             " Function keys that start with <Esc> are recognized in insert mode
+endif
+
 " Enable mouse support in console
 if has('mouse')
-    set esckeys             " Function keys that start with <Esc> are recognized in insert mode
     set mouse=a
     if !has('nvim')
         if ($TERM =~ "xterm" || $TERM =~ "screen" || $TERM =~ "urxvt")
