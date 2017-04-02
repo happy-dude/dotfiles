@@ -18,6 +18,10 @@
 	path = vim/bundle/ack-mileszs
 	url = https://github.com/mileszs/ack.vim.git
 	ignore = dirty
+[submodule "vim/bundle/ale-w0rp"]
+	path = vim/bundle/ale-w0rp
+	url = https://github.com/w0rp/ale
+	ignore = dirty
 [submodule "vim/bundle/clam-sjl"]
 	path = vim/bundle/clam-sjl
 	url = https://github.com/sjl/clam.vim.git
@@ -125,10 +129,6 @@
 [submodule "vim/bundle/unbundle-sunaku"]
 	path = vim/bundle/unbundle-sunaku
 	url = https://github.com/sunaku/vim-unbundle.git
-	ignore = dirty
-[submodule "vim/bundle/w0rp-ale"]
-	path = vim/bundle/w0rp-ale
-	url = https://github.com/w0rp/ale.git
 	ignore = dirty
 [submodule "vim/bundle/vim-latex"]
 	path = vim/bundle/vim-latex
