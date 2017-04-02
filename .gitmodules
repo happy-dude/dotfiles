@@ -126,10 +126,6 @@
 	path = vim/bundle/tomorrow-chriskempson
 	url = https://github.com/chriskempson/vim-tomorrow-theme.git
 	ignore = dirty
-[submodule "vim/bundle/unbundle-sunaku"]
-	path = vim/bundle/unbundle-sunaku
-	url = https://github.com/sunaku/vim-unbundle.git
-	ignore = dirty
 [submodule "vim/bundle/vim-latex"]
 	path = vim/bundle/vim-latex
 	url = https://github.com/vim-latex/vim-latex.git
