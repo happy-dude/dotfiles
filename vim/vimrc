@@ -128,6 +128,25 @@ let g:rainbow_conf = {
 \   }
 \}
 
+" ALE settings
+let g:ale_statusline_format = ['%dE', '%dW', 'OK']
+let g:ale_echo_msg_error_str = 'E'
+let g:ale_echo_msg_warning_str = 'W'
+let g:ale_echo_msg_format = '[%linter%] [%severity%] %s'
+
+function! ALEc ()                                " ALE: C
+    let g:ale_c_gcc_options = '-Wall -Wextra -pedantic -g -ggdb -std=c11'
+    let g:ale_c_clang_options = '-Weverything -g -std=c11 -Wall'
+endfunction
+
+function! ALEcpp ()                              " ALE: C++
+    let g:ale_cpp_gcc_options = '--Wall -Wextra -pedantic -g -ggdb -std=c++14'
+    let g:ale_cpp_clang_options = '-Weverything -g -std=c++14'
+endfunction
+
+autocmd BufRead,BufNewFile *.c call ALEc()
+autocmd BufRead,BufNewFile *.cpp call ALEcpp()
+
 " Solarized colorscheme settings
 if !has("gui_running")                          " Use these settings if terminal vim; otherwise, gvimrc settings should take over
     let g:solarized_termcolors = 256            " Enable 256 color support and don't rely on terminal settings
