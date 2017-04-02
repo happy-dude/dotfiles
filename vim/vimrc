@@ -128,38 +128,6 @@ let g:rainbow_conf = {
 \   }
 \}
 
-" " syntastic settings
-" let g:syntastic_mode_map = { 'mode': 'active' }     " syntastic: Active syntax checking
-" let g:syntastic_check_on_open=1                     " syntastic: Immediately check syntax on open
-" 
-" function! SyntasC ()                                " syntastic: C
-"     let g:syntastic_c_check_header = 1
-"     let g:syntastic_c_no_include_search = 1
-"     let g:syntastic_c_auto_refresh_includes = 1
-"     let g:syntastic_cpp_compiler = 'gcc'
-"     let g:syntastic_c_compiler_options = ' -Wall -Wextra -pedantic -g -ggdb -std=c99'
-"     "let g:syntastic_c_compiler = 'clang'
-"     "let g:syntastic_c_compiler_options = ' -Weverything -g -std=c99'
-" endfunction
-" 
-" function! SyntasCPP ()                              " syntastic: C++
-"     let g:syntastic_cpp_check_header = 1
-"     let g:syntastic_cpp_no_include_search = 1
-"     let g:syntastic_cpp_auto_refresh_includes = 1
-"     let g:syntastic_cpp_compiler = 'g++'
-"     let g:syntastic_cpp_compiler_options = ' -Wall -Wextra -pedantic -g -ggdb -std=c++0x'
-"     "let g:syntastic_cpp_compiler = 'clang++'
-"     "let g:syntastic_cpp_compiler_options = ' -Weverything -g -std=c++0x'
-" endfunction
-" 
-" " syntastic: Perl
-" let g:syntastic_perl_checkers = ['perl']        " syntastic: Enable perl syntax checking
-" let g:syntastic_enable_perl_checker = 1         " syntastic: Enable perl syntax checking; potential security issue if using 3rd-party modules
-" let g:syntastic_perl_lib_path = ['./lib']
-" 
-" autocmd BufRead,BufNewFile *.c call SyntasC()
-" autocmd BufRead,BufNewFile *.cpp call SyntasCPP()
-
 " Solarized colorscheme settings
 if !has("gui_running")                          " Use these settings if terminal vim; otherwise, gvimrc settings should take over
     let g:solarized_termcolors = 256            " Enable 256 color support and don't rely on terminal settings
@@ -221,7 +189,6 @@ set statusline+=%.64F%m%r%h%w\                                  "  .64F: Full pa
                                                                 "     r: Read-only flag in square brackets
                                                                 "     h: Help flag in square brackets
                                                                 "     w: Preview flag in square brackets
-"set statusline+=%#warningmsg#%{SyntasticStatuslineFlag()}%*\    "        Syntastic plugin
 set statusline+=%{ALEGetStatusLine()}                           "     ALE plugin
 set statusline+=%=%Y.%{&enc}.%{&ff}\                            "     =: Right justify from here
                                                                 "     Y: Filetype as Vim-recognized
