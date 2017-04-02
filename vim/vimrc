@@ -4,7 +4,7 @@
 """
 """     Author: Stanley Chan
 """     Github: https://github.com/Happy-Dude
-"""     Version: 27 Feb 2015
+"""     Version: 02 April 2017
 """
 """ Based on configurations from:
 """	amix the lucky stiff:	http://amix.dk/blog/post/19486#The-ultimate-vim-configuration-vimrc
@@ -32,37 +32,6 @@
 """	Hacker News:		http://news.ycombinator.com/item?id=856051
 """	Reddit:			http://www.reddit.com/r/linux/comments/9zq8h/vim_users_what_are_some_interesting_hacks_or/
 """
-"""
-""" Plugin Homepages:
-"""	pathogen:		https://github.com/tpope/vim-pathogen
-"""	fugitive:		https://github.com/tpope/vim-fugitive
-"""	surround:		https://github.com/tpope/vim-surround
-"""	syntastic:		https://github.com/scrooloose/syntastic
-"""	python-mode:		https://github.com/klen/python-mode
-"""	easymotion:		https://github.com/Lokaltog/vim-easymotion
-"""	nerdtree:		https://github.com/scrooloose/nerdtree
-"""	ctrlp:			https://github.com/kien/ctrlp.vim
-"""	nerdcommenter:		https://github.com/scrooloose/nerdcommenter
-"""	gundo:			https://github.com/sjl/gundo.vim
-"""	ack:			https://github.com/mileszs/ack.vim
-"""	clam:			https://github.com/sjl/clam.vim
-"""	tslime:			https://github.com/kikijump/tslime.vim
-"""	slimv:			https://bitbucket.org/kovisoft/slimv/ & https://github.com/vim-scripts/slimv.vim
-"""	vim-markdown		https://github.com/tpope/vim-markdown
-"""	vim-latex:		http://vim-latex.sourceforge.net/
-"""	cocoa			https://github.com/jgoulah/cocoa.vim
-"""	html5:			https://github.com/othree/html5.vim
-"""	matchtag:		https://github.com/gregsexton/MatchTag
-"""	indent-guides:		https://github.com/nathanaelkane/vim-indent-guides
-"""	unbundle:		https://github.com/sunaku/vim-unbundle
-"""	solarized:		https://github.com/altercation/vim-colors-solarized
-"""	tomorrow:		https://github.com/chriskempson/vim-tomorrow-theme
-"""	jellybeans:		https://github.com/nanotech/jellybeans.vim
-"""	Lucius:			http://www.vim.org/scripts/script.php?script_id=2536
-"""
-""" Interesting (unused) plugins:
-"""	vundle:			https://github.com/gmarik/vundle
-"""	vim-addon-manager:	https://github.com/MarcWeber/vim-addon-manager
 """
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -101,10 +70,10 @@ filetype off            " Turn filetype plugin off until Pathogen loads
 runtime bundle/pathogen-tpope/autoload/pathogen.vim " Unconventional path to plugin (inside submodule)
 call pathogen#infect("$HOME/dotfiles/lisp/{}", 'bundle/{}')     " pathogen: Activate plugin
 call pathogen#helptags()
-"runtime bundle/unbundle-sunaku/unbundle.vim        " unbundle: Alternative plugin manager
 
 filetype plugin indent on   " Enable filetype plugin and filetype-based indentation
 syntax enable               " Enable syntax highlighting
+silent! helptags ALL        " Generate documentation tages automatically
 
 " indent-guides settings
 let g:indent_guides_guide_size = 1                  " Instead of having the indent guide be the size of a tabwidth, size it to just 1 character
@@ -159,37 +128,37 @@ let g:rainbow_conf = {
 \   }
 \}
 
-" syntastic settings
-let g:syntastic_mode_map = { 'mode': 'active' }     " syntastic: Active syntax checking
-let g:syntastic_check_on_open=1                     " syntastic: Immediately check syntax on open
-
-function! SyntasC ()                                " syntastic: C
-    let g:syntastic_c_check_header = 1
-    let g:syntastic_c_no_include_search = 1
-    let g:syntastic_c_auto_refresh_includes = 1
-    let g:syntastic_cpp_compiler = 'gcc'
-    let g:syntastic_c_compiler_options = ' -Wall -Wextra -pedantic -g -ggdb -std=c99'
-    "let g:syntastic_c_compiler = 'clang'
-    "let g:syntastic_c_compiler_options = ' -Weverything -g -std=c99'
-endfunction
-
-function! SyntasCPP ()                              " syntastic: C++
-    let g:syntastic_cpp_check_header = 1
-    let g:syntastic_cpp_no_include_search = 1
-    let g:syntastic_cpp_auto_refresh_includes = 1
-    let g:syntastic_cpp_compiler = 'g++'
-    let g:syntastic_cpp_compiler_options = ' -Wall -Wextra -pedantic -g -ggdb -std=c++0x'
-    "let g:syntastic_cpp_compiler = 'clang++'
-    "let g:syntastic_cpp_compiler_options = ' -Weverything -g -std=c++0x'
-endfunction
-
-" syntastic: Perl
-let g:syntastic_perl_checkers = ['perl']        " syntastic: Enable perl syntax checking
-let g:syntastic_enable_perl_checker = 1         " syntastic: Enable perl syntax checking; potential security issue if using 3rd-party modules
-let g:syntastic_perl_lib_path = ['./lib']
-
-autocmd BufRead,BufNewFile *.c call SyntasC()
-autocmd BufRead,BufNewFile *.cpp call SyntasCPP()
+" " syntastic settings
+" let g:syntastic_mode_map = { 'mode': 'active' }     " syntastic: Active syntax checking
+" let g:syntastic_check_on_open=1                     " syntastic: Immediately check syntax on open
+" 
+" function! SyntasC ()                                " syntastic: C
+"     let g:syntastic_c_check_header = 1
+"     let g:syntastic_c_no_include_search = 1
+"     let g:syntastic_c_auto_refresh_includes = 1
+"     let g:syntastic_cpp_compiler = 'gcc'
+"     let g:syntastic_c_compiler_options = ' -Wall -Wextra -pedantic -g -ggdb -std=c99'
+"     "let g:syntastic_c_compiler = 'clang'
+"     "let g:syntastic_c_compiler_options = ' -Weverything -g -std=c99'
+" endfunction
+" 
+" function! SyntasCPP ()                              " syntastic: C++
+"     let g:syntastic_cpp_check_header = 1
+"     let g:syntastic_cpp_no_include_search = 1
+"     let g:syntastic_cpp_auto_refresh_includes = 1
+"     let g:syntastic_cpp_compiler = 'g++'
+"     let g:syntastic_cpp_compiler_options = ' -Wall -Wextra -pedantic -g -ggdb -std=c++0x'
+"     "let g:syntastic_cpp_compiler = 'clang++'
+"     "let g:syntastic_cpp_compiler_options = ' -Weverything -g -std=c++0x'
+" endfunction
+" 
+" " syntastic: Perl
+" let g:syntastic_perl_checkers = ['perl']        " syntastic: Enable perl syntax checking
+" let g:syntastic_enable_perl_checker = 1         " syntastic: Enable perl syntax checking; potential security issue if using 3rd-party modules
+" let g:syntastic_perl_lib_path = ['./lib']
+" 
+" autocmd BufRead,BufNewFile *.c call SyntasC()
+" autocmd BufRead,BufNewFile *.cpp call SyntasCPP()
 
 " Solarized colorscheme settings
 if !has("gui_running")                          " Use these settings if terminal vim; otherwise, gvimrc settings should take over
@@ -252,7 +221,8 @@ set statusline+=%.64F%m%r%h%w\                                  "  .64F: Full pa
                                                                 "     r: Read-only flag in square brackets
                                                                 "     h: Help flag in square brackets
                                                                 "     w: Preview flag in square brackets
-set statusline+=%#warningmsg#%{SyntasticStatuslineFlag()}%*\    "        Syntastic plugin
+"set statusline+=%#warningmsg#%{SyntasticStatuslineFlag()}%*\    "        Syntastic plugin
+set statusline+=%{ALEGetStatusLine()}                           "     ALE plugin
 set statusline+=%=%Y.%{&enc}.%{&ff}\                            "     =: Right justify from here
                                                                 "     Y: Filetype as Vim-recognized
                                                                 "  &enc: File encoding
@@ -485,9 +455,6 @@ nnoremap    Y           y$
 onoremap    <silent> z  :<C-U>normal! w<CR>
 "map        cw          cz
 
-" Real men use gcc
-"compiler gcc
-
 if has("autocmd")
     " Don't use bottom restore cursor, Frew's JumpCursorOnEdit works fine
     " Discussion: http://stackoverflow.com/questions/164847/what-is-in-your-vimrc/171558#171558
@@ -616,6 +583,7 @@ augroup END
 " From Damien Conway's 'More Instantly Better Vim' OSCON 2013 talk
 " Video: https://www.youtube.com/watch?v=aHm36-na4-4
 " Tarball: http://is.gd/IBV2013
+" Github: https://github.com/thoughtstream/Damian-Conway-s-Vim-Setup
 
 "=====[ Highlight matches when jumping to next ]=============
 " Just highlight the match in red...
