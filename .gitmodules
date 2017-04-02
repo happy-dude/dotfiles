@@ -8,11 +8,11 @@
 	ignore = dirty
 [submodule "themes/solarized_theme-altercation"]
 	path = themes/solarized_theme-altercation
-	url = http://github.com/altercation/solarized.git
+	url = https://github.com/altercation/solarized.git
 	ignore = dirty
 [submodule "themes/tomorrow_theme-chriskempson"]
 	path = themes/tomorrow_theme-chriskempson
-	url = http://github.com/chriskempson/tomorrow-theme.git
+	url = https://github.com/chriskempson/tomorrow-theme.git
 	ignore = dirty
 [submodule "vim/bundle/ack-mileszs"]
 	path = vim/bundle/ack-mileszs
@@ -34,6 +34,10 @@
 	path = vim/bundle/easymotion-lokaltog
 	url = https://github.com/Lokaltog/vim-easymotion.git
 	ignore = dirty
+[submodule "vim/bundle/flake8-andviro"]
+	path = vim/bundle/flake8-andviro
+	url = https://github.com/andviro/flake8-vim
+	ignore = dirty
 [submodule "vim/bundle/fugitive-tpope"]
 	path = vim/bundle/fugitive-tpope
 	url = https://github.com/tpope/vim-fugitive.git
@@ -49,10 +53,6 @@
 [submodule "vim/bundle/jellybeans-nanotech"]
 	path = vim/bundle/jellybeans-nanotech
 	url = https://github.com/nanotech/jellybeans.vim.git
-	ignore = dirty
-[submodule "vim/bundle/latex-tmaas"]
-	path = vim/bundle/latex-tmaas
-	url = http://git.code.sf.net/p/vim-latex/vim-latex
 	ignore = dirty
 [submodule "vim/bundle/Lucius-jonathanfilip"]
 	path = vim/bundle/Lucius-jonathanfilip
@@ -114,10 +114,6 @@
 	path = vim/bundle/surround-tpope
 	url = https://github.com/tpope/vim-surround.git
 	ignore = dirty
-[submodule "vim/bundle/syntastic-scrooloose"]
-	path = vim/bundle/syntastic-scrooloose
-	url = https://github.com/scrooloose/syntastic.git
-	ignore = dirty
 [submodule "vim/bundle/toml-cespare"]
 	path = vim/bundle/toml-cespare
 	url = https://github.com/cespare/vim-toml.git
@@ -129,6 +125,14 @@
 [submodule "vim/bundle/unbundle-sunaku"]
 	path = vim/bundle/unbundle-sunaku
 	url = https://github.com/sunaku/vim-unbundle.git
+	ignore = dirty
+[submodule "vim/bundle/w0rp-ale"]
+	path = vim/bundle/w0rp-ale
+	url = https://github.com/w0rp/ale.git
+	ignore = dirty
+[submodule "vim/bundle/vim-latex"]
+	path = vim/bundle/vim-latex
+	url = https://github.com/vim-latex/vim-latex.git
 	ignore = dirty
 [submodule "vim/ftbundle/html/html5-othree"]
 	path = vim/ftbundle/html/html5-othree
@@ -146,12 +150,3 @@
 	path = zsh/prezto-sorin
 	url = https://github.com/sorin-ionescu/prezto.git
 	ignore = dirty
-[submodule "vim-latex"]
-	path = vim-latex
-	url = https://github.com/vim-latex/vim-latex.git
-[submodule "vim/bundle/vim-latex"]
-	path = vim/bundle/vim-latex
-	url = https://github.com/vim-latex/vim-latex.git
-[submodule "vim/bundle/flake8-andviro"]
-	path = vim/bundle/flake8-andviro
-	url = https://github.com/andviro/flake8-vim
