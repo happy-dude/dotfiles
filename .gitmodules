@@ -130,6 +130,10 @@
 	path = vim/bundle/vim-latex
 	url = https://github.com/vim-latex/vim-latex.git
 	ignore = dirty
+[submodule "vim/bundle/vim-perl"]
+	path = vim/bundle/vim-perl
+	url = https://github.com/vim-perl/vim-perl.git
+	ignore = dirty
 [submodule "vim/ftbundle/html/html5-othree"]
 	path = vim/ftbundle/html/html5-othree
 	url = https://github.com/othree/html5.vim.git
@@ -146,6 +150,3 @@
 	path = zsh/prezto-sorin
 	url = https://github.com/sorin-ionescu/prezto.git
 	ignore = dirty
-[submodule "vim/bundle/vim-perl"]
-	path = vim/bundle/vim-perl
-	url = https://github.com/vim-perl/vim-perl.git
