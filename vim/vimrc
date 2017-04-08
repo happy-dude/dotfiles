@@ -71,8 +71,8 @@ runtime bundle/pathogen-tpope/autoload/pathogen.vim " Unconventional path to plu
 call pathogen#infect("$HOME/dotfiles/lisp/{}", 'bundle/{}')     " pathogen: Activate plugin
 call pathogen#helptags()
 
-filetype plugin indent on   " Enable filetype plugin and filetype-based indentation
 syntax enable               " Enable syntax highlighting
+filetype plugin indent on   " Enable filetype plugin and filetype-based indentation
 silent! helptags ALL        " Generate documentation tages automatically
 
 " indent-guides settings
@@ -398,12 +398,12 @@ inoremap    <C-BS>      <C-w>
 
 " To move up and down logical lines instead of physical lines
 " Instead of changing the Home row keys, use the arrow keys
-nnoremap    <expr><Down>      (v:count ? 'gj' : 'j')
-nnoremap    <expr><Up>        (v:count ? 'gk' : 'k')
-vnoremap    <expr><Down>      (v:count ? 'gj' : 'j')
-vnoremap    <expr><Up>        (v:count ? 'gk' : 'k')
-noremap     <silent><expr> <Down> (v:count ? 'gj' : 'j')
-noremap     <silent><expr> <Up>   (v:count ? 'gk' : 'k')
+nnoremap    <expr><Down>      (v:count == 0 ? 'gj' : 'j')
+nnoremap    <expr><Up>        (v:count == 0 ? 'gk' : 'k')
+vnoremap    <expr><Down>      (v:count == 0 ? 'gj' : 'j')
+vnoremap    <expr><Up>        (v:count == 0 ? 'gk' : 'k')
+noremap     <silent><expr> <Down> (v:count == 0 ? 'gj' : 'j')
+noremap     <silent><expr> <Up>   (v:count == 0 ? 'gk' : 'k')
 inoremap    <Down>      <C-o>gj
 inoremap    <Up>        <C-o>gk
 inoremap    <silent> <Up>   <C-o>gk
@@ -444,25 +444,24 @@ onoremap    <silent> z  :<C-U>normal! w<CR>
 "map        cw          cz
 
 if has("autocmd")
+    " Restore cursor position
     " Don't use bottom restore cursor, Frew's JumpCursorOnEdit works fine
     " Discussion: http://stackoverflow.com/questions/164847/what-is-in-your-vimrc/171558#171558
+    "au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
 
     au FileType rust    set noexpandtab
     au FileType make    set noexpandtab     " Makefiles are tab sensitive
 
-    " Restore cursor position
-    "au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
-
     " Filetypes (au = autocmd)
-    au FileType helpfile set nonumber      " no line numbers when viewing help
-    au FileType helpfile nnoremap <buffer><cr> <c-]>   " Enter selects subject
-    au FileType helpfile nnoremap <buffer><bs> <c-T>   " Backspace to go back
+    au FileType help set nonumber           " no line numbers when viewing help
+    au FileType help nnoremap <buffer><CR> <C-]>    " Enter selects subject
+    au FileType help nnoremap <buffer><BS> <C-T>    " Backspace to go back
 
     " When using mutt, text width=72
     au FileType mail,tex                    set textwidth=72
-    au FileType cpp,c,java,sh,pl,php,asp    set autoindent
-    au FileType cpp,c,java,sh,pl,php,asp    set smartindent
-    au FileType cpp,c,java,sh,pl,php,asp    set cindent
+    "au FileType cpp,c,java,sh,pl,php,asp    set autoindent
+    "au FileType cpp,c,java,sh,pl,php,asp    set smartindent
+    "au FileType cpp,c,java,sh,pl,php,asp    set cindent
     "au BufRead mutt*[0-9] set tw=72
 
     " Automatically chmod +x Shell and Perl scripts
