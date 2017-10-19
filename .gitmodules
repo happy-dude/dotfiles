@@ -46,10 +46,6 @@
 	path = vim/bundle/fugitive-tpope
 	url = https://github.com/tpope/vim-fugitive.git
 	ignore = dirty
-[submodule "vim/bundle/gundo-sjl"]
-	path = vim/bundle/gundo-sjl
-	url = https://github.com/sjl/gundo.vim.git
-	ignore = dirty
 [submodule "vim/bundle/indent-guides-nathanaelkane"]
 	path = vim/bundle/indent-guides-nathanaelkane
 	url = https://github.com/nathanaelkane/vim-indent-guides.git
@@ -125,6 +121,10 @@
 [submodule "vim/bundle/tomorrow-chriskempson"]
 	path = vim/bundle/tomorrow-chriskempson
 	url = https://github.com/chriskempson/vim-tomorrow-theme.git
+	ignore = dirty
+[submodule "vim/bundle/undotree-mbbill"]
+	path = vim/bundle/undotree-mbbill
+	url = https://github.com/mbbill/undotree
 	ignore = dirty
 [submodule "vim/bundle/vim-latex"]
 	path = vim/bundle/vim-latex
