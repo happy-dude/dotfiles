@@ -110,9 +110,9 @@
 	path = vim/bundle/speeddating-tpope
 	url = https://github.com/tpope/vim-speeddating.git
 	ignore = dirty
-[submodule "vim/bundle/surround-tpope"]
-	path = vim/bundle/surround-tpope
-	url = https://github.com/tpope/vim-surround.git
+[submodule "vim/bundle/sandwich-machakann"]
+	path = vim/bundle/sandwich-machakann
+	url = https://github.com/machakann/vim-sandwich
 	ignore = dirty
 [submodule "vim/bundle/toml-cespare"]
 	path = vim/bundle/toml-cespare
