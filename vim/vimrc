@@ -146,6 +146,19 @@ function! ALEcpp ()                              " ALE: C++
     let g:ale_cpp_clang_options = '-Weverything -g -std=c++14'
 endfunction
 
+function! ALELinterStatus() abort
+    let l:counts = ale#statusline#Count(bufnr(''))
+
+    let l:all_errors = l:counts.error + l:counts.style_error
+    let l:all_non_errors = l:counts.total - l:all_errors
+
+    return l:counts.total == 0 ? 'OK' : printf(
+    \   '%dW %dE',
+    \   all_non_errors,
+    \   all_errors
+    \)
+endfunction
+
 autocmd BufRead,BufNewFile *.c call ALEc()
 autocmd BufRead,BufNewFile *.cpp call ALEcpp()
 
@@ -210,7 +223,7 @@ set statusline+=%.64F%m%r%h%w\                                  "  .64F: Full pa
                                                                 "     r: Read-only flag in square brackets
                                                                 "     h: Help flag in square brackets
                                                                 "     w: Preview flag in square brackets
-set statusline+=%{ALEGetStatusLine()}                           "     ALE plugin
+set statusline+=%{ALELinterStatus()}                            "     ALE plugin
 set statusline+=%=%Y.%{&enc}.%{&ff}\                            "     =: Right justify from here
                                                                 "     Y: Filetype as Vim-recognized
                                                                 "  &enc: File encoding
