@@ -1,0 +1,53 @@
+;; Added by Package.el.  This must come before configurations of
+;; installed packages.  Don't delete this line.  If you don't want it,
+;; just comment it out by adding a semicolon to the start of the line.
+;; You may delete these explanatory comments.
+(package-initialize)
+
+;; Backup directory settings per https://stackoverflow.com/a/18330742
+;; and https://snarfed.org/gnu_emacs_backup_files
+(let ((cache-dir "~/.cache/emacs")
+       (backup-dir "~/.cache/emacs/backup")
+       (auto-save-dir "~/.cache/emacs/autosave"))
+  (dolist (dir (list cache-dir backup-dir auto-save-dir))
+    (when (not (file-directory-p dir))
+      (make-directory dir t)))
+)
+
+(setq backup-directory-alist `((".*" . ,"~/.cache/emacs/backup"))
+      make-backup-files t               ; backup of a file the first time it is saved.
+      backup-by-copying t               ; don't clobber symlinks
+      version-control t                 ; version numbers for backup files
+      delete-old-versions t             ; delete excess backup files silently
+      delete-by-moving-to-trash t
+      kept-old-versions 6               ; oldest versions to keep when a new numbered backup is made (default: 2)
+      kept-new-versions 9               ; newest versions to keep when a new numbered backup is made (default: 2)
+      )
+(setq auto-save-directory `((".*" . ,"~/.cache/emacs/autosave"))
+      auto-save-file-name-transforms `((".*" ,"~/.cache/emacs/autosave" t))
+      ;;auto-save-hash-directory (concat cache-dir "/autosave-hash")
+      auto-save-directory-fallback "/tmp/"
+      ;;auto-save-list-file-prefix (concat cache-dir "/autosave-")
+      auto-save-hash-p nil
+      auto-save-default t               ; auto-save every buffer that visits a file
+      auto-save-interval 200            ; number of keystrokes between auto-saves (default: 300)
+      auto-save-timeout 20              ; number of seconds idle time before auto-save (default: 30)
+      )
+
+;; Locally install org-mode
+(add-to-list 'load-path "~/.emacs.d/plugins/org-mode/lisp")
+(add-to-list 'load-path "~/.emacs.d/plugins/org-mode/lisp" t)
+
+;; Locally install evil-mode
+(add-to-list 'load-path "~/.emacs.d/plugins/evil")
+(require 'evil)
+(evil-mode 1)
+
+;; Locally install evil-org-mode
+(add-to-list 'load-path "~/.emacs.d/plugins/evil-org-mode")
+(require 'evil-org)
+(add-hook 'org-mode-hook 'evil-org-mode)
+(evil-org-set-key-theme '(navigation insert textobjects additional calendar))
+(require 'evil-org-agenda)
+(evil-org-agenda-set-keys)
+
