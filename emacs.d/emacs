@@ -4,8 +4,8 @@
 ;; You may delete these explanatory comments.
 (package-initialize)
 
-;; Backup directory settings per https://stackoverflow.com/a/18330742
-;; and https://snarfed.org/gnu_emacs_backup_files
+;; Backup directories
+;; See https://stackoverflow.com/a/18330742 and https://snarfed.org/gnu_emacs_backup_files
 (let ((cache-dir "~/.cache/emacs")
        (backup-dir "~/.cache/emacs/backup")
        (auto-save-dir "~/.cache/emacs/autosave"))
@@ -34,16 +34,21 @@
       auto-save-timeout 20              ; number of seconds idle time before auto-save (default: 30)
       )
 
-;; Locally install org-mode
+;; org-mode
+(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 (add-to-list 'load-path "~/.emacs.d/plugins/org-mode/lisp")
 (add-to-list 'load-path "~/.emacs.d/plugins/org-mode/lisp" t)
+(require 'org)
+(define-key global-map "\C-cl" 'org-store-link)
+(define-key global-map "\C-ca" 'org-agenda)
+(setq org-log-done t)
 
-;; Locally install evil-mode
+;; evil-mode
 (add-to-list 'load-path "~/.emacs.d/plugins/evil")
 (require 'evil)
 (evil-mode 1)
 
-;; Locally install evil-org-mode
+;; evil-org-mode
 (add-to-list 'load-path "~/.emacs.d/plugins/evil-org-mode")
 (require 'evil-org)
 (add-hook 'org-mode-hook 'evil-org-mode)
