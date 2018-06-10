@@ -293,6 +293,12 @@ if isdirectory(expand('$HOME/.cache/vim'))
     if exists('+viewdir')
         set viewdir=$HOME/.cache/vim/view//
     endif
+else
+    call mkdir(expand("$HOME/.cache/vim"), "p")
+    call mkdir(expand("$HOME/.cache/vim/backup"), "p")
+    call mkdir(expand("$HOME/.cache/vim/swap"), "p")
+    call mkdir(expand("$HOME/.cache/vim/undo"), "p")
+    call mkdir(expand("$HOME/.cache/vim/view"), "p")
 endif
 
 if has('unnamedplus')
