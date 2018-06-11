@@ -154,9 +154,17 @@
 	path = emacs.d/plugins/evil
 	url = https://github.com/emacs-evil/evil.git
 	ignore = dirty
+[submodule "emacs.d/plugins/evil-collection"]
+	path = emacs.d/plugins/evil-collection
+	url = https://github.com/emacs-evil/evil-collection.git
+	ignore = dirty
 [submodule "emacs.d/plugins/evil-org-mode"]
 	path = emacs.d/plugins/evil-org-mode
 	url = https://github.com/Somelauw/evil-org-mode.git
+	ignore = dirty
+[submodule "emacs.d/plugins/evil-surround"]
+	path = emacs.d/plugins/evil-surround
+	url = https://github.com/emacs-evil/evil-surround.git
 	ignore = dirty
 [submodule "emacs.d/plugins/org-mode"]
 	path = emacs.d/plugins/org-mode

@@ -7,12 +7,12 @@
 ;; Backup directories
 ;; See https://stackoverflow.com/a/18330742 and https://snarfed.org/gnu_emacs_backup_files
 (let ((cache-dir "~/.cache/emacs")
-       (backup-dir "~/.cache/emacs/backup")
-       (auto-save-dir "~/.cache/emacs/autosave"))
+      (backup-dir "~/.cache/emacs/backup")
+      (auto-save-dir "~/.cache/emacs/autosave"))
   (dolist (dir (list cache-dir backup-dir auto-save-dir))
     (when (not (file-directory-p dir))
       (make-directory dir t)))
-)
+  )
 
 (setq backup-directory-alist `((".*" . ,"~/.cache/emacs/backup"))
       make-backup-files t               ; backup of a file the first time it is saved.
@@ -47,10 +47,23 @@
 (require 'org-tempo)
 (setq org-log-done t)
 
+;; Make sure to set `evil-want-integration' to nil before loading evil or evil-collection.
+(setq evil-want-integration nil)
+
 ;; evil-mode
 (add-to-list 'load-path "~/.emacs.d/plugins/evil")
 (require 'evil)
 (evil-mode 1)
+
+;; evil-collection
+(add-to-list 'load-path "~/.emacs.d/plugins/evil-collection")
+(require 'evil-collection)
+(evil-collection-init)
+
+;; evil-surround
+(add-to-list 'load-path "~/.emacs.d/plugins/evil-surround")
+(require 'evil-surround)
+(global-evil-surround-mode 1)
 
 ;; evil-org-mode
 (add-to-list 'load-path "~/.emacs.d/plugins/evil-org-mode")
