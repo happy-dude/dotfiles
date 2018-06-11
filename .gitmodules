@@ -3,7 +3,7 @@
 	url = https://github.com/grml/grml-etc-core.git
 	ignore = dirty
 [submodule "lisp/pathogen_infect/slime"]
-	path = lisp/pathogen_infect/slime
+	path = emacs.d/plugins/slime
 	url = https://github.com/slime/slime.git
 	ignore = dirty
 [submodule "themes/solarized_theme-altercation"]
