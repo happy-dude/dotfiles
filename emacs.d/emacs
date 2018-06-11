@@ -38,9 +38,13 @@
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 (add-to-list 'load-path "~/.emacs.d/plugins/org-mode/lisp")
 (add-to-list 'load-path "~/.emacs.d/plugins/org-mode/lisp" t)
-(require 'org)
 (define-key global-map "\C-cl" 'org-store-link)
 (define-key global-map "\C-ca" 'org-agenda)
+(setq org-src-fontify-natively t
+      org-src-preserve-indentation t
+      org-src-tab-acts-natively t)
+(require 'org)
+(require 'org-tempo)
 (setq org-log-done t)
 
 ;; evil-mode
