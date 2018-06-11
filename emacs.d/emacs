@@ -73,3 +73,8 @@
 (require 'evil-org-agenda)
 (evil-org-agenda-set-keys)
 
+;; slime
+(add-to-list 'load-path "~/.emacs.d/plugins/slime")
+(require 'slime)
+(require 'slime-autoloads)
+(setq inferior-lisp-program "sbcl")
