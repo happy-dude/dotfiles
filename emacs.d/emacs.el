@@ -82,3 +82,6 @@
 (require 'slime)
 (require 'slime-autoloads)
 (setq inferior-lisp-program "sbcl")
+
+;; Start as org-mode for default mode
+(setq-default major-mode 'org-mode)
