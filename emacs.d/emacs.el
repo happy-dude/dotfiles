@@ -4,6 +4,9 @@
 ;; You may delete these explanatory comments.
 (package-initialize)
 
+;; Hide welcome screen
+(setq inhibit-startup-screen t)
+
 ;; Backup directories
 ;; See https://stackoverflow.com/a/18330742 and https://snarfed.org/gnu_emacs_backup_files
 (let ((cache-dir "~/.cache/emacs")
@@ -52,6 +55,7 @@
 
 ;; evil-mode
 (add-to-list 'load-path "~/.emacs.d/plugins/evil")
+(setq evil-want-C-u-scroll t)
 (require 'evil)
 (evil-mode 1)
 
