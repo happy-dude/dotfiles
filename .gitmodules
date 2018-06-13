@@ -146,6 +146,10 @@
 	path = zsh/prezto-sorin
 	url = https://github.com/sorin-ionescu/prezto.git
 	ignore = dirty
+[submodule "emacs.d/plugins/emacs-noflet"]
+	path = emacs.d/plugins/emacs-noflet
+	url = https://github.com/nicferrier/emacs-noflet.git
+	ignore = dirty
 [submodule "emacs.d/plugins/evil"]
 	path = emacs.d/plugins/evil
 	url = https://github.com/emacs-evil/evil.git
