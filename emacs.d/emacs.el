@@ -7,6 +7,9 @@
 ;; Hide welcome screen
 (setq inhibit-startup-screen t)
 
+;; Highlight current line
+(global-hl-line-mode +1)
+
 ;; Backup directories
 ;; See https://stackoverflow.com/a/18330742 and https://snarfed.org/gnu_emacs_backup_files
 (let ((cache-dir "~/.cache/emacs")
@@ -43,16 +46,31 @@
 (add-to-list 'load-path "~/.emacs.d/plugins/org-mode/lisp" t)
 (define-key global-map "\C-cl" 'org-store-link)
 (define-key global-map "\C-ca" 'org-agenda)
-(setq org-src-fontify-natively t
-      org-src-preserve-indentation t
-      org-src-tab-acts-natively t)
-(setq org-todo-keywords '(
-                          (sequence "TODO" "PROCESS" "ORGANIZE" "REVIEW" "DO" "|" "DONE")
-                          (sequence "|" "NOTDOING" "DELEGATED" "WAITING" "SOMEDAY")
-                          (sequence "IDEA" "DESIGN" "DEVELOP" "QA" "BACKLOG" "|" "COMPLETE")
-                          (sequence "DETECT" "TRIAGE" "CONTAIN" "ERADICATE" "|" "RECOVER" "POSTMORTEM")
-                          (sequence "RECON" "PAYLOAD" "DELIVER" "EXPLOIT" "INSTALL" "|" "C2" "ACTION")
-                          ))
+(setq 
+  org-src-fontify-natively t
+  org-src-preserve-indentation t
+  org-src-tab-acts-natively t
+  org-startup-folded nil
+  org-startup-indented t
+  org-directory "~/org"
+  org-default-notes-file (concat org-directory "/notes.org")
+  )
+(setq org-agenda-files (list "~/org/notes.org"
+                             "~/org/personal.org"
+                             "~/org/work.org")
+      )
+(setq org-capture-templates
+      '(("t" "Todo" entry (file+headline "~/org/notes.org" "Unfiled")
+         "* TODO %?\n  %i\n  %a"))
+      )
+(setq org-todo-keywords 
+      '(
+        (sequence "TODO" "PROCESS" "ORGANIZE" "REVIEW" "DO" "|" "DONE")               ; GTD
+        (sequence "|" "NOTDOING" "DELEGATED" "WAITING" "SOMEDAY")                     ; Blockers
+        (sequence "IDEA" "DESIGN" "DEVELOP" "QA" "BACKLOG" "|" "COMPLETE")            ; Agile
+        (sequence "DETECT" "TRIAGE" "CONTAIN" "ERADICATE" "|" "RECOVER" "POSTMORTEM") ; Incident Response
+        (sequence "RECON" "PAYLOAD" "DELIVER" "EXPLOIT" "INSTALL" "|" "C2" "ACTION")  ; Cyber Kill-Chain
+        ))
 (setq org-todo-keyword-faces '(
                                ("TODO" . "brown") ("PROCESS" . "royal blue") ("ORGANIZE" .  "chocolate1") ("REVIEW" ."MediumOrchid1") ("DO" . "brown1") ("DONE" . "DarkOliveGreen4")
                                ("NOTDOING" . "gray") ("DELEGATED" . "slate gray") ("WAITING" . "dim gray") ("SOMEDAY" . "dark slate gray")
@@ -62,6 +80,33 @@
 (require 'org)
 (require 'org-tempo)
 (setq org-log-done t)
+
+; macOS globalcapture support
+; See https://www.reddit.com/r/emacs/comments/6lzyg2/heres_how_to_do_emacsclient_global_orgcapture/ and https://cestlaz.github.io/posts/using-emacs-24-capture-2/
+; Bind Key to: $(which emacsclient) -s $socketfile -c -a '' --eval "(make-capture-frame)"emacsclient -ne "(make-capture-frame)"
+(defadvice org-capture-finalize
+           (after delete-capture-frame activate)
+           "Advise capture-finalize to close the frame"
+           (if (equal "capture" (frame-parameter nil 'name))
+               (delete-frame)))
+
+(defadvice org-capture-destroy
+           (after delete-capture-frame activate)
+           "Advise capture-destroy to close the frame"
+           (if (equal "capture" (frame-parameter nil 'name))
+               (delete-frame)))
+
+;; noflet
+(add-to-list 'load-path "~/.emacs.d/plugins/emacs-noflet")
+(require 'noflet)
+(defun make-capture-frame ()
+  "Create a new frame and run org-capture."
+  (interactive)
+  (make-frame '((name . "capture")))
+  (select-frame-by-name "capture")
+  (delete-other-windows)
+  (noflet ((switch-to-buffer-other-window (buf) (switch-to-buffer buf)))
+          (org-capture)))
 
 ;; Make sure to set `evil-want-integration' to nil before loading evil or evil-collection.
 (setq evil-want-integration nil)
