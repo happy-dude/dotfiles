@@ -105,7 +105,7 @@
         ("e" "Evernote")
         ("et" "Tickets" entry (file+headline "~/org/work.org" "Tickets")
          "* [[https://evernote.jira.com/browse/%?" :prepend t)
-        ("ei" "Tickets" entry (file+headline "~/org/work.org" "Tickets")
+        ("ei" "Incidents" entry (file+headline "~/org/work.org" "Incidents")
          "* DETECT [[https://evernote.jira.com/browse/SEC-%?" :prepend t)
         ("ew" "Watching" entry (file+headline "~/org/work.org" "Watching")
          "* %?\n%U" :prepend t)
