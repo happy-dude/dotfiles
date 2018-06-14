@@ -51,7 +51,7 @@
   org-src-fontify-natively t
   org-src-preserve-indentation t
   org-src-tab-acts-natively t
-  org-startup-folded nil
+  ;org-startup-folded nil
   org-startup-indented t
   org-directory "~/org"
   org-default-notes-file (concat org-directory "/notes.org")
