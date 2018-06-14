@@ -46,6 +46,7 @@
 (add-to-list 'load-path "~/.emacs.d/plugins/org-mode/lisp" t)
 (define-key global-map "\C-cl" 'org-store-link)
 (define-key global-map "\C-ca" 'org-agenda)
+(global-set-key (kbd "C-c c") 'org-capture)
 (setq 
   org-src-fontify-natively t
   org-src-preserve-indentation t
@@ -56,13 +57,77 @@
   org-default-notes-file (concat org-directory "/notes.org")
   )
 (setq org-agenda-files (list "~/org/notes.org"
-                             "~/org/personal.org"
-                             "~/org/work.org")
+                             "~/org/work.org"
+                             "~/org/cal.org")
       )
 (setq org-capture-templates
-      '(("t" "Todo" entry (file+headline "~/org/notes.org" "Unfiled")
-         "* TODO %?\n  %i\n  %a"))
-      )
+      '(
+        ("t" "Notes Unfiled" entry (file+headline "~/org/notes.org" "Unfiled")
+         "* TODO %?\n%U" :prepend t)
+        ("u" "Work Unfiled" entry (file+headline "~/org/work.org" "Unfiled")
+         "* TODO %?\n%U" :prepend t)
+
+        ("g" "GTD")
+        ("ga" "Actioning" entry (file+headline "~/org/notes.org" "Actioning")
+         "* TODO %?")
+        ("gp" "Projects" entry (file+headline "~/org/notes.org" "Projects")
+         "* IDEA %?\n%U\n")
+        ("gf" "Focuses" entry (file+headline "~/org/notes.org" "Focuses")
+         "* %?" :prepend t)
+        ("gg" "Goals" entry (file+headline "~/org/notes.org" "Goals")
+         "* TODO %?" :prepend t)
+        ("gv" "Visions" entry (file+headline "~/org/notes.org" "Visions")
+         "* IDEA %?" :prepend t)
+        ("gl" "Life" entry (file+headline "~/org/notes.org" "Life")
+         "* %?" :prepend t)
+
+        ("r" "Reading list" entry (file+headline "~/org/notes.org" "Reading List")
+         "* TODO %?\n" :prepend t)
+        ("w" "Watching list" entry (file+headline "~/org/notes.org" "Watching List")
+         "* TODO %?\n" :prepend t)
+
+        ("f" "Financial")
+        ("fs" "Subscriptions" entry (file+headline "~/org/notes.org" "Subscriptions")
+         "* %?")
+        ("fg" "Goals" entry (file+olp "~/org/notes.org" "Financial" "Goals")
+         "* TODO %?" :prepend t)
+
+        ("s" "Shopping")
+        ("sg" "Groceries" entry (file+headline "~/org/notes.org" "Groceries")
+         "* WISHLIST %?" :prepend t)
+        ("so" "Ordering" entry (file+headline "~/org/notes.org" "Ordering")
+         "* WISHLIST %?" :prepend t)
+        ("sw" "Wishlist" entry (file+headline "~/org/notes.org" "Wishlist")
+         "* WISHLIST %?" :prepend t)
+        ("sg" "Gifts" entry (file+headline "~/org/notes.org" "Gifts")
+         "* WISHLIST %?" :prepend t)
+
+        ("e" "Evernote")
+        ("et" "Tickets" entry (file+headline "~/org/work.org" "Tickets")
+         "* [[https://evernote.jira.com/browse/%?" :prepend t)
+        ("ei" "Tickets" entry (file+headline "~/org/work.org" "Tickets")
+         "* DETECT [[https://evernote.jira.com/browse/SEC-%?" :prepend t)
+        ("ew" "Watching" entry (file+headline "~/org/work.org" "Watching")
+         "* %?\n%U" :prepend t)
+        ("ed" "Drive-by" entry (file+headline "~/org/work.org" "Drive-by")
+         "* TODO %?\n%U" :prepend t)
+        ("er" "Reading list" entry (file+headline "~/org/work.org" "Reading list")
+         "* TODO %?" :prepend t)
+        ("e1" "1:1" entry (file+headline "~/org/work.org" "1:1")
+         "* %U\n%?- " :prepend t)
+        ("ep" "Projects" entry (file+headline "~/org/work.org" "Projects")
+         "* IDEA %?" :prepend t)
+        ("eo" "OKRs" entry (file+headline "~/org/work.org" "OKRs")
+         "* TODO %?")
+
+        ("c" "Career Development")
+        ("ce" "Resume" entry (file+headline "~/org/work.org" "Resume")
+         "* TODO %?")
+        ("cv" "Visions" entry (file+headline "~/org/work.org" "Visions")
+         "* TODO %?\n%U" :prepend t)
+        ("cl" "Life" entry (file+headline "~/org/work.org" "Life")
+         "* %?\n%U" :prepend t)
+        ))
 (setq org-todo-keywords 
       '(
         (sequence "TODO" "PROCESS" "ORGANIZE" "REVIEW" "DO" "|" "DONE")                 ; GTD
