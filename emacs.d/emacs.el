@@ -145,6 +145,8 @@
                                ("RECON" . "dark violet") ("PAYLOAD" . "pale violet red") ("DELIVER" . "firebrick") ("EXPLOIT" . "red") ("INSTALL" . "goldenrod") ("C2" . "lime green") ("ACTION" . "forest green")
                                ("WISHLIST" . "systemOrangeColor") ("CART" . "systemPurpleColor") ("SHIPPING" . "systemBlueColor") ("ATTN" . "systemRedColor") ("RETURNED" . "systemYellowColor")
                                ))
+(add-hook 'org-mode-hook #'visual-line-mode)
+(add-hook 'text-mode-hook #'visual-line-mode)
 (require 'org)
 (require 'org-tempo)
 (setq org-log-done t)
@@ -208,6 +210,25 @@
 (require 'slime)
 (require 'slime-autoloads)
 (setq inferior-lisp-program "sbcl")
+
+;; Solarized theme
+(add-to-list 'load-path "~/.emacs.d/plugins/dash.el")
+(require 'dash)
+(require 'dash-functional)
+(add-to-list 'load-path "~/.emacs.d/themes/solarized-emacs")
+(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/solarized-emacs")
+(require 'solarized)
+(add-hook 'org-mode-hook
+          (lambda () (set-default-font "Menlo 14")))
+(setq solarized-use-variable-pitch nil
+      solarized-scale-org-headlines nil
+      ;; solarized-height-minus-1 1.0
+      ;; solarized-height-plus-1 1.0
+      ;; solarized-height-plus-2 1.0
+      ;; solarized-height-plus-3 1.0
+      ;; solarized-height-plus-4 1.0)
+      )
+(load-theme 'solarized-dark t)
 
 ;; Start as org-mode for default mode
 (setq-default major-mode 'org-mode)

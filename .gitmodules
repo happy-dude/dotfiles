@@ -146,6 +146,10 @@
 	path = zsh/prezto-sorin
 	url = https://github.com/sorin-ionescu/prezto.git
 	ignore = dirty
+[submodule "emacs.d/plugins/dash.el"]
+	path = emacs.d/plugins/dash.el
+	url = https://github.com/magnars/dash.el.git
+	ignore = dirty
 [submodule "emacs.d/plugins/emacs-noflet"]
 	path = emacs.d/plugins/emacs-noflet
 	url = https://github.com/nicferrier/emacs-noflet.git
@@ -173,4 +177,8 @@
 [submodule "emacs.d/plugins/slime"]
 	path = emacs.d/plugins/slime
 	url = https://github.com/slime/slime.git
+	ignore = dirty
+[submodule "emacs.d/themes/solarized-emacs"]
+	path = emacs.d/themes/solarized-emacs
+	url = https://github.com/bbatsov/solarized-emacs.git
 	ignore = dirty
