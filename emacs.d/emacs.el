@@ -178,7 +178,7 @@
   (noflet ((switch-to-buffer-other-window (buf) (switch-to-buffer buf)))
           (org-capture)))
 
-; undo-tree
+;; undo-tree
 (add-to-list 'load-path "~/.emacs.d/plugins/undo-tree")
 (require 'undo-tree)
 (global-undo-tree-mode)
@@ -209,6 +209,11 @@
 (evil-org-set-key-theme '(navigation insert textobjects additional calendar))
 (require 'evil-org-agenda)
 (evil-org-agenda-set-keys)
+
+;; evil-rsi
+(add-to-list 'load-path "~/.emacs.d/plugins/evil-rsi")
+(require 'evil-rsi)
+(evil-rsi-mode)
 
 ;; slime
 (add-to-list 'load-path "~/.emacs.d/plugins/slime")

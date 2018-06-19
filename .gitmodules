@@ -166,6 +166,10 @@
 	path = emacs.d/plugins/evil-org-mode
 	url = https://github.com/Somelauw/evil-org-mode.git
 	ignore = dirty
+[submodule "emacs.d/plugins/evil-rsi"]
+	path = emacs.d/plugins/evil-rsi
+	url = https://github.com/linktohack/evil-rsi
+	ignore = dirty
 [submodule "emacs.d/plugins/evil-surround"]
 	path = emacs.d/plugins/evil-surround
 	url = https://github.com/emacs-evil/evil-surround.git
