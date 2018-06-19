@@ -178,6 +178,11 @@
   (noflet ((switch-to-buffer-other-window (buf) (switch-to-buffer buf)))
           (org-capture)))
 
+; undo-tree
+(add-to-list 'load-path "~/.emacs.d/plugins/undo-tree")
+(require 'undo-tree)
+(global-undo-tree-mode)
+
 ;; Make sure to set `evil-want-integration' to nil before loading evil or evil-collection.
 (setq evil-want-integration nil)
 
