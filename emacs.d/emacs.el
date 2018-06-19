@@ -191,6 +191,7 @@
 ;; evil-mode
 (add-to-list 'load-path "~/.emacs.d/plugins/evil")
 (setq evil-want-C-u-scroll t)
+(setq evil-want-C-i-jump nil)
 (require 'evil)
 (evil-mode 1)
 
