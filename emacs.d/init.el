@@ -10,6 +10,10 @@
 ;; Highlight current line
 (global-hl-line-mode +1)
 
+;; Line numbers
+(setq-default display-line-numbers 'relative)
+(add-hook 'org-mode-hook #'display-line-numbers-mode)
+
 ;; Backup directories
 ;; See https://stackoverflow.com/a/18330742 and https://snarfed.org/gnu_emacs_backup_files
 (let ((cache-dir "~/.cache/emacs")
