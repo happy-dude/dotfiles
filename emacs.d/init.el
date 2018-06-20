@@ -12,7 +12,7 @@
 
 ;; Line numbers
 (setq-default display-line-numbers 'relative)
-(add-hook 'org-mode-hook #'display-line-numbers-mode)
+(add-hook 'org-mode-hook (lambda () (display-line-numbers-mode 0)))
 
 ;; Backup directories
 ;; See https://stackoverflow.com/a/18330742 and https://snarfed.org/gnu_emacs_backup_files
