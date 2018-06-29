@@ -30,10 +30,6 @@
 	path = vim/bundle/ctrlp-ctrlpvim
 	url = https://github.com/ctrlpvim/ctrlp.vim.git
 	ignore = dirty
-[submodule "vim/bundle/easymotion-lokaltog"]
-	path = vim/bundle/easymotion-lokaltog
-	url = https://github.com/Lokaltog/vim-easymotion.git
-	ignore = dirty
 [submodule "vim/bundle/flake8-andviro"]
 	path = vim/bundle/flake8-andviro
 	url = https://github.com/andviro/flake8-vim
@@ -121,6 +117,10 @@
 [submodule "vim/bundle/undotree-mbbill"]
 	path = vim/bundle/undotree-mbbill
 	url = https://github.com/mbbill/undotree
+	ignore = dirty
+[submodule "vim/bundle/vim-easymotion"]
+	path = vim/bundle/vim-easymotion
+	url = https://github.com/easymotion/vim-easymotion.git
 	ignore = dirty
 [submodule "vim/bundle/vim-latex"]
 	path = vim/bundle/vim-latex
