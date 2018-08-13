@@ -78,6 +78,10 @@
 	path = vim/bundle/rainbow-luochen1990
 	url = https://github.com/luochen1990/rainbow.git
 	ignore = dirty
+[submodule "vim/bundle/repeat-tpope"]
+	path = vim/bundle/repeat-tpope
+	url = https://github.com/tpope/vim-repeat.git
+	ignore = dirty
 [submodule "vim/bundle/rsi-tpope"]
 	path = vim/bundle/rsi-tpope
 	url = https://github.com/tpope/vim-rsi.git
@@ -85,6 +89,18 @@
 [submodule "vim/bundle/rust-rustlang"]
 	path = vim/bundle/rust-rustlang
 	url = https://github.com/rust-lang/rust.vim.git
+	ignore = dirty
+[submodule "vim/bundle/schlepp-zirrostig"]
+	path = vim/bundle/schlepp-zirrostig
+	url = https://github.com/zirrostig/vim-schlepp.git
+	ignore = dirty
+[submodule "vim/bundle/sexp-guns"]
+	path = vim/bundle/sexp-guns
+	url = https://github.com/guns/vim-sexp.git
+	ignore = dirty
+[submodule "vim/bundle/sexp-mappings-tpope"]
+	path = vim/bundle/sexp-mappings-tpope
+	url = https://github.com/tpope/vim-sexp-mappings-for-regular-people.git
 	ignore = dirty
 [submodule "vim/bundle/seoul256-junegunn"]
 	path = vim/bundle/seoul256-junegunn
@@ -129,10 +145,6 @@
 [submodule "vim/bundle/vim-perl"]
 	path = vim/bundle/vim-perl
 	url = https://github.com/vim-perl/vim-perl.git
-	ignore = dirty
-[submodule "vim/bundle/schlepp-zirrostig"]
-	path = vim/bundle/schlepp-zirrostig
-	url = https://github.com/zirrostig/vim-schlepp.git
 	ignore = dirty
 [submodule "vim/ftbundle/html/html5-othree"]
 	path = vim/ftbundle/html/html5-othree
