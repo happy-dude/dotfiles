@@ -46,6 +46,10 @@
 	path = vim/bundle/jellybeans-nanotech
 	url = https://github.com/nanotech/jellybeans.vim.git
 	ignore = dirty
+[submodule "vim/bundle/linuxsty-vivien"]
+	path = vim/bundle/linuxsty-vivien
+	url = https://github.com/vivien/vim-linux-coding-style.git
+	ignore = dirty
 [submodule "vim/bundle/Lucius-jonathanfilip"]
 	path = vim/bundle/Lucius-jonathanfilip
 	url = https://github.com/vim-scripts/Lucius.git
