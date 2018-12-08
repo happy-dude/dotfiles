@@ -225,7 +225,11 @@ set magic               " Set magic on, for regular expressions
 set grepprg=/bin/grep\ -nH  " Vim grep
 
 set list                " List mode: show special characters -- what is displayed is changed by listchars
-set listchars=tab:>-,trail:-    ",eol:¬ or eol:$
+                        " Inspired by https://old.reddit.com/r/vim/comments/4hoa6e/what_do_you_use_for_your_listchars/
+set listchars=tab:»\ ,trail:·,nbsp:·
+set listchars+=extends:›,precedes:‹
+"set listchars+=eol:¬    " or eol:$ or eol:↲
+
 " Display tabs to know we put them/ where we want them
 
 set laststatus=2        " Always show the statusline
@@ -353,7 +357,9 @@ else
 endif
 
 if v:version > 704 || v:version == 704 && has("patch338")
-    set breakindent showbreak=..\   " Set breakindent with .. for wrapped lines
+    set breakindent showbreak=↪\   " Set breakindent with .. for wrapped lines
+    "set breakindent showbreak=..\ 
+    "set breakindent showbreak=\\ 
 endif
 
 """ relativenumber is a Vim 7.3 option
