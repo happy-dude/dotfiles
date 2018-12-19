@@ -230,8 +230,6 @@ set listchars=tab:⋮\ ,trail:·,nbsp:∘
 set listchars+=extends:›,precedes:‹
 "set listchars+=eol:¬    " or eol:$ or eol:↲
 
-" Display tabs to know we put them/ where we want them
-
 set laststatus=2        " Always show the statusline
 set statusline+=[%n]\                                           "     n: Buffer number
 set statusline+=%.64F%m%r%h%w\                                  "  .64F: Full path of file; max width of filepath, truncate from beginning
@@ -286,6 +284,13 @@ set writebackup         " Make a backup file before overwriting a file
 set swapfile            " Allow creation of .swp swap files
 if exists('+undofile')  " Have Vim save undo history to file and restore it on open
     set undofile
+endif
+
+" Use xdiff patience algorithm
+                        " See https://github.com/vim/vim/pull/2732
+                        " and https://github.com/neovim/neovim/issues/1466
+if has("patch-8.1.0360") || has('nvim')
+    set diffopt+=internal,algorithm:patience
 endif
 
 "set history=350         " Sets how many lines of history Vim will remember
