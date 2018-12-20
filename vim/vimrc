@@ -4,34 +4,6 @@
 """
 """     Author: Stanley Chan
 """     Github: https://github.com/Happy-Dude
-"""     Version: 02 April 2017
-"""
-""" Based on configurations from:
-"""	amix the lucky stiff:	http://amix.dk/blog/post/19486#The-ultimate-vim-configuration-vimrc
-"""	Jan C. Ebersbach:	http://github.com/jceb/vimrc
-"""	phuzz:			http://phuzz.org/vimrc.html
-"""	Robert Melton:		http://vi-improved.org/vimrc.php
-"""	Uwe Hermann:		http://www.hermann-uwe.de/files/vimrc
-"""	Padraig Brady:		http://www.pixelbeat.org/settings/.vimrc
-"""	cliffsjunk:		http://mysettopbox.tv/phpBB2/viewtopic.php?t=18986
-"""	Jeremy Edberg:		http://www.jedberg.net/jedberg_vimrc
-"""	gaving:			https://github.com/gaving/dotfiles/blob/master/.vimrc
-"""	askedrelic:		https://github.com/askedrelic/homedir/blob/master/.vimrc
-"""	Janus:			https://github.com/carlhuda/janus
-"""	Seth Brown:		http://www.drbunsen.org/text-triumvirate.html
-"""	Wincent Colaiuta:	https://wincent.com/blog/tweaking-command-t-and-vim-for-use-in-the-terminal-and-tmux
-"""	Steve Losh:		http://stevelosh.com/blog/2010/09/coming-home-to-vim/
-"""	Jeff Kreeftmeijer:	http://jeffkreeftmeijer.com/2012/relative-line-numbers-in-vim-for-super-fast-movement/
-"""	Dave Eddy:		https://github.com/bahamas10/dotfiles/blob/master/vimrc
-"""	Eric Harmon:		https://github.com/eharmon/dotfiles/blob/master/vimrc
-"""	Damien Conway:		http://www.youtube.com/watch?v=aHm36-na4-4
-"""	tommcdo:		https://github.com/tommcdo/vimfiles/blob/master/config/consistency.vim
-"""
-"""
-"""	StackOverflow:		http://stackoverflow.com/questions/164847/what-is-in-your-vimrc
-"""	Hacker News:		http://news.ycombinator.com/item?id=856051
-"""	Reddit:			http://www.reddit.com/r/linux/comments/9zq8h/vim_users_what_are_some_interesting_hacks_or/
-"""
 """
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -41,7 +13,7 @@ set modelines=0         " Set modelines to 0 to prevent several security exploit
 
 " Enable Vim-specific, non-Neovim features
 if !has('nvim')
-    set esckeys             " Function keys that start with <Esc> are recognized in insert mode
+    set esckeys         " Function keys that start with <Esc> are recognized in insert mode
 endif
 
 " Enable mouse support in console
@@ -487,83 +459,114 @@ onoremap    <silent> z  :<C-U>normal! w<CR>
 "map        cw          cz
 
 if has("autocmd")
-    " Restore cursor position
     " Don't use bottom restore cursor, Frew's JumpCursorOnEdit works fine
     " Discussion: http://stackoverflow.com/questions/164847/what-is-in-your-vimrc/171558#171558
-    "au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
+    " Restore cursor position
+    " See https://github.com/bahamas10/dotfiles/blob/master/vimrc#L58
+    "autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+    "autocmd BufReadPost COMMIT_EDITMSG exe "normal! gg"
 
-    au FileType rust    set noexpandtab
-    au FileType make    set noexpandtab     " Makefiles are tab sensitive
-
-    " Filetypes (au = autocmd)
+    " help files
     au FileType help set nonumber           " no line numbers when viewing help
     au FileType help nnoremap <buffer><CR> <C-]>    " Enter selects subject
     au FileType help nnoremap <buffer><BS> <C-T>    " Backspace to go back
 
-    " When using mutt, text width=72
-    au FileType mail,tex                    set textwidth=72
-    "au FileType cpp,c,java,sh,pl,php,asp    set autoindent
-    "au FileType cpp,c,java,sh,pl,php,asp    set smartindent
-    "au FileType cpp,c,java,sh,pl,php,asp    set cindent
-    "au BufRead mutt*[0-9] set tw=72
+    " TXT files
+    autocmd FileType                            text setlocal spell
 
-    " Automatically chmod +x Shell and Perl scripts
-    "au BufWritePost   *.sh             !chmod +x %
-    "au BufWritePost   *.pl             !chmod +x %
+    " Markdown files
+    autocmd BufNewFile,BufRead,FileReadPre      *.md,*.markdown setlocal filetype=ghmarkdown
+    autocmd FileType                            ghmarkdown      setlocal sw=4 sts=4 et spell
 
-    " File formats
-    au BufNewFile,BufRead *.pls            set syntax=dosini
-    au BufNewFile,BufRead modprobe.conf    set syntax=modconf
+    " makefiles
+    au FileType make    set noexpandtab     " Makefiles are tab sensitive
 
+    " Rust
+    au FileType rust    set noexpandtab
 
-    " From Uwe Hermann's configuration
-    " Drupal *.module and *.engine files.
-    augroup module
-        autocmd BufRead *.module,*.engine   set filetype=php
-    augroup END
+    " Objective C / C++
+    autocmd BufNewFile,BufReadPre,FileReadPre       *.m    setlocal filetype=objc
+    autocmd BufNewFile,BufReadPre,FileReadPre       *.mm   setlocal filetype=objcpp
+    autocmd FileType                                objc   setlocal sw=4 sts=4 et
+    autocmd FileType                                objcpp setlocal sw=4 sts=4 et
 
-    " Python code.
+    " Python
     augroup python
-        autocmd BufReadPre,FileReadPre *.py set tabstop=4
-        autocmd BufReadPre,FileReadPre *.py set expandtab
+        autocmd BufNewFile,BufReadPre,FileReadPre   *.py   setlocal filetype=python
+        autocmd FileType                            python setlocal sw=4 sts=4 et
     augroup END
 
-    " Ruby code.
+    " Ruby/Chef
     augroup ruby
-        autocmd BufReadPre,FileReadPre *.rb set tabstop=2
-        autocmd BufReadPre,FileReadPre *.rb set expandtab
+        autocmd BufNewFile,BufRead                  *.rb setlocal filetype=ruby
+        autocmd FileType                            ruby setlocal sw=2 sts=2 et
     augroup END
 
-    " PHP code.
+    " JavaScript files
+    augroup javascript
+        autocmd BufNewFile,BufReadPre,FileReadPre   *.js setlocal filetype=javascript
+        autocmd FileType                            javascript  setlocal sw=4 sts=4 et
+    augroup END
+
+    " JSON files
+    augroup json
+        autocmd BufNewFile,BufReadPre,FileReadPre   *.json setlocal filetype=javascript
+        autocmd FileType                            json setlocal sw=2 sts=2 et
+    augroup END
+
+    " Yaml
+    augroup yaml
+        autocmd BufNewFile,BufRead                  *.yaml,*.yml setlocal filetype=yaml
+        autocmd FileType                            yaml setlocal sw=2 sts=2 et
+    augroup END
+
+    " PHP
     augroup php
         autocmd BufReadPre,FileReadPre *.php set tabstop=4
         autocmd BufReadPre,FileReadPre *.php set expandtab
     augroup END
+    "
+    " Drupal *.module and *.engine files
+    augroup module
+        autocmd BufRead *.module,*.engine   set filetype=php
+    augroup END
 
-    " Java code.
+    " Java
     augroup java
         autocmd BufReadPre,FileReadPre *.java set tabstop=4
         autocmd BufReadPre,FileReadPre *.java set expandtab
     augroup END
 
-    " ANT build.xml files.
+    " ANT build.xml
     augroup xml
         autocmd BufReadPre,FileReadPre build.xml    set tabstop=4
     augroup END
 
-    " (J)Flex files.
+    " (J)Flex
     augroup lex
         "autocmd BufRead,BufNewFile *.flex,*.jflex set filetype=lex
         autocmd BufRead,BufNewFile *.flex,*.jflex   set filetype=jflex
     augroup END
 
-    " (Nu)SMV files.
+    " (Nu)SMV
     augroup smv
         autocmd BufRead,BufNewFile *.smv            set filetype=smv
     augroup END
 
-endif
+    " Jekyll posts ignore yaml headers
+    autocmd BufNewFile,BufRead                  */_posts/*.md syntax match Comment /\%^---\_.\{-}---$/
+    autocmd BufNewFile,BufRead                  */_posts/*.md syntax region lqdHighlight start=/^{%\s*highlight\(\s\+\w\+\)\{0,1}\s*%}$/ end=/{%\s*endhighlight\s*%}/
 
+    " EJS javascript templates
+    autocmd BufNewFile,BufRead,FileReadPre      *.ejs setlocal filetype=html
+    " When using mutt, text width=72
+    au FileType mail,tex                    set textwidth=72
+
+    " File formats
+    au BufNewFile,BufRead *.pls            set syntax=dosini
+    au BufNewFile,BufRead modprobe.conf    set syntax=modconf
+
+endif
 
 " From Frew's configuration on StackOverflow
 " {{{Frew's Auto Commands, Misc Commands, and Functions
