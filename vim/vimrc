@@ -472,7 +472,7 @@ if has("autocmd")
     au FileType help nnoremap <buffer><BS> <C-T>    " Backspace to go back
 
     " TXT files
-    autocmd FileType                            text setlocal spell
+    "autocmd FileType                            text setlocal spell
 
     " Markdown files
     autocmd BufNewFile,BufRead,FileReadPre      *.md,*.markdown setlocal filetype=ghmarkdown
