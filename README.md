@@ -1,14 +1,3 @@
----
-title: dotfiles
-description: Version controlled dotfiles directory
-author: Stanley Chan
-tags:
-colors:
-created: Sun 12 Aug 2012
-modified: Sun 12 Aug 2012
-
----
-
 Stan's dotfiles
 ===============
 
