@@ -474,10 +474,6 @@ if has("autocmd")
     " TXT files
     "autocmd FileType                                text setlocal spell
 
-    " Markdown files
-    autocmd BufNewFile,BufRead,FileReadPre          *.md,*.markdown setlocal filetype=ghmarkdown
-    autocmd FileType                                ghmarkdown      setlocal sw=4 sts=4 et spell
-
     " makefiles
     " Makefiles are tab sensitive
     au FileType                                     make set noexpandtab
