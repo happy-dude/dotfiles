@@ -150,6 +150,10 @@
 	path = vim/bundle/vim-latex
 	url = https://github.com/vim-latex/vim-latex.git
 	ignore = dirty
+[submodule "vim/bundle/vim-pandoc"]
+	path = vim/bundle/vim-pandoc
+	url = https://github.com/vim-pandoc/vim-pandoc.git
+	ignore = dirty
 [submodule "vim/bundle/vim-perl"]
 	path = vim/bundle/vim-perl
 	url = https://github.com/vim-perl/vim-perl.git
