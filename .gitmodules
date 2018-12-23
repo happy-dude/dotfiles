@@ -34,6 +34,10 @@
 	path = vim/bundle/ctrlp-ctrlpvim
 	url = https://github.com/ctrlpvim/ctrlp.vim.git
 	ignore = dirty
+[submodule "vim/bundle/dirvish-justinmk"]
+	path = vim/bundle/dirvish-justinmk
+	url = https://github.com/justinmk/vim-dirvish.git
+	ignore = dirty
 [submodule "vim/bundle/flake8-andviro"]
 	path = vim/bundle/flake8-andviro
 	url = https://github.com/andviro/flake8-vim
@@ -153,10 +157,6 @@
 [submodule "vim/bundle/vim-perl"]
 	path = vim/bundle/vim-perl
 	url = https://github.com/vim-perl/vim-perl.git
-	ignore = dirty
-[submodule "vim/bundle/vinegar-tpope"]
-	path = vim/bundle/vinegar-tpope
-	url = https://github.com/tpope/vim-vinegar.git
 	ignore = dirty
 [submodule "vim/ftbundle/html/html5-othree"]
 	path = vim/ftbundle/html/html5-othree
