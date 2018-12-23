@@ -70,10 +70,6 @@
 	path = vim/bundle/nerdcommenter-scrooloose
 	url = https://github.com/scrooloose/nerdcommenter.git
 	ignore = dirty
-[submodule "vim/bundle/nerdtree-scrooloose"]
-	path = vim/bundle/nerdtree-scrooloose
-	url = https://github.com/scrooloose/nerdtree.git
-	ignore = dirty
 [submodule "vim/bundle/pathogen-tpope"]
 	path = vim/bundle/pathogen-tpope
 	url = https://github.com/tpope/vim-pathogen.git
@@ -157,6 +153,10 @@
 [submodule "vim/bundle/vim-perl"]
 	path = vim/bundle/vim-perl
 	url = https://github.com/vim-perl/vim-perl.git
+	ignore = dirty
+[submodule "vim/bundle/vinegar-tpope"]
+	path = vim/bundle/vinegar-tpope
+	url = https://github.com/tpope/vim-vinegar.git
 	ignore = dirty
 [submodule "vim/ftbundle/html/html5-othree"]
 	path = vim/ftbundle/html/html5-othree
