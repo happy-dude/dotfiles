@@ -218,3 +218,6 @@
 	path = emacs.d/themes/solarized-emacs
 	url = https://github.com/bbatsov/solarized-emacs.git
 	ignore = dirty
+[submodule "vim/bundle/vim-pandoc-syntax"]
+	path = vim/bundle/vim-pandoc-syntax
+	url = https://github.com/vim-pandoc/vim-pandoc-syntax.git
