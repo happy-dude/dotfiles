@@ -146,6 +146,10 @@
 	path = vim/bundle/vim-easymotion
 	url = https://github.com/easymotion/vim-easymotion.git
 	ignore = dirty
+[submodule "vim/bundle/vim-go"]
+	path = vim/bundle/vim-go
+	url = https://github.com/fatih/vim-go.git
+	ignore = dirty
 [submodule "vim/bundle/vim-latex"]
 	path = vim/bundle/vim-latex
 	url = https://github.com/vim-latex/vim-latex.git
@@ -153,6 +157,10 @@
 [submodule "vim/bundle/vim-pandoc"]
 	path = vim/bundle/vim-pandoc
 	url = https://github.com/vim-pandoc/vim-pandoc.git
+	ignore = dirty
+[submodule "vim/bundle/vim-pandoc-syntax"]
+	path = vim/bundle/vim-pandoc-syntax
+	url = https://github.com/vim-pandoc/vim-pandoc-syntax.git
 	ignore = dirty
 [submodule "vim/bundle/vim-perl"]
 	path = vim/bundle/vim-perl
@@ -218,6 +226,3 @@
 	path = emacs.d/themes/solarized-emacs
 	url = https://github.com/bbatsov/solarized-emacs.git
 	ignore = dirty
-[submodule "vim/bundle/vim-pandoc-syntax"]
-	path = vim/bundle/vim-pandoc-syntax
-	url = https://github.com/vim-pandoc/vim-pandoc-syntax.git
