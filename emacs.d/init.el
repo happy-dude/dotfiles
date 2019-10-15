@@ -189,6 +189,10 @@
 (require 'undo-tree)
 (global-undo-tree-mode)
 
+;; annalist
+(add-to-list 'load-path "~/.emacs.d/plugins/annalist.el")
+(require 'annalist)
+
 ;; Make sure to set `evil-want-integration' to nil before loading evil or evil-collection.
 ;; Warning (evil-collection): Make sure to set `evil-want-keybinding' to nil before loading evil or evil-collection.
 (setq evil-want-integration nil)

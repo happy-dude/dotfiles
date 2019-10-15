@@ -182,6 +182,10 @@
 	path = zsh/prezto-sorin
 	url = https://github.com/sorin-ionescu/prezto.git
 	ignore = dirty
+[submodule "emacs.d/plugins/annalist.el"]
+	path = emacs.d/plugins/annalist.el
+	url = https://github.com/noctuid/annalist.el.git
+	ignore = dirty
 [submodule "emacs.d/plugins/dash.el"]
 	path = emacs.d/plugins/dash.el
 	url = https://github.com/magnars/dash.el.git
