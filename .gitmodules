@@ -130,6 +130,10 @@
 	path = vim/bundle/sandwich-machakann
 	url = https://github.com/machakann/vim-sandwich
 	ignore = dirty
+[submodule "vim/bundle/splitjoin-andrewradev"]
+	path = vim/bundle/splitjoin-andrewradev
+	url = https://github.com/AndrewRadev/splitjoin.vim.git
+	ignore = dirty
 [submodule "vim/bundle/toml-cespare"]
 	path = vim/bundle/toml-cespare
 	url = https://github.com/cespare/vim-toml.git
