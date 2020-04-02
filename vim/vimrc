@@ -204,12 +204,13 @@ set listchars+=extends:›,precedes:‹
 
 set laststatus=2        " Always show the statusline
 set statusline+=[%n]\                                           "     n: Buffer number
-set statusline+=%.64F%m%r%h%w\                                  "  .64F: Full path of file; max width of filepath, truncate from beginning
+set statusline+=%.64F%m%r%h%w                                   "  .64F: Full path of file; max width of filepath, truncate from beginning
                                                                 "     F: Full path of file
                                                                 "     m: Modified flag in square brackets
                                                                 "     r: Read-only flag in square brackets
                                                                 "     h: Help flag in square brackets
                                                                 "     w: Preview flag in square brackets
+set statusline+=%{FugitiveStatusline()}\                        "     Fugitive plugin
 set statusline+=%{ALELinterStatus()}                            "     ALE plugin
 set statusline+=%=%Y.%{&enc}.%{&ff}\                            "     =: Right justify from here
                                                                 "     Y: Filetype as Vim-recognized
