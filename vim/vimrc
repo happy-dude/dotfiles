@@ -406,11 +406,6 @@ set cpoptions+=s        " Set buffer options when entering the buffer
 set cpoptions+=m        " When a new match is created (showmatch), pause for .5s
 set cpoptions+=q        " When joining lines, leave the cursor
 
-" Quickfix list shortcuts
-nmap        <C-n>       :cnext<CR>
-nmap        <C-m>       :cprevious<CR>
-nnoremap    <leader>a   :cclose<CR>
-
 " Map Ctrl-Backspace to delete previous word in insert mode like Ctrl-w
 " Note how this mapping does not work in terminal vim because of term-keys
 " However, this mapping will work just fine in gvim
@@ -535,6 +530,11 @@ if has("autocmd")
         let g:go_fmt_command = "goimports"  " Automatically format and rewrite import declarations
         let g:go_auto_type_info = 1         " Automatically show identifier info whenever you move your cursor
         let g:go_doc_popup_window = 1       " Use popup-window for |K| and |:GoDoc| instead of |preview-window|
+        "
+        " Quickfix list shortcuts
+        nmap        <C-n>       :cnext<CR>
+        nmap        <C-m>       :cprevious<CR>
+        nnoremap    <leader>a   :cclose<CR>
 
         " Command shortcuts
         nmap <leader>r  <Plug>(go-run)
