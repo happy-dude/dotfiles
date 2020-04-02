@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>AMApplicationBuild</key>
-	<string>428</string>
+	<string>492</string>
 	<key>AMApplicationVersion</key>
-	<string>2.7</string>
+	<string>2.10</string>
 	<key>AMDocumentVersion</key>
 	<string>2</string>
 	<key>actions</key>
@@ -51,7 +51,7 @@
 				<key>ActionParameters</key>
 				<dict>
 					<key>source</key>
-					<string>property theSavedValues : {"Mission Control", "Application Windows", "Desktop", "Put Display to Sleep"} -- for exampletell application "System Preferences"		set current pane to pane id "com.apple.preference.expose"	tell application "System Events"		tell window "Mission Control" of process "System Preferences"			click button "Hot Corners…"			tell sheet 1				tell group 1					set theCurrentValues to value of pop up buttons					if theCurrentValues is {"-", "-", "-", "-"} then						repeat with i from 1 to 4							set thisValue to item i of theSavedValues							tell pop up button i								click								click menu item thisValue of menu 1							end tell						end repeat					else						copy theCurrentValues to theSavedValues						repeat with i from 1 to 4							tell pop up button i								click								click last menu item of menu 1							end tell						end repeat					end if				end tell				click button "OK"			end tell		end tell	end tell	quitend tell</string>
+					<string>property theSavedValues : {"Mission Control", "Application Windows", "Desktop", "Lock Screen"} -- for exampletell application "System Preferences"		set current pane to pane id "com.apple.preference.expose"	tell application "System Events"		tell window "Mission Control" of process "System Preferences"			click button "Hot Corners…"			tell sheet 1				tell group 1					set theCurrentValues to value of pop up buttons					if theCurrentValues is {"-", "-", "-", "-"} then						repeat with i from 1 to 4							set thisValue to item i of theSavedValues							tell pop up button i								click								click menu item thisValue of menu 1							end tell						end repeat					else						copy theCurrentValues to theSavedValues						repeat with i from 1 to 4							tell pop up button i								click								click last menu item of menu 1							end tell						end repeat					end if				end tell				click button "OK"			end tell		end tell	end tell	quitend tell</string>
 				</dict>
 				<key>BundleIdentifier</key>
 				<string>com.apple.Automator.RunScript</string>
@@ -105,7 +105,7 @@ end run</string>
 				<key>isViewVisible</key>
 				<true/>
 				<key>location</key>
-				<string>309.000000:316.000000</string>
+				<string>441.500000:495.000000</string>
 				<key>nibPath</key>
 				<string>/System/Library/Automator/Run AppleScript.action/Contents/Resources/Base.lproj/main.nib</string>
 			</dict>
