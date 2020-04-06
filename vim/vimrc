@@ -537,10 +537,10 @@ if has("autocmd")
         nnoremap    <leader>a   :cclose<CR>
 
         " Command shortcuts
-        nmap <leader>r  <Plug>(go-run)
+        nmap <leader>r <Plug>(go-run)
         nmap <Leader>c <Plug>(go-coverage-toggle)
         nmap <Leader>i <Plug>(go-info)
-        command! -bang A call go#alternate#Switch(<bang>0, 'edit')
+        command! -bang A  call go#alternate#Switch(<bang>0, 'edit')
         command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
         command! -bang AS call go#alternate#Switch(<bang>0, 'split')
         command! -bang AT call go#alternate#Switch(<bang>0, 'tabe')
