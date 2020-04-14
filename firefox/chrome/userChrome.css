@@ -1,0 +1,80 @@
+@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
+/* Set default namespace to XUL */
+
+/* CSS written by mylittlehokage */
+/* Disclaimer: Mess with this at your own risk (although you can just delete the file if you really cock it up.) I'm not responsible. 
+
+/* Set Global Font to match OSX's System Font Family */
+/** {
+	font-family: "Lucida Grande" !important;
+}*/
+
+/* Shove AwesomeBar higher up */
+/*#toolbar-menubar { 
+	margin-top: -5px !important;
+}*/
+
+/* Remove the padding between the URL bar and the tabs/content */
+/*#urlbar-container { 
+	margin-bottom: -2px !important; 
+	margin-top: -2px !important; 
+}*/
+
+/* Reposition the Fullscreen Button to be more vertically centered */
+/*#titlebar-fullscreen-button {
+	margin-bottom: 14px !important;
+}*/
+
+/* Remove extra padding from the Navigation Bar and other toolbars*/
+.toolbarbutton-1, .toolbarbutton-menubutton-button {
+    padding: 0px !important;
+}
+
+#urlbar-search-footer { display: none; }
+
+/* #PopupAutoCompleteRichResult .autocomplete-richlistbox {max-height:none!important;height:auto!important}
+#PopupAutoCompleteRichResult .autocomplete-richlistitem[actiontype="visiturl"]{display:none!important}
+#PopupAutoCompleteRichResult .autocomplete-richlistitem[actiontype="searchengine"]{display:none!important}
+*/
+
+/* Hide Save Page and Link to Pocket */
+#context-pocket { display: none !important; }
+#context-savelinktopocket { display: none !important; }
+
+/*
+https://old.reddit.com/r/FirefoxCSS/comments/fwugp4/megabar_userchrome_snippets/
+ */
+/* Reduce row paddings to make them more compact */
+.urlbarView-row {
+    padding: 2px !important;
+    line-height: 1.20em !important;
+}
+.urlbarView-row-inner {
+    padding-bottom: 8px !important;
+}
+/* Disable Megabar Animation */
+#urlbar[breakout][breakout-extend][breakout-extend-animate] > #urlbar-background {
+    animation-name: none !important;
+    animation: none !important;
+}
+/*
+https://raw.githubusercontent.com/WesleyBranton/userChrome.css-Customizations/master/css/remove_megabar.css
+ */
+/* DISABLE EXPANDING START */
+#urlbar[breakout][breakout-extend] {
+    top: calc((var(--urlbar-toolbar-height) - var(--urlbar-height)) / 2) !important;
+    left: 0 !important;
+    width: 100% !important;
+}
+
+#urlbar[breakout][breakout-extend] > #urlbar-input-container {
+    height: var(--urlbar-height) !important;
+    padding-block: 0 !important;
+    padding-inline: 0 !important;
+}
+
+#urlbar[breakout][breakout-extend] > #urlbar-background {
+    animation-name: none !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .05) !important;
+}
+/* DISABLE EXPANDING END */
