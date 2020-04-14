@@ -256,7 +256,7 @@ set tm=500              " Set tooltip menu
                         " See https://github.com/vim/vim/pull/2732
                         " and https://github.com/neovim/neovim/issues/1466
 if has("patch-8.1.0360") || has('nvim')
-    set diffopt+=internal,algorithm:patience
+    set diffopt+=vertical,internal,algorithm:patience
 endif
 
 set backup              " Keep backup file after overwriting a file
