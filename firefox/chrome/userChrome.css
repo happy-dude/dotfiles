@@ -1,80 +1,147 @@
-@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
-/* Set default namespace to XUL */
+@-moz-document url(chrome://browser/content/browser.xul),
+               url(chrome://browser/content/browser.xhtml) {
+    /*
+     * https://www.userchrome.org/megabar-styling-firefox-address-bar.html
+     */
 
-/* CSS written by mylittlehokage */
-/* Disclaimer: Mess with this at your own risk (although you can just delete the file if you really cock it up.) I'm not responsible. 
+    /*** Megabar Styler General - version 2020-04-19 ***/
 
-/* Set Global Font to match OSX's System Font Family */
-/** {
-	font-family: "Lucida Grande" !important;
-}*/
+    /*** General Preferences ***/
+    :root {
+        /* Number of pixels of enlargement when URL bar is focused */
+        --mbarstyler-popout-pixels: 0px; /* [0px - 7px] */
 
-/* Shove AwesomeBar higher up */
-/*#toolbar-menubar { 
-	margin-top: -5px !important;
-}*/
+        /* Top Bar Display or Not */
+        --mbarstyler-top-bar-display: none; /* [block,none] */
 
-/* Remove the padding between the URL bar and the tabs/content */
-/*#urlbar-container { 
-	margin-bottom: -2px !important; 
-	margin-top: -2px !important; 
-}*/
+        /* Font sizes (default: 13.8px for title, 10.2px for URL) */
+        --mbarstyler-title-font-size: 14px; /* [13px - 18px] */
+        --mbarstyler-url-font-size: 12px; /* [12px - 16px] */
 
-/* Reposition the Fullscreen Button to be more vertically centered */
-/*#titlebar-fullscreen-button {
-	margin-bottom: 14px !important;
-}*/
+        /* Rows to show without scrolling */
+        --mbarstyler-max-rows-without-scrolling: 16;
 
-/* Remove extra padding from the Navigation Bar and other toolbars*/
-.toolbarbutton-1, .toolbarbutton-menubutton-button {
-    padding: 0px !important;
+        /* Bottom border for each result row */
+        --mbarstyler-bottom-border-width: 1px; /* [0px or 1px] */
+
+        /* Match display style */
+        --mbarstyler-match-weight: 700; /* [400,700] */
+        --mbarstyler-match-background-opacity: 0.05; /* [0.0,0.05,0.1] */
+    }
+
+    /*** URL bar enlargement or lack thereof ***/
+
+    /* Compute new position, width, and padding */
+    #urlbar[breakout][breakout-extend] {
+        top: calc(5px - var(--mbarstyler-popout-pixels)) !important;
+        left: calc(0px - var(--mbarstyler-popout-pixels)) !important;
+        width: calc(100% + (2 * var(--mbarstyler-popout-pixels))) !important;
+        padding: var(--mbarstyler-popout-pixels) !important;
+    }
+    [uidensity="compact"] #urlbar[breakout][breakout-extend] {
+        top: calc(3px - var(--mbarstyler-popout-pixels)) !important;
+    }
+    [uidensity="touch"] #urlbar[breakout][breakout-extend] {
+        top: calc(4px - var(--mbarstyler-popout-pixels)) !important;
+    }
+
+    /* Prevent shift of URL bar contents */
+    #urlbar[breakout][breakout-extend] > #urlbar-input-container {
+        height: var(--urlbar-height) !important;
+        padding: 0 !important;
+    }
+
+    /* Do not animate */
+    #urlbar[breakout][breakout-extend] > #urlbar-background {
+        animation: none !important;;
+    }
+
+    /* Remove shadows */
+    #urlbar[breakout][breakout-extend] > #urlbar-background {
+        box-shadow: none !important;
+    }
+
+    /*** Top "Blue Bar" Display ***/
+
+    .urlbarView-row:first-of-type {
+        display: var(--mbarstyler-top-bar-display) !important;
+    }
+
+    /*** Font Sizes and Scrolling ***/
+
+    /* Title font-size */
+    .urlbarView-row .urlbarView-title {
+        font-size: var(--mbarstyler-title-font-size) !important;
+    }
+
+    /* URL / action font-size */
+    .urlbarView-row .urlbarView-secondary,
+    .urlbarView-row .urlbarView-url,
+    .urlbarView-row .urlbarView-action {
+        font-size: var(--mbarstyler-url-font-size) !important;
+    }
+
+    /* Set max-height for items visible without scrolling */
+    #urlbarView-results, #urlbar-results {
+        height: unset !important;
+        max-height: calc(2.5 * (var(--mbarstyler-title-font-size) + var(--mbarstyler-bottom-border-width)) * var(--mbarstyler-max-rows-without-scrolling)) !important;
+    }
+    #urlbar-results {
+        overflow-y: auto !important; 
+    }
+
+    /* Clean up extra spacing at the top and bottom */  
+    #urlbar-results {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* Subtle border between results */
+    .urlbarView-row:not(:last-of-type) {
+        border-bottom: var(--mbarstyler-bottom-border-width) solid rgba(0, 0, 0, 0.1) !important;
+    }
+
+    /* Match Styling Like Fx43-47 */
+    [lwt-popup-darktext] .urlbarView-row:not([selected]) .urlbarView-title strong,
+    [lwt-popup-darktext] .urlbarView-row:not([selected]) .urlbarView-url strong {
+        font-weight: var(--mbarstyler-match-weight) !important;
+        box-shadow: inset 0 0 1px 1px rgba(0, 0, 0, calc(var(--mbarstyler-match-background-opacity) * 2));
+        background-color: rgba(0, 0, 0, var(--mbarstyler-match-background-opacity));
+        border-radius: 2px;
+    }
+    [lwt-popup-brighttext] .urlbarView-row:not([selected]) .urlbarView-title strong,
+    [lwt-popup-brighttext] .urlbarView-row:not([selected]) .urlbarView-url strong {
+        font-weight: var(--mbarstyler-match-weight) !important;
+        box-shadow: inset 0 0 1px 1px rgba(255, 255, 255, calc(var(--mbarstyler-match-background-opacity) * 2));
+        background-color: rgba(255, 255, 255, var(--mbarstyler-match-background-opacity));
+        border-radius: 2px;
+    }
+
+    /*** End of: Megabar Styler General ***/
+
+
+    /*** Megabar Styler One-Offs - version 2020-05-31 ***/
+
+    /*** One-Off Search Button Preferences ***/
+    :root {
+        /* One-Offs Display or Not */
+        --mbarstyler-oneoffs-display: flex; /* [flex,none] */
+    }
+
+    /* Show or Hide the One-Offs Search Icon Bar */
+    #urlbar .search-one-offs:not([hidden]) {
+        display: var(--mbarstyler-oneoffs-display) !important;
+    }
+    /* Shorten the One-Offs Search Icon Bar Vertically */
+    #urlbar .search-one-offs:not([hidden]) {
+        padding-block: unset !important;
+    }
+    /* We don't need the text */
+    #urlbar .search-one-offs .search-panel-header {
+        display: none !important;
+    }
+
+    /*** End of: Megabar Styler One-Offs ***/
+
 }
 
-#urlbar-search-footer { display: none; }
-
-/* #PopupAutoCompleteRichResult .autocomplete-richlistbox {max-height:none!important;height:auto!important}
-#PopupAutoCompleteRichResult .autocomplete-richlistitem[actiontype="visiturl"]{display:none!important}
-#PopupAutoCompleteRichResult .autocomplete-richlistitem[actiontype="searchengine"]{display:none!important}
-*/
-
-/* Hide Save Page and Link to Pocket */
-#context-pocket { display: none !important; }
-#context-savelinktopocket { display: none !important; }
-
-/*
-https://old.reddit.com/r/FirefoxCSS/comments/fwugp4/megabar_userchrome_snippets/
- */
-/* Reduce row paddings to make them more compact */
-.urlbarView-row {
-    padding: 2px !important;
-    line-height: 1.20em !important;
-}
-.urlbarView-row-inner {
-    padding-bottom: 8px !important;
-}
-/* Disable Megabar Animation */
-#urlbar[breakout][breakout-extend][breakout-extend-animate] > #urlbar-background {
-    animation-name: none !important;
-    animation: none !important;
-}
-/*
-https://raw.githubusercontent.com/WesleyBranton/userChrome.css-Customizations/master/css/remove_megabar.css
- */
-/* DISABLE EXPANDING START */
-#urlbar[breakout][breakout-extend] {
-    top: calc((var(--urlbar-toolbar-height) - var(--urlbar-height)) / 2) !important;
-    left: 0 !important;
-    width: 100% !important;
-}
-
-#urlbar[breakout][breakout-extend] > #urlbar-input-container {
-    height: var(--urlbar-height) !important;
-    padding-block: 0 !important;
-    padding-inline: 0 !important;
-}
-
-#urlbar[breakout][breakout-extend] > #urlbar-background {
-    animation-name: none !important;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, .05) !important;
-}
-/* DISABLE EXPANDING END */
