@@ -195,7 +195,7 @@
 
 ;; Make sure to set `evil-want-integration' to nil before loading evil or evil-collection.
 ;; Warning (evil-collection): Make sure to set `evil-want-keybinding' to nil before loading evil or evil-collection.
-(setq evil-want-integration nil)
+(setq evil-want-integration t)
 (setq evil-want-keybinding nil)
 
 ;; evil-mode
