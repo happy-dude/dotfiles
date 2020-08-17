@@ -459,7 +459,7 @@ onoremap    <silent>z   :<C-U>normal! w<CR>
 "map        cw          cz
 
 " From https://stackoverflow.com/posts/3879737/revisions
-" :hs alias for :split (horizontal split)
+" :hs command abbreviation/ alias for :split (horizontal split)
 " Provides some consistency for :vs (shorthand for :vsplit, vertical split)
 cnoreabbrev <expr> hs ((getcmdtype() is# ':' && getcmdline() is# 'hs')?('split'):('hs'))
 
