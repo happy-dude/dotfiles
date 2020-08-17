@@ -458,6 +458,11 @@ nnoremap    Y           y$
 onoremap    <silent>z   :<C-U>normal! w<CR>
 "map        cw          cz
 
+" From https://stackoverflow.com/posts/3879737/revisions
+" :hs alias for :split (horizontal split)
+" Provides some consistency for :vs (shorthand for :vsplit, vertical split)
+cnoreabbrev <expr> hs ((getcmdtype() is# ':' && getcmdline() is# 'hs')?('split'):('hs'))
+
 if has("autocmd")
     " Don't use bottom restore cursor, Frew's JumpCursorOnEdit works fine
     " Discussion: http://stackoverflow.com/questions/164847/what-is-in-your-vimrc/171558#171558
