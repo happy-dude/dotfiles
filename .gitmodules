@@ -171,11 +171,11 @@
 	url = https://github.com/vim-perl/vim-perl.git
 	ignore = dirty
 [submodule "vim/ftbundle/html/html5-othree"]
-	path = vim/ftbundle/html/html5-othree
+	path = vim/pack/bundle/opt/html5.vim
 	url = https://github.com/othree/html5.vim.git
 	ignore = dirty
 [submodule "vim/ftbundle/html/matchtag-gregsexton"]
-	path = vim/ftbundle/html/matchtag-gregsexton
+	path = vim/pack/bundle/opt/MatchTag
 	url = https://github.com/gregsexton/MatchTag.git
 	ignore = dirty
 [submodule "xcode/xvim"]
