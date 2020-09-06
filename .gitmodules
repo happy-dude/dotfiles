@@ -16,7 +16,7 @@
 	ignore = dirty
 [submodule "vim/bundle/ale-w0rp"]
 	path = vim/bundle/ale-w0rp
-	url = https://github.com/w0rp/ale
+	url = https://github.com/dense-analysis/ale
 	ignore = dirty
 [submodule "vim/bundle/clam-sjl"]
 	path = vim/bundle/clam-sjl
