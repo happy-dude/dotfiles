@@ -41,23 +41,41 @@ filetype off            " Turn filetype plugin off until Pathogen loads
 " load vim8 packages
 if &loadplugins
   if has('packages')
-      packadd! vim-dirvish
       packadd! MatchTag
-      packadd! html5.vim
       packadd! ack.vim
-      packadd! clam.vim
-      packadd! swift.vim
       packadd! ale
-      packadd! vim-fugitive
+      packadd! clam.vim
       packadd! csv.vim
       packadd! ctrlp.vim
+      packadd! html5.vim
+      packadd! nerdcommenter
+      packadd! rainbow
+      packadd! rust.vim
+      packadd! slimv
+      packadd! splitjoin.vim
+      packadd! swift.vim
+      packadd! undotree
+      packadd! vim-dirvish
+      packadd! vim-easymotion
       packadd! vim-flake8
+      packadd! vim-fugitive
+      packadd! vim-go
+      packadd! vim-indent-guides
+      packadd! vim-latex
       packadd! vim-linux-coding-style
       packadd! vim-markdown
-      packadd! vim-indent-guides
-      packadd! nerdcommenter
-
-      " packages in pack/bundle/start
+      packadd! vim-pandoc
+      packadd! vim-pandoc-syntax
+      packadd! vim-perl
+      packadd! vim-racket
+      packadd! vim-repeat
+      packadd! vim-rsi
+      packadd! vim-sandwich
+      packadd! vim-schlepp
+      packadd! vim-sexp
+      packadd! vim-sexp-mappings-for-regular-people
+      packadd! vim-speeddating
+      packadd! vim-toml
 
       " colorschemes
       " packadd! jellybeans.vim
@@ -65,16 +83,14 @@ if &loadplugins
       " packadd! tomorrow-theme
       " packadd! vim-colors-solarized
       " packadd! vim-lucius
-
-  "else
-      " pathogen settings
+  else
+      " Use pathogen
       " Unconventional path to plugin (inside submodule)
-      "runtime pack/bundle/opt/vim-pathogen/autoload/pathogen.vim
+      runtime pack/bundle/opt/vim-pathogen/autoload/pathogen.vim
 
       " pathogen: Activate plugin
-      "call pathogen#infect("$HOME/dotfiles/lisp/{}", 'pack/bundle/opt/{}')
-      "call pathogen#infect("$HOME/dotfiles/lisp/{}", 'bundle/{}')
-      "call pathogen#helptags()
+      call pathogen#infect("$HOME/dotfiles/lisp/{}", 'pack/bundle/opt/{}')
+      call pathogen#helptags()
   endif
 endif
 

@@ -75,35 +75,35 @@
 	url = https://github.com/tpope/vim-pathogen.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/racket-wlangstroth"]
-	path = vim/bundle/racket-wlangstroth
+	path = vim/pack/bundle/opt/vim-racket
 	url = https://github.com/wlangstroth/vim-racket
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/rainbow-luochen1990"]
-	path = vim/bundle/rainbow-luochen1990
+	path = vim/pack/bundle/opt/rainbow
 	url = https://github.com/luochen1990/rainbow.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/repeat-tpope"]
-	path = vim/bundle/repeat-tpope
+	path = vim/pack/bundle/opt/vim-repeat
 	url = https://github.com/tpope/vim-repeat.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/rsi-tpope"]
-	path = vim/bundle/rsi-tpope
+	path = vim/pack/bundle/opt/vim-rsi
 	url = https://github.com/tpope/vim-rsi.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/rust-rustlang"]
-	path = vim/bundle/rust-rustlang
+	path = vim/pack/bundle/opt/rust.vim
 	url = https://github.com/rust-lang/rust.vim.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/schlepp-zirrostig"]
-	path = vim/bundle/schlepp-zirrostig
+	path = vim/pack/bundle/opt/vim-schlepp
 	url = https://github.com/zirrostig/vim-schlepp.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/sexp-guns"]
-	path = vim/bundle/sexp-guns
+	path = vim/pack/bundle/opt/vim-sexp
 	url = https://github.com/guns/vim-sexp.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/sexp-mappings-tpope"]
-	path = vim/bundle/sexp-mappings-tpope
+	path = vim/pack/bundle/opt/vim-sexp-mappings-for-regular-people
 	url = https://github.com/tpope/vim-sexp-mappings-for-regular-people.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/seoul256-junegunn"]
@@ -111,7 +111,7 @@
 	url = https://github.com/junegunn/seoul256.vim.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/slimv-kovisoft"]
-	path = vim/bundle/slimv-kovisoft
+	path = vim/pack/bundle/opt/slimv
 	url = https://github.com/kovisoft/slimv.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/solarized-altercation"]
@@ -119,15 +119,15 @@
 	url = https://github.com/altercation/vim-colors-solarized.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/speeddating-tpope"]
-	path = vim/bundle/speeddating-tpope
+	path = vim/pack/bundle/opt/vim-speeddating
 	url = https://github.com/tpope/vim-speeddating.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/sandwich-machakann"]
-	path = vim/bundle/sandwich-machakann
+	path = vim/pack/bundle/opt/vim-sandwich
 	url = https://github.com/machakann/vim-sandwich
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/splitjoin-andrewradev"]
-	path = vim/bundle/splitjoin-andrewradev
+	path = vim/pack/bundle/opt/splitjoin.vim
 	url = https://github.com/AndrewRadev/splitjoin.vim.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/swift.vim"]
@@ -135,7 +135,7 @@
 	url = https://github.com/keith/swift.vim.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/toml-cespare"]
-	path = vim/bundle/toml-cespare
+	path = vim/pack/bundle/opt/vim-toml
 	url = https://github.com/cespare/vim-toml.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/tomorrow-chriskempson"]
@@ -143,11 +143,11 @@
 	url = https://github.com/chriskempson/vim-tomorrow-theme.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/undotree-mbbill"]
-	path = vim/bundle/undotree-mbbill
+	path = vim/pack/bundle/opt/undotree
 	url = https://github.com/mbbill/undotree
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/vim-easymotion"]
-	path = vim/bundle/vim-easymotion
+	path = vim/pack/bundle/opt/vim-easymotion
 	url = https://github.com/easymotion/vim-easymotion.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/vim-flake8"]
@@ -155,23 +155,23 @@
 	url = https://github.com/nvie/vim-flake8.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/vim-go"]
-	path = vim/bundle/vim-go
+	path = vim/pack/bundle/opt/vim-go
 	url = https://github.com/fatih/vim-go.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/vim-latex"]
-	path = vim/bundle/vim-latex
+	path = vim/pack/bundle/opt/vim-latex
 	url = https://github.com/vim-latex/vim-latex.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/vim-pandoc"]
-	path = vim/bundle/vim-pandoc
+	path = vim/pack/bundle/opt/vim-pandoc
 	url = https://github.com/vim-pandoc/vim-pandoc.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/vim-pandoc-syntax"]
-	path = vim/bundle/vim-pandoc-syntax
+	path = vim/pack/bundle/opt/vim-pandoc-syntax
 	url = https://github.com/vim-pandoc/vim-pandoc-syntax.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/vim-perl"]
-	path = vim/bundle/vim-perl
+	path = vim/pack/bundle/opt/vim-perl
 	url = https://github.com/vim-perl/vim-perl.git
 	ignore = dirty
 [submodule "xcode/xvim"]
