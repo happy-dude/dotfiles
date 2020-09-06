@@ -27,16 +27,12 @@
 	url = https://github.com/chrisbra/csv.vim.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/ctrlp-ctrlpvim"]
-	path = vim/bundle/ctrlp-ctrlpvim
+	path = vim/pack/bundle/opt/ctrlp.vim
 	url = https://github.com/ctrlpvim/ctrlp.vim.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/dirvish-justinmk"]
 	path = vim/pack/bundle/opt/vim-dirvish
 	url = https://github.com/justinmk/vim-dirvish.git
-	ignore = dirty
-[submodule "vim/pack/bundle/opt/flake8-andviro"]
-	path = vim/bundle/flake8-andviro
-	url = https://github.com/andviro/flake8-vim
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/fugitive-tpope"]
 	path = vim/pack/bundle/opt/vim-fugitive
@@ -153,6 +149,10 @@
 [submodule "vim/pack/bundle/opt/vim-easymotion"]
 	path = vim/bundle/vim-easymotion
 	url = https://github.com/easymotion/vim-easymotion.git
+	ignore = dirty
+[submodule "vim/pack/bundle/opt/vim-flake8"]
+	path = vim/pack/bundle/opt/vim-flake8
+	url = https://github.com/nvie/vim-flake8.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/vim-go"]
 	path = vim/bundle/vim-go

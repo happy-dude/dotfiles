@@ -50,6 +50,8 @@ if &loadplugins
       packadd! ale
       packadd! vim-fugitive
       packadd! csv.vim
+      packadd! ctrlp.vim
+      packadd! vim-flake8
 
       " packages in pack/bundle/start
 
