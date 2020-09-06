@@ -44,6 +44,13 @@ if &loadplugins
       packadd! vim-dirvish
       packadd! MatchTag
       packadd! html5.vim
+
+      " colorschemes are automatically known
+      "packadd! jellybeans.vim
+      "packadd! seoul256.vim
+      "packadd! tomorrow-theme
+      "packadd! vim-colors-solarized
+      "packadd! vim-lucius
   "else
       " pathogen settings
       " Unconventional path to plugin (inside submodule)
@@ -51,7 +58,7 @@ if &loadplugins
 
       " pathogen: Activate plugin
       "call pathogen#infect("$HOME/dotfiles/lisp/{}", 'pack/bundle/opt/{}')
-      call pathogen#infect("$HOME/dotfiles/lisp/{}", 'bundle/{}')
+      "call pathogen#infect("$HOME/dotfiles/lisp/{}", 'bundle/{}')
       call pathogen#helptags()
   endif
 endif
@@ -320,16 +327,16 @@ set shiftround          " When at 3 spaces and hit > ... go to 4, not 5
 if (&t_Co == 256 || &t_Co == 88) && (!has("gui_running")) && (($TERM =~ "xterm") || ($TERM =~ "screen") || ($TERM =~ "color"))
     " Colorscheme preferences:
     " solarized, jellybeans, Tomorrow-Night, seoul256, lucius, tango2, desert, torte, murphy
-    if filereadable(expand("$HOME/.vim/bundle/solarized-altercation/colors/solarized.vim"))
+    if filereadable(expand("$HOME/.vim/pack/bundle/opt/vim-colors-solarized/colors/solarized.vim"))
         set background=dark
         colorscheme solarized
-    elseif filereadable(expand("$HOME/.vim/bundle/jellybeans-nanotech/colors/jellybeans.vim"))
+    elseif filereadable(expand("$HOME/.vim/pack/bundle/opt/jellybeans.vim/colors/jellybeans.vim"))
         set background=dark
         colorscheme jellybeans
-    elseif filereadable(expand("$HOME/.vim/bundle/tomorrow-chriskempson/colors/Tomorrow-Night.vim"))
+    elseif filereadable(expand("$HOME/.vim/pack/bundle/opt/tomorrow-theme/colors/Tomorrow-Night.vim"))
         set background=light
         colorscheme Tomorrow-Night
-    elseif filereadable(expand("$HOME/.vim/bundle/jellybeans-nanotech/colors/seoul256.vim"))
+    elseif filereadable(expand("$HOME/.vim/pack/bundle/opt/seoul256.vim/colors/seoul256.vim"))
         set background=dark
         colorscheme seoul256
     endif

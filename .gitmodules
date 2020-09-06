@@ -51,7 +51,7 @@
 	url = https://github.com/nathanaelkane/vim-indent-guides.git
 	ignore = dirty
 [submodule "vim/bundle/jellybeans-nanotech"]
-	path = vim/bundle/jellybeans-nanotech
+	path = vim/pack/bundle/opt/jellybeans.vim
 	url = https://github.com/nanotech/jellybeans.vim.git
 	ignore = dirty
 [submodule "vim/bundle/linuxsty-vivien"]
@@ -59,7 +59,7 @@
 	url = https://github.com/vivien/vim-linux-coding-style.git
 	ignore = dirty
 [submodule "vim/bundle/Lucius-jonathanfilip"]
-	path = vim/bundle/Lucius-jonathanfilip
+	path = vim/pack/bundle/opt/vim-lucius
 	url = https://github.com/vim-scripts/Lucius.git
 	ignore = dirty
 [submodule "vim/bundle/markdown-tpope"]
@@ -111,7 +111,7 @@
 	url = https://github.com/tpope/vim-sexp-mappings-for-regular-people.git
 	ignore = dirty
 [submodule "vim/bundle/seoul256-junegunn"]
-	path = vim/bundle/seoul256-junegunn
+	path = vim/pack/bundle/opt/seoul256.vim
 	url = https://github.com/junegunn/seoul256.vim.git
 	ignore = dirty
 [submodule "vim/bundle/slimv-kovisoft"]
@@ -119,7 +119,7 @@
 	url = https://github.com/kovisoft/slimv.git
 	ignore = dirty
 [submodule "vim/bundle/solarized-altercation"]
-	path = vim/bundle/solarized-altercation
+	path = vim/pack/bundle/opt/vim-colors-solarized
 	url = https://github.com/altercation/vim-colors-solarized.git
 	ignore = dirty
 [submodule "vim/bundle/speeddating-tpope"]
@@ -139,7 +139,7 @@
 	url = https://github.com/cespare/vim-toml.git
 	ignore = dirty
 [submodule "vim/bundle/tomorrow-chriskempson"]
-	path = vim/bundle/tomorrow-chriskempson
+	path = vim/pack/bundle/opt/tomorrow-theme
 	url = https://github.com/chriskempson/vim-tomorrow-theme.git
 	ignore = dirty
 [submodule "vim/bundle/undotree-mbbill"]
