@@ -38,10 +38,20 @@ endif
 """"""""""""""""""""""""""""""
 filetype off            " Turn filetype plugin off until Pathogen loads
 
-" pathogen settings
-runtime bundle/pathogen-tpope/autoload/pathogen.vim " Unconventional path to plugin (inside submodule)
-call pathogen#infect("$HOME/dotfiles/lisp/{}", 'bundle/{}')     " pathogen: Activate plugin
-call pathogen#helptags()
+" load vim8 packages
+if &loadplugins
+  if has('packages')
+      packadd! vim-dirvish
+  "else
+      " pathogen settings
+      " Unconventional path to plugin (inside submodule)
+      runtime pack/bundle/opt/vim-pathogen/autoload/pathogen.vim
+
+      " pathogen: Activate plugin
+      call pathogen#infect("$HOME/dotfiles/lisp/{}", 'pack/bundle/opt/{}', 'bundle/{}')
+      call pathogen#helptags()
+  endif
+endif
 
 syntax enable               " Enable syntax highlighting
 filetype plugin indent on   " Enable filetype plugin and filetype-based indentation
@@ -245,10 +255,10 @@ set wildignore+=*.aux,*.out,*.toc                   " LaTeX intermediate files
 
 set title               " Show title in console title bar
 set guioptions=em       " e ensures tab bar is displayed in GUI; m ensures menu bar is displayed
+set guitablabel=%t      " Display buffer name on tab label
 set showcmd             " Display commands as they are typed
 "set cmdheight=1         " Set the commandbar height -- default
 set showtabline=2       " Display tab line even if single file opened
-set guitablabel=%t      " Display buffer name on tab label
 "set nohidden            " When I close a tab, remove from buffer
 set tm=500              " Set tooltip menu
 
