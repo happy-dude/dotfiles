@@ -47,10 +47,11 @@ if &loadplugins
       packadd! ack.vim
       packadd! clam.vim
       packadd! swift.vim
+      packadd! ale
+      packadd! vim-fugitive
+      packadd! csv.vim
 
       " packages in pack/bundle/start
-      " packadd! ale
-      " packadd! vim-fugitive
 
       " colorschemes
       " packadd! jellybeans.vim
