@@ -15,7 +15,7 @@
 	url = https://github.com/mileszs/ack.vim.git
 	ignore = dirty
 [submodule "vim/bundle/ale-w0rp"]
-	path = vim/bundle/ale-w0rp
+	path = vim/pack/bundle/start/ale
 	url = https://github.com/dense-analysis/ale
 	ignore = dirty
 [submodule "vim/bundle/clam-sjl"]
@@ -43,7 +43,7 @@
 	url = https://github.com/andviro/flake8-vim
 	ignore = dirty
 [submodule "vim/bundle/fugitive-tpope"]
-	path = vim/bundle/fugitive-tpope
+	path = vim/pack/bundle/start/vim-fugitive
 	url = https://github.com/tpope/vim-fugitive.git
 	ignore = dirty
 [submodule "vim/bundle/indent-guides-nathanaelkane"]
