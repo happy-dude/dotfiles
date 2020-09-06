@@ -43,7 +43,7 @@
 	url = https://github.com/othree/html5.vim.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/indent-guides-nathanaelkane"]
-	path = vim/bundle/indent-guides-nathanaelkane
+	path = vim/pack/bundle/opt/vim-indent-guides
 	url = https://github.com/nathanaelkane/vim-indent-guides.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/jellybeans-nanotech"]
@@ -51,7 +51,7 @@
 	url = https://github.com/nanotech/jellybeans.vim.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/linuxsty-vivien"]
-	path = vim/bundle/linuxsty-vivien
+	path = vim/pack/bundle/opt/vim-linux-coding-style
 	url = https://github.com/vivien/vim-linux-coding-style.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/Lucius-jonathanfilip"]
@@ -59,7 +59,7 @@
 	url = https://github.com/vim-scripts/Lucius.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/markdown-tpope"]
-	path = vim/bundle/markdown-tpope
+	path = vim/pack/bundle/opt/vim-markdown
 	url = https://github.com/tpope/vim-markdown.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/matchtag-gregsexton"]
@@ -67,8 +67,8 @@
 	url = https://github.com/gregsexton/MatchTag.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/nerdcommenter-scrooloose"]
-	path = vim/bundle/nerdcommenter-scrooloose
-	url = https://github.com/scrooloose/nerdcommenter.git
+	path = vim/pack/bundle/opt/nerdcommenter
+	url = https://github.com/preservim/nerdcommenter.git
 	ignore = dirty
 [submodule "vim/pack/bundle/opt/pathogen-tpope"]
 	path = vim/pack/bundle/opt/vim-pathogen

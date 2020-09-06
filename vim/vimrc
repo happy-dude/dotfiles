@@ -52,6 +52,10 @@ if &loadplugins
       packadd! csv.vim
       packadd! ctrlp.vim
       packadd! vim-flake8
+      packadd! vim-linux-coding-style
+      packadd! vim-markdown
+      packadd! vim-indent-guides
+      packadd! nerdcommenter
 
       " packages in pack/bundle/start
 
@@ -574,8 +578,8 @@ if has("autocmd")
 
         " Command shortcuts
         nmap <leader>r <Plug>(go-run)
-        nmap <Leader>c <Plug>(go-coverage-toggle)
-        nmap <Leader>i <Plug>(go-info)
+        nmap <leader>c <Plug>(go-coverage-toggle)
+        nmap <leader>i <Plug>(go-info)
         command! -bang A  call go#alternate#Switch(<bang>0, 'edit')
         command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
         command! -bang AS call go#alternate#Switch(<bang>0, 'split')
