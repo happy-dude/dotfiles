@@ -10,169 +10,173 @@
 	path = themes/tomorrow_theme-chriskempson
 	url = https://github.com/chriskempson/tomorrow-theme.git
 	ignore = dirty
-[submodule "vim/bundle/ack-mileszs"]
+[submodule "vim/pack/bundle/opt/ack-mileszs"]
 	path = vim/pack/bundle/opt/ack.vim
 	url = https://github.com/mileszs/ack.vim.git
 	ignore = dirty
-[submodule "vim/bundle/ale-w0rp"]
+[submodule "vim/pack/bundle/opt/ale-w0rp"]
 	path = vim/pack/bundle/start/ale
 	url = https://github.com/dense-analysis/ale
 	ignore = dirty
-[submodule "vim/bundle/clam-sjl"]
+[submodule "vim/pack/bundle/opt/clam-sjl"]
 	path = vim/pack/bundle/opt/clam.vim
 	url = https://github.com/sjl/clam.vim.git
 	ignore = dirty
-[submodule "vim/bundle/csv-chrisbra"]
+[submodule "vim/pack/bundle/opt/csv-chrisbra"]
 	path = vim/bundle/csv-chrisbra
 	url = https://github.com/chrisbra/csv.vim.git
 	ignore = dirty
-[submodule "vim/bundle/ctrlp-ctrlpvim"]
+[submodule "vim/pack/bundle/opt/ctrlp-ctrlpvim"]
 	path = vim/bundle/ctrlp-ctrlpvim
 	url = https://github.com/ctrlpvim/ctrlp.vim.git
 	ignore = dirty
-[submodule "vim/bundle/dirvish-justinmk"]
+[submodule "vim/pack/bundle/opt/dirvish-justinmk"]
 	path = vim/pack/bundle/opt/vim-dirvish
 	url = https://github.com/justinmk/vim-dirvish.git
 	ignore = dirty
-[submodule "vim/bundle/flake8-andviro"]
+[submodule "vim/pack/bundle/opt/flake8-andviro"]
 	path = vim/bundle/flake8-andviro
 	url = https://github.com/andviro/flake8-vim
 	ignore = dirty
-[submodule "vim/bundle/fugitive-tpope"]
+[submodule "vim/pack/bundle/opt/fugitive-tpope"]
 	path = vim/pack/bundle/start/vim-fugitive
 	url = https://github.com/tpope/vim-fugitive.git
 	ignore = dirty
-[submodule "vim/bundle/indent-guides-nathanaelkane"]
+[submodule "vim/pack/bundle/opt/indent-guides-nathanaelkane"]
 	path = vim/bundle/indent-guides-nathanaelkane
 	url = https://github.com/nathanaelkane/vim-indent-guides.git
 	ignore = dirty
-[submodule "vim/bundle/jellybeans-nanotech"]
+[submodule "vim/pack/bundle/opt/jellybeans-nanotech"]
 	path = vim/pack/bundle/opt/jellybeans.vim
 	url = https://github.com/nanotech/jellybeans.vim.git
 	ignore = dirty
-[submodule "vim/bundle/linuxsty-vivien"]
+[submodule "vim/pack/bundle/opt/linuxsty-vivien"]
 	path = vim/bundle/linuxsty-vivien
 	url = https://github.com/vivien/vim-linux-coding-style.git
 	ignore = dirty
-[submodule "vim/bundle/Lucius-jonathanfilip"]
+[submodule "vim/pack/bundle/opt/Lucius-jonathanfilip"]
 	path = vim/pack/bundle/opt/vim-lucius
 	url = https://github.com/vim-scripts/Lucius.git
 	ignore = dirty
-[submodule "vim/bundle/markdown-tpope"]
+[submodule "vim/pack/bundle/opt/markdown-tpope"]
 	path = vim/bundle/markdown-tpope
 	url = https://github.com/tpope/vim-markdown.git
 	ignore = dirty
-[submodule "vim/bundle/matchtag-gregsexton"]
+[submodule "vim/pack/bundle/opt/matchtag-gregsexton"]
 	path = vim/bundle/matchtag-gregsexton
 	url = https://github.com/gregsexton/MatchTag.git
 	ignore = dirty
-[submodule "vim/bundle/nerdcommenter-scrooloose"]
+[submodule "vim/pack/bundle/opt/nerdcommenter-scrooloose"]
 	path = vim/bundle/nerdcommenter-scrooloose
 	url = https://github.com/scrooloose/nerdcommenter.git
 	ignore = dirty
-[submodule "vim/bundle/pathogen-tpope"]
+[submodule "vim/pack/bundle/opt/pathogen-tpope"]
 	path = vim/pack/bundle/opt/vim-pathogen
 	url = https://github.com/tpope/vim-pathogen.git
 	ignore = dirty
-[submodule "vim/bundle/racket-wlangstroth"]
+[submodule "vim/pack/bundle/opt/racket-wlangstroth"]
 	path = vim/bundle/racket-wlangstroth
 	url = https://github.com/wlangstroth/vim-racket
 	ignore = dirty
-[submodule "vim/bundle/rainbow-luochen1990"]
+[submodule "vim/pack/bundle/opt/rainbow-luochen1990"]
 	path = vim/bundle/rainbow-luochen1990
 	url = https://github.com/luochen1990/rainbow.git
 	ignore = dirty
-[submodule "vim/bundle/repeat-tpope"]
+[submodule "vim/pack/bundle/opt/repeat-tpope"]
 	path = vim/bundle/repeat-tpope
 	url = https://github.com/tpope/vim-repeat.git
 	ignore = dirty
-[submodule "vim/bundle/rsi-tpope"]
+[submodule "vim/pack/bundle/opt/rsi-tpope"]
 	path = vim/bundle/rsi-tpope
 	url = https://github.com/tpope/vim-rsi.git
 	ignore = dirty
-[submodule "vim/bundle/rust-rustlang"]
+[submodule "vim/pack/bundle/opt/rust-rustlang"]
 	path = vim/bundle/rust-rustlang
 	url = https://github.com/rust-lang/rust.vim.git
 	ignore = dirty
-[submodule "vim/bundle/schlepp-zirrostig"]
+[submodule "vim/pack/bundle/opt/schlepp-zirrostig"]
 	path = vim/bundle/schlepp-zirrostig
 	url = https://github.com/zirrostig/vim-schlepp.git
 	ignore = dirty
-[submodule "vim/bundle/sexp-guns"]
+[submodule "vim/pack/bundle/opt/sexp-guns"]
 	path = vim/bundle/sexp-guns
 	url = https://github.com/guns/vim-sexp.git
 	ignore = dirty
-[submodule "vim/bundle/sexp-mappings-tpope"]
+[submodule "vim/pack/bundle/opt/sexp-mappings-tpope"]
 	path = vim/bundle/sexp-mappings-tpope
 	url = https://github.com/tpope/vim-sexp-mappings-for-regular-people.git
 	ignore = dirty
-[submodule "vim/bundle/seoul256-junegunn"]
+[submodule "vim/pack/bundle/opt/seoul256-junegunn"]
 	path = vim/pack/bundle/opt/seoul256.vim
 	url = https://github.com/junegunn/seoul256.vim.git
 	ignore = dirty
-[submodule "vim/bundle/slimv-kovisoft"]
+[submodule "vim/pack/bundle/opt/slimv-kovisoft"]
 	path = vim/bundle/slimv-kovisoft
 	url = https://github.com/kovisoft/slimv.git
 	ignore = dirty
-[submodule "vim/bundle/solarized-altercation"]
+[submodule "vim/pack/bundle/opt/solarized-altercation"]
 	path = vim/pack/bundle/opt/vim-colors-solarized
 	url = https://github.com/altercation/vim-colors-solarized.git
 	ignore = dirty
-[submodule "vim/bundle/speeddating-tpope"]
+[submodule "vim/pack/bundle/opt/speeddating-tpope"]
 	path = vim/bundle/speeddating-tpope
 	url = https://github.com/tpope/vim-speeddating.git
 	ignore = dirty
-[submodule "vim/bundle/sandwich-machakann"]
+[submodule "vim/pack/bundle/opt/sandwich-machakann"]
 	path = vim/bundle/sandwich-machakann
 	url = https://github.com/machakann/vim-sandwich
 	ignore = dirty
-[submodule "vim/bundle/splitjoin-andrewradev"]
+[submodule "vim/pack/bundle/opt/splitjoin-andrewradev"]
 	path = vim/bundle/splitjoin-andrewradev
 	url = https://github.com/AndrewRadev/splitjoin.vim.git
 	ignore = dirty
-[submodule "vim/bundle/toml-cespare"]
+[submodule "vim/pack/bundle/opt/toml-cespare"]
 	path = vim/bundle/toml-cespare
 	url = https://github.com/cespare/vim-toml.git
 	ignore = dirty
-[submodule "vim/bundle/tomorrow-chriskempson"]
+[submodule "vim/pack/bundle/opt/tomorrow-chriskempson"]
 	path = vim/pack/bundle/opt/tomorrow-theme
 	url = https://github.com/chriskempson/vim-tomorrow-theme.git
 	ignore = dirty
-[submodule "vim/bundle/undotree-mbbill"]
+[submodule "vim/pack/bundle/opt/undotree-mbbill"]
 	path = vim/bundle/undotree-mbbill
 	url = https://github.com/mbbill/undotree
 	ignore = dirty
-[submodule "vim/bundle/vim-easymotion"]
+[submodule "vim/pack/bundle/opt/vim-easymotion"]
 	path = vim/bundle/vim-easymotion
 	url = https://github.com/easymotion/vim-easymotion.git
 	ignore = dirty
-[submodule "vim/bundle/vim-go"]
+[submodule "vim/pack/bundle/opt/vim-go"]
 	path = vim/bundle/vim-go
 	url = https://github.com/fatih/vim-go.git
 	ignore = dirty
-[submodule "vim/bundle/vim-latex"]
+[submodule "vim/pack/bundle/opt/vim-latex"]
 	path = vim/bundle/vim-latex
 	url = https://github.com/vim-latex/vim-latex.git
 	ignore = dirty
-[submodule "vim/bundle/vim-pandoc"]
+[submodule "vim/pack/bundle/opt/vim-pandoc"]
 	path = vim/bundle/vim-pandoc
 	url = https://github.com/vim-pandoc/vim-pandoc.git
 	ignore = dirty
-[submodule "vim/bundle/vim-pandoc-syntax"]
+[submodule "vim/pack/bundle/opt/vim-pandoc-syntax"]
 	path = vim/bundle/vim-pandoc-syntax
 	url = https://github.com/vim-pandoc/vim-pandoc-syntax.git
 	ignore = dirty
-[submodule "vim/bundle/vim-perl"]
+[submodule "vim/pack/bundle/opt/vim-perl"]
 	path = vim/bundle/vim-perl
 	url = https://github.com/vim-perl/vim-perl.git
 	ignore = dirty
-[submodule "vim/ftbundle/html/html5-othree"]
+[submodule "vim/pack/bundle/opt/html/html5-othree"]
 	path = vim/pack/bundle/opt/html5.vim
 	url = https://github.com/othree/html5.vim.git
 	ignore = dirty
-[submodule "vim/ftbundle/html/matchtag-gregsexton"]
+[submodule "vim/pack/bundle/opt/html/matchtag-gregsexton"]
 	path = vim/pack/bundle/opt/MatchTag
 	url = https://github.com/gregsexton/MatchTag.git
+	ignore = dirty
+[submodule "vim/pack/bundle/opt/swift.vim"]
+	path = vim/pack/bundle/opt/swift.vim
+	url = https://github.com/keith/swift.vim.git
 	ignore = dirty
 [submodule "xcode/xvim"]
 	path = xcode/xvim
@@ -230,6 +234,3 @@
 	path = emacs.d/themes/solarized-emacs
 	url = https://github.com/bbatsov/solarized-emacs.git
 	ignore = dirty
-[submodule "vim/pack/bundle/opt/swift.vim"]
-	path = vim/pack/bundle/opt/swift.vim
-	url = https://github.com/keith/swift.vim.git
