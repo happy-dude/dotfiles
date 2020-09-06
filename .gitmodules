@@ -11,7 +11,7 @@
 	url = https://github.com/chriskempson/tomorrow-theme.git
 	ignore = dirty
 [submodule "vim/bundle/ack-mileszs"]
-	path = vim/bundle/ack-mileszs
+	path = vim/pack/bundle/opt/ack.vim
 	url = https://github.com/mileszs/ack.vim.git
 	ignore = dirty
 [submodule "vim/bundle/ale-w0rp"]
@@ -19,12 +19,8 @@
 	url = https://github.com/dense-analysis/ale
 	ignore = dirty
 [submodule "vim/bundle/clam-sjl"]
-	path = vim/bundle/clam-sjl
+	path = vim/pack/bundle/opt/clam.vim
 	url = https://github.com/sjl/clam.vim.git
-	ignore = dirty
-[submodule "vim/bundle/cocoa-jgoulah_msanders"]
-	path = vim/bundle/cocoa-jgoulah_msanders
-	url = https://github.com/jgoulah/cocoa.vim.git
 	ignore = dirty
 [submodule "vim/bundle/csv-chrisbra"]
 	path = vim/bundle/csv-chrisbra
@@ -234,3 +230,6 @@
 	path = emacs.d/themes/solarized-emacs
 	url = https://github.com/bbatsov/solarized-emacs.git
 	ignore = dirty
+[submodule "vim/pack/bundle/opt/swift.vim"]
+	path = vim/pack/bundle/opt/swift.vim
+	url = https://github.com/keith/swift.vim.git

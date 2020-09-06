@@ -44,6 +44,9 @@ if &loadplugins
       packadd! vim-dirvish
       packadd! MatchTag
       packadd! html5.vim
+      packadd! ack.vim
+      packadd! clam.vim
+      packadd! swift.vim
 
       " packages in pack/bundle/start
       " packadd! ale
@@ -59,12 +62,12 @@ if &loadplugins
   "else
       " pathogen settings
       " Unconventional path to plugin (inside submodule)
-      runtime pack/bundle/opt/vim-pathogen/autoload/pathogen.vim
+      "runtime pack/bundle/opt/vim-pathogen/autoload/pathogen.vim
 
       " pathogen: Activate plugin
       "call pathogen#infect("$HOME/dotfiles/lisp/{}", 'pack/bundle/opt/{}')
       "call pathogen#infect("$HOME/dotfiles/lisp/{}", 'bundle/{}')
-      call pathogen#helptags()
+      "call pathogen#helptags()
   endif
 endif
 
