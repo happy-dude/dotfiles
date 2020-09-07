@@ -98,31 +98,39 @@ syntax enable               " Enable syntax highlighting
 filetype plugin indent on   " Enable filetype plugin and filetype-based indentation
 silent! helptags ALL        " Generate documentation tages automatically
 
-" indent-guides settings
-let g:indent_guides_guide_size = 1              " Instead of having the indent guide be the size of a tabwidth, size it to just 1 character
-let g:indent_guides_start_level = 2             " Start indent guides at 2nd-level of indents (we don't really need it in the first level)
+"ale settings
+let g:ale_lint_on_text_changed = "never"        " Lint only when files are saved; linting when text changes is overkill/ annoying
+let g:ale_open_list = 1                         " Show ALE messages in a loclist pane
+let g:ale_echo_msg_error_str = 'E'              " Define how ALE errors and warnings are displayed in the statusline
+let g:ale_echo_msg_warning_str = 'W'
+let g:ale_statusline_format = ['%dE', '%dW', 'OK']
+let g:ale_echo_msg_format = '[%linter%] [%severity%] %s'
 
-"vim-latex settings
-let g:tex_flavor='latex'    " Default .tex filetype to 'tex' instead of 'plaintex'
-set shellslash              " Windows feature: forward slash when expanding filenames
+function! ALEc ()                                " ALE: C
+    let g:ale_c_gcc_options = '-Wall -Wextra -pedantic -g -ggdb -std=c11'
+    let g:ale_c_clang_options = '-Weverything -g -std=c11 -Wall'
+endfunction
 
-"vim-slimv settings
-let g:slimv_preferred = 'sbcl'                  " Prefer sbcl implementation
-let g:slimv_repl_syntax = 1 " Enable syntax highlighting in Slimv REPL buffer
-"let g:slimv_swank_cmd = '! xterm -e sbcl --load $HOME/dotfiles/emacs.d/plugins/slime/start-swank.lisp &'
+function! ALEcpp ()                              " ALE: C++
+    let g:ale_cpp_gcc_options = '--Wall -Wextra -pedantic -g -ggdb -std=c++14'
+    let g:ale_cpp_clang_options = '-Weverything -g -std=c++14'
+endfunction
 
-"vim-schlepp settings
-let g:Schlepp#dupTrimWS = 1                     " Trailing whitespace removal on block duplication
-let g:Schlepp#reindent = 1                      " Reindent code as it is being moved
-"vmap <unique> i <Plug>SchleppToggleReindent     " Toggle indentation of code
-vmap <unique> <up>    <Plug>SchleppUp           " Drag visuals using arrow keys in visual mode
-vmap <unique> <down>  <Plug>SchleppDown
-vmap <unique> <left>  <Plug>SchleppLeft
-vmap <unique> <right> <Plug>SchleppRight
-vmap <unique> Dk <Plug>SchleppDupUp             " Duplication block bindings
-vmap <unique> Dj <Plug>SchleppDupDown
-vmap <unique> Dh <Plug>SchleppDupLeft
-vmap <unique> Dl <Plug>SchleppDupRight
+function! ALELinterStatus() abort
+    let l:counts = ale#statusline#Count(bufnr(''))
+
+    let l:all_errors = l:counts.error + l:counts.style_error
+    let l:all_non_errors = l:counts.total - l:all_errors
+
+    return l:counts.total == 0 ? 'OK' : printf(
+    \   '%dW %dE',
+    \   all_non_errors,
+    \   all_errors
+    \)
+endfunction
+
+autocmd BufRead,BufNewFile *.c call ALEc()
+autocmd BufRead,BufNewFile *.cpp call ALEcpp()
 
 "rainbow parentheses settings
 let g:rainbow_active = 1
@@ -164,41 +172,33 @@ let g:rainbow_conf = {
 \   }
 \}
 
-" ALE settings
-let g:ale_lint_on_text_changed = "never"        " Lint only when files are saved; linting when text changes is overkill/ annoying
-let g:ale_open_list = 1                         " Show ALE messages in a loclist pane
-let g:ale_echo_msg_error_str = 'E'              " Define how ALE errors and warnings are displayed in the statusline
-let g:ale_echo_msg_warning_str = 'W'
-let g:ale_statusline_format = ['%dE', '%dW', 'OK']
-let g:ale_echo_msg_format = '[%linter%] [%severity%] %s'
+"slimv settings
+let g:slimv_preferred = 'sbcl'                  " Prefer sbcl implementation
+let g:slimv_repl_syntax = 1 " Enable syntax highlighting in Slimv REPL buffer
+"let g:slimv_swank_cmd = '! xterm -e sbcl --load $HOME/dotfiles/emacs.d/plugins/slime/start-swank.lisp &'
 
-function! ALEc ()                                " ALE: C
-    let g:ale_c_gcc_options = '-Wall -Wextra -pedantic -g -ggdb -std=c11'
-    let g:ale_c_clang_options = '-Weverything -g -std=c11 -Wall'
-endfunction
+"vim-indent-guides settings
+let g:indent_guides_guide_size = 1              " Instead of having the indent guide be the size of a tabwidth, size it to just 1 character
+let g:indent_guides_start_level = 2             " Start indent guides at 2nd-level of indents (we don't really need it in the first level)
 
-function! ALEcpp ()                              " ALE: C++
-    let g:ale_cpp_gcc_options = '--Wall -Wextra -pedantic -g -ggdb -std=c++14'
-    let g:ale_cpp_clang_options = '-Weverything -g -std=c++14'
-endfunction
+"vim-latex settings
+let g:tex_flavor='latex'    " Default .tex filetype to 'tex' instead of 'plaintex'
+set shellslash              " Windows feature: forward slash when expanding filenames
 
-function! ALELinterStatus() abort
-    let l:counts = ale#statusline#Count(bufnr(''))
+"vim-schlepp settings
+let g:Schlepp#dupTrimWS = 1                     " Trailing whitespace removal on block duplication
+let g:Schlepp#reindent = 1                      " Reindent code as it is being moved
+"vmap <unique> i <Plug>SchleppToggleReindent     " Toggle indentation of code
+vmap <unique> <up>    <Plug>SchleppUp           " Drag visuals using arrow keys in visual mode
+vmap <unique> <down>  <Plug>SchleppDown
+vmap <unique> <left>  <Plug>SchleppLeft
+vmap <unique> <right> <Plug>SchleppRight
+vmap <unique> Dk <Plug>SchleppDupUp             " Duplication block bindings
+vmap <unique> Dj <Plug>SchleppDupDown
+vmap <unique> Dh <Plug>SchleppDupLeft
+vmap <unique> Dl <Plug>SchleppDupRight
 
-    let l:all_errors = l:counts.error + l:counts.style_error
-    let l:all_non_errors = l:counts.total - l:all_errors
-
-    return l:counts.total == 0 ? 'OK' : printf(
-    \   '%dW %dE',
-    \   all_non_errors,
-    \   all_errors
-    \)
-endfunction
-
-autocmd BufRead,BufNewFile *.c call ALEc()
-autocmd BufRead,BufNewFile *.cpp call ALEcpp()
-
-" Solarized colorscheme settings
+"solarized colorscheme settings
 if !has("gui_running")                          " Use these settings if terminal vim; otherwise, gvimrc settings should take over
     let g:solarized_termcolors = 256            " Enable 256 color support and don't rely on terminal settings
     let g:solarized_termtrans = 0               " 1: Tell Solarized to use the default transparant terminal background; 0: Background handled by Vim
