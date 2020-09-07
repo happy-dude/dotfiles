@@ -38,16 +38,17 @@ endif
 """"""""""""""""""""""""""""""
 filetype off            " Turn filetype plugin off until Pathogen loads
 
-" load vim8 packages
+" load packages
 if &loadplugins
   if has('packages')
-      packadd! MatchTag
       packadd! ack.vim
       packadd! ale
       packadd! clam.vim
       packadd! csv.vim
       packadd! ctrlp.vim
+      packadd! hlnext.vim
       packadd! html5.vim
+      packadd! MatchTag
       packadd! nerdcommenter
       packadd! rainbow
       packadd! rust.vim
@@ -77,7 +78,7 @@ if &loadplugins
       packadd! vim-speeddating
       packadd! vim-toml
 
-      " colorschemes
+      " colorschemes are automatically discovered
       " packadd! jellybeans.vim
       " packadd! seoul256.vim
       " packadd! tomorrow-theme
@@ -749,88 +750,3 @@ augroup JumpCursorOnEdit
                 \ endif
 augroup END
 
-
-" From Damien Conway's 'More Instantly Better Vim' OSCON 2013 talk
-" Video: https://www.youtube.com/watch?v=aHm36-na4-4
-" Tarball: http://is.gd/IBV2013
-" Github: https://github.com/thoughtstream/Damian-Conway-s-Vim-Setup
-
-"=====[ Highlight matches when jumping to next ]=============
-" Vim global plugin for highlighting matches
-" Last change:  Thu Dec 19 16:08:21 EST 2013
-" Maintainer:	Damian Conway
-" License:	This file is placed in the public domain.
-
-" If already loaded, we're done...
-if exists("loaded_HLNext")
-    finish
-endif
-let loaded_HLNext = 1
-
-" Preserve external compatibility options, then enable full vim compatibility...
-let s:save_cpo = &cpo
-set cpo&vim
-
-"====[ INTERFACE ]=============================================
-
-if maparg('/','n') == ""
-    nnoremap  <unique>         /   :call HLNextSetTrigger()<CR>/
-endif
-if maparg('?','n') == ""
-    nnoremap  <unique>         ?   :call HLNextSetTrigger()<CR>?
-endif
-if maparg('n','n') == ""
-    nnoremap  <unique><silent> n  n:call HLNext()<CR>
-endif
-if maparg('N','n') == ""
-    nnoremap  <unique><silent> N  N:call HLNext()<CR>
-endif
-if maparg('\','n') ==""
-    nnoremap <unique>	       \  :call HLNextOff()<CR>:noh<CR>
-endif
-" Default highlighting for next match...
-highlight default HLNext ctermfg=white ctermbg=red
-
-
-"====[ IMPLEMENTATION ]=======================================
-
-" Are we already highlighting next matches???
-let g:HLNext_matchnum = 0
-
-" Clear previous highlighting and set up new highlighting...
-function! HLNext ()
-    " Remove the previous highlighting, if any...
-    call HLNextOff()
-
-    " Add the new highlighting...
-    let target_pat = '\c\%#\%('.@/.'\)'
-    let g:HLNext_matchnum = matchadd('HLNext', target_pat)
-endfunction
-
-" Clear previous highlighting (if any)...
-function! HLNextOff ()
-    if (g:HLNext_matchnum > 0)
-        call matchdelete(g:HLNext_matchnum)
-        let g:HLNext_matchnum = 0
-    endif
-endfunction
-
-" Prepare to active next-match highlighting after cursor moves...
-function! HLNextSetTrigger ()
-    augroup HLNext
-        autocmd!
-        autocmd  CursorMoved  *  :call HLNextMovedTrigger()
-    augroup END
-endfunction
-
-" Highlight and then remove activation of next-match highlighting...
-function! HLNextMovedTrigger ()
-    augroup HLNext
-        autocmd!
-    augroup END
-    call HLNext()
-endfunction
-
-
-" Restore previous external compatibility options
-let &cpo = s:save_cpo

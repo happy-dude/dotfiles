@@ -226,3 +226,6 @@
 	path = xcode/xvim
 	url = https://github.com/JugglerShu/XVim.git
 	ignore = dirty
+[submodule "hlnext.vim"]
+	path = vim/pack/bundle/opt/hlnext.vim
+	url = https://github.com/Happy-Dude/hlnext.vim
