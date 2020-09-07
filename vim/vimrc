@@ -345,6 +345,11 @@ else
     call mkdir(expand("$HOME/.cache/vim/swap"), "p")
     call mkdir(expand("$HOME/.cache/vim/undo"), "p")
     call mkdir(expand("$HOME/.cache/vim/view"), "p")
+
+    set backupdir^=$HOME/.cache/vim/backup//
+    set directory^=$HOME/.cache/vim/swap//
+    set undodir^=$HOME/.cache/vim/undo//
+    set viewdir=$HOME/.cache/vim/view//
 endif
 
 if has('unnamedplus')
