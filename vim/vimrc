@@ -89,7 +89,7 @@ if &loadplugins
       runtime pack/bundle/opt/vim-pathogen/autoload/pathogen.vim
 
       " pathogen: Activate plugin
-      call pathogen#infect("$HOME/dotfiles/lisp/{}", 'pack/bundle/opt/{}')
+      call pathogen#infect('pack/bundle/opt/{}')
       call pathogen#helptags()
   endif
 endif
