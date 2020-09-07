@@ -54,10 +54,6 @@
 	path = emacs.d/plugins/evil-surround
 	url = https://github.com/emacs-evil/evil-surround.git
 	ignore = dirty
-[submodule "grml-etc-core"]
-	path = grml-etc-core
-	url = https://github.com/grml/grml-etc-core.git
-	ignore = dirty
 [submodule "html5.vim"]
 	path = vim/pack/bundle/opt/html5.vim
 	url = https://github.com/othree/html5.vim.git
