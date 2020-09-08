@@ -78,6 +78,10 @@ if &loadplugins
       packadd! vim-speeddating
       packadd! vim-toml
 
+      " Neovim-only packages
+      if has('nvim')
+      endif
+
       " colorschemes are automatically discovered
       " packadd! jellybeans.vim
       " packadd! seoul256.vim
@@ -85,7 +89,7 @@ if &loadplugins
       " packadd! vim-colors-solarized
       " packadd! vim-lucius
   else
-      " Use pathogen
+      " pathogen fallback
       " Unconventional path to plugin (inside submodule)
       runtime pack/bundle/opt/vim-pathogen/autoload/pathogen.vim
 
