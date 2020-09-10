@@ -54,6 +54,10 @@
 	path = emacs/.config/emacs/plugins/evil-surround
 	url = https://github.com/emacs-evil/evil-surround.git
 	ignore = dirty
+[submodule "hlnext.vim"]
+	path = vim/.vim/pack/bundle/opt/hlnext.vim
+	url = https://github.com/Happy-Dude/hlnext.vim
+	ignore = dirty
 [submodule "html5.vim"]
 	path = vim/.vim/pack/bundle/opt/html5.vim
 	url = https://github.com/othree/html5.vim.git
@@ -226,6 +230,3 @@
 	path = xcode/xvim
 	url = https://github.com/JugglerShu/XVim.git
 	ignore = dirty
-[submodule "hlnext.vim"]
-	path = vim/.vim/pack/bundle/opt/hlnext.vim
-	url = https://github.com/Happy-Dude/hlnext.vim
