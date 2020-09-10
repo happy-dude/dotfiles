@@ -8,7 +8,7 @@
 *.netrwhist
 *~
 *vim/shada
-*emacs.d/bookmarks
+*emacs/.config/emacs/bookmarks
 
 # Ignore xmonad compiled files and executables
 *.hi

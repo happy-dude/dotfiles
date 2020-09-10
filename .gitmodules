@@ -11,7 +11,7 @@
 	url = https://github.com/dense-analysis/ale
 	ignore = dirty
 [submodule "annalist.el"]
-	path = emacs.d/plugins/annalist.el
+	path = emacs/.config/emacs/plugins/annalist.el
 	url = https://github.com/noctuid/annalist.el.git
 	ignore = dirty
 [submodule "clam.vim"]
@@ -27,31 +27,31 @@
 	url = https://github.com/ctrlpvim/ctrlp.vim.git
 	ignore = dirty
 [submodule "dash.el"]
-	path = emacs.d/plugins/dash.el
+	path = emacs/.config/emacs/plugins/dash.el
 	url = https://github.com/magnars/dash.el.git
 	ignore = dirty
 [submodule "emacs-noflet"]
-	path = emacs.d/plugins/emacs-noflet
+	path = emacs/.config/emacs/plugins/emacs-noflet
 	url = https://github.com/nicferrier/emacs-noflet.git
 	ignore = dirty
 [submodule "evil"]
-	path = emacs.d/plugins/evil
+	path = emacs/.config/emacs/plugins/evil
 	url = https://github.com/emacs-evil/evil.git
 	ignore = dirty
 [submodule "evil-collection"]
-	path = emacs.d/plugins/evil-collection
+	path = emacs/.config/emacs/plugins/evil-collection
 	url = https://github.com/emacs-evil/evil-collection.git
 	ignore = dirty
 [submodule "evil-org-mode"]
-	path = emacs.d/plugins/evil-org-mode
+	path = emacs/.config/emacs/plugins/evil-org-mode
 	url = https://github.com/Somelauw/evil-org-mode.git
 	ignore = dirty
 [submodule "evil-rsi"]
-	path = emacs.d/plugins/evil-rsi
+	path = emacs/.config/emacs/plugins/evil-rsi
 	url = https://github.com/linktohack/evil-rsi
 	ignore = dirty
 [submodule "evil-surround"]
-	path = emacs.d/plugins/evil-surround
+	path = emacs/.config/emacs/plugins/evil-surround
 	url = https://github.com/emacs-evil/evil-surround.git
 	ignore = dirty
 [submodule "html5.vim"]
@@ -67,7 +67,7 @@
 	url = https://github.com/preservim/nerdcommenter.git
 	ignore = dirty
 [submodule "org-mode"]
-	path = emacs.d/plugins/org-mode
+	path = emacs/.config/emacs/plugins/org-mode
 	url = https://code.orgmode.org/bzg/org-mode.git
 	ignore = dirty
 [submodule "prezto-sorin"]
@@ -87,7 +87,7 @@
 	url = https://github.com/junegunn/seoul256.vim.git
 	ignore = dirty
 [submodule "slime"]
-	path = emacs.d/plugins/slime
+	path = emacs/.config/emacs/plugins/slime
 	url = https://github.com/slime/slime.git
 	ignore = dirty
 [submodule "slimv"]
@@ -99,7 +99,7 @@
 	url = https://github.com/altercation/solarized.git
 	ignore = dirty
 [submodule "solarized-emacs"]
-	path = emacs.d/themes/solarized-emacs
+	path = emacs/.config/emacs/themes/solarized-emacs
 	url = https://github.com/bbatsov/solarized-emacs.git
 	ignore = dirty
 [submodule "splitjoin.vim"]
@@ -115,7 +115,7 @@
 	url = https://github.com/chriskempson/tomorrow-theme.git
 	ignore = dirty
 [submodule "undo-tree"]
-	path = emacs.d/plugins/undo-tree
+	path = emacs/.config/emacs/plugins/undo-tree
 	url = http://www.dr-qubit.org/git/undo-tree.git
 	ignore = dirty
 [submodule "undotree"]
