@@ -71,7 +71,7 @@
 	url = https://code.orgmode.org/bzg/org-mode.git
 	ignore = dirty
 [submodule "prezto-sorin"]
-	path = zsh/prezto-sorin
+	path = zsh/.zprezto
 	url = https://github.com/sorin-ionescu/prezto.git
 	ignore = dirty
 [submodule "rainbow"]
