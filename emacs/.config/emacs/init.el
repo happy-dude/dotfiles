@@ -46,8 +46,8 @@
 
 ;; org-mode
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-(add-to-list 'load-path "~/.emacs.d/plugins/org-mode/lisp")
-(add-to-list 'load-path "~/.emacs.d/plugins/org-mode/lisp" t)
+(add-to-list 'load-path "~/.config/emacs/plugins/org-mode/lisp")
+(add-to-list 'load-path "~/.config/emacs/plugins/org-mode/lisp" t)
 (define-key global-map "\C-cl" 'org-store-link)
 (define-key global-map "\C-ca" 'org-agenda)
 (global-set-key (kbd "C-c c") 'org-capture)
@@ -173,7 +173,7 @@
                (delete-frame)))
 
 ;; noflet
-(add-to-list 'load-path "~/.emacs.d/plugins/emacs-noflet")
+(add-to-list 'load-path "~/.config/emacs/plugins/emacs-noflet")
 (require 'noflet)
 (defun make-capture-frame ()
   "Create a new frame and run org-capture."
@@ -185,12 +185,12 @@
           (org-capture)))
 
 ;; undo-tree
-(add-to-list 'load-path "~/.emacs.d/plugins/undo-tree")
+(add-to-list 'load-path "~/.config/emacs/plugins/undo-tree")
 (require 'undo-tree)
 (global-undo-tree-mode)
 
 ;; annalist
-(add-to-list 'load-path "~/.emacs.d/plugins/annalist.el")
+(add-to-list 'load-path "~/.config/emacs/plugins/annalist.el")
 (require 'annalist)
 
 ;; Make sure to set `evil-want-integration' to nil before loading evil or evil-collection.
@@ -199,24 +199,24 @@
 (setq evil-want-keybinding nil)
 
 ;; evil-mode
-(add-to-list 'load-path "~/.emacs.d/plugins/evil")
+(add-to-list 'load-path "~/.config/emacs/plugins/evil")
 (setq evil-want-C-u-scroll t)
 (setq evil-want-C-i-jump nil)
 (require 'evil)
 (evil-mode 1)
 
 ;; evil-collection
-(add-to-list 'load-path "~/.emacs.d/plugins/evil-collection")
+(add-to-list 'load-path "~/.config/emacs/plugins/evil-collection")
 (require 'evil-collection)
 (evil-collection-init)
 
 ;; evil-surround
-(add-to-list 'load-path "~/.emacs.d/plugins/evil-surround")
+(add-to-list 'load-path "~/.config/emacs/plugins/evil-surround")
 (require 'evil-surround)
 (global-evil-surround-mode 1)
 
 ;; evil-org-mode
-(add-to-list 'load-path "~/.emacs.d/plugins/evil-org-mode")
+(add-to-list 'load-path "~/.config/emacs/plugins/evil-org-mode")
 (require 'evil-org)
 (add-hook 'org-mode-hook 'evil-org-mode)
 (evil-org-set-key-theme '(navigation insert textobjects additional calendar))
@@ -224,22 +224,22 @@
 (evil-org-agenda-set-keys)
 
 ;; evil-rsi
-(add-to-list 'load-path "~/.emacs.d/plugins/evil-rsi")
+(add-to-list 'load-path "~/.config/emacs/plugins/evil-rsi")
 (require 'evil-rsi)
 (evil-rsi-mode)
 
 ;; slime
-(add-to-list 'load-path "~/.emacs.d/plugins/slime")
+(add-to-list 'load-path "~/.config/emacs/plugins/slime")
 (require 'slime)
 (require 'slime-autoloads)
 (setq inferior-lisp-program "sbcl")
 
 ;; Solarized theme
-(add-to-list 'load-path "~/.emacs.d/plugins/dash.el")
+(add-to-list 'load-path "~/.config/emacs/plugins/dash.el")
 (require 'dash)
 (require 'dash-functional)
-(add-to-list 'load-path "~/.emacs.d/themes/solarized-emacs")
-(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/solarized-emacs")
+(add-to-list 'load-path "~/.config/emacs/themes/solarized-emacs")
+(add-to-list 'custom-theme-load-path "~/.config/emacs/themes/solarized-emacs")
 (require 'solarized)
 (add-hook 'org-mode-hook
           (lambda () (set-frame-font "Menlo 16")))
