@@ -122,6 +122,6 @@ myKeys conf@(XConfig {XMonad.modMask = modM}) = M.fromList $ [
      , ((0, 0x1008FF13), spawn "amixer set Master 1+")      -- Volume Up
      , ((0, 0x1008FF12), spawn "amixer set Master toggle")] -- Mute
 
-myTerminal = "~/.xmonad/urxvtdc.sh"
+myTerminal = "~/.config/xmonad/urxvtdc.sh"
 
 gsconfig1 = defaultGSConfig { gs_cellheight = 45, gs_cellwidth = 250 }
