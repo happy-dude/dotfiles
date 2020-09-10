@@ -95,7 +95,7 @@
 	url = https://github.com/kovisoft/slimv.git
 	ignore = dirty
 [submodule "solarized"]
-	path = themes/solarized_theme-altercation
+	path = other/themes/solarized_theme-altercation
 	url = https://github.com/altercation/solarized.git
 	ignore = dirty
 [submodule "solarized-emacs"]
@@ -111,7 +111,7 @@
 	url = https://github.com/keith/swift.vim.git
 	ignore = dirty
 [submodule "tomorrow-theme"]
-	path = themes/tomorrow_theme-chriskempson
+	path = other/themes/tomorrow_theme-chriskempson
 	url = https://github.com/chriskempson/tomorrow-theme.git
 	ignore = dirty
 [submodule "undo-tree"]
