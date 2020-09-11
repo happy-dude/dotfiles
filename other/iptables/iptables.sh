@@ -63,12 +63,14 @@ $IPTABLES -A FORWARD -o ppp0 -j ACCEPT                               # Forward p
 $IPTABLES -A FORWARD -i ppp0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT    # Allow new/already established point-to-point connections
 
 # Allow certain ICMP packets
-$IPTABLES -A INPUT -p icmp -m icmp --icmp-type 0 -j ACCEPT   # ICMP Echo Reply inbound
-$IPTABLES -A INPUT -p icmp -m icmp --icmp-type 3 -j ACCEPT   # ICMP Destination Unreachable inbound
-$IPTABLES -A INPUT -p icmp -m icmp --icmp-type 8 -m limit --limit 1/sec -j ACCEPT    # ICMP Echo Request inbound
-#$IPTABLES -A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT   # ICMP Echo Request inbound
-$IPTABLES -A INPUT -p icmp -m icmp --icmp-type 11 -j ACCEPT   # ICMP Time Exceeded inbound
-$IPTABLES -A OUTPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT   # ICMP Echo Request outbound
+$IPTABLES -A INPUT -p icmp -m icmp --icmp-type echo-reply -j ACCEPT   # ICMP Echo Reply inbound
+$IPTABLES -A INPUT -p icmp -m icmp --icmp-type destination-unreachable -j ACCEPT   # ICMP Destination Unreachable inbound
+$IPTABLES -A INPUT -p icmp -m icmp --icmp-type echo-request -m limit --limit 1/sec -j ACCEPT    # ICMP Echo Request inbound
+#$IPTABLES -A INPUT -p icmp -m icmp --icmp-type echo-request -j ACCEPT   # ICMP Echo Request inbound
+$IPTABLES -A INPUT -p icmp -m icmp --icmp-type time-exceeded -j ACCEPT   # ICMP Time Exceeded inbound
+$IPTABLES -A OUTPUT -p icmp -m icmp --icmp-type echo-request -j ACCEPT   # ICMP Echo Request outbound
+$IPTABLES -A INPUT -p icmp -m icmp --icmp-type parameter-problem -j ACCEPT   # ICMP Parameter problem inbound
+$IPTABLES -A OUTPUT -p icmp -m icmp --icmp-type parameter-problem -j ACCEPT  # ICMP Parameter problem outbound
 
 # TCP Filter
 $IPTABLES -N tcpfilter

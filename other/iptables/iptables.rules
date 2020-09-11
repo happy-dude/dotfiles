@@ -55,12 +55,14 @@
 -A FORWARD -i ppp0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 -A FORWARD -o ppp0 -j ACCEPT
 
--A INPUT -p icmp -m icmp --icmp-type 0 -j ACCEPT
--A INPUT -p icmp -m icmp --icmp-type 3 -j ACCEPT
--A INPUT -p icmp -m icmp --icmp-type 8 -m limit --limit 1/sec -j ACCEPT
-#-A INPUT -p icmp -m icmp --icmp-type 8 -j DROP
--A INPUT -p icmp -m icmp --icmp-type 11 -j ACCEPT
--A OUTPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
+-A INPUT -p icmp -m icmp --icmp-type echo-reply -j ACCEPT
+-A INPUT -p icmp -m icmp --icmp-type destination-unreachable -j ACCEPT
+-A INPUT -p icmp -m icmp --icmp-type echo-request -m limit --limit 1/sec -j ACCEPT
+-A INPUT -p icmp -m icmp --icmp-type time-exceeded -j ACCEPT
+-A INPUT -p icmp -m icmp --icmp-type parameter-problem -j ACCEPT
+#-A INPUT -p icmp -m icmp --icmp-type echo-request -j DROP
+-A OUTPUT -p icmp -m icmp --icmp-type echo-request -j ACCEPT
+-A OUTPUT -p icmp -m icmp --icmp-type parameter-problem -j ACCEPT
 
 -A INPUT -p tcp -j tcpfilter
 -A tcpfilter -p tcp -m tcp ! --tcp-flags FIN,SYN,RST,ACK SYN -m conntrack --ctstate NEW -j DROP

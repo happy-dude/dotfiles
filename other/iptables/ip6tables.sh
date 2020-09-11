@@ -42,12 +42,16 @@ $IP6TABLES -A FORWARD -o ppp0 -j ACCEPT                               # Forward 
 $IP6TABLES -A FORWARD -i ppp0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT    # Allow new/already established point-to-point connections
 
 # Allow certain ICMPv6 packets
-$IP6TABLES -A INPUT -p icmpv6 -m icmpv6 --icmpv6-type 0 -j ACCEPT   # ICMPv6 Echo Reply inbound
-$IP6TABLES -A INPUT -p icmpv6 -m icmpv6 --icmpv6-type 3 -j ACCEPT   # ICMPv6 Destination Unreachable inbound
-$IP6TABLES -A INPUT -p icmpv6 -m icmpv6 --icmpv6-type 8 -m limit --limit 1/sec -j ACCEPT    # ICMPv6 Echo Request inbound
-#$IP6TABLES -A INPUT -p icmpv6 -m icmpv6 --icmpv6-type 8 -j ACCEPT   # ICMPv6 Echo Request inbound
-$IP6TABLES -A INPUT -p icmpv6 -m icmpv6 --icmpv6-type 11 -j ACCEPT   # ICMPv6 Time Exceeded inbound
-$IP6TABLES -A OUTPUT -p icmpv6 -m icmpv6 --icmpv6-type 8 -j ACCEPT   # ICMPv6 Echo Request outbound
+$IP6TABLES -A INPUT -p icmpv6 -m icmpv6 --icmpv6-type echo-reply -j ACCEPT   # ICMPv6 Echo Reply inbound
+$IP6TABLES -A INPUT -p icmpv6 -m icmpv6 --icmpv6-type destination-unreachable -j ACCEPT   # ICMPv6 Destination Unreachable inbound
+$IP6TABLES -A INPUT -p icmpv6 -m icmpv6 --icmpv6-type echo-request -m limit --limit 1/sec -j ACCEPT    # ICMPv6 Echo Request inbound
+#$IP6TABLES -A INPUT -p icmpv6 -m icmpv6 --icmpv6-type echo-request -j ACCEPT   # ICMPv6 Echo Request inbound
+$IP6TABLES -A INPUT -p icmpv6 -m icmpv6 --icmpv6-type time-exceeded -j ACCEPT   # ICMPv6 Time Exceeded inbound
+$IP6TABLES -A OUTPUT -p icmpv6 -m icmpv6 --icmpv6-type echo-request -j ACCEPT   # ICMPv6 Echo Request outbound
+$IP6TABLES -A INPUT -p icmpv6 -m icmpv6 --icmpv6-type packet-too-big -j ACCEPT  # ICMPv6 Packet too big inbound
+$IP6TABLES -A OUTPUT -p icmpv6 -m icmpv6 --icmpv6-type packet-too-big -j ACCEPT # ICMPv6 Packet too big outbound
+$IP6TABLES -A INPUT -p icmpv6 -m icmpv6 --icmpv6-type parameter-problem -j ACCEPT   # ICMPv6 Parameter problem inbound
+$IP6TABLES -A OUTPUT -p icmpv6 -m icmpv6 --icmpv6-type parameter-problem -j ACCEPT  # ICMPv6 Parameter problem outbound
 
 # Allow Link-Local addresses
 $IP6TABLES -A INPUT -s fe80::/10 -j ACCEPT
