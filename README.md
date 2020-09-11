@@ -53,7 +53,7 @@ from superfluous settings you may not actually need.
 
 TODO: write a script that "stowifies" the configs automatically. Take a look at
 [prior-art](https://writingco.de/blog/how-i-manage-my-dotfiles-using-gnu-stow/#automate-the-dotfiles)
-and transform/adapt.
+and remix, transform, and adapt accordingly.
 
 ### Requirements
 
@@ -232,14 +232,15 @@ to simply some of the configuration and boot process. I have not implemented the
 scripts on a Arch Linux installtion yet, so I have to do a little bit of reading
 about the [boot process](https://wiki.archlinux.org/index.php/Arch_Boot_Process).
 
-## LICENSE
+## Meta
 
-Happy-Dude/dotfiles repository (c) by Stanley Chan
+* Last change: Fri Sep 11 01:22:59 CDT 2020
+* Maintainer: Stanley Chan, a.k.a. [Happy-Dude](https://github.com/happy-dude)
 
-[![Creative Commons License](http://i.creativecommons.org/l/by-sa/3.0/88x31.png)](http://creativecommons.org/licenses/by-sa/3.0/)
+## License
 
-This work is licensed under the [Creative Commons Attribution-ShareAlike 3.0 Unported License](http://creativecommons.org/licenses/by-sa/3.0/).
+The files and code contributed from myself are in the public domain and are free
+to be used and adapted however you like.
 
-You should have received a copy of the license along with this
-work. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/3.0/ or send
-a letter to Creative Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
+The submodules included in this project repo have their own maintainers and licenses. 
+Please visit the respective projects to learn more.
