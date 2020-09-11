@@ -71,6 +71,10 @@ git submodule update --init --recursive --remote
 
 2. Use GNU Stow to symlink configs
 
+NOTE: stow will not symlink over an existing file or symlink. Check out the
+[manual](https://www.gnu.org/software/stow/manual/stow.html#Conflicts) for more
+details.
+
 ```bash
 cd $HOME/dotfiles
 stow vim
@@ -79,10 +83,6 @@ stow zsh
 
 ... etc ...
 ```
-
-NOTE: stow will not symlink over an existing file or symlink. Check out the
-[manual](https://www.gnu.org/software/stow/manual/stow.html#Conflicts) for more
-details.
 
 ### Neovim
 
@@ -114,11 +114,9 @@ user's `$HOME` directory; review them on a case-by-case basis.
 
 To update the repo, make sure to pull in the latest changes and update submodules:
 
-***NOTE***
-
-There may be breaking changes within the repo and submodules; please use due
-diligence and review each project's commit history and changelog before
-incorporating any updates into your configs.
+NOTE: There may be breaking changes within the repo and submodules. Please use
+due diligence and review each project's commit history and changelog before
+incorporating updates into your configs.
 
 ### Fetching Latest Changes
 
@@ -163,7 +161,7 @@ If you are using Macports, execute
 port install tmux-pasteboard
 ```
 
-### Vim and Tmux terminal colors
+### vim and tmux Terminal Colors
 
 Colored terminal applications, like vim, tmux, and screen, need the proper
 settings enabled to have colored output. These settings usually are found in your
@@ -185,9 +183,7 @@ or for tmux/screen environments:
 
 #### iptables Rules (old-2014)
 
-***NOTE***
-
-This has only worked on Ubuntu-based Linux distributions. I need
+NOTE: This has only worked on Ubuntu-based Linux distributions. I need
 to learn more about the boot process in other distributions to make them work
 right. I'm looking into seeing how it works for Arch Linux.
 
@@ -239,8 +235,9 @@ about the [boot process](https://wiki.archlinux.org/index.php/Arch_Boot_Process)
 
 ## License
 
-The files and code contributed from myself are in the public domain and are free
-to be used and adapted however you like.
+The files and code contributed from myself are in the public domain.
 
-The submodules included in this project repo have their own maintainers and licenses. 
-Please visit the respective projects to learn more.
+You are free to use, transform, adapt, and/or remix my content however you like.
+
+The submodules included in this project repo have their own maintainers and licenses.
+Please visit the respective projects' repos to learn more.
