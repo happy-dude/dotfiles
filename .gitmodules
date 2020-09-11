@@ -226,7 +226,3 @@
 	path = vim/.vim/pack/bundle/opt/tomorrow-theme
 	url = https://github.com/chriskempson/vim-tomorrow-theme.git
 	ignore = dirty
-[submodule "xvim"]
-	path = xcode/xvim
-	url = https://github.com/JugglerShu/XVim.git
-	ignore = dirty
