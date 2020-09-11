@@ -181,7 +181,9 @@ or for tmux/screen environments:
 
     export TERM='screen-256color'
 
-#### iptables Rules (old-2014)
+### Old iptables Notes (circa 2014)
+
+#### iptables Rules
 
 NOTE: This has only worked on Ubuntu-based Linux distributions. I need
 to learn more about the boot process in other distributions to make them work
@@ -205,7 +207,7 @@ ln -s ~/dotfiles/iptables/ip6tables.rules /etc/ip6tables/ip6tables.rules
 sudo systemctl enable iptables.service
 ```
 
-#### iptables Files (old-2014)
+#### iptables Files
 
 I decided to include my IPTables configuration with this repository, located in
 the `other/iptables` directory.
