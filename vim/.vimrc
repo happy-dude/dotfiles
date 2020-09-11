@@ -324,23 +324,25 @@ endif
 "set history=350         " Sets how many lines of history Vim will remember
 "set undolevels=500      " Number of undo levels
 
-" From Eric Harmon's vimrc
-" Cache things to our homedir, not random places
+" Cache things to our home .cache dir
 if isdirectory(expand('$HOME/.cache/vim'))
-    if &backupdir =~# '^\.,'
-        set backupdir^=$HOME/.cache/vim/backup//
-    endif
+    if !has('nvim')     " Neovim defaults use $XDG_DATA_HOME/nvim
+                        " i.e. ~/.local/share/nvim
+        if &backupdir =~# '^\.,'
+            set backupdir^=$HOME/.cache/vim/backup//
+        endif
 
-    if &directory =~# '^\.,'
-        set directory^=$HOME/.cache/vim/swap//
-    endif
+        if &directory =~# '^\.,'
+            set directory^=$HOME/.cache/vim/swap//
+        endif
 
-    if exists('+undodir') && &undodir =~# '^\.\%(,\|$\)'
-        set undodir^=$HOME/.cache/vim/undo//
-    endif
+        if exists('+undodir') && &undodir =~# '^\.\%(,\|$\)'
+            set undodir^=$HOME/.cache/vim/undo//
+        endif
 
-    if exists('+viewdir')
-        set viewdir=$HOME/.cache/vim/view//
+        if exists('+viewdir')
+            set viewdir=$HOME/.cache/vim/view//
+        endif
     endif
 else
     call mkdir(expand("$HOME/.cache/vim"), "p")
