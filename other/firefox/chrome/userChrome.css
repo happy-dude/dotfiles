@@ -4,7 +4,7 @@
      * https://www.userchrome.org/megabar-styling-firefox-address-bar.html
      */
 
-    /*** Megabar Styler General - version 2020-04-19 ***/
+    /*** Megabar Styler General - version 2020-07-27 ***/
 
     /*** General Preferences ***/
     :root {
@@ -87,10 +87,10 @@
         max-height: calc(2.5 * (var(--mbarstyler-title-font-size) + var(--mbarstyler-bottom-border-width)) * var(--mbarstyler-max-rows-without-scrolling)) !important;
     }
     #urlbar-results {
-        overflow-y: auto !important; 
+        overflow-y: auto !important;
     }
 
-    /* Clean up extra spacing at the top and bottom */  
+    /* Clean up extra spacing at the top and bottom */
     #urlbar-results {
         padding-top: 0 !important;
         padding-bottom: 0 !important;
@@ -102,19 +102,22 @@
     }
 
     /* Match Styling Like Fx43-47 */
-    [lwt-popup-darktext] .urlbarView-row:not([selected]) .urlbarView-title strong,
-    [lwt-popup-darktext] .urlbarView-row:not([selected]) .urlbarView-url strong {
+    .urlbarView-row:not([selected]) .urlbarView-title strong,
+    .urlbarView-row:not([selected]) .urlbarView-url strong {
         font-weight: var(--mbarstyler-match-weight) !important;
+        border-radius: 2px;
         box-shadow: inset 0 0 1px 1px rgba(0, 0, 0, calc(var(--mbarstyler-match-background-opacity) * 2));
         background-color: rgba(0, 0, 0, var(--mbarstyler-match-background-opacity));
-        border-radius: 2px;
     }
     [lwt-popup-brighttext] .urlbarView-row:not([selected]) .urlbarView-title strong,
     [lwt-popup-brighttext] .urlbarView-row:not([selected]) .urlbarView-url strong {
-        font-weight: var(--mbarstyler-match-weight) !important;
         box-shadow: inset 0 0 1px 1px rgba(255, 255, 255, calc(var(--mbarstyler-match-background-opacity) * 2));
         background-color: rgba(255, 255, 255, var(--mbarstyler-match-background-opacity));
-        border-radius: 2px;
+    }
+    [lwthemetextcolor="bright"] .urlbarView-row:not([selected]) .urlbarView-title strong,
+    [lwthemetextcolor="bright"] .urlbarView-row:not([selected]) .urlbarView-url strong {
+        box-shadow: inset 0 0 1px 1px rgba(192, 192, 192, calc(var(--mbarstyler-match-background-opacity) * 4));
+        background-color: rgba(192, 192, 192, calc(var(--mbarstyler-match-background-opacity) * 3));
     }
 
     /*** End of: Megabar Styler General ***/
