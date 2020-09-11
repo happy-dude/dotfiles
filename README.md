@@ -1,218 +1,143 @@
-Stan's dotfiles
-===============
+# Happy-Dude's dotfiles
 
-Version controlled dot configuration files for (currently) vim, tmux, and iptables.
+> happy-dude's personal dotfiles repo
 
-zshell, xmonad, and bash configurations will be developed soon.
+This repo is managed solely by myself and configured for my personal workflows
+and use-cases.
 
-Hopefully, I make a conscious effort to also make the configurations cross
-platform for Linux, Windows, and OS X.
+Feel free to browse and adopt any settings to help tweak your own setup; I've
+done my best to attribute resources in the comments for further details.
 
-Installation
-------------
+My entire workflow is currently based within macOS, reflecting in Unix-compatible
+configurations. I have not used Linux nor Windows as a daily driver in a while and
+I will make the appropriate changes to make my settings compatible when I do.
 
-To install the configuration, just execute the install script (yet to be
-written).
+## Branches
 
-Since I have not written it yet, I think I'll call it `linkify.sh` or
-something like that... After all, all installation entails is just the linking
-of the files to the right places.
+Multiple branches of dotfiles are useful for different platforms or environments
+that require modified settings.
 
-Manually install
-----------------
+There are (currently) two branches, `master` and `macos`. macOS users should 
+checkout the `macos` branch by executing:
 
-To manually install the configurations, first you must check out the repository
-using the following command:
+```bash
+git checkout -b macos origin/macos
+```
 
-    git clone --recursive https://github.com/Happy-Dude/dotfiles.git ~/dotfiles;
+## Submodules
 
-Or, to get just my files (without the submodules), just execute
+This repo contains git [submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
+for many [configs](https://github.com/Happy-Dude/dotfiles/tree/master/zsh),
+[vim](https://github.com/Happy-Dude/dotfiles/tree/master/vim/.vim/pack/bundle/opt), and
+[emacs](https://github.com/Happy-Dude/dotfiles/tree/master/emacs/.config/emacs/plugins)
+plugin packages.
 
-    git clone https://github.com/Happy-Dude/dotfiles.git ~/dotfiles;
+Each of these project repos have their own maintainers, licenses, and issue
+trackers. Credit goes to each respective project and their communities for
+providing useful tool for people like me to use. Please check them out and
+support them where you can!
 
-folowed by
+## Tweaking and Tuning
 
-    cd ~/dotfiles; \
-    git submodule update --init --recursive;
+I recommend starting with minimal configs and adopting tweaks over time
+that:
 
-The --init flag will initialize the submodule repositories and the --recursive
-flag will make sure that nested submodules are also initialized and updated.
+1. streamlines a workflow you perform regularly or
+2. helps overcome and solve a problem at hand.
 
-After the repository has been downloaded, you can link the different
-configurations to their proper locations.
+Approaching your own tweaking and tuning with these points in mind help make
+settings easy to understand and immediately productive while saving on bloat
+from superfluous settings you may not actually need.
 
-### Vim
+## Install
 
-    ln -s ~/dotfiles/vim ~/.vim; \
-    ln -s ~/dotfiles/vim/vimrc ~/.vimrc; \
-    ln -s ~/dotfiles/vim/gvimrc ~/.gvimrc;
+TODO: write a script that "stowifies" the configs automatically. Take a look at
+[prior-art](https://writingco.de/blog/how-i-manage-my-dotfiles-using-gnu-stow/#automate-the-dotfiles)
+and transform/adapt.
 
-### Tmux
+### Requirements
 
-    ln -s ~/dotfiles/tmux/tmux.conf ~/.tmux.conf;
+* [git](https://github.com/git/git)
+* [gnu stow](https://github.com/aspiers/stow/)
+* [bash](https://www.gnu.org/software/bash/) (for scripts)
 
-### Zsh
+1. Clone the repository and submodules
 
-Basically, my zsh configuration happens to be Sorin Ionescu's prezto repository
-(his oh-my-zsh fork). Basically, read his rational and follow the instructions
-in his [README](https://github.com/sorin-ionescu/prezto/blob/master/README.md).
+```bash
+git clone --recursive https://github.com/Happy-Dude/dotfiles.git $HOME/dotfiles
+cd $HOME/dotfiles
+git submodule update --init --recursive --remote
+```
 
-First, start `zsh` and then execute the following commands:
+2. Use GNU Stow to symlink configs
 
-    ln -s ~/dotfiles/zsh/prezto-sorin ~/.zprezto; \
-    setopt EXTENDED_GLOB \
-    for rcfile in "${ZDOTDIR:-$HOME}"/.zprezto/runcoms/^README.md(.N); do \
-        ln -s "$rcfile" "${ZDOTDIR:-$HOME}/.${rcfile:t}" \
-    done \
-    chsh -s /bin/zsh;
+```bash
+cd $HOME/dotfiles
+stow vim
+stow tmux
+stow zsh
 
-Also, if you happen to be running Mac OS X, execute the following:
+... etc ...
+```
 
-    sudo chmod ugo-x /usr/libexec/path_helper
+NOTE: stow will not symlink over an existing file or symlink. Check out the
+[manual](https://www.gnu.org/software/stow/manual/stow.html#Conflicts) for more
+details.
 
-### IPTables configuration
+### Neovim
+
+Unfortunately, stow does not [currently](https://github.com/aspiers/stow/issues/3#issuecomment-586654099)
+handle directories or files that are symlinked. For example, symlinking
+`neovim/init.vim` to `vim/vimrc` and then running `stow` on
+the directories do not have the effect of creating a symlink to the absolute path
+of the original link, `neovim/init.vim`.
+
+Since I have my neovim and vim configurations backwards-compatible with each other
+and using the same directories, I use stow for the base vim configs and use the
+following symlink for neovim:
+
+```bash
+ln -s $HOME/dotfiles/.vim $HOME/.config/nvim
+```
+
+### 'Other' Configs
+
+There are a handful of configs and settings in the 
+['other'](https://github.com/Happy-Dude/dotfiles/tree/master/other) directory
+which is primarily a collection of useful scripts, configs, and preferences I am
+currently using or have used in the past.
+
+These are generally not stow-able files since they may not belong in the
+user's `$HOME` directory; review them on a case-by-case basis.
+
+## Updating
+
+To update the repo, make sure to pull in the latest changes and update submodules:
 
 ***NOTE***
 
-This has only worked on Ubuntu-based Linux distributions. I need
-to learn more about the boot process in other distributions to make them work
-right. I'm looking into seeing how it works for Arch Linux.
+There may be breaking changes within the repo and submodules; please use due
+diligence and review each project's commit history and changelog before
+incorporating any updates into your configs.
 
-    ln -s ~/dotfiles/iptables /etc/iptables; \
-    ln -s ~/dotfiles/iptables/iptables /etc/init.d/iptables; \
-    chmod +x /etc/init.d/iptables; \
-    sudo update-rc.d iptables
+### Fetching Latest Changes
 
-Execute the script with `service iptables start`. Again, this so far has only
-been tested on Ubuntu-based distributions.
+```bash
+cd $HOME/dotfiles
+git fetch --all
+```
 
-To install on Arch Linux (as of April 2013, running systemd), execute the following commands:
+### Applying Latest Changes
 
-    ln -s ~/dotfiles/iptables/iptables.rules /etc/iptables/iptables.rules
-    ln -s ~/dotfiles/iptables/ip6tables.rules /etc/ip6tables/ip6tables.rules
-    sudo systemctl enable iptables.service
+```bash
+cd $HOME/dotfiles
+git pull
+git submodule --init --recursive --remote
+```
 
-Branches
---------
+## Misc
 
-There are (currently) two branches of this repository, `master` and `osx`. Mac OS X
-users should checkout the osx branch by executing:
-
-    git checkout -b osx origin/osx
-
-Linux users can use the `master` branch without any problems.
-
-### Creating new branches
-
-To add a new branch, use `git branch -b <branch name>`. To add it to the remote
-repository, use `git push origin <branch name>`.
-
-If this branch were official, you would also need to add a remote url with
-
-    git remote add <branch name> <repository url>
-
-and verify the changes, use
-
-    git remote -v
-
-Updating
---------
-
-To get new changes into your repository, execute `git fetch`.
-
-To pull those changes in, execute `git pull`.
-
-### Submodules
-
-For the submodules, the proper workflow is to get the repository changes from
-the top-level repository. Execute the following:
-
-    cd ~/dotfiles; \
-    git pull; \
-    git submodule update --recursive;
-
-The above commands would grab the contents of the submodule repositories,
-checking out the changes from the commit entry in the `.gitmodules` file.
-
-To further update the submodules beyond what the top-level repository/ branch
-has, go into the repository and issue a `pull` to get the changes you want or
-checkout the branches you need, which also modifies the `.gitmodules` file.
-If you wish to incorporate those changes into the top-level branch, go back
-into the top level directory and `commit`.
-
-    cd <submodule directory>; \
-    git pull <branch, commit, rebase, whatever>; \
-    cd ~/dotfiles; \
-    git commit;
-
-If you want to update all the submodules, you can use the following
-commands:
-
-    git submodule foreach --recursive git checkout master; \
-    git submodule foreach --recursive git pull;
-
-Since the changes to the `.gitmodules` are commited, if you want them in
-another computer, just do a `pull` in the top level directory and then
-`update`:
-
-    cd ~/dotfiles; \
-    git pull; \
-    git submodule update --recursive;
-
-There is not a way in Git (yet?) that can do a pull from the top-level
-repository and also update the submodules; you have to do them separately.
-
-***TIP***
-
-If there are changes inside the submodules, use due dilligence in reading about
-the changes and patches before actually incorporating them into your
-configuration; that got me once or twice...
-
-Notes
------
-
-### Compiled Vim settings
-
-For my vim configurations to work properly, it needs to be compiled with various
-language support. These features (such as Python and Ruby support) usually are
-not included with the default Linux repository versions.
-
-I prefer to do it by checking out the latest Vim source code from Bram
-Moolenaar's repository. Make sure that the `~/sources` directory already exists,
-if not, make it by executing the command `mkdir ~/sources`.
-
-    hg clone https://code.google.com/p/vim/ ~/sources/vim; \
-    cd ~/sources/vim; \
-    hg pull; \
-    hg update default;
-
-Once the repository is checked out, compile and install it using the following
-commands:
-
-    cd ~/sources/vim/src; \
-    make distclean; \
-    ./configure --with-features=huge --enable-gui=auto --enable-cscope \
-    --enable-luainterp --enable-mzschemeinterp --enable-perlinterp \
-    --enable-pythoninterp --enable-python3interp --enable-rubyinterp \
-    --enable-tclinterp;
-
-Also note that --enable-python interp assumes that /usr/bin/python is aliased to
-python2, NOT python3 (which is what --enable-python3interp uses). Make sure to
-alias /usr/bin/python properly or else Vim will not compile with python2 support.
-(I am aware this is an issue in Arch Linux distributions, but I am not sure
-where else.)
-
-Now that it is configured, compile it, test to see if everything is okay, and
-then install it:
-
-    make; \
-    make test; \
-    make install;
-
-Also, if Vim cannot be installed in /usr/bin, you can try to install it locally
-to your user by adding the `--prefix=/usr/local` flag when configuring.
-
-### tmux and Mac OS X
+### tmux and macOS
 
 Installing tmux on OS X on using Homebrew (and likely Macports also) would cause
 a message saying `launch_msg("SetUserEnvironment"): Socket is not connected`
@@ -228,11 +153,15 @@ Chris Johnsen's patch should fix this problem. Install his
 reattach-to-user-namespace wrapper/patch using the following command (if you're
 using Homebrew):
 
-    brew install reattach-to-user-namespace
+```bash
+brew install reattach-to-user-namespace
+```
 
 If you are using Macports, execute
 
-    port install tmux-pasteboard
+```bash
+port install tmux-pasteboard
+```
 
 ### Vim and Tmux terminal colors
 
@@ -254,36 +183,36 @@ or for tmux/screen environments:
 
     export TERM='screen-256color'
 
-### Adding plugins and submodules
+#### iptables Rules (old-2014)
 
-It's best to add plugins to the repository and let Tim Pope's awesome
-[fugitive.vim](https://github.com/tpope/vim-fugitive) take care of the vim
-runtime path.
+***NOTE***
 
-Since fugitive is already installed with the vim configurations, just add it via
-a submodule by executing `git submodule add <git url> <directory name>` inside
-the `dotfiles` directory. You can also use repositories that are managed by other
-version control systems, but I personally have not experimented with that much.
+This has only worked on Ubuntu-based Linux distributions. I need
+to learn more about the boot process in other distributions to make them work
+right. I'm looking into seeing how it works for Arch Linux.
 
-### Zsh configuration
+```bash
+ln -s ~/dotfiles/iptables /etc/iptables; \
+ln -s ~/dotfiles/iptables/iptables /etc/init.d/iptables; \
+chmod +x /etc/init.d/iptables; \
+sudo update-rc.d iptables
+```
 
-"My" zsh configuration is simply Sorin Ionescu's
-[prezto](https://github.com/sorin-ionescu/prezto) repository, which is in turn a
-fork of Robby Russell's popular
-[oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh) repository. Basically,
-both are a community-driven configuration of zsh that happens to add a lot of
-useful to the shell environment.
+Execute the script with `service iptables start`. Again, this so far has only
+been tested on Ubuntu-based distributions.
 
-I choose Sorin's fork because he has made extensive changes to the origin Rob
-Russel version that were not merged into the master branch. More of this is
-discussed in [Issue #337](https://github.com/robbyrussell/oh-my-zsh/issues/377)
-in oh-my-zsh's issue tracker. The series of fixes and bugs are highly appreciated
-and thus I settled with his version.
+To install on Arch Linux (as of April 2013, running systemd), execute the following commands:
 
-### IPTables configuration
+```bash
+ln -s ~/dotfiles/iptables/iptables.rules /etc/iptables/iptables.rules
+ln -s ~/dotfiles/iptables/ip6tables.rules /etc/ip6tables/ip6tables.rules
+sudo systemctl enable iptables.service
+```
+
+#### iptables Files (old-2014)
 
 I decided to include my IPTables configuration with this repository, located in
-the `dotfiles/iptables` directory.
+the `other/iptables` directory.
 
 Inside this directory are
 
@@ -303,22 +232,7 @@ to simply some of the configuration and boot process. I have not implemented the
 scripts on a Arch Linux installtion yet, so I have to do a little bit of reading
 about the [boot process](https://wiki.archlinux.org/index.php/Arch_Boot_Process).
 
-TO DO
------
-
-* Make a bash installation script for the files; makes things much easier
-* Fix up IPTable configuration and script; make it work with Arch Linux
-* Learn more markdown and fix up this README
-* Create a proper zshell configuration; see how far I can go with vi keybindings
-instead of emacs ones
-* Learn Zshell and get a nice oh-my-zsh setup working
-* Learn Xmonad
-* Learn Arch Linux
-* Make configuration files platform independent
-* Add more dotfile configurations
-
-LICENSE
--------
+## LICENSE
 
 Happy-Dude/dotfiles repository (c) by Stanley Chan
 
