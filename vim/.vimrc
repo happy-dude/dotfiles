@@ -137,6 +137,10 @@ endfunction
 autocmd BufRead,BufNewFile *.c call ALEc()
 autocmd BufRead,BufNewFile *.cpp call ALEcpp()
 
+" ctrlp settings
+let g:ctrlp_map = '<leader><space>'
+let g:ctrlp_show_hidden = 1
+
 "rainbow parentheses settings
 let g:rainbow_active = 1
 " guifgs are RBG color wheel complements:
@@ -284,19 +288,19 @@ set wildmode=list:longest,full  " Turn on wild mode huge list
 set wildchar=<TAB>              " Path/file expansion in colon mode
 
 " Ignore this list of file extensions
-" wildignore extended from Eric Harmon's ignore list
-set wildignore=*.bak
-set wildignore+=*.sw?                               " Vim swap files
-set wildignore+=*.DS_Store                          " OS X bullshit
-set wildignore+=*.spl                               " Compiled spelling word lists
-set wildignore+=*.bmp,*.gif,*.jpg,*.jpeg,*.png      " Binary images
-set wildignore+=.hg,.git,.svn                       " Version control
-set wildignore+=*.orig                              " Merge resolution files
-set wildignore+=*.dll,*.exe,*.o,*.obj,*.manifest    " Compiled object files
-set wildignore+=*.pyc                               " Python byte code
-set wildignore+=migrations                          " Django migrations
-set wildignore+=*.luac                              " Lua byte code
-set wildignore+=*.aux,*.out,*.toc                   " LaTeX intermediate files
+" */ for ctrlp globbing
+set wildignore=*/.bak
+set wildignore+=*/.sw?                                  " Vim swap files
+set wildignore+=*/.DS_Store                             " OS X bullshit
+set wildignore+=*/.spl                                  " Compiled spelling word lists
+set wildignore+=*/.bmp,*/.gif,*/.jpg,*/.jpeg,*/.png     " Binary images
+set wildignore+=*/.git/*,*/.hg/*,*/.svn/*               " Version control
+set wildignore+=*/.orig                                 " Merge resolution files
+set wildignore+=*/.dll,*/.exe,*/.o,*/.obj,*/.manifest   " Compiled object files
+set wildignore+=*/.pyc                                  " Python byte code
+set wildignore+=migrations                              " Django migrations
+set wildignore+=*/.luac                                 " Lua byte code
+set wildignore+=*/.aux,*/.out,*/.toc                    " LaTeX intermediate files
 
 set title               " Show title in console title bar
 set guioptions=em       " e ensures tab bar is displayed in GUI; m ensures menu bar is displayed
