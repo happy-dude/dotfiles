@@ -4,23 +4,22 @@
 """
 """     Author: Stanley Chan
 """     Github: https://github.com/Happy-Dude
-"""     Version: 12 April 2012
 """
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-set guifont=DejaVu\ Sans\ Mono:h16
+set guifont=Fira\ Code\ Retina:h16
 
-if filereadable(expand("$HOME/.vim/bundle/solarized-altercation/colors/solarized.vim"))
-    set background=dark
+if filereadable(expand("$HOME/.vim/pack/bundle/opt/vim-colors-solarized/colors/solarized.vim"))
     colorscheme solarized
-elseif filereadable(expand("$HOME/.vim/bundle/jellybeans-nanotech/colors/jellybeans.vim"))
     set background=dark
+elseif filereadable(expand("$HOME/.vim/pack/bundle/opt/jellybeans.vim/colors/jellybeans.vim"))
     colorscheme jellybeans
-elseif filereadable(expand("$HOME/.vim/bundle/tomorrow-chriskempson/colors/Tomorrow-Night.vim"))
-    set background=light
-    colorscheme Tomorrow-Night
-elseif filereadable(expand("$HOME/.vim/bundle/jellybeans-nanotech/colors/seoul256.vim"))
     set background=dark
-    colorscheme seoul256
+elseif filereadable(expand("$HOME/.vim/pack/bundle/opt/tomorrow-theme/colors/Tomorrow-Night.vim"))
+    colorscheme Tomorrow-Night
+    set background=dark
+elseif filereadable(expand("$HOME/.vim/pack/bundle/opt/seoul256.vim/colors/seoul256-light.vim"))
+    colorscheme seoul256-light
+    set background=dark
 endif

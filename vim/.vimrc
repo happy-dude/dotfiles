@@ -549,17 +549,17 @@ if (&t_Co == 256 || &t_Co == 88) && (!has("gui_running")) && (($TERM =~ "xterm")
     " Colorscheme preferences:
     " solarized, jellybeans, Tomorrow-Night, seoul256, lucius, tango2, desert, torte, murphy
     if filereadable(expand("$HOME/.vim/pack/bundle/opt/vim-colors-solarized/colors/solarized.vim"))
-        set background=dark
         colorscheme solarized
+        set background=dark
     elseif filereadable(expand("$HOME/.vim/pack/bundle/opt/jellybeans.vim/colors/jellybeans.vim"))
-        set background=dark
         colorscheme jellybeans
-    elseif filereadable(expand("$HOME/.vim/pack/bundle/opt/tomorrow-theme/colors/Tomorrow-Night.vim"))
-        set background=light
-        colorscheme Tomorrow-Night
-    elseif filereadable(expand("$HOME/.vim/pack/bundle/opt/seoul256.vim/colors/seoul256.vim"))
         set background=dark
+    elseif filereadable(expand("$HOME/.vim/pack/bundle/opt/tomorrow-theme/colors/Tomorrow-Night.vim"))
+        colorscheme Tomorrow-Night
+        set background=light
+    elseif filereadable(expand("$HOME/.vim/pack/bundle/opt/seoul256.vim/colors/seoul256.vim"))
         colorscheme seoul256
+        set background=dark
     endif
 endif
 
