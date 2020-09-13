@@ -110,6 +110,8 @@ silent! helptags ALL        " Generate documentation tages automatically
 
 "ale settings
 let g:ale_lint_on_text_changed = "never"        " Lint only when files are saved; linting when text changes is overkill/ annoying
+let g:ale_lint_on_insert_leave = 0
+let g:ale_lint_on_enter = 0
 let g:ale_open_list = 1                         " Show ALE messages in a loclist pane
 let g:ale_echo_msg_error_str = 'E'              " Define how ALE errors and warnings are displayed in the statusline
 let g:ale_echo_msg_warning_str = 'W'

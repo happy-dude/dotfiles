@@ -1,4 +1,25 @@
 {
+  "coc.preferences.formatOnSaveFiletypes": [
+    "Markdown",
+    "coc-cfn-lint",
+    "css",
+    "go",
+    "gomod",
+    "html",
+    "javascript",
+    "javascriptreact",
+    "json",
+    "markdown",
+    "markdownlint",
+    "python",
+    "ruby",
+    "sql",
+    "terraform",
+    "typescript",
+    "typescript.tsx",
+    "typescriptreact",
+    "yaml"
+  ],
   "diagnostic.displayByAle": true,
   "languageserver": {
     "ccls": {
@@ -25,11 +46,20 @@
     },
     "lua": {
       "command": "lua-lsp",
-      "filetypes": ["lua"]
+      "filetypes": [
+        "lua"
+      ]
     },
     "digestif": {
       "command": "digestif",
-      "filetypes": ["tex", "plaintex", "context"]
+      "filetypes": [
+        "tex",
+        "plaintex",
+        "context"
+      ]
     }
-  }
+  },
+  "markdownlint.onChange": false,
+  "markdownlint.onOpen": false,
+  "markdownlint.onSave": true
 }
