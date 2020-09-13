@@ -230,3 +230,7 @@
 	path = vim/.vim/pack/bundle/opt/tomorrow-theme
 	url = https://github.com/chriskempson/vim-tomorrow-theme.git
 	ignore = dirty
+[submodule "vim-unimpaired"]
+	path = vim/.vim/pack/bundle/opt/vim-unimpaired
+	url = https://github.com/tpope/vim-unimpaired
+	ignore = dirty

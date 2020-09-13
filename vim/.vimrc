@@ -60,6 +60,7 @@ if &loadplugins
       packadd! vim-sexp-mappings-for-regular-people
       packadd! vim-speeddating
       packadd! vim-toml
+      packadd! vim-unimpaired
 
       " Neovim-only packages
       if has('nvim')
