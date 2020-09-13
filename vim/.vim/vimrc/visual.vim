@@ -6,3 +6,13 @@
 "set sidescrolloff=0    " Keep at least 'x' lines left/right
 set lazyredraw          " Do not redraw while running macros; buffers screen updates
 set more                " Use more prompt -- pausing screen when too many items are displayed
+
+set title               " Show title in console title bar
+set showtabline=2       " Display tab line even if single file opened
+set tm=500              " Set tooltip menu
+
+set guioptions=em       " e ensures tab bar is displayed in GUI; m ensures menu bar is displayed
+set guitablabel=%t      " Display buffer name on tab label
+
+set showcmd             " Display commands as they are typed
+"set cmdheight=1         " Set the commandbar height -- default

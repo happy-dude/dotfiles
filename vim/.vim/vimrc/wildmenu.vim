@@ -18,12 +18,3 @@ set wildignore+=*/.pyc                                  " Python byte code
 set wildignore+=migrations                              " Django migrations
 set wildignore+=*/.luac                                 " Lua byte code
 set wildignore+=*/.aux,*/.out,*/.toc                    " LaTeX intermediate files
-
-set title               " Show title in console title bar
-set guioptions=em       " e ensures tab bar is displayed in GUI; m ensures menu bar is displayed
-set guitablabel=%t      " Display buffer name on tab label
-set showcmd             " Display commands as they are typed
-"set cmdheight=1         " Set the commandbar height -- default
-set showtabline=2       " Display tab line even if single file opened
-"set nohidden            " When I close a tab, remove from buffer
-set tm=500              " Set tooltip menu
