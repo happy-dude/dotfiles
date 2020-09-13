@@ -1,24 +1,4 @@
 {
-  "coc.preferences.formatOnSaveFiletypes": [
-    "Markdown",
-    "coc-cfn-lint",
-    "css",
-    "html",
-    "javascript",
-    "javascriptreact",
-    "json",
-    "markdown",
-    "markdownlint",
-    "python",
-    "ruby",
-    "sql",
-    "terraform",
-    "typescript",
-    "typescript.tsx",
-    "typescriptreact",
-    "yaml"
-  ],
-  "diagnostic.refreshAfterSave": true,
   "languageserver": {
     "ccls": {
       "command": "ccls",
@@ -57,6 +37,38 @@
       ]
     }
   },
+  "coc.preferences.formatOnSaveFiletypes": [
+    "Markdown",
+    "coc-cfn-lint",
+    "css",
+    "html",
+    "javascript",
+    "javascriptreact",
+    "json",
+    "markdown",
+    "markdownlint",
+    "python",
+    "ruby",
+    "sql",
+    "terraform",
+    "typescript",
+    "typescript.tsx",
+    "typescriptreact",
+    "yaml"
+  ],
+  "diagnostic.errorSign": ">>",
+  "diagnostic.warningSign": "--",
+  "diagnostic.refreshAfterSave": true,
+  "git.addedSign.text": "++",
+  "git.changedSign.text": "~~",
+  "git.changeRemovedSign.text": "≃≃",
+  "git.removedSign.text": "__",
+  "git.topRemovedSign.text": "‾‾",
+  "git.changedDecorator": "**",
+  "git.conflictedDecorator": "xx",
+  "git.stagedDecorator": "●●",
+  "git.untrackedDecorator": "……",
+  "git.branchCharacter": ".",
   "markdownlint.onChange": false,
   "markdownlint.onOpen": false,
   "markdownlint.onSave": true

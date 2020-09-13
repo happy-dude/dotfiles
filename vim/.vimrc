@@ -110,22 +110,24 @@ silent! helptags ALL        " Generate documentation tages automatically
 
 "ale settings
 let g:ale_disable_lsp = 1                       " Use ALE for linting, coc.nvim for LSP autocomplete
+let g:ale_set_signs = 0                         " Disable ALE signcolumn gutter, defer to coc.nvim
+
+let g:ale_open_list = 1                         " Show ALE messages in a loclist pane
 let g:ale_lint_on_text_changed = "never"        " Lint only when files are saved; linting when text changes is overkill/ annoying
 let g:ale_lint_on_insert_leave = 0
 let g:ale_lint_on_enter = 0
-let g:ale_open_list = 1                         " Show ALE messages in a loclist pane
 
 let g:ale_echo_msg_error_str = 'E'              " Define how ALE errors and warnings are displayed in the statusline
 let g:ale_echo_msg_warning_str = 'W'
 let g:ale_statusline_format = ['%dE', '%dW', 'OK']
 let g:ale_echo_msg_format = '[%linter%] [%severity%] %s'
 
-function! ALEc ()                                " ALE: C
+function! ALEc ()                               " ALE: C
     let g:ale_c_gcc_options = '-Wall -Wextra -pedantic -g -ggdb -std=c11'
     let g:ale_c_clang_options = '-Weverything -g -std=c11 -Wall'
 endfunction
 
-function! ALEcpp ()                              " ALE: C++
+function! ALEcpp ()                             " ALE: C++
     let g:ale_cpp_gcc_options = '--Wall -Wextra -pedantic -g -ggdb -std=c++14'
     let g:ale_cpp_clang_options = '-Weverything -g -std=c++14'
 endfunction
@@ -270,11 +272,6 @@ command! -nargs=? Fold :call     CocAction('fold', <f-args>)
 
 " Add `:OR` command for organize imports of the current buffer.
 command! -nargs=0 OR   :call     CocAction('runCommand', 'editor.action.organizeImport')
-
-" Add (Neo)Vim's native statusline support.
-" NOTE: Please see `:h coc-status` for integrations with external plugins that
-" provide custom statusline: lightline.vim, vim-airline.
-set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
 
 " Mappings for CoCList
 " Show all diagnostics.
@@ -425,26 +422,26 @@ if v:version > 704 || v:version == 704 && has("patch338")
     "set breakindent showbreak=\\ 
 endif
 
-set laststatus=2        " Always show the statusline
-set statusline+=[%n]\                                           "     n: Buffer number
-set statusline+=%.64F%m%r%h%w\                                  "  .64F: Full path of file; max width of filepath, truncate from beginning
-                                                                "     F: Full path of file
-                                                                "     m: Modified flag in square brackets
-                                                                "     r: Read-only flag in square brackets
-                                                                "     h: Help flag in square brackets
-                                                                "     w: Preview flag in square brackets
-set statusline+=%{ALELinterStatus()}                            "     ALE plugin
-set statusline+=%=%Y.%{&enc}.%{&ff}\                            "     =: Right justify from here
-                                                                "     Y: Filetype as Vim-recognized
-                                                                "  &enc: File encoding
-                                                                "   &ff: File format
-set statusline+=%<[utf8_0x%02.B\|ascii_%03.3b]                  "     <: Truncate from here
-                                                                "  .02B: HEX value; max width of HEX value
-                                                                " 03.3b: ASCII value; min and max width of ASCII value
-set statusline+=[ln\ %02l:%02v/%L][%p%%]                        "   02l: Current line; min width
-                                                                "   02v: Current column; min width
-                                                                "     L: Total lines
-                                                                "     p: Current position in file in percentage
+set laststatus=2                                " Always show the statusline
+set statusline+=[%n]\                               "     n: Buffer number
+set statusline+=%.64F%m%r%h%w\                      "  .64F: Full path of file; max width of filepath, truncate from beginning
+                                                    "     F: Full path of file
+                                                    "     m: Modified flag in square brackets
+                                                    "     r: Read-only flag in square brackets
+                                                    "     h: Help flag in square brackets
+                                                    "     w: Preview flag in square brackets
+set statusline+=%{ALELinterStatus()}\               "     ALE plugin
+set statusline+=%=%Y.%{&enc}.%{&ff}\                "     =: Right justify from here
+                                                    "     Y: Filetype as Vim-recognized
+                                                    "  &enc: File encoding
+                                                    "   &ff: File format
+set statusline+=%<[utf8_0x%02.B\|ascii_%03.3b]      "     <: Truncate from here
+                                                    "  .02B: HEX value; max width of HEX value
+                                                    " 03.3b: ASCII value; min and max width of ASCII value
+set statusline+=[ln\ %02l:%02v/%L][%p%%]            "   02l: Current line; min width
+                                                    "   02v: Current column; min width
+                                                    "     L: Total lines
+                                                    "     p: Current position in file in percentage
 
 set wildmenu                    " Turn on wild menu
 set wildmode=list:longest,full  " Turn on wild mode huge list
