@@ -23,103 +23,103 @@ filetype off            " Turn filetype plugin off until Pathogen loads
 
 " load packages
 if &loadplugins
-  if has('packages')
-      packadd! ack.vim
-      packadd! ale
-      packadd! clam.vim
-      packadd! csv.vim
-      packadd! ctrlp.vim
-      packadd! hlnext.vim
-      packadd! html5.vim
-      packadd! MatchTag
-      packadd! nerdcommenter
-      packadd! rainbow
-      packadd! rust.vim
-      packadd! slimv
-      packadd! splitjoin.vim
-      packadd! swift.vim
-      packadd! undotree
-      packadd! vim-dirvish
-      packadd! vim-easymotion
-      packadd! vim-flake8
-      packadd! vim-fugitive
-      packadd! vim-go
-      packadd! vim-indent-guides
-      packadd! vim-latex
-      packadd! vim-linux-coding-style
-      packadd! vim-markdown
-      packadd! vim-pandoc
-      packadd! vim-pandoc-syntax
-      packadd! vim-perl
-      packadd! vim-racket
-      packadd! vim-repeat
-      packadd! vim-rsi
-      packadd! vim-sandwich
-      packadd! vim-schlepp
-      packadd! vim-sexp
-      packadd! vim-sexp-mappings-for-regular-people
-      packadd! vim-speeddating
-      packadd! vim-toml
-      packadd! vim-unimpaired
+    if has('packages')
+        packadd! ack.vim
+        packadd! ale
+        packadd! clam.vim
+        packadd! csv.vim
+        packadd! ctrlp.vim
+        packadd! hlnext.vim
+        packadd! html5.vim
+        packadd! MatchTag
+        packadd! nerdcommenter
+        packadd! rainbow
+        packadd! rust.vim
+        packadd! slimv
+        packadd! splitjoin.vim
+        packadd! swift.vim
+        packadd! undotree
+        packadd! vim-dirvish
+        packadd! vim-easymotion
+        packadd! vim-flake8
+        packadd! vim-fugitive
+        packadd! vim-go
+        packadd! vim-indent-guides
+        packadd! vim-latex
+        packadd! vim-linux-coding-style
+        packadd! vim-markdown
+        packadd! vim-pandoc
+        packadd! vim-pandoc-syntax
+        packadd! vim-perl
+        packadd! vim-racket
+        packadd! vim-repeat
+        packadd! vim-rsi
+        packadd! vim-sandwich
+        packadd! vim-schlepp
+        packadd! vim-sexp
+        packadd! vim-sexp-mappings-for-regular-people
+        packadd! vim-speeddating
+        packadd! vim-toml
+        packadd! vim-unimpaired
 
-      " Neovim-only packages
-      if has('nvim')
-      endif
+        " Neovim-only packages
+        if has('nvim')
+        endif
 
-      " Enable coc.nvim for neovim if node.js is installed
-      if executable('node') && has('nvim')
-          packadd! coc.nvim
+        " Enable coc.nvim for neovim if node.js is installed
+        if executable('node') && has('nvim')
+            packadd! coc.nvim
 
-          let s:vimpackages = '~/.config/nvim/vimrc/packages/'
-          let s:coc_settings = s:vimpackages . 'coc.vim'
+            let s:vimpackages = '~/.config/nvim/vimrc/packages/'
+            let s:coc_settings = s:vimpackages . 'coc.vim'
 
-          execute 'source' s:coc_settings
-      endif
+            execute 'source' s:coc_settings
+        endif
 
-      " colorschemes are automatically discovered
-      " packadd! jellybeans.vim
-      " packadd! seoul256.vim
-      " packadd! tomorrow-theme
-      " packadd! vim-colors-solarized
-      " packadd! vim-lucius
-  else
-      " pathogen fallback
-      " Unconventional path to plugin (inside submodule)
-      runtime pack/bundle/opt/vim-pathogen/autoload/pathogen.vim
+        " colorschemes are automatically discovered
+        " packadd! jellybeans.vim
+        " packadd! seoul256.vim
+        " packadd! tomorrow-theme
+        " packadd! vim-colors-solarized
+        " packadd! vim-lucius
+    else
+        " pathogen fallback
+        " Unconventional path to plugin (inside submodule)
+        runtime pack/bundle/opt/vim-pathogen/autoload/pathogen.vim
 
-      " pathogen: Activate plugin
-      call pathogen#infect('pack/bundle/opt/{}')
-      call pathogen#helptags()
-  endif
+        " pathogen: Activate plugin
+        call pathogen#infect('pack/bundle/opt/{}')
+        call pathogen#helptags()
+    endif
 
-  " Source vim plugin settings
-  if has('nvim')
-      let s:vimpackages = '~/.config/nvim/vimrc/packages/'
-  else
-      let s:vimpackages = '~/.vim/vimrc/packages/'
-  endif
+    " Source vim plugin settings
+    if has('nvim')
+        let s:vimpackages = '~/.config/nvim/vimrc/packages/'
+    else
+        let s:vimpackages = '~/.vim/vimrc/packages/'
+    endif
 
-  let s:ack_settings = s:vimpackages . 'ack.vim'
-  let s:ale_settings = s:vimpackages . 'ale.vim'
-  let s:ctrlp_settings = s:vimpackages . 'ctrlp.vim'
-  let s:dirvish_settings = s:vimpackages . 'dirvish.vim'
-  let s:indent_guides_settings = s:vimpackages . 'indent_guides.vim'
-  let s:latex_settings = s:vimpackages . 'latex.vim'
-  let s:rainbow_settings = s:vimpackages . 'rainbow.vim'
-  let s:schlepp_settings = s:vimpackages . 'schlepp.vim'
-  let s:slimv_settings = s:vimpackages . 'slimv.vim'
-  let s:solarized_settings = s:vimpackages . 'solarized.vim'
+    let s:ack_settings = s:vimpackages . 'ack.vim'
+    let s:ale_settings = s:vimpackages . 'ale.vim'
+    let s:ctrlp_settings = s:vimpackages . 'ctrlp.vim'
+    let s:dirvish_settings = s:vimpackages . 'dirvish.vim'
+    let s:indent_guides_settings = s:vimpackages . 'indent_guides.vim'
+    let s:latex_settings = s:vimpackages . 'latex.vim'
+    let s:rainbow_settings = s:vimpackages . 'rainbow.vim'
+    let s:schlepp_settings = s:vimpackages . 'schlepp.vim'
+    let s:slimv_settings = s:vimpackages . 'slimv.vim'
+    let s:solarized_settings = s:vimpackages . 'solarized.vim'
 
-  execute 'source' s:ack_settings
-  execute 'source' s:ale_settings
-  execute 'source' s:ctrlp_settings
-  execute 'source' s:dirvish_settings
-  execute 'source' s:indent_guides_settings
-  execute 'source' s:latex_settings
-  execute 'source' s:rainbow_settings
-  execute 'source' s:schlepp_settings
-  execute 'source' s:slimv_settings
-  execute 'source' s:solarized_settings
+    execute 'source' s:ack_settings
+    execute 'source' s:ale_settings
+    execute 'source' s:ctrlp_settings
+    execute 'source' s:dirvish_settings
+    execute 'source' s:indent_guides_settings
+    execute 'source' s:latex_settings
+    execute 'source' s:rainbow_settings
+    execute 'source' s:schlepp_settings
+    execute 'source' s:slimv_settings
+    execute 'source' s:solarized_settings
 
 endif
 
