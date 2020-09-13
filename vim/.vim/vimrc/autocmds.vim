@@ -76,11 +76,6 @@ if has("autocmd")
         let g:go_code_completion_enabled = 0    " Use coc.nvim for LSP autocomplete
         let g:go_def_mapping_enabled = 0        " Use coc.nvim for goto-definition
 
-        " Quickfix list shortcuts
-        nmap        <C-n>       :cnext<CR>
-        nmap        <C-m>       :cprevious<CR>
-        nnoremap    <leader>a   :cclose<CR>
-
         " Command shortcuts
         nmap <leader>r <Plug>(go-run)
         nmap <leader>c <Plug>(go-coverage-toggle)
