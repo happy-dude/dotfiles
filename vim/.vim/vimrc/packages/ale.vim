@@ -1,4 +1,5 @@
 "ale settings
+
 let g:ale_disable_lsp = 1                       " Use ALE for linting, coc.nvim for LSP autocomplete
 let g:ale_set_signs = 0                         " Disable ALE signcolumn gutter, defer to coc.nvim
 
