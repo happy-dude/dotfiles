@@ -13,3 +13,6 @@ fi
 # Customize to your needs...
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH=$PATH:$(go env GOPATH)/bin
+export PATH="$HOME/.luarocks/bin:$PATH"
+export EDITOR='nvim'
+export VISUAL='nvim'
