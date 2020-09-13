@@ -98,6 +98,7 @@ if &loadplugins
       let s:vimpackages = '~/.vim/vimrc/packages/'
   endif
 
+  let s:ack_settings = s:vimpackages . 'ack.vim'
   let s:ale_settings = s:vimpackages . 'ale.vim'
   let s:ctrlp_settings = s:vimpackages . 'ctrlp.vim'
   let s:dirvish_settings = s:vimpackages . 'dirvish.vim'
@@ -108,6 +109,7 @@ if &loadplugins
   let s:slimv_settings = s:vimpackages . 'slimv.vim'
   let s:solarized_settings = s:vimpackages . 'solarized.vim'
 
+  execute 'source' s:ack_settings
   execute 'source' s:ale_settings
   execute 'source' s:ctrlp_settings
   execute 'source' s:dirvish_settings
