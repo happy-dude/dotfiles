@@ -64,16 +64,17 @@ if &loadplugins
 
         " Neovim-only packages
         if has('nvim')
-        endif
 
-        " Enable coc.nvim for neovim if node.js is installed
-        if executable('node') && has('nvim')
-            packadd! coc.nvim
+            " Enable coc.nvim if node.js is installed
+            if executable('node')
+                packadd! coc.nvim
 
-            let s:vimpackages = '~/.config/nvim/vimrc/packages/'
-            let s:coc_settings = s:vimpackages . 'coc.vim'
+                let s:vimpackages = '~/.config/nvim/vimrc/packages/'
+                let s:coc_settings = s:vimpackages . 'coc.vim'
 
-            execute 'source' s:coc_settings
+                execute 'source' s:coc_settings
+            endif
+
         endif
 
         " colorschemes are automatically discovered
@@ -99,16 +100,16 @@ if &loadplugins
         let s:vimpackages = '~/.vim/vimrc/packages/'
     endif
 
-    let s:ack_settings = s:vimpackages . 'ack.vim'
-    let s:ale_settings = s:vimpackages . 'ale.vim'
-    let s:ctrlp_settings = s:vimpackages . 'ctrlp.vim'
-    let s:dirvish_settings = s:vimpackages . 'dirvish.vim'
-    let s:indent_guides_settings = s:vimpackages . 'indent_guides.vim'
-    let s:latex_settings = s:vimpackages . 'latex.vim'
-    let s:rainbow_settings = s:vimpackages . 'rainbow.vim'
-    let s:schlepp_settings = s:vimpackages . 'schlepp.vim'
-    let s:slimv_settings = s:vimpackages . 'slimv.vim'
-    let s:solarized_settings = s:vimpackages . 'solarized.vim'
+    let s:ack_settings              = s:vimpackages . 'ack.vim'
+    let s:ale_settings              = s:vimpackages . 'ale.vim'
+    let s:ctrlp_settings            = s:vimpackages . 'ctrlp.vim'
+    let s:dirvish_settings          = s:vimpackages . 'dirvish.vim'
+    let s:indent_guides_settings    = s:vimpackages . 'indent_guides.vim'
+    let s:latex_settings            = s:vimpackages . 'latex.vim'
+    let s:rainbow_settings          = s:vimpackages . 'rainbow.vim'
+    let s:schlepp_settings          = s:vimpackages . 'schlepp.vim'
+    let s:slimv_settings            = s:vimpackages . 'slimv.vim'
+    let s:solarized_settings        = s:vimpackages . 'solarized.vim'
 
     execute 'source' s:ack_settings
     execute 'source' s:ale_settings
@@ -137,27 +138,27 @@ else
     let s:vimdir = '~/.vim/vimrc/'
 endif
 
-let s:bell_settings = s:vimdir . 'bell.vim'
-let s:buffer_settings = s:vimdir . 'buffer.vim'
-let s:cache_settings = s:vimdir . 'cache.vim'
-let s:clipboard_settings = s:vimdir . 'clipboard.vim'
-let s:colorscheme_settings = s:vimdir . 'colorscheme.vim'
-let s:cpoptions_settings = s:vimdir . 'cpoptions.vim'
-let s:cursorlinecolumn_settings = s:vimdir . 'cursorlinecolumn.vim'
-let s:diff_settings = s:vimdir . 'diff.vim'
-let s:encoding_settings = s:vimdir . 'encoding.vim'
-let s:folding_settings = s:vimdir . 'folding.vim'
-let s:formatoptions_settings = s:vimdir . 'formatoptions.vim'
-let s:listchars_settings = s:vimdir . 'listchars.vim'
-let s:match_settings = s:vimdir . 'match.vim'
-let s:mouse_settings = s:vimdir . 'mouse.vim'
-let s:search_settings = s:vimdir . 'search.vim'
-let s:spellcheck_settings = s:vimdir . 'spellcheck.vim'
-let s:statusline_settings = s:vimdir . 'statusline.vim'
-let s:tabspaces_settings = s:vimdir . 'tabspaces.vim'
-let s:visual_settings = s:vimdir . 'visual.vim'
-let s:wildmenu_settings = s:vimdir . 'wildmenu.vim'
-let s:wordwrap_settings = s:vimdir . 'wordwrap.vim'
+let s:bell_settings                 = s:vimdir . 'bell.vim'
+let s:buffer_settings               = s:vimdir . 'buffer.vim'
+let s:cache_settings                = s:vimdir . 'cache.vim'
+let s:clipboard_settings            = s:vimdir . 'clipboard.vim'
+let s:colorscheme_settings          = s:vimdir . 'colorscheme.vim'
+let s:cpoptions_settings            = s:vimdir . 'cpoptions.vim'
+let s:cursorlinecolumn_settings     = s:vimdir . 'cursorlinecolumn.vim'
+let s:diff_settings                 = s:vimdir . 'diff.vim'
+let s:encoding_settings             = s:vimdir . 'encoding.vim'
+let s:folding_settings              = s:vimdir . 'folding.vim'
+let s:formatoptions_settings        = s:vimdir . 'formatoptions.vim'
+let s:listchars_settings            = s:vimdir . 'listchars.vim'
+let s:match_settings                = s:vimdir . 'match.vim'
+let s:mouse_settings                = s:vimdir . 'mouse.vim'
+let s:search_settings               = s:vimdir . 'search.vim'
+let s:spellcheck_settings           = s:vimdir . 'spellcheck.vim'
+let s:statusline_settings           = s:vimdir . 'statusline.vim'
+let s:tabspaces_settings            = s:vimdir . 'tabspaces.vim'
+let s:visual_settings               = s:vimdir . 'visual.vim'
+let s:wildmenu_settings             = s:vimdir . 'wildmenu.vim'
+let s:wordwrap_settings             = s:vimdir . 'wordwrap.vim'
 
 execute 'source' s:bell_settings
 execute 'source' s:buffer_settings
@@ -185,9 +186,9 @@ execute 'source' s:wordwrap_settings
 """"""""""""""""""""""""""""""
 """"    Custom Configs    """"
 """"""""""""""""""""""""""""""
-let s:custom_mappings = s:vimdir . 'mappings.vim'
-let s:custom_autocmds = s:vimdir . 'autocmds.vim'
-let s:custom_functions = s:vimdir . 'functions.vim'
+let s:custom_mappings               = s:vimdir . 'mappings.vim'
+let s:custom_autocmds               = s:vimdir . 'autocmds.vim'
+let s:custom_functions              = s:vimdir . 'functions.vim'
 
 execute 'source' s:custom_mappings
 execute 'source' s:custom_autocmds
