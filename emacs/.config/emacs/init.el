@@ -10,6 +10,14 @@
 ;; Highlight current line
 (global-hl-line-mode +1)
 
+;; Set default font
+(set-language-environment "UTF-8")
+(set-default-coding-systems 'utf-8)
+(add-hook 'after-make-frame-functions (lambda (frame) (set-fontset-font t '(#Xe100 . #Xe16f) "Fira Code Retina")))
+(set-fontset-font t '(#Xe100 . #Xe16f) "Fira Code Retina")
+(add-to-list 'default-frame-alist
+             '(font . "Fira Code Retina-16"))
+
 ;; Line numbers
 (setq-default display-line-numbers 'relative)
 (add-hook 'org-mode-hook (lambda () (display-line-numbers-mode 0)))
@@ -242,7 +250,7 @@
 (add-to-list 'custom-theme-load-path "~/.config/emacs/themes/solarized-emacs")
 (require 'solarized)
 (add-hook 'org-mode-hook
-          (lambda () (set-frame-font "Menlo 16")))
+          (lambda () (set-frame-font "Fira Code Retina 16")))
 (setq solarized-use-variable-pitch nil
       solarized-scale-org-headlines nil
       ;; solarized-height-minus-1 1.0
