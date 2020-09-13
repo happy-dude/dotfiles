@@ -17,7 +17,7 @@ I will make the appropriate changes to make my settings compatible when I do.
 Multiple branches of dotfiles are useful for different platforms or environments
 that require modified settings.
 
-There are (currently) two branches, `master` and `macos`. macOS users should 
+There are (currently) two branches, `master` and `macos`. macOS users should
 checkout the `macos` branch by executing:
 
 ```bash
@@ -28,7 +28,8 @@ git checkout -b macos origin/macos
 
 This repo contains git [submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
 for many [configs](https://github.com/Happy-Dude/dotfiles/tree/master/zsh),
-[vim](https://github.com/Happy-Dude/dotfiles/tree/master/vim/.vim/pack/bundle/opt), and
+[vim](https://github.com/Happy-Dude/dotfiles/tree/master/vim/.vim/pack/bundle/opt)
+, and
 [emacs](https://github.com/Happy-Dude/dotfiles/tree/master/emacs/.config/emacs/plugins)
 plugin packages.
 
@@ -63,26 +64,25 @@ and remix, transform, and adapt accordingly.
 
 1. Clone the repository and submodules
 
-```bash
-git clone --recursive https://github.com/Happy-Dude/dotfiles.git $HOME/dotfiles
-cd $HOME/dotfiles
-git submodule update --init --recursive --remote
-```
+    ```bash
+    git clone --recursive https://github.com/Happy-Dude/dotfiles.git $HOME/dotfiles
+    cd $HOME/dotfiles
+    git submodule update --init --recursive --remote
+    ```
 
 2. Use GNU Stow to symlink configs
 
-NOTE: stow will not symlink over an existing file or symlink. Check out the
-[manual](https://www.gnu.org/software/stow/manual/stow.html#Conflicts) for more
-details.
+    NOTE: stow will not symlink over an existing file or symlink. Check out the
+    [manual](https://www.gnu.org/software/stow/manual/stow.html#Conflicts) for more
+    details.
 
-```bash
-cd $HOME/dotfiles
-stow vim
-stow tmux
-stow zsh
-
-... etc ...
-```
+    ```bash
+    cd $HOME/dotfiles
+    stow vim
+    stow tmux
+    stow zsh
+    ... etc ...
+    ```
 
 ### Neovim
 
@@ -102,7 +102,7 @@ ln -s $HOME/dotfiles/.vim $HOME/.config/nvim
 
 ### 'Other' Configs
 
-There are a handful of configs and settings in the 
+There are a handful of configs and settings in the
 ['other'](https://github.com/Happy-Dude/dotfiles/tree/master/other) directory
 which is primarily a collection of useful scripts, configs, and preferences I am
 currently using or have used in the past.
@@ -173,13 +173,17 @@ are only meanigful if have the proper `terminfo` files (located in
 /usr/share/terminfo/ directy in Ubuntu-based Linux -- I will check out how is in
 on Arch and OS X on a later date).
 
-Your <shell>rc files should have one of these following settings:
+Your shell rc files should have one of these following settings:
 
-    export TERM='xterm-256color'
+```bash
+export TERM='xterm-256color'
+```
 
 or for tmux/screen environments:
 
-    export TERM='screen-256color'
+```bash
+export TERM='screen-256color'
+```
 
 ### Old iptables Notes (circa 2014)
 
@@ -199,7 +203,8 @@ sudo update-rc.d iptables
 Execute the script with `service iptables start`. Again, this so far has only
 been tested on Ubuntu-based distributions.
 
-To install on Arch Linux (as of April 2013, running systemd), execute the following commands:
+To install on Arch Linux (as of April 2013, running systemd), execute the
+following commands:
 
 ```bash
 ln -s ~/dotfiles/iptables/iptables.rules /etc/iptables/iptables.rules
