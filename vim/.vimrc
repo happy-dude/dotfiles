@@ -109,15 +109,16 @@ filetype plugin indent on   " Enable filetype plugin and filetype-based indentat
 silent! helptags ALL        " Generate documentation tages automatically
 
 "ale settings
+let g:ale_disable_lsp = 1                       " Use ALE for linting, coc.nvim for LSP autocomplete
 let g:ale_lint_on_text_changed = "never"        " Lint only when files are saved; linting when text changes is overkill/ annoying
 let g:ale_lint_on_insert_leave = 0
 let g:ale_lint_on_enter = 0
 let g:ale_open_list = 1                         " Show ALE messages in a loclist pane
+
 let g:ale_echo_msg_error_str = 'E'              " Define how ALE errors and warnings are displayed in the statusline
 let g:ale_echo_msg_warning_str = 'W'
 let g:ale_statusline_format = ['%dE', '%dW', 'OK']
 let g:ale_echo_msg_format = '[%linter%] [%severity%] %s'
-let g:ale_disable_lsp = 1                       " Use ALE for linting, coc.nvim for LSP autocomplete
 
 function! ALEc ()                                " ALE: C
     let g:ale_c_gcc_options = '-Wall -Wextra -pedantic -g -ggdb -std=c11'
@@ -354,14 +355,14 @@ set shellslash              " Windows feature: forward slash when expanding file
 let g:Schlepp#dupTrimWS = 1                     " Trailing whitespace removal on block duplication
 let g:Schlepp#reindent = 1                      " Reindent code as it is being moved
 "vmap <unique> i <Plug>SchleppToggleReindent     " Toggle indentation of code
-vmap <unique> <up>    <Plug>SchleppUp           " Drag visuals using arrow keys in visual mode
-vmap <unique> <down>  <Plug>SchleppDown
-vmap <unique> <left>  <Plug>SchleppLeft
-vmap <unique> <right> <Plug>SchleppRight
-vmap <unique> Dk <Plug>SchleppDupUp             " Duplication block bindings
-vmap <unique> Dj <Plug>SchleppDupDown
-vmap <unique> Dh <Plug>SchleppDupLeft
-vmap <unique> Dl <Plug>SchleppDupRight
+vmap <unique>   <up>        <Plug>SchleppUp         " Drag visuals using arrow keys in visual mode
+vmap <unique>   <down>      <Plug>SchleppDown
+vmap <unique>   <left>      <Plug>SchleppLeft
+vmap <unique>   <right>     <Plug>SchleppRight
+vmap <unique>   Dk          <Plug>SchleppDupUp      " Duplication block bindings
+vmap <unique>   Dj          <Plug>SchleppDupDown
+vmap <unique>   Dh          <Plug>SchleppDupLeft
+vmap <unique>   Dl          <Plug>SchleppDupRight
 
 "solarized colorscheme settings
 if !has("gui_running")                          " Use these settings if terminal vim; otherwise, gvimrc settings should take over
@@ -417,6 +418,12 @@ set list                " List mode: show special characters -- what is displaye
 set listchars=tab:⋮\ ,trail:·,nbsp:∘
 set listchars+=extends:›,precedes:‹
 "set listchars+=eol:¬    " or eol:$ or eol:↲
+
+if v:version > 704 || v:version == 704 && has("patch338")
+    set breakindent showbreak=↪\   " Set breakindent with .. for wrapped lines
+    "set breakindent showbreak=..\ 
+    "set breakindent showbreak=\\ 
+endif
 
 set laststatus=2        " Always show the statusline
 set statusline+=[%n]\                                           "     n: Buffer number
@@ -564,12 +571,6 @@ if exists('+colorcolumn')
 else
     highlight ColorColumn ctermbg=235
     match ColorColumn /\%81v/
-endif
-
-if v:version > 704 || v:version == 704 && has("patch338")
-    set breakindent showbreak=↪\   " Set breakindent with .. for wrapped lines
-    "set breakindent showbreak=..\ 
-    "set breakindent showbreak=\\ 
 endif
 
 """ relativenumber is a Vim 7.3 option
