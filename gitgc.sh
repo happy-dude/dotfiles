@@ -31,5 +31,5 @@ if [ $GIT_IS_AVAILABLE -eq 0 ]; then
     $GIT_PATH $GIT_OPTS $GIT_PATH gc
 
 else
-    echo "Git not found; please get latest updates for repository submodules manually"
+    echo "Git not found\; please get latest updates for repository submodules manually"
 fi
