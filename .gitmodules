@@ -14,6 +14,10 @@
 	path = emacs/.config/emacs/plugins/annalist.el
 	url = https://github.com/noctuid/annalist.el.git
 	ignore = dirty
+[submodule "coc.nvim"]
+	path = vim/.vim/pack/bundle/opt/coc.nvim
+	url = https://github.com/neoclide/coc.nvim.git
+	ignore = dirty
 [submodule "clam.vim"]
 	path = vim/.vim/pack/bundle/opt/clam.vim
 	url = https://github.com/sjl/clam.vim.git
