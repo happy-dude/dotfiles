@@ -148,7 +148,8 @@ autocmd BufRead,BufNewFile *.cpp call ALEcpp()
 " coc.nvim settings
 " Having longer updatetime (default is 4000 ms = 4 s) leads to noticeable
 " delays and poor user experience.
-set updatetime=300
+" CursorHold events and writing to swap files
+set updatetime=500
 
 " Don't pass messages to |ins-completion-menu|.
 set shortmess+=c
@@ -171,9 +172,11 @@ inoremap <silent><expr> <TAB>
       \ coc#refresh()
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 
+" Slight change to also prevent trigger after a number
+" when going from normal mode to insert mode
 function! s:check_back_space() abort
   let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~# '\s'
+  return !col || getline('.')[col - 1]  =~# '\s' || getline('.')[col - 1]  =~# '\d'
 endfunction
 
 " Use <c-space> to trigger completion.
@@ -764,10 +767,11 @@ if has("autocmd")
                     "\ 'whitespace',
 
         let g:go_fmt_command = "goimports"      " Automatically format and rewrite import declarations
-        let g:go_auto_type_info = 1             " Automatically show identifier info whenever you move your cursor
+        "let g:go_auto_type_info = 1             " Automatically show identifier info whenever you move your cursor
         let g:go_doc_popup_window = 1           " Use popup-window for |K| and |:GoDoc| instead of |preview-window|
         let g:go_code_completion_enabled = 0    " Use coc.nvim for LSP autocomplete
-        "
+        let g:go_def_mapping_enabled = 0        " Use coc.nvim for goto-definition
+
         " Quickfix list shortcuts
         nmap        <C-n>       :cnext<CR>
         nmap        <C-m>       :cprevious<CR>

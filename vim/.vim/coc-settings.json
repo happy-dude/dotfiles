@@ -3,8 +3,6 @@
     "Markdown",
     "coc-cfn-lint",
     "css",
-    "go",
-    "gomod",
     "html",
     "javascript",
     "javascriptreact",
@@ -20,7 +18,7 @@
     "typescriptreact",
     "yaml"
   ],
-  "diagnostic.displayByAle": true,
+  "diagnostic.refreshAfterSave": true,
   "languageserver": {
     "ccls": {
       "command": "ccls",
@@ -44,18 +42,18 @@
         }
       }
     },
-    "lua": {
-      "command": "lua-lsp",
-      "filetypes": [
-        "lua"
-      ]
-    },
     "digestif": {
       "command": "digestif",
       "filetypes": [
         "tex",
         "plaintex",
         "context"
+      ]
+    },
+    "lua": {
+      "command": "lua-lsp",
+      "filetypes": [
+        "lua"
       ]
     }
   },
