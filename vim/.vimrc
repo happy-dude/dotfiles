@@ -16,6 +16,16 @@ if !has('nvim')
     set esckeys         " Function keys that start with <Esc> are recognized in insert mode
 endif
 
+" vimconf directories for vimrc and plugin settings
+if has('nvim')
+    let s:vimpackages = '~/.config/nvim/vimrc/packages/'
+    let s:vimdir = '~/.config/nvim/vimrc/'
+else
+    let s:vimpackages = '~/.vim/vimrc/packages/'
+    let s:vimdir = '~/.vim/vimrc/'
+endif
+
+
 """"""""""""""""""""""""""""""
 """" Plugin Configuration """"
 """"""""""""""""""""""""""""""
@@ -94,12 +104,6 @@ if &loadplugins
     endif
 
     " Source vim plugin settings
-    if has('nvim')
-        let s:vimpackages = '~/.config/nvim/vimrc/packages/'
-    else
-        let s:vimpackages = '~/.vim/vimrc/packages/'
-    endif
-
     let s:ack_settings              = s:vimpackages . 'ack.vim'
     let s:ale_settings              = s:vimpackages . 'ale.vim'
     let s:ctrlp_settings            = s:vimpackages . 'ctrlp.vim'
@@ -132,12 +136,6 @@ silent! helptags ALL        " Generate documentation tages automatically
 """"""""""""""""""""""""""""""
 """"         vimrc        """"
 """"""""""""""""""""""""""""""
-if has('nvim')
-    let s:vimdir = '~/.config/nvim/vimrc/'
-else
-    let s:vimdir = '~/.vim/vimrc/'
-endif
-
 let s:bell_settings                 = s:vimdir . 'bell.vim'
 let s:buffer_settings               = s:vimdir . 'buffer.vim'
 let s:cache_settings                = s:vimdir . 'cache.vim'
@@ -193,4 +191,5 @@ let s:custom_functions              = s:vimdir . 'functions.vim'
 execute 'source' s:custom_mappings
 execute 'source' s:custom_autocmds
 execute 'source' s:custom_functions
+
 
