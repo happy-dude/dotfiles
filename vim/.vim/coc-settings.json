@@ -1,75 +1,75 @@
 {
-  "languageserver": {
-    "ccls": {
-      "command": "ccls",
-      "filetypes": [
-        "c",
-        "cc",
-        "cpp",
-        "objc",
-        "objcpp"
-      ],
-      "rootPatterns": [
-        ".ccls",
-        "compile_commands.json",
-        ".vim/",
-        ".git/",
-        ".hg/"
-      ],
-      "initializationOptions": {
-        "cache": {
-          "directory": "/tmp/ccls"
+    "coc.preferences.formatOnSaveFiletypes": [
+        "Markdown",
+        "coc-cfn-lint",
+        "css",
+        "html",
+        "javascript",
+        "javascriptreact",
+        "json",
+        "markdown",
+        "markdownlint",
+        "python",
+        "ruby",
+        "sql",
+        "terraform",
+        "typescript",
+        "typescript.tsx",
+        "typescriptreact",
+        "yaml"
+    ],
+    "diagnostic.errorSign": ">>",
+    "diagnostic.refreshAfterSave": true,
+    "diagnostic.warningSign": "--",
+    "git.addedSign.text": "++",
+    "git.branchCharacter": ".\ue0a0",
+    "git.changeRemovedSign.text": "\u2243\u2243",
+    "git.changedDecorator": "**",
+    "git.changedSign.text": "~~",
+    "git.conflictedDecorator": "xx",
+    "git.removedSign.text": "__",
+    "git.stagedDecorator": "\u25cf\u25cf",
+    "git.topRemovedSign.text": "\u203e\u203e",
+    "git.untrackedDecorator": "\u2026\u2026",
+    "languageserver": {
+        "ccls": {
+            "command": "ccls",
+            "filetypes": [
+                "c",
+                "cc",
+                "cpp",
+                "objc",
+                "objcpp"
+            ],
+            "initializationOptions": {
+                "cache": {
+                    "directory": "/tmp/ccls"
+                }
+            },
+            "rootPatterns": [
+                ".ccls",
+                "compile_commands.json",
+                ".vim/",
+                ".git/",
+                ".hg/"
+            ]
+        },
+        "digestif": {
+            "command": "digestif",
+            "filetypes": [
+                "tex",
+                "plaintex",
+                "context"
+            ]
+        },
+        "lua": {
+            "command": "lua-lsp",
+            "filetypes": [
+                "lua"
+            ]
         }
-      }
     },
-    "digestif": {
-      "command": "digestif",
-      "filetypes": [
-        "tex",
-        "plaintex",
-        "context"
-      ]
-    },
-    "lua": {
-      "command": "lua-lsp",
-      "filetypes": [
-        "lua"
-      ]
-    }
-  },
-  "coc.preferences.formatOnSaveFiletypes": [
-    "Markdown",
-    "coc-cfn-lint",
-    "css",
-    "html",
-    "javascript",
-    "javascriptreact",
-    "json",
-    "markdown",
-    "markdownlint",
-    "python",
-    "ruby",
-    "sql",
-    "terraform",
-    "typescript",
-    "typescript.tsx",
-    "typescriptreact",
-    "yaml"
-  ],
-  "diagnostic.errorSign": ">>",
-  "diagnostic.warningSign": "--",
-  "diagnostic.refreshAfterSave": true,
-  "git.addedSign.text": "++",
-  "git.changedSign.text": "~~",
-  "git.changeRemovedSign.text": "≃≃",
-  "git.removedSign.text": "__",
-  "git.topRemovedSign.text": "‾‾",
-  "git.changedDecorator": "**",
-  "git.conflictedDecorator": "xx",
-  "git.stagedDecorator": "●●",
-  "git.untrackedDecorator": "……",
-  "git.branchCharacter": ".",
-  "markdownlint.onChange": false,
-  "markdownlint.onOpen": false,
-  "markdownlint.onSave": true
+    "markdownlint.onChange": false,
+    "markdownlint.onOpen": false,
+    "markdownlint.onSave": true
 }
