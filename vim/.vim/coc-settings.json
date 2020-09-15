@@ -3,6 +3,8 @@
         "Markdown",
         "coc-cfn-lint",
         "css",
+        "go",
+        "gomod",
         "html",
         "javascript",
         "javascriptreact",
