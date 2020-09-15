@@ -6,6 +6,7 @@ let g:ale_set_signs = 0                     "  signcolumn gutter
 
 let g:go_code_completion_enabled = 0        " Disable vim-go LSP autocomplete
 let g:go_def_mapping_enabled = 0            "  goto-definition
+let g:go_doc_keywordprg_enabled = 0         "  godoc window
 let g:go_fmt_autosave = 0                   "  fmt on autosave
 let g:go_mod_fmt_autosave = 0
 
