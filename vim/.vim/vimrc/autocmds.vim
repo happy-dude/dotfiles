@@ -62,7 +62,7 @@ if has("autocmd")
                     \ 'unparam',
                     \ 'wsl'
                     \]
-                    " Disabled because of unsupported formatting
+        " Disabled because of unsupported formatting
                     "\ 'funlen',
                     "\ 'gochecknoinits',
                     "\ 'godox',

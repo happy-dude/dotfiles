@@ -30,10 +30,10 @@ function! ALELinterStatus() abort
     let l:all_non_errors = l:counts.total - l:all_errors
 
     return l:counts.total == 0 ? 'OK' : printf(
-    \   '%dW %dE',
-    \   all_non_errors,
-    \   all_errors
-    \)
+                                            \ '%dW %dE',
+                                            \ all_non_errors,
+                                            \ all_errors
+                                            \)
 endfunction
 
 autocmd BufRead,BufNewFile *.c call ALEc()
