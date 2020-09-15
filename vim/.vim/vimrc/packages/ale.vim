@@ -1,8 +1,5 @@
 "ale settings
 
-let g:ale_disable_lsp = 1                       " Use ALE for linting, coc.nvim for LSP autocomplete
-let g:ale_set_signs = 0                         " Disable ALE signcolumn gutter, defer to coc.nvim
-
 let g:ale_open_list = 1                         " Show ALE messages in a loclist pane
 let g:ale_lint_on_text_changed = "never"        " Lint only when files are saved; linting when text changes is overkill/ annoying
 let g:ale_lint_on_insert_leave = 0

@@ -1,5 +1,9 @@
 " coc.nvim settings
 
+                                                " When coc.nvim is enabled
+let g:ale_disable_lsp = 1                       " Use ALE for linting, coc.nvim for LSP autocomplete
+let g:ale_set_signs = 0                         " Disable ALE signcolumn gutter, defer to coc.nvim
+
 " CoC extensions
 let g:coc_global_extensions = [
                         \ 'coc-actions',
@@ -25,15 +29,6 @@ set updatetime=500
 
 " Don't pass messages to |ins-completion-menu|.
 set shortmess+=c
-
-" Always show the signcolumn, otherwise it would shift the text each time
-" diagnostics appear/become resolved.
-if has("patch-8.1.1564")
-    " Recently vim can merge signcolumn and number column into one
-    set signcolumn=number
-else
-    set signcolumn=yes
-endif
 
 " Use tab for trigger completion with characters ahead and navigate.
 " NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
