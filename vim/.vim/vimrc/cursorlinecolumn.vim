@@ -5,8 +5,8 @@ set cursorline          " Highlight the current line
 set cursorcolumn        " Highlight the current column
 set linespace=0         " Don't insert any extra pixel lines between rows
 
-""" Highlight column 81 for old-school 80 character terminal widths
-""" The elseif hack is from http://stackoverflow.com/a/235970
+" Highlight column 81 for old-school 80 character terminal widths
+" The elseif hack is from http://stackoverflow.com/a/235970
 if exists('+colorcolumn')
     set colorcolumn=81
 else
@@ -14,17 +14,16 @@ else
     match ColorColumn /\%81v/
 endif
 
-" Always show the signcolumn, otherwise it would shift the text each time
-" diagnostics appear/become resolved.
-if has("patch-8.1.1564")
-    " Recently vim can merge signcolumn and number column into one
+" Always show signcolumn gutter for plugin diagnostics, warnings, and errors
+if has("patch-8.1.1564") || has('nvim')
+    " Merge signcolumn and number column into one
     set signcolumn=number
 else
     set signcolumn=yes
 endif
 
-""" relativenumber is a Vim 7.3 option
-""" If the option doesn't exist, fall back to just absolute line numbers
+" relativenumber is a Vim 7.3 option
+" If the option doesn't exist, fall back to just absolute line numbers
 if exists('+relativenumber') && (version >= 704) || (version == 703) && has("patch1115")
     set relativenumber  " Display how far away each line is from the current one by default
     set number          " When used with relativenumber, the absolute line of the current
