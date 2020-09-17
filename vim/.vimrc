@@ -8,6 +8,9 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+"""""""""""""""""""""""""""""""
+"{ """      Preamble       """"
+"""""""""""""""""""""""""""""""
 set nocompatible        " Use Vim defaults
 set modelines=0         " Set modelines to 0 to prevent several security exploits
 
@@ -24,15 +27,16 @@ else
     let s:vimpackages = '~/.vim/vimrc/packages/'
     let s:vimdir = '~/.vim/vimrc/'
 endif
+" }
 
 
-""""""""""""""""""""""""""""""
-"""" Plugin Configuration """"
-""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""
+"{ """ Plugin Configuration """
+"""""""""""""""""""""""""""""""
 filetype off            " Turn filetype plugin off until Pathogen loads
 
-" load packages
 if &loadplugins
+    " { Load plugin packages
     if has('packages')
         packadd! ack.vim
         packadd! ale
@@ -72,7 +76,7 @@ if &loadplugins
         packadd! vim-toml
         packadd! vim-unimpaired
 
-        " Neovim-only packages
+        " { Neovim-only packages
         if has('nvim')
 
             " Enable coc.nvim if node.js is installed
@@ -86,24 +90,29 @@ if &loadplugins
             endif
 
         endif
+        " }
 
+        " { Colorschemes
         " colorschemes are automatically discovered
         " packadd! jellybeans.vim
         " packadd! seoul256.vim
         " packadd! tomorrow-theme
         " packadd! vim-colors-solarized
         " packadd! vim-lucius
+        " }
     else
-        " pathogen fallback
+        " { pathogen fallback
         " Unconventional path to plugin (inside submodule)
         runtime pack/bundle/opt/vim-pathogen/autoload/pathogen.vim
 
         " pathogen: Activate plugin
         call pathogen#infect('pack/bundle/opt/{}')
         call pathogen#helptags()
+        " }
     endif
+    " }
 
-    " Source vim plugin settings
+    " { Source vim plugin settings
     let s:ack_settings              = s:vimpackages . 'ack.vim'
     let s:ale_settings              = s:vimpackages . 'ale.vim'
     let s:ctrlp_settings            = s:vimpackages . 'ctrlp.vim'
@@ -125,17 +134,19 @@ if &loadplugins
     execute 'source' s:schlepp_settings
     execute 'source' s:slimv_settings
     execute 'source' s:solarized_settings
+    " }
 
 endif
 
 syntax enable               " Enable syntax highlighting
 filetype plugin indent on   " Enable filetype plugin and filetype-based indentation
 silent! helptags ALL        " Generate documentation tages automatically
+" }
 
 
-""""""""""""""""""""""""""""""
-""""         vimrc        """"
-""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""
+"{ """"       vimrc        """"
+"""""""""""""""""""""""""""""""
 let s:bell_settings                 = s:vimdir . 'bell.vim'
 let s:buffer_settings               = s:vimdir . 'buffer.vim'
 let s:cache_settings                = s:vimdir . 'cache.vim'
@@ -179,11 +190,12 @@ execute 'source' s:tabspaces_settings
 execute 'source' s:visual_settings
 execute 'source' s:wildmenu_settings
 execute 'source' s:wordwrap_settings
+" }
 
 
-""""""""""""""""""""""""""""""
-""""    Custom Configs    """"
-""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""
+"{ """"   Custom Configs   """"
+"""""""""""""""""""""""""""""""
 let s:custom_mappings               = s:vimdir . 'mappings.vim'
 let s:custom_autocmds               = s:vimdir . 'autocmds.vim'
 let s:custom_functions              = s:vimdir . 'functions.vim'
@@ -191,5 +203,5 @@ let s:custom_functions              = s:vimdir . 'functions.vim'
 execute 'source' s:custom_mappings
 execute 'source' s:custom_autocmds
 execute 'source' s:custom_functions
-
+" }
 
