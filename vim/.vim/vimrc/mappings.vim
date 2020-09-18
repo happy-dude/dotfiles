@@ -3,7 +3,9 @@
 " Map Ctrl-Backspace to delete previous word in insert mode like Ctrl-w
 " Note how this mapping does not work in terminal vim because of term-keys
 " However, this mapping will work just fine in gvim
-inoremap    <C-BS>      <C-w>
+if has("gui_running")
+    inoremap    <C-BS>      <C-w>
+endif
 
 " To move up and down logical lines instead of physical lines
 " Instead of changing the Home row keys, use the arrow keys
