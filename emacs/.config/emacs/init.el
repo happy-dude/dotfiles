@@ -161,6 +161,11 @@
                                ))
 (add-hook 'org-mode-hook #'visual-line-mode)
 (add-hook 'text-mode-hook #'visual-line-mode)
+
+; Make org-mode, iOS BeOrg, emacs, and (Drop)Box sync play well with each other
+; See https://christiantietze.de/posts/2019/03/sync-emacs-org-files/ and https://www.nicklanasa.com/posts/emacs-syncing-dropbox-beorg
+(add-hook 'auto-save-hook 'org-save-all-org-buffers)
+
 (require 'org)
 (require 'org-tempo)
 (setq org-log-done t)
