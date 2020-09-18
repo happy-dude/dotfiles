@@ -86,6 +86,10 @@
 	path = vim/.vim/pack/bundle/opt/rainbow
 	url = https://github.com/luochen1990/rainbow.git
 	ignore = dirty
+[submodule "rainbow-delimiters"]
+	path = emacs/.config/emacs/plugins/rainbow-delimiters
+	url = https://github.com/Fanael/rainbow-delimiters.git
+	ignore = dirty
 [submodule "rust.vim"]
 	path = vim/.vim/pack/bundle/opt/rust.vim
 	url = https://github.com/rust-lang/rust.vim.git
