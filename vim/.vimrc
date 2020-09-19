@@ -83,9 +83,7 @@ if &loadplugins
             if executable('node')
                 packadd! coc.nvim
 
-                let s:vimpackages = '~/.config/nvim/vimrc/packages/'
                 let s:coc_settings = s:vimpackages . 'coc.vim'
-
                 execute 'source' s:coc_settings
             endif
 
