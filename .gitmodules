@@ -158,6 +158,10 @@
 	path = vim/.vim/pack/bundle/opt/vim-go
 	url = https://github.com/fatih/vim-go.git
 	ignore = dirty
+[submodule "vim-gruvbox8"]
+	path = vim/.vim/pack/bundle/opt/vim-gruvbox8
+	url = https://github.com/lifepillar/vim-gruvbox8.git
+	ignore = dirty
 [submodule "vim-indent-guides"]
 	path = vim/.vim/pack/bundle/opt/vim-indent-guides
 	url = https://github.com/nathanaelkane/vim-indent-guides.git
@@ -221,6 +225,10 @@
 [submodule "vim-sexp-mappings-for-regular-people"]
 	path = vim/.vim/pack/bundle/opt/vim-sexp-mappings-for-regular-people
 	url = https://github.com/tpope/vim-sexp-mappings-for-regular-people.git
+	ignore = dirty
+[submodule "vim-solarized8"]
+	path = vim/.vim/pack/bundle/opt/vim-solarized8
+	url = https://github.com/lifepillar/vim-solarized8.git
 	ignore = dirty
 [submodule "vim-speeddating"]
 	path = vim/.vim/pack/bundle/opt/vim-speeddating
