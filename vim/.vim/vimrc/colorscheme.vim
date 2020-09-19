@@ -1,6 +1,6 @@
 " colorscheme settings
 
-if (&t_Co == 256 || &t_Co == 88) && ($TERM =~# "color") && has("termguicolors") && (!has("gui_running"))
+if (&t_Co >= 16) && (($TERM =~# "color") || ($TERM =~# "alacritty")) && (has("termguicolors")) && (!has("gui_running"))
 
     set notermguicolors     " Personally prefer the flattened 256-color palettes instead of true color ones
 

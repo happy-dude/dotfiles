@@ -100,7 +100,7 @@ following symlink for neovim:
 ln -s $HOME/dotfiles/.vim $HOME/.config/nvim
 ```
 
-### Enable True-Color support on (Neo)vim and Tmux /w terminfo on macOS
+### Enable True-Color support on (Neo)vim and Tmux w/ terminfo on macOS
 
 Refer to prior-art at from bbqtd's excellent [gist](https://gist.github.com/bbqtd/a4ac060d6f6b9ea6fe3aabe735aa9d95)
 and [jdhao's blog](https://jdhao.github.io/2018/10/19/tmux_nvim_true_color/).
@@ -161,7 +161,7 @@ set-option -ga terminal-overrides ',*256col*:Tc,'
 Enable the following setting in your vimrc:
 
 ```vim
-if (&t_Co == 256 || &t_Co == 88) && has(“termguicolors”)
+if (&t_Co == 256 || &t_Co == 88) && has("termguicolors")
     set termguicolors
 endif
 ```
