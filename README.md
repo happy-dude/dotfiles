@@ -100,6 +100,72 @@ following symlink for neovim:
 ln -s $HOME/dotfiles/.vim $HOME/.config/nvim
 ```
 
+### Enable True-Color support on (Neo)vim and Tmux /w terminfo on macOS
+
+Refer to prior-art at from bbqtd's excellent [gist](https://gist.github.com/bbqtd/a4ac060d6f6b9ea6fe3aabe735aa9d95)
+and [jdhao's blog](https://jdhao.github.io/2018/10/19/tmux_nvim_true_color/).
+There is also extra context on the following tmux issues [here](https://github.com/tmux/tmux/issues/597)
+and [here](https://github.com/tmux/tmux/issues/1257).
+
+#### terminfo
+
+Grab the latest terminfo database from
+[Thomas E. Dickey](https://invisible-island.net/), who is brilliant and has
+worked on projects like
+[ncurses](https://invisible-island.net/ncurses/ncurses.html). There is some extra
+reading available about [ncurses](https://invisible-island.net/ncurses/ncurses.faq.html),
+the
+[terminfo database](https://invisible-island.net/ncurses/ncurses.faq.html#terminfo_copying)
+and some thoughts on
+[copyright notices](https://invisible-island.net/ncurses/ncurses.faq.html#terminfo_copying).
+Check out his [GitHub](https://github.com/ThomasDickey)
+and [ncurses-snapshots](https://github.com/ThomasDickey/ncurses-snapshots) repo!
+
+1. Download latest terminfo sources
+
+    ```bash
+    curl -LO https://raw.githubusercontent.com/ThomasDickey/ncurses-snapshots/master/misc/terminfo.src
+    ```
+
+2. Extract terminfo from source to their compiled formats
+
+    The compiled sources will be outputted to your `$HOME/.terminfo` directory
+
+    ```bash
+    tic -xe tmux,tmux-256color terminfo.src
+
+    # Feel free to extra other terminfo sources
+    tic -xe screen,screen-256color,xterm,xterm-256color,alacritty,alacritty-direct,kitty terminfo.src
+    ```
+
+3. Validate the terminfo sources have been "installed"
+
+    ```bash
+    infocmp -x tmux-256color
+    ```
+
+#### Tmux
+
+With the above terminfo generated and a terminal emulator that supports
+"true color" (24-bit), enable the following options in your tmux config.
+See the tmux [FAQ](https://github.com/tmux/tmux/wiki/FAQ#how-do-i-use-rgb-colour)
+for more details.
+
+```text
+set-option -sa terminal-overrides ',*256col*:RGB,'
+set-option -ga terminal-overrides ',*256col*:Tc,'
+```
+
+#### (Neo)vim
+
+Enable the following setting in your vimrc:
+
+```vim
+if (&t_Co == 256 || &t_Co == 88) && has(“termguicolors”)
+    set termguicolors
+endif
+```
+
 ### 'Other' Configs
 
 There are a handful of configs and settings in the
@@ -135,7 +201,7 @@ git submodule --init --recursive --remote
 
 ## Misc
 
-### tmux and macOS
+### tmux, macOS, and copy-paste
 
 Installing tmux on OS X on using Homebrew (and likely Macports also) would cause
 a message saying `launch_msg("SetUserEnvironment"): Socket is not connected`
@@ -145,7 +211,9 @@ answer, and ChrisJohnsen's
 [tmux-MacOSX-pasteboard](https://github.com/ChrisJohnsen/tmux-MacOSX-pasteboard),
 it seems that OS X's pbcopy and pbpaste "fail to function properly" for
 applicationsthat run on Terminal emulators and have clipboard access (like vim,
-tmux, and screen).
+tmux, and screen). See thoughtbot's [How to Copy and Paste with tmux on Mac OS X](https://thoughtbot.com/blog/how-to-copy-and-paste-with-tmux-on-mac-os-x)
+and [tmux Copy & Paste on OS X: A Better Future](https://thoughtbot.com/blog/tmux-copy-paste-on-os-x-a-better-future)
+for context.
 
 Chris Johnsen's patch should fix this problem. Install his
 reattach-to-user-namespace wrapper/patch using the following command (if you're
@@ -159,30 +227,6 @@ If you are using Macports, execute
 
 ```bash
 port install tmux-pasteboard
-```
-
-### vim and tmux Terminal Colors
-
-Colored terminal applications, like vim, tmux, and screen, need the proper
-settings enabled to have colored output. These settings usually are found in your
-`zshrc`, `bashrc`, or whatever shell-rc/init file you have.
-
-In those files, the `$TERM` variable should be set to either `xterm-256color` or
-`screen-256color` depending on your environment. Also remember that these settings
-are only meanigful if have the proper `terminfo` files (located in
-/usr/share/terminfo/ directy in Ubuntu-based Linux -- I will check out how is in
-on Arch and OS X on a later date).
-
-Your shell rc files should have one of these following settings:
-
-```bash
-export TERM='xterm-256color'
-```
-
-or for tmux/screen environments:
-
-```bash
-export TERM='screen-256color'
 ```
 
 ### Old iptables Notes (circa 2014)
