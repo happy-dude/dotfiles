@@ -23,6 +23,8 @@ endfunction
 " Use Perl regex for search-and-replace
 " Usage :S/pattern/replace/flags
 " Supports ranges
+" Note: when processing full file, %, a newline will be added at the end
+"       also when processing a range, a newline will be chomped
 " ref: https://vim.fandom.com/wiki/Perl_compatible_regular_expressions
 if executable('perl')
     function s:PerlSubstitute(line1, line2, sstring)
@@ -47,16 +49,13 @@ if executable('perl')
                                                     " delete lines but don't put in register
         execute a:line1.",".a:line2." normal \"_dd"
         call append(a:line1-1, l:result)            " add lines
-        call cursor(a:line1, 1)                     " return cursor to starting position
+        call cursor(l, c)                           " restore cursor position
 
         if a:line1 == a:line2
             echom "Substitution on line" a:line1
         else
             echom "Substitution on lines" a:line1 "to" a:line2
         endif
-
-        " Restore cursor position
-        call cursor(l, c)
 
     endfunction
 

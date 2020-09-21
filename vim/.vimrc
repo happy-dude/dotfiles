@@ -33,7 +33,6 @@ endif
 """""""""""""""""""""""""""""""
 "{ """ Plugin Configuration """
 """""""""""""""""""""""""""""""
-filetype off            " Turn filetype plugin off until after plugins are loaded
 
 if &loadplugins
     " { Load plugin packages
@@ -41,52 +40,52 @@ if &loadplugins
         packadd! vim-plug
 
         call plug#begin()
-        Plug 'mileszs/ack.vim'
-        Plug 'dense-analysis/ale'
-        Plug 'sjl/clam.vim'
+        Plug 'AndrewRadev/splitjoin.vim'
+        Plug 'Happy-Dude/hlnext.vim'
+        Plug 'cespare/vim-toml'                             ,   { 'for' : [ 'toml' ] }
         Plug 'chrisbra/csv.vim'                             ,   { 'for' : [ 'csv' ] }
         Plug 'ctrlpvim/ctrlp.vim'
-        Plug 'Happy-Dude/hlnext.vim'
-        Plug 'othree/html5.vim'                             ,   { 'for' : [ 'html', 'javascript', 'php', 'xhtml', 'xml' ] }
-        Plug 'gregsexton/MatchTag'                          ,   { 'for' : [ 'html', 'xml' ] }
-        Plug 'preservim/nerdcommenter'
-        Plug 'luochen1990/rainbow'
-        Plug 'rust-lang/rust.vim'                           ,   { 'for' : [ 'rust' ] }
-        Plug 'kovisoft/slimv'                               ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
-        Plug 'AndrewRadev/splitjoin.vim'
-        Plug 'keith/swift.vim'                              ,   { 'for' : [ 'swift' ] }
-        Plug 'mbbill/undotree'
-        Plug 'justinmk/vim-dirvish'
+        Plug 'dense-analysis/ale'
         Plug 'easymotion/vim-easymotion'
-        Plug 'nvie/vim-flake8'                              ,   { 'for' : [ 'python' ] }
-        Plug 'tpope/vim-fugitive'
         Plug 'fatih/vim-go'                                 ,   { 'for' : [ 'go', 'gomod', 'gohtmltmpl' ] }
+        Plug 'gregsexton/MatchTag'                          ,   { 'for' : [ 'html', 'xml' ] }
+        Plug 'guns/vim-sexp'                                ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
+        Plug 'justinmk/vim-dirvish'
+        Plug 'keith/swift.vim'                              ,   { 'for' : [ 'swift' ] }
+        Plug 'kovisoft/slimv'                               ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
+        Plug 'luochen1990/rainbow'
+        Plug 'machakann/vim-sandwich'
+        Plug 'mbbill/undotree'
+        Plug 'mileszs/ack.vim'
         Plug 'nathanaelkane/vim-indent-guides'
+        Plug 'nvie/vim-flake8'                              ,   { 'for' : [ 'python' ] }
+        Plug 'othree/html5.vim'                             ,   { 'for' : [ 'html', 'javascript', 'php', 'xhtml', 'xml' ] }
+        Plug 'preservim/nerdcommenter'
+        Plug 'rust-lang/rust.vim'                           ,   { 'for' : [ 'rust' ] }
+        Plug 'sjl/clam.vim'
+        Plug 'tpope/vim-fugitive'
         Plug 'tpope/vim-markdown'                           ,   { 'for' : [ 'markdown' ] }
+        Plug 'tpope/vim-repeat'
+        Plug 'tpope/vim-rsi'
+        Plug 'tpope/vim-sexp-mappings-for-regular-people'   ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
+        Plug 'tpope/vim-speeddating'
+        Plug 'tpope/vim-unimpaired'
         Plug 'vim-latex/vim-latex'                          ,   { 'for' : [ 'tex' ] }
-        Plug 'vivien/vim-linux-coding-style'                ,   { 'for' : [ 'c', 'cpp' ] }
         Plug 'vim-pandoc/vim-pandoc'                        ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
         Plug 'vim-pandoc/vim-pandoc-syntax'                 ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
         Plug 'vim-perl/vim-perl'                            ,   { 'for' : [ 'perl', 'perl6', 'mason' ], 'branch' : 'dev' }
+        Plug 'vivien/vim-linux-coding-style'                ,   { 'for' : [ 'c', 'cpp' ] }
         Plug 'wlangstroth/vim-racket'                       ,   { 'for' : [ 'racket' ] }
-        Plug 'tpope/vim-repeat'
-        Plug 'tpope/vim-rsi'
-        Plug 'machakann/vim-sandwich'
         Plug 'zirrostig/vim-schlepp'
-        Plug 'guns/vim-sexp'                                ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
-        Plug 'tpope/vim-sexp-mappings-for-regular-people'   ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
-        Plug 'tpope/vim-speeddating'
-        Plug 'cespare/vim-toml'                             ,   { 'for' : [ 'toml' ] }
-        Plug 'tpope/vim-unimpaired'
 
         " { Colorschemes
-        Plug 'nanotech/jellybeans.vim'
-        Plug 'junegunn/seoul256.vim'
-        Plug 'chriskempson/base16-vim'
         Plug 'altercation/vim-colors-solarized'
+        Plug 'chriskempson/base16-vim'
         Plug 'jonathanfilip/vim-lucius'
-        Plug 'lifepillar/vim-solarized8'
+        Plug 'junegunn/seoul256.vim'
         Plug 'lifepillar/vim-gruvbox8'
+        Plug 'lifepillar/vim-solarized8'
+        Plug 'nanotech/jellybeans.vim'
         " }
 
         " { Neovim-only packages
@@ -101,23 +100,30 @@ if &loadplugins
             endif
 
         endif
+
         call plug#end()
         " }
 
     else
         " { pathogen fallback
         " Unconventional path to plugin (inside submodule)
-        " for when packadd! is unavailable
         runtime pack/bundle/opt/vim-pathogen/autoload/pathogen.vim
-        "
+
+        filetype off            " Turn filetype plugin off until after plugins are loaded
+
         " pathogen: Activate plugin
         call pathogen#infect('plugged/{}')
         call pathogen#helptags()
+
+        syntax enable               " Enable syntax highlighting
+        filetype plugin indent on   " Enable filetype plugin and filetype-based indentation
+        silent! helptags ALL        " Generate documentation tages automatically
         " }
+
     endif
     " }
 
-    " { Source vim plugin settings
+    " { Source plugin settings
     let s:ack_settings              = s:vimpack_settings_dir . 'ack.vim'
     let s:ale_settings              = s:vimpack_settings_dir . 'ale.vim'
     let s:ctrlp_settings            = s:vimpack_settings_dir . 'ctrlp.vim'
@@ -142,10 +148,6 @@ if &loadplugins
     " }
 
 endif
-
-syntax enable               " Enable syntax highlighting
-filetype plugin indent on   " Enable filetype plugin and filetype-based indentation
-silent! helptags ALL        " Generate documentation tages automatically
 " }
 
 

@@ -6,4 +6,3 @@
 if has("patch-8.1.0360") || has('nvim')
     set diffopt+=vertical,internal,algorithm:patience
 endif
-

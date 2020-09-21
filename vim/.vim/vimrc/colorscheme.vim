@@ -20,9 +20,10 @@ if (&t_Co >= 16) && (($TERM =~# "color") || ($TERM =~# "alacritty")) && (has("te
     "elseif filereadable(expand("$HOME/.vim/plugged/jellybeans.vim/colors/jellybeans.vim"))
     "    colorscheme jellybeans
     "    set background=dark
-    "elseif filereadable(expand("$HOME/.vim/plugged/tomorrow-theme/colors/Tomorrow-Night.vim"))
-    "    colorscheme Tomorrow-Night
+    "elseif filereadable(expand("$HOME/.vim/plugged/base16-vim/colors/base16-tomorrow-night.vim"))
+    "    set termguicolors
     "    set background=light
+    "    colorscheme base16-tomorrow-night
     "elseif filereadable(expand("$HOME/.vim/plugged/seoul256.vim/colors/seoul256.vim"))
     "    colorscheme seoul256
     "    set background=dark
@@ -44,14 +45,12 @@ if has('gui_running')
     "elseif filereadable(expand("$HOME/.vim/plugged/jellybeans.vim/colors/jellybeans.vim"))
     "    colorscheme jellybeans
     "    set background=dark
-    "elseif filereadable(expand("$HOME/.vim/plugged/tomorrow-theme/colors/Tomorrow-Night.vim"))
-    "    colorscheme Tomorrow-Night
+    "elseif filereadable(expand("$HOME/.vim/plugged/base16-vim/colors/base16-tomorrow-night.vim"))
     "    set background=dark
+    "    colorscheme base16-tomorrow-night
     "elseif filereadable(expand("$HOME/.vim/plugged/seoul256.vim/colors/seoul256-light.vim"))
     "    colorscheme seoul256-light
     "    set background=dark
     endif
 
 endif
-
-

@@ -69,4 +69,3 @@ function! s:build_go_files()
     endif
 endfunction
 nmap <leader>b :<C-u>call <SID>build_go_files()<CR>
-

@@ -8,4 +8,3 @@ augroup auto_ch_dir
     autocmd!
     autocmd BufEnter * silent! lcd %:p:h
 augroup END
-
