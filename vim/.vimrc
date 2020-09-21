@@ -21,11 +21,11 @@ endif
 
 " vimconf directories for vimrc and plugin settings
 if has('nvim')
-    let s:vimpackages = '~/.config/nvim/vimrc/packages/'
-    let s:vimdir = '~/.config/nvim/vimrc/'
+    let s:vimpack_settings_dir = '~/.config/nvim/vimrc/packages/'
+    let s:vimrc_dir = '~/.config/nvim/vimrc/'
 else
-    let s:vimpackages = '~/.vim/vimrc/packages/'
-    let s:vimdir = '~/.vim/vimrc/'
+    let s:vimpack_settings_dir = '~/.vim/vimrc/packages/'
+    let s:vimrc_dir = '~/.vim/vimrc/'
 endif
 " }
 
@@ -33,94 +33,101 @@ endif
 """""""""""""""""""""""""""""""
 "{ """ Plugin Configuration """
 """""""""""""""""""""""""""""""
-filetype off            " Turn filetype plugin off until Pathogen loads
+filetype off            " Turn filetype plugin off until after plugins are loaded
 
 if &loadplugins
     " { Load plugin packages
     if has('packages')
-        packadd! ack.vim
-        packadd! ale
-        packadd! clam.vim
-        packadd! csv.vim
-        packadd! ctrlp.vim
-        packadd! hlnext.vim
-        packadd! html5.vim
-        packadd! MatchTag
-        packadd! nerdcommenter
-        packadd! rainbow
-        packadd! rust.vim
-        packadd! slimv
-        packadd! splitjoin.vim
-        packadd! swift.vim
-        packadd! undotree
-        packadd! vim-dirvish
-        packadd! vim-easymotion
-        packadd! vim-flake8
-        packadd! vim-fugitive
-        packadd! vim-go
-        packadd! vim-indent-guides
-        packadd! vim-latex
-        packadd! vim-linux-coding-style
-        packadd! vim-markdown
-        packadd! vim-pandoc
-        packadd! vim-pandoc-syntax
-        packadd! vim-perl
-        packadd! vim-racket
-        packadd! vim-repeat
-        packadd! vim-rsi
-        packadd! vim-sandwich
-        packadd! vim-schlepp
-        packadd! vim-sexp
-        packadd! vim-sexp-mappings-for-regular-people
-        packadd! vim-speeddating
-        packadd! vim-toml
-        packadd! vim-unimpaired
+        packadd! vim-plug
+
+        call plug#begin()
+        Plug 'mileszs/ack.vim'
+        Plug 'dense-analysis/ale'
+        Plug 'sjl/clam.vim'
+        Plug 'chrisbra/csv.vim'                             ,   { 'for' : [ 'csv' ] }
+        Plug 'ctrlpvim/ctrlp.vim'
+        Plug 'Happy-Dude/hlnext.vim'
+        Plug 'othree/html5.vim'                             ,   { 'for' : [ 'html', 'javascript', 'php', 'xhtml', 'xml' ] }
+        Plug 'gregsexton/MatchTag'                          ,   { 'for' : [ 'html', 'xml' ] }
+        Plug 'preservim/nerdcommenter'
+        Plug 'luochen1990/rainbow'
+        Plug 'rust-lang/rust.vim'                           ,   { 'for' : [ 'rust' ] }
+        Plug 'kovisoft/slimv'                               ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
+        Plug 'AndrewRadev/splitjoin.vim'
+        Plug 'keith/swift.vim'                              ,   { 'for' : [ 'swift' ] }
+        Plug 'mbbill/undotree'
+        Plug 'justinmk/vim-dirvish'
+        Plug 'easymotion/vim-easymotion'
+        Plug 'nvie/vim-flake8'                              ,   { 'for' : [ 'python' ] }
+        Plug 'tpope/vim-fugitive'
+        Plug 'fatih/vim-go'                                 ,   { 'for' : [ 'go', 'gomod', 'gohtmltmpl' ] }
+        Plug 'nathanaelkane/vim-indent-guides'
+        Plug 'tpope/vim-markdown'                           ,   { 'for' : [ 'markdown' ] }
+        Plug 'vim-latex/vim-latex'                          ,   { 'for' : [ 'tex' ] }
+        Plug 'vivien/vim-linux-coding-style'                ,   { 'for' : [ 'c', 'cpp' ] }
+        Plug 'vim-pandoc/vim-pandoc'                        ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
+        Plug 'vim-pandoc/vim-pandoc-syntax'                 ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
+        Plug 'vim-perl/vim-perl'                            ,   { 'for' : [ 'perl', 'perl6', 'mason' ], 'branch' : 'dev' }
+        Plug 'wlangstroth/vim-racket'                       ,   { 'for' : [ 'racket' ] }
+        Plug 'tpope/vim-repeat'
+        Plug 'tpope/vim-rsi'
+        Plug 'machakann/vim-sandwich'
+        Plug 'zirrostig/vim-schlepp'
+        Plug 'guns/vim-sexp'                                ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
+        Plug 'tpope/vim-sexp-mappings-for-regular-people'   ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
+        Plug 'tpope/vim-speeddating'
+        Plug 'cespare/vim-toml'                             ,   { 'for' : [ 'toml' ] }
+        Plug 'tpope/vim-unimpaired'
+
+        " { Colorschemes
+        Plug 'nanotech/jellybeans.vim'
+        Plug 'junegunn/seoul256.vim'
+        Plug 'chriskempson/base16-vim'
+        Plug 'altercation/vim-colors-solarized'
+        Plug 'jonathanfilip/vim-lucius'
+        Plug 'lifepillar/vim-solarized8'
+        Plug 'lifepillar/vim-gruvbox8'
+        " }
 
         " { Neovim-only packages
         if has('nvim')
 
             " Enable coc.nvim if node.js is installed
             if executable('node')
-                packadd! coc.nvim
+                Plug 'neoclide/coc.nvim'
 
-                let s:coc_settings = s:vimpackages . 'coc.vim'
+                let s:coc_settings = s:vimpack_settings_dir . 'coc.vim'
                 execute 'source' s:coc_settings
             endif
 
         endif
+        call plug#end()
         " }
 
-        " { Colorschemes
-        " colorschemes are automatically discovered
-        " packadd! jellybeans.vim
-        " packadd! seoul256.vim
-        " packadd! tomorrow-theme
-        " packadd! vim-colors-solarized
-        " packadd! vim-lucius
-        " }
     else
         " { pathogen fallback
         " Unconventional path to plugin (inside submodule)
+        " for when packadd! is unavailable
         runtime pack/bundle/opt/vim-pathogen/autoload/pathogen.vim
-
+        "
         " pathogen: Activate plugin
-        call pathogen#infect('pack/bundle/opt/{}')
+        call pathogen#infect('plugged/{}')
         call pathogen#helptags()
         " }
     endif
     " }
 
     " { Source vim plugin settings
-    let s:ack_settings              = s:vimpackages . 'ack.vim'
-    let s:ale_settings              = s:vimpackages . 'ale.vim'
-    let s:ctrlp_settings            = s:vimpackages . 'ctrlp.vim'
-    let s:dirvish_settings          = s:vimpackages . 'dirvish.vim'
-    let s:indent_guides_settings    = s:vimpackages . 'indent_guides.vim'
-    let s:latex_settings            = s:vimpackages . 'latex.vim'
-    let s:rainbow_settings          = s:vimpackages . 'rainbow.vim'
-    let s:schlepp_settings          = s:vimpackages . 'schlepp.vim'
-    let s:slimv_settings            = s:vimpackages . 'slimv.vim'
-    let s:solarized_settings        = s:vimpackages . 'solarized.vim'
+    let s:ack_settings              = s:vimpack_settings_dir . 'ack.vim'
+    let s:ale_settings              = s:vimpack_settings_dir . 'ale.vim'
+    let s:ctrlp_settings            = s:vimpack_settings_dir . 'ctrlp.vim'
+    let s:dirvish_settings          = s:vimpack_settings_dir . 'dirvish.vim'
+    let s:indent_guides_settings    = s:vimpack_settings_dir . 'indent_guides.vim'
+    let s:latex_settings            = s:vimpack_settings_dir . 'latex.vim'
+    let s:rainbow_settings          = s:vimpack_settings_dir . 'rainbow.vim'
+    let s:schlepp_settings          = s:vimpack_settings_dir . 'schlepp.vim'
+    let s:slimv_settings            = s:vimpack_settings_dir . 'slimv.vim'
+    let s:solarized_settings        = s:vimpack_settings_dir . 'solarized.vim'
 
     execute 'source' s:ack_settings
     execute 'source' s:ale_settings
@@ -145,27 +152,27 @@ silent! helptags ALL        " Generate documentation tages automatically
 """""""""""""""""""""""""""""""
 "{ """"       vimrc        """"
 """""""""""""""""""""""""""""""
-let s:bell_settings                 = s:vimdir . 'bell.vim'
-let s:buffer_settings               = s:vimdir . 'buffer.vim'
-let s:cache_settings                = s:vimdir . 'cache.vim'
-let s:clipboard_settings            = s:vimdir . 'clipboard.vim'
-let s:colorscheme_settings          = s:vimdir . 'colorscheme.vim'
-let s:cpoptions_settings            = s:vimdir . 'cpoptions.vim'
-let s:cursorlinecolumn_settings     = s:vimdir . 'cursorlinecolumn.vim'
-let s:diff_settings                 = s:vimdir . 'diff.vim'
-let s:encoding_settings             = s:vimdir . 'encoding.vim'
-let s:folding_settings              = s:vimdir . 'folding.vim'
-let s:formatoptions_settings        = s:vimdir . 'formatoptions.vim'
-let s:listchars_settings            = s:vimdir . 'listchars.vim'
-let s:match_settings                = s:vimdir . 'match.vim'
-let s:mouse_settings                = s:vimdir . 'mouse.vim'
-let s:search_settings               = s:vimdir . 'search.vim'
-let s:spellcheck_settings           = s:vimdir . 'spellcheck.vim'
-let s:statusline_settings           = s:vimdir . 'statusline.vim'
-let s:tabspaces_settings            = s:vimdir . 'tabspaces.vim'
-let s:visual_settings               = s:vimdir . 'visual.vim'
-let s:wildmenu_settings             = s:vimdir . 'wildmenu.vim'
-let s:wordwrap_settings             = s:vimdir . 'wordwrap.vim'
+let s:bell_settings                 = s:vimrc_dir . 'bell.vim'
+let s:buffer_settings               = s:vimrc_dir . 'buffer.vim'
+let s:cache_settings                = s:vimrc_dir . 'cache.vim'
+let s:clipboard_settings            = s:vimrc_dir . 'clipboard.vim'
+let s:colorscheme_settings          = s:vimrc_dir . 'colorscheme.vim'
+let s:cpoptions_settings            = s:vimrc_dir . 'cpoptions.vim'
+let s:cursorlinecolumn_settings     = s:vimrc_dir . 'cursorlinecolumn.vim'
+let s:diff_settings                 = s:vimrc_dir . 'diff.vim'
+let s:encoding_settings             = s:vimrc_dir . 'encoding.vim'
+let s:folding_settings              = s:vimrc_dir . 'folding.vim'
+let s:formatoptions_settings        = s:vimrc_dir . 'formatoptions.vim'
+let s:listchars_settings            = s:vimrc_dir . 'listchars.vim'
+let s:match_settings                = s:vimrc_dir . 'match.vim'
+let s:mouse_settings                = s:vimrc_dir . 'mouse.vim'
+let s:search_settings               = s:vimrc_dir . 'search.vim'
+let s:spellcheck_settings           = s:vimrc_dir . 'spellcheck.vim'
+let s:statusline_settings           = s:vimrc_dir . 'statusline.vim'
+let s:tabspaces_settings            = s:vimrc_dir . 'tabspaces.vim'
+let s:visual_settings               = s:vimrc_dir . 'visual.vim'
+let s:wildmenu_settings             = s:vimrc_dir . 'wildmenu.vim'
+let s:wordwrap_settings             = s:vimrc_dir . 'wordwrap.vim'
 
 execute 'source' s:bell_settings
 execute 'source' s:buffer_settings
@@ -194,9 +201,9 @@ execute 'source' s:wordwrap_settings
 """""""""""""""""""""""""""""""
 "{ """"   Custom Configs   """"
 """""""""""""""""""""""""""""""
-let s:custom_mappings               = s:vimdir . 'mappings.vim'
-let s:custom_autocmds               = s:vimdir . 'autocmds.vim'
-let s:custom_functions              = s:vimdir . 'functions.vim'
+let s:custom_mappings               = s:vimrc_dir . 'mappings.vim'
+let s:custom_autocmds               = s:vimrc_dir . 'autocmds.vim'
+let s:custom_functions              = s:vimrc_dir . 'functions.vim'
 
 execute 'source' s:custom_mappings
 execute 'source' s:custom_autocmds

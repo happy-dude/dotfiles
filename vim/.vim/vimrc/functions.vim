@@ -26,6 +26,10 @@ endfunction
 " ref: https://vim.fandom.com/wiki/Perl_compatible_regular_expressions
 if executable('perl')
     function s:PerlSubstitute(line1, line2, sstring)
+        " Save cursor position
+        let l = line(".")
+        let c = col(".")
+
         let l:lines=getline(a:line1, a:line2)
 
         " Perl command with 'utf8' enabled
@@ -50,6 +54,9 @@ if executable('perl')
         else
             echom "Substitution on lines" a:line1 "to" a:line2
         endif
+
+        " Restore cursor position
+        call cursor(l, c)
 
     endfunction
 
