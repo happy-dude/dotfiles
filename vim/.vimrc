@@ -21,11 +21,13 @@ endif
 
 " vimconf directories for vimrc and plugin settings
 if has('nvim')
-    let s:vimpack_settings_dir = '~/.config/nvim/vimrc/packages/'
+    let s:vim_dir = '~/.config/nvim/'
     let s:vimrc_dir = '~/.config/nvim/vimrc/'
+    let s:vimpack_settings_dir = '~/.config/nvim/vimrc/packages/'
 else
-    let s:vimpack_settings_dir = '~/.vim/vimrc/packages/'
+    let s:vim_dir = '~/.vim/'
     let s:vimrc_dir = '~/.vim/vimrc/'
+    let s:vimpack_settings_dir = '~/.vim/vimrc/packages/'
 endif
 " }
 
@@ -35,73 +37,10 @@ endif
 """""""""""""""""""""""""""""""
 
 if &loadplugins
-    " { Load plugin packages
+
     if has('packages')
+        " { vim-plug
         packadd! vim-plug
-
-        call plug#begin()
-        Plug 'AndrewRadev/splitjoin.vim'
-        Plug 'Happy-Dude/hlnext.vim'
-        Plug 'cespare/vim-toml'                             ,   { 'for' : [ 'toml' ] }
-        Plug 'chrisbra/csv.vim'                             ,   { 'for' : [ 'csv' ] }
-        Plug 'ctrlpvim/ctrlp.vim'
-        Plug 'dense-analysis/ale'
-        Plug 'easymotion/vim-easymotion'
-        Plug 'fatih/vim-go'                                 ,   { 'for' : [ 'go', 'gomod', 'gohtmltmpl' ] }
-        Plug 'gregsexton/MatchTag'                          ,   { 'for' : [ 'html', 'xml' ] }
-        Plug 'guns/vim-sexp'                                ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
-        Plug 'justinmk/vim-dirvish'
-        Plug 'keith/swift.vim'                              ,   { 'for' : [ 'swift' ] }
-        Plug 'kovisoft/slimv'                               ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
-        Plug 'luochen1990/rainbow'
-        Plug 'machakann/vim-sandwich'
-        Plug 'mbbill/undotree'
-        Plug 'mileszs/ack.vim'
-        Plug 'nathanaelkane/vim-indent-guides'
-        Plug 'nvie/vim-flake8'                              ,   { 'for' : [ 'python' ] }
-        Plug 'othree/html5.vim'                             ,   { 'for' : [ 'html', 'javascript', 'php', 'xhtml', 'xml' ] }
-        Plug 'preservim/nerdcommenter'
-        Plug 'rust-lang/rust.vim'                           ,   { 'for' : [ 'rust' ] }
-        Plug 'sjl/clam.vim'
-        Plug 'tpope/vim-fugitive'
-        Plug 'tpope/vim-markdown'                           ,   { 'for' : [ 'markdown' ] }
-        Plug 'tpope/vim-repeat'
-        Plug 'tpope/vim-rsi'
-        Plug 'tpope/vim-sexp-mappings-for-regular-people'   ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
-        Plug 'tpope/vim-speeddating'
-        Plug 'tpope/vim-unimpaired'
-        Plug 'vim-latex/vim-latex'                          ,   { 'for' : [ 'tex' ] }
-        Plug 'vim-pandoc/vim-pandoc'                        ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
-        Plug 'vim-pandoc/vim-pandoc-syntax'                 ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
-        Plug 'vim-perl/vim-perl'                            ,   { 'for' : [ 'perl', 'perl6', 'mason' ], 'branch' : 'dev' }
-        Plug 'vivien/vim-linux-coding-style'                ,   { 'for' : [ 'c', 'cpp' ] }
-        Plug 'wlangstroth/vim-racket'                       ,   { 'for' : [ 'racket' ] }
-        Plug 'zirrostig/vim-schlepp'
-
-        " { Colorschemes
-        Plug 'altercation/vim-colors-solarized'
-        Plug 'chriskempson/base16-vim'
-        Plug 'jonathanfilip/vim-lucius'
-        Plug 'junegunn/seoul256.vim'
-        Plug 'lifepillar/vim-gruvbox8'
-        Plug 'lifepillar/vim-solarized8'
-        Plug 'nanotech/jellybeans.vim'
-        " }
-
-        " { Neovim-only packages
-        if has('nvim')
-
-            " Enable coc.nvim if node.js is installed
-            if executable('node')
-                Plug 'neoclide/coc.nvim'
-
-                let s:coc_settings = s:vimpack_settings_dir . 'coc.vim'
-                execute 'source' s:coc_settings
-            endif
-
-        endif
-
-        call plug#end()
         " }
 
     else
@@ -111,16 +50,84 @@ if &loadplugins
 
         filetype off            " Turn filetype plugin off until after plugins are loaded
 
+        " pathogen: Activate vim-plug
+        execute pathogen#infect('pack/bundle/opt/vim-plug/')
+
         " pathogen: Activate plugin
-        call pathogen#infect('plugged/{}')
-        call pathogen#helptags()
+        "execute pathogen#infect('pack/{}/opt/{}')
+        "execute pathogen#helptags()
 
         syntax enable               " Enable syntax highlighting
         filetype plugin indent on   " Enable filetype plugin and filetype-based indentation
-        silent! helptags ALL        " Generate documentation tages automatically
         " }
 
     endif
+
+    " { Load plugin packages
+    call plug#begin(s:vim_dir . 'pack/plugged/opt/')
+    Plug 'AndrewRadev/splitjoin.vim'
+    Plug 'Happy-Dude/hlnext.vim'
+    Plug 'cespare/vim-toml'                             ,   { 'for' : [ 'toml' ] }
+    Plug 'chrisbra/csv.vim'                             ,   { 'for' : [ 'csv' ] }
+    Plug 'ctrlpvim/ctrlp.vim'
+    Plug 'dense-analysis/ale'
+    Plug 'easymotion/vim-easymotion'
+    Plug 'fatih/vim-go'                                 ,   { 'for' : [ 'go', 'gomod', 'gohtmltmpl' ] }
+    Plug 'gregsexton/MatchTag'                          ,   { 'for' : [ 'html', 'xml' ] }
+    Plug 'guns/vim-sexp'                                ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
+    Plug 'justinmk/vim-dirvish'
+    Plug 'keith/swift.vim'                              ,   { 'for' : [ 'swift' ] }
+    Plug 'kovisoft/slimv'                               ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
+    Plug 'luochen1990/rainbow'
+    Plug 'machakann/vim-sandwich'
+    Plug 'mbbill/undotree'
+    Plug 'mileszs/ack.vim'
+    Plug 'nathanaelkane/vim-indent-guides'
+    Plug 'nvie/vim-flake8'                              ,   { 'for' : [ 'python' ] }
+    Plug 'othree/html5.vim'                             ,   { 'for' : [ 'html', 'javascript', 'php', 'xhtml', 'xml' ] }
+    Plug 'preservim/nerdcommenter'
+    Plug 'rust-lang/rust.vim'                           ,   { 'for' : [ 'rust' ] }
+    Plug 'sjl/clam.vim'
+    Plug 'tpope/vim-fugitive'
+    Plug 'tpope/vim-markdown'                           ,   { 'for' : [ 'markdown' ] }
+    Plug 'tpope/vim-repeat'
+    Plug 'tpope/vim-rsi'
+    Plug 'tpope/vim-sexp-mappings-for-regular-people'   ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
+    Plug 'tpope/vim-speeddating'
+    Plug 'tpope/vim-unimpaired'
+    Plug 'vim-latex/vim-latex'                          ,   { 'for' : [ 'tex' ] }
+    Plug 'vim-pandoc/vim-pandoc'                        ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
+    Plug 'vim-pandoc/vim-pandoc-syntax'                 ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
+    Plug 'vim-perl/vim-perl'                            ,   { 'for' : [ 'perl', 'perl6', 'mason' ], 'branch' : 'dev' }
+    Plug 'vivien/vim-linux-coding-style'                ,   { 'for' : [ 'c', 'cpp' ] }
+    Plug 'wlangstroth/vim-racket'                       ,   { 'for' : [ 'racket' ] }
+    Plug 'zirrostig/vim-schlepp'
+
+    " { Colorschemes
+    Plug 'altercation/vim-colors-solarized'
+    Plug 'chriskempson/base16-vim'
+    Plug 'jonathanfilip/vim-lucius'
+    Plug 'junegunn/seoul256.vim'
+    Plug 'lifepillar/vim-gruvbox8'
+    Plug 'lifepillar/vim-solarized8'
+    Plug 'nanotech/jellybeans.vim'
+    " }
+
+    " { Neovim-only packages
+    if has('nvim')
+
+        " Enable coc.nvim if node.js is installed
+        if executable('node')
+            Plug 'neoclide/coc.nvim'
+
+            let s:coc_settings = s:vimpack_settings_dir . 'coc.vim'
+            execute 'source' s:coc_settings
+        endif
+
+    endif
+    " }
+
+    call plug#end()
     " }
 
     " { Source plugin settings
