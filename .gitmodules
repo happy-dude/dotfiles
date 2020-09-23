@@ -14,6 +14,10 @@
 	path = emacs/.config/emacs/plugins/annalist.el
 	url = https://github.com/noctuid/annalist.el.git
 	ignore = dirty
+[submodule "base16-vim"]
+	path = vim/.vim/pack/plugged/opt/base16-vim
+	url = https://github.com/chriskempson/base16-vim
+	ignore = dirty
 [submodule "coc.nvim"]
 	path = vim/.vim/pack/plugged/opt/coc.nvim
 	url = https://github.com/neoclide/coc.nvim.git
@@ -134,6 +138,14 @@
 	path = vim/.vim/pack/plugged/opt/undotree
 	url = https://github.com/mbbill/undotree
 	ignore = dirty
+[submodule "vim-airline"]
+	path = vim/.vim/pack/plugged/opt/vim-airline
+	url = https://github.com/vim-airline/vim-airline.git
+	ignore = dirty
+[submodule "vim-airline-themes"]
+	path = vim/.vim/pack/plugged/opt/vim-airline-themes
+	url = https://github.com/vim-airline/vim-airline-themes.git
+	ignore = dirty
 [submodule "vim-colors-solarized"]
 	path = vim/.vim/pack/plugged/opt/vim-colors-solarized
 	url = https://github.com/altercation/vim-colors-solarized.git
@@ -198,6 +210,10 @@
 	path = vim/.vim/pack/plugged/opt/vim-perl
 	url = https://github.com/vim-perl/vim-perl.git
 	ignore = dirty
+[submodule "vim-plug"]
+	path = vim/.vim/pack/bundle/opt/vim-plug/autoload
+	url = https://github.com/junegunn/vim-plug.git
+	ignore = dirty
 [submodule "vim-racket"]
 	path = vim/.vim/pack/plugged/opt/vim-racket
 	url = https://github.com/wlangstroth/vim-racket
@@ -242,9 +258,3 @@
 	path = vim/.vim/pack/plugged/opt/vim-unimpaired
 	url = https://github.com/tpope/vim-unimpaired
 	ignore = dirty
-[submodule "vim-plug"]
-	path = vim/.vim/pack/bundle/opt/vim-plug/autoload
-	url = https://github.com/junegunn/vim-plug.git
-[submodule "base16-vim"]
-	path = vim/.vim/pack/plugged/opt/base16-vim
-	url = https://github.com/chriskempson/base16-vim

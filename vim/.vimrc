@@ -95,6 +95,8 @@ if &loadplugins
     Plug 'tpope/vim-sexp-mappings-for-regular-people'   ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
     Plug 'tpope/vim-speeddating'
     Plug 'tpope/vim-unimpaired'
+    Plug 'vim-airline/vim-airline'
+    Plug 'vim-airline/vim-airline-themes'
     Plug 'vim-latex/vim-latex'                          ,   { 'for' : [ 'tex' ] }
     Plug 'vim-pandoc/vim-pandoc'                        ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
     Plug 'vim-pandoc/vim-pandoc-syntax'                 ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
@@ -132,6 +134,7 @@ if &loadplugins
 
     " { Source plugin settings
     let s:ack_settings              = s:vimpack_settings_dir . 'ack.vim'
+    let s:airline_settings          = s:vimpack_settings_dir . 'airline.vim'
     let s:ale_settings              = s:vimpack_settings_dir . 'ale.vim'
     let s:ctrlp_settings            = s:vimpack_settings_dir . 'ctrlp.vim'
     let s:dirvish_settings          = s:vimpack_settings_dir . 'dirvish.vim'
@@ -143,6 +146,7 @@ if &loadplugins
     let s:solarized_settings        = s:vimpack_settings_dir . 'solarized.vim'
 
     execute 'source' s:ack_settings
+    execute 'source' s:airline_settings
     execute 'source' s:ale_settings
     execute 'source' s:ctrlp_settings
     execute 'source' s:dirvish_settings
