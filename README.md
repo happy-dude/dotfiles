@@ -102,7 +102,7 @@ ln -s $HOME/dotfiles/.vim $HOME/.config/nvim
 
 ### Enable True-Color support on (Neo)vim and Tmux w/ terminfo on macOS
 
-Refer to prior-art at from bbqtd's excellent [gist](https://gist.github.com/bbqtd/a4ac060d6f6b9ea6fe3aabe735aa9d95)
+Refer to prior-art from bbqtd's excellent [gist](https://gist.github.com/bbqtd/a4ac060d6f6b9ea6fe3aabe735aa9d95)
 and [jdhao's blog](https://jdhao.github.io/2018/10/19/tmux_nvim_true_color/).
 There is also extra context on the following tmux issues [here](https://github.com/tmux/tmux/issues/597)
 and [here](https://github.com/tmux/tmux/issues/1257).
