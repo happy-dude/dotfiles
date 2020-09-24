@@ -80,7 +80,7 @@ if &loadplugins
     Plug 'kovisoft/slimv'                               ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
     Plug 'luochen1990/rainbow'
     Plug 'machakann/vim-sandwich'
-    Plug 'mbbill/undotree'
+    Plug 'mbbill/undotree'                              ,   { 'on' : 'UndotreeToggle' }
     Plug 'mileszs/ack.vim'
     Plug 'nathanaelkane/vim-indent-guides'
     Plug 'nvie/vim-flake8'                              ,   { 'for' : [ 'python' ] }
