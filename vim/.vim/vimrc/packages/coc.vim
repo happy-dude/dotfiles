@@ -1,6 +1,6 @@
 " coc.nvim settings
 
-                                        " When coc.nvim is enabled
+" When coc.nvim is enabled
 let g:ale_disable_lsp = 1                   " Diable ALE LSP
 let g:ale_set_signs = 0                     "  signcolumn gutter
 
@@ -12,21 +12,21 @@ let g:go_mod_fmt_autosave = 0
 
 " CoC extensions
 let g:coc_global_extensions = [
-                        \ 'coc-actions',
-                        \ 'coc-css',
-                        \ 'coc-git',
-                        \ 'coc-go',
-                        \ 'coc-highlight',
-                        \ 'coc-html',
-                        \ 'coc-json',
-                        \ 'coc-markdownlint',
-                        \ 'coc-perl',
-                        \ 'coc-python',
-                        \ 'coc-rls',
-                        \ 'coc-sh',
-                        \ 'coc-sql',
-                        \ 'coc-vimlsp'
-                        \]
+      \ 'coc-actions',
+      \ 'coc-css',
+      \ 'coc-git',
+      \ 'coc-go',
+      \ 'coc-highlight',
+      \ 'coc-html',
+      \ 'coc-json',
+      \ 'coc-markdownlint',
+      \ 'coc-perl',
+      \ 'coc-python',
+      \ 'coc-rls',
+      \ 'coc-sh',
+      \ 'coc-sql',
+      \ 'coc-vimlsp'
+      \]
 
 " Having longer updatetime (default is 4000 ms = 4 s) leads to noticeable
 " delays and poor user experience.
@@ -40,32 +40,32 @@ set shortmess+=c
 " NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
 " other plugin before putting this into your config.
 inoremap <silent><expr> <TAB>
-            \ pumvisible() ? "\<C-n>" :
-            \ <SID>check_back_space() ? "\<TAB>" :
-            \ coc#refresh()
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#refresh()
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 
 " Slight change to also prevent trigger after a number
 " when going from normal mode to insert mode
 function! s:check_back_space() abort
-    let col = col('.') - 1
-    return !col || getline('.')[col - 1]  =~# '\s' || getline('.')[col - 1]  =~# '\d'
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s' || getline('.')[col - 1]  =~# '\d'
 endfunction
 
 " Use <c-space> to trigger completion.
 if has('nvim')
-    inoremap <silent><expr> <c-space> coc#refresh()
+  inoremap <silent><expr> <c-space> coc#refresh()
 else
-    inoremap <silent><expr> <c-@> coc#refresh()
+  inoremap <silent><expr> <c-@> coc#refresh()
 endif
 
 " Use <cr> to confirm completion, `<C-g>u` means break undo chain at current
 " position. Coc only does snippet and additional edit on confirm.
 " <cr> could be remapped by other vim plugin, try `:verbose imap <CR>`.
 if exists('*complete_info')
-    inoremap <expr> <cr> complete_info()["selected"] != "-1" ? "\<C-y>" : "\<C-g>u\<CR>"
+  inoremap <expr> <cr> complete_info()["selected"] != "-1" ? "\<C-y>" : "\<C-g>u\<CR>"
 else
-    inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+  inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 endif
 
 " Use `[g` and `]g` to navigate diagnostics
@@ -83,11 +83,11 @@ nmap <silent> gr <Plug>(coc-references)
 nnoremap <silent> K :call <SID>show_documentation()<CR>
 
 function! s:show_documentation()
-    if (index(['vim','help'], &filetype) >= 0)
-        execute 'h '.expand('<cword>')
-    else
-        call CocAction('doHover')
-    endif
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
 endfunction
 
 " Highlight the symbol and its references when holding the cursor.
@@ -101,11 +101,11 @@ xmap <leader>f  <Plug>(coc-format-selected)
 nmap <leader>f  <Plug>(coc-format-selected)
 
 augroup cocgroup
-    autocmd!
-    " Setup formatexpr specified filetype(s).
-    autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
-    " Update signature help on jump placeholder.
-    autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+  autocmd!
+  " Setup formatexpr specified filetype(s).
+  autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
+  " Update signature help on jump placeholder.
+  autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
 augroup end
 
 " Applying codeAction to the selected region.

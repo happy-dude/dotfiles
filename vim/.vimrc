@@ -16,18 +16,18 @@ set modelines=0         " Set modelines to 0 to prevent several security exploit
 
 " Enable Vim-specific, non-Neovim features
 if !has('nvim')
-    set esckeys         " Function keys that start with <Esc> are recognized in insert mode
+  set esckeys           " Function keys that start with <Esc> are recognized in insert mode
 endif
 
 " vimconf directories for vimrc and plugin settings
 if has('nvim')
-    let s:vim_dir = '~/.config/nvim/'
-    let s:vimrc_dir = '~/.config/nvim/vimrc/'
-    let s:vimpack_settings_dir = '~/.config/nvim/vimrc/packages/'
+  let s:vim_dir = '~/.config/nvim/'
+  let s:vimrc_dir = '~/.config/nvim/vimrc/'
+  let s:vimpack_settings_dir = '~/.config/nvim/vimrc/packages/'
 else
-    let s:vim_dir = '~/.vim/'
-    let s:vimrc_dir = '~/.vim/vimrc/'
-    let s:vimpack_settings_dir = '~/.vim/vimrc/packages/'
+  let s:vim_dir = '~/.vim/'
+  let s:vimrc_dir = '~/.vim/vimrc/'
+  let s:vimpack_settings_dir = '~/.vim/vimrc/packages/'
 endif
 " }
 
@@ -38,125 +38,128 @@ endif
 
 if &loadplugins
 
-    if has('packages')
-        " { vim-plug
-        packadd! vim-plug
-        " }
+  if has('packages')
+    " { vim-plug
+    packadd! vim-plug
+    " }
 
-    else
-        " { pathogen fallback
-        " Unconventional path to plugin (inside submodule)
-        runtime pack/bundle/opt/vim-pathogen/autoload/pathogen.vim
+  else
+    " { pathogen fallback
+    " Unconventional path to plugin (inside submodule)
+    runtime pack/bundle/opt/vim-pathogen/autoload/pathogen.vim
 
-        filetype off            " Turn filetype plugin off until after plugins are loaded
+    filetype off                " Turn filetype plugin off until after plugins are loaded
 
-        " pathogen: Activate vim-plug
-        execute pathogen#infect('pack/bundle/opt/vim-plug/')
+    " pathogen: Activate vim-plug
+    execute pathogen#infect('pack/bundle/opt/vim-plug/')
 
-        " pathogen: Activate plugin
-        "execute pathogen#infect('pack/{}/opt/{}')
-        "execute pathogen#helptags()
+    " pathogen: Activate plugin
+    "execute pathogen#infect('pack/{}/opt/{}')
+    "execute pathogen#helptags()
 
-        syntax enable               " Enable syntax highlighting
-        filetype plugin indent on   " Enable filetype plugin and filetype-based indentation
-        " }
+    syntax enable               " Enable syntax highlighting
+    filetype plugin indent on   " Enable filetype plugin and filetype-based indentation
+    " }
 
+  endif
+
+  " { Load plugin packages
+  call plug#begin(s:vim_dir . 'pack/plugged/opt/')
+  Plug 'AndrewRadev/splitjoin.vim'
+  Plug 'Happy-Dude/hlnext.vim'
+  Plug 'cespare/vim-toml'                             ,   { 'for' : [ 'toml' ] }
+  Plug 'chrisbra/csv.vim'                             ,   { 'for' : [ 'csv' ] }
+  Plug 'ctrlpvim/ctrlp.vim'
+  Plug 'dense-analysis/ale'
+  Plug 'easymotion/vim-easymotion'
+  Plug 'editorconfig/editorconfig-vim'
+  Plug 'fatih/vim-go'                                 ,   { 'for' : [ 'go', 'gomod', 'gohtmltmpl' ] }
+  Plug 'gregsexton/MatchTag'                          ,   { 'for' : [ 'html', 'xml' ] }
+  Plug 'guns/vim-sexp'                                ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
+  Plug 'justinmk/vim-dirvish'
+  Plug 'keith/swift.vim'                              ,   { 'for' : [ 'swift' ] }
+  Plug 'kovisoft/slimv'                               ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
+  Plug 'luochen1990/rainbow'
+  Plug 'machakann/vim-sandwich'
+  Plug 'mbbill/undotree'                              ,   { 'on' : 'UndotreeToggle' }
+  Plug 'mileszs/ack.vim'
+  Plug 'nathanaelkane/vim-indent-guides'
+  Plug 'nvie/vim-flake8'                              ,   { 'for' : [ 'python' ] }
+  Plug 'othree/html5.vim'                             ,   { 'for' : [ 'html', 'javascript', 'php', 'xhtml', 'xml' ] }
+  Plug 'preservim/nerdcommenter'
+  Plug 'rust-lang/rust.vim'                           ,   { 'for' : [ 'rust' ] }
+  Plug 'sjl/clam.vim'
+  Plug 'tpope/vim-fugitive'
+  Plug 'tpope/vim-markdown'                           ,   { 'for' : [ 'markdown' ] }
+  Plug 'tpope/vim-repeat'
+  Plug 'tpope/vim-rsi'
+  Plug 'tpope/vim-sexp-mappings-for-regular-people'   ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
+  Plug 'tpope/vim-speeddating'
+  Plug 'tpope/vim-unimpaired'
+  Plug 'vim-airline/vim-airline'
+  Plug 'vim-airline/vim-airline-themes'
+  Plug 'vim-latex/vim-latex'                          ,   { 'for' : [ 'tex' ] }
+  Plug 'vim-pandoc/vim-pandoc'                        ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
+  Plug 'vim-pandoc/vim-pandoc-syntax'                 ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
+  Plug 'vim-perl/vim-perl'                            ,   { 'for' : [ 'perl', 'perl6', 'mason' ], 'branch' : 'dev' }
+  Plug 'vivien/vim-linux-coding-style'                ,   { 'for' : [ 'c', 'cpp' ] }
+  Plug 'wlangstroth/vim-racket'                       ,   { 'for' : [ 'racket' ] }
+  Plug 'zirrostig/vim-schlepp'
+
+  " { Colorschemes
+  Plug 'altercation/vim-colors-solarized'
+  Plug 'chriskempson/base16-vim'
+  Plug 'jonathanfilip/vim-lucius'
+  Plug 'junegunn/seoul256.vim'
+  Plug 'lifepillar/vim-gruvbox8'
+  Plug 'lifepillar/vim-solarized8'
+  Plug 'nanotech/jellybeans.vim'
+  " }
+
+  " { Neovim-only packages
+  if has('nvim')
+
+    " Enable coc.nvim if node.js is installed
+    if executable('node')
+      Plug 'neoclide/coc.nvim'
+
+      let s:coc_settings = s:vimpack_settings_dir . 'coc.vim'
+      execute 'source' s:coc_settings
     endif
 
-    " { Load plugin packages
-    call plug#begin(s:vim_dir . 'pack/plugged/opt/')
-    Plug 'AndrewRadev/splitjoin.vim'
-    Plug 'Happy-Dude/hlnext.vim'
-    Plug 'cespare/vim-toml'                             ,   { 'for' : [ 'toml' ] }
-    Plug 'chrisbra/csv.vim'                             ,   { 'for' : [ 'csv' ] }
-    Plug 'ctrlpvim/ctrlp.vim'
-    Plug 'dense-analysis/ale'
-    Plug 'easymotion/vim-easymotion'
-    Plug 'fatih/vim-go'                                 ,   { 'for' : [ 'go', 'gomod', 'gohtmltmpl' ] }
-    Plug 'gregsexton/MatchTag'                          ,   { 'for' : [ 'html', 'xml' ] }
-    Plug 'guns/vim-sexp'                                ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
-    Plug 'justinmk/vim-dirvish'
-    Plug 'keith/swift.vim'                              ,   { 'for' : [ 'swift' ] }
-    Plug 'kovisoft/slimv'                               ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
-    Plug 'luochen1990/rainbow'
-    Plug 'machakann/vim-sandwich'
-    Plug 'mbbill/undotree'                              ,   { 'on' : 'UndotreeToggle' }
-    Plug 'mileszs/ack.vim'
-    Plug 'nathanaelkane/vim-indent-guides'
-    Plug 'nvie/vim-flake8'                              ,   { 'for' : [ 'python' ] }
-    Plug 'othree/html5.vim'                             ,   { 'for' : [ 'html', 'javascript', 'php', 'xhtml', 'xml' ] }
-    Plug 'preservim/nerdcommenter'
-    Plug 'rust-lang/rust.vim'                           ,   { 'for' : [ 'rust' ] }
-    Plug 'sjl/clam.vim'
-    Plug 'tpope/vim-fugitive'
-    Plug 'tpope/vim-markdown'                           ,   { 'for' : [ 'markdown' ] }
-    Plug 'tpope/vim-repeat'
-    Plug 'tpope/vim-rsi'
-    Plug 'tpope/vim-sexp-mappings-for-regular-people'   ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
-    Plug 'tpope/vim-speeddating'
-    Plug 'tpope/vim-unimpaired'
-    Plug 'vim-airline/vim-airline'
-    Plug 'vim-airline/vim-airline-themes'
-    Plug 'vim-latex/vim-latex'                          ,   { 'for' : [ 'tex' ] }
-    Plug 'vim-pandoc/vim-pandoc'                        ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
-    Plug 'vim-pandoc/vim-pandoc-syntax'                 ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
-    Plug 'vim-perl/vim-perl'                            ,   { 'for' : [ 'perl', 'perl6', 'mason' ], 'branch' : 'dev' }
-    Plug 'vivien/vim-linux-coding-style'                ,   { 'for' : [ 'c', 'cpp' ] }
-    Plug 'wlangstroth/vim-racket'                       ,   { 'for' : [ 'racket' ] }
-    Plug 'zirrostig/vim-schlepp'
+  endif
+  " }
 
-    " { Colorschemes
-    Plug 'altercation/vim-colors-solarized'
-    Plug 'chriskempson/base16-vim'
-    Plug 'jonathanfilip/vim-lucius'
-    Plug 'junegunn/seoul256.vim'
-    Plug 'lifepillar/vim-gruvbox8'
-    Plug 'lifepillar/vim-solarized8'
-    Plug 'nanotech/jellybeans.vim'
-    " }
+  call plug#end()
+  " }
 
-    " { Neovim-only packages
-    if has('nvim')
+  " { Source plugin settings
+  let s:ack_settings              = s:vimpack_settings_dir . 'ack.vim'
+  let s:airline_settings          = s:vimpack_settings_dir . 'airline.vim'
+  let s:ale_settings              = s:vimpack_settings_dir . 'ale.vim'
+  let s:ctrlp_settings            = s:vimpack_settings_dir . 'ctrlp.vim'
+  let s:editorconfig_settings     = s:vimpack_settings_dir . 'editorconfig.vim'
+  let s:dirvish_settings          = s:vimpack_settings_dir . 'dirvish.vim'
+  let s:indent_guides_settings    = s:vimpack_settings_dir . 'indent_guides.vim'
+  let s:latex_settings            = s:vimpack_settings_dir . 'latex.vim'
+  let s:rainbow_settings          = s:vimpack_settings_dir . 'rainbow.vim'
+  let s:schlepp_settings          = s:vimpack_settings_dir . 'schlepp.vim'
+  let s:slimv_settings            = s:vimpack_settings_dir . 'slimv.vim'
+  let s:solarized_settings        = s:vimpack_settings_dir . 'solarized.vim'
 
-        " Enable coc.nvim if node.js is installed
-        if executable('node')
-            Plug 'neoclide/coc.nvim'
-
-            let s:coc_settings = s:vimpack_settings_dir . 'coc.vim'
-            execute 'source' s:coc_settings
-        endif
-
-    endif
-    " }
-
-    call plug#end()
-    " }
-
-    " { Source plugin settings
-    let s:ack_settings              = s:vimpack_settings_dir . 'ack.vim'
-    let s:airline_settings          = s:vimpack_settings_dir . 'airline.vim'
-    let s:ale_settings              = s:vimpack_settings_dir . 'ale.vim'
-    let s:ctrlp_settings            = s:vimpack_settings_dir . 'ctrlp.vim'
-    let s:dirvish_settings          = s:vimpack_settings_dir . 'dirvish.vim'
-    let s:indent_guides_settings    = s:vimpack_settings_dir . 'indent_guides.vim'
-    let s:latex_settings            = s:vimpack_settings_dir . 'latex.vim'
-    let s:rainbow_settings          = s:vimpack_settings_dir . 'rainbow.vim'
-    let s:schlepp_settings          = s:vimpack_settings_dir . 'schlepp.vim'
-    let s:slimv_settings            = s:vimpack_settings_dir . 'slimv.vim'
-    let s:solarized_settings        = s:vimpack_settings_dir . 'solarized.vim'
-
-    execute 'source' s:ack_settings
-    execute 'source' s:airline_settings
-    execute 'source' s:ale_settings
-    execute 'source' s:ctrlp_settings
-    execute 'source' s:dirvish_settings
-    execute 'source' s:indent_guides_settings
-    execute 'source' s:latex_settings
-    execute 'source' s:rainbow_settings
-    execute 'source' s:schlepp_settings
-    execute 'source' s:slimv_settings
-    execute 'source' s:solarized_settings
-    " }
+  execute 'source' s:ack_settings
+  execute 'source' s:airline_settings
+  execute 'source' s:ale_settings
+  execute 'source' s:ctrlp_settings
+  execute 'source' s:dirvish_settings
+  execute 'source' s:editorconfig_settings
+  execute 'source' s:indent_guides_settings
+  execute 'source' s:latex_settings
+  execute 'source' s:rainbow_settings
+  execute 'source' s:schlepp_settings
+  execute 'source' s:slimv_settings
+  execute 'source' s:solarized_settings
+  " }
 
 endif
 " }

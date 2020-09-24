@@ -14,6 +14,9 @@
 (setq-default display-line-numbers 'relative)
 (add-hook 'org-mode-hook (lambda () (display-line-numbers-mode 0)))
 
+;; Disable line-wrapping
+(set-default 'truncate-lines t)
+
 ;; Set default font
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)

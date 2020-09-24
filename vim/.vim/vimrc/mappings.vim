@@ -4,7 +4,7 @@
 " Note how this mapping does not work in terminal vim because of term-keys
 " However, this mapping will work just fine in gvim
 if has("gui_running")
-    inoremap    <C-BS>      <C-w>
+  inoremap    <C-BS>      <C-w>
 endif
 
 " To move up and down logical lines instead of physical lines
