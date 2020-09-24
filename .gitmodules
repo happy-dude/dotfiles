@@ -38,6 +38,14 @@
 	path = emacs/.config/emacs/plugins/dash.el
 	url = https://github.com/magnars/dash.el.git
 	ignore = dirty
+[submodule "editorconfig-vim"]
+	path = vim/.vim/pack/plugged/opt/editorconfig-vim
+	url = https://github.com/editorconfig/editorconfig-vim.git
+	ignore = dirty
+[submodule "editorconfig-emacs"]
+	path = emacs/.config/emacs/plugins/editorconfig-emacs
+	url = https://github.com/editorconfig/editorconfig-emacs.git
+	ignore = dirty
 [submodule "emacs-noflet"]
 	path = emacs/.config/emacs/plugins/emacs-noflet
 	url = https://github.com/nicferrier/emacs-noflet.git
