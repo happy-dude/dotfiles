@@ -14,6 +14,7 @@
 
 ;; Load emacs packages configs
 (load-file (concat package-conf-dir "annalist.el"))
+(load-file (concat package-conf-dir "editorconfig.el"))
 (load-file (concat package-conf-dir "evil-mode.el"))
 (load-file (concat package-conf-dir "org-mode-capture.el"))
 (load-file (concat package-conf-dir "org-mode.el"))
