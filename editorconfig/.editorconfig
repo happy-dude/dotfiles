@@ -253,7 +253,7 @@ indent_style = space
 
 # Vimscript
 # ref:  https://google.github.io/styleguide/vimscriptguide.xml#Style
-[*.vim]
+[*{.vim,.vimrc}]
 charset = utf-8
 indent_size = 2
 indent_style = space
