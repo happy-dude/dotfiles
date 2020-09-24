@@ -72,6 +72,7 @@ if &loadplugins
     Plug 'ctrlpvim/ctrlp.vim'
     Plug 'dense-analysis/ale'
     Plug 'easymotion/vim-easymotion'
+    Plug 'editorconfig/editorconfig-vim'
     Plug 'fatih/vim-go'                                 ,   { 'for' : [ 'go', 'gomod', 'gohtmltmpl' ] }
     Plug 'gregsexton/MatchTag'                          ,   { 'for' : [ 'html', 'xml' ] }
     Plug 'guns/vim-sexp'                                ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
@@ -137,6 +138,7 @@ if &loadplugins
     let s:airline_settings          = s:vimpack_settings_dir . 'airline.vim'
     let s:ale_settings              = s:vimpack_settings_dir . 'ale.vim'
     let s:ctrlp_settings            = s:vimpack_settings_dir . 'ctrlp.vim'
+    let s:editorconfig_settings     = s:vimpack_settings_dir . 'editorconfig.vim'
     let s:dirvish_settings          = s:vimpack_settings_dir . 'dirvish.vim'
     let s:indent_guides_settings    = s:vimpack_settings_dir . 'indent_guides.vim'
     let s:latex_settings            = s:vimpack_settings_dir . 'latex.vim'
@@ -150,6 +152,7 @@ if &loadplugins
     execute 'source' s:ale_settings
     execute 'source' s:ctrlp_settings
     execute 'source' s:dirvish_settings
+    execute 'source' s:editorconfig_settings
     execute 'source' s:indent_guides_settings
     execute 'source' s:latex_settings
     execute 'source' s:rainbow_settings
