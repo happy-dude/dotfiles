@@ -99,6 +99,10 @@ font:
     #   - (macOS) Menlo
     #   - (Linux/BSD) monospace
     #   - (Windows) Consolas
+
+    # Use Fira Code Retina, Fira Code Bold
+    #     Roboto Mono Italic, Roboto Mono Bold Italic
+
     family: Fira Code
 
     # The `style` can be specified to pick a specific face.
@@ -121,7 +125,7 @@ font:
     #
     # If the italic family is not specified, it will fall back to the
     # value specified for the normal font.
-    family: Fira Code
+    family: Roboto Mono
 
     # The `style` can be specified to pick a specific face.
     style: Italic
@@ -132,7 +136,7 @@ font:
     #
     # If the bold italic family is not specified, it will fall back to the
     # value specified for the normal font.
-    family: Fira Code
+    family: Roboto Mono
 
     # The `style` can be specified to pick a specific face.
     style: Bold Italic
