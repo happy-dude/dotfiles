@@ -12,8 +12,13 @@ trim_trailing_whitespace = true
 
 indent_size = 4
 indent_style = space
-max_line_length = 80
 tab_width = 8
+
+# Assembly
+[*.{s,S,ASM,INC,LST,MAC,NASM,asm,inc,lst,mac,nasm,d80,ASM.txt,INC.txt,LST.txt,MAC.txt,NASM.txt}]
+indent_style = tab
+indent_size = 8
+trim_trailing_whitespace = true
 
 # bat scripts
 [*.bat]
@@ -66,13 +71,15 @@ insert_final_newline = true
 max_line_length = 80
 trim_trailing_whitespace = true
 
-# CSS and HTML
+# HTML, CSS, XML
 # ref:  https://google.github.io/styleguide/htmlcssguide.html
 #       https://cssguidelin.es/#syntax-and-formatting
-[*{.css,.html}]
+#       https://jonasbn.github.io/til/editorconfig/xml.html
+[*.{html,htm,css,xml,xsd}]
 charset = utf-8
 indent_size = 2
 indent_style = space
+insert_final_newline = true
 max_line_length = 80
 trim_trailing_whitespace = true
 
