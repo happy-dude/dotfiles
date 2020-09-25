@@ -16,3 +16,5 @@ set guitablabel=%t      " Display buffer name on tab label
 
 set showcmd             " Display commands as they are typed
 "set cmdheight=1         " Set the commandbar height -- default
+
+set updatetime=100      " Default 4000ms (4s); quicker updatetime for responsive async plugins like signify and coc

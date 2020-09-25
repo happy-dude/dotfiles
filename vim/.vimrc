@@ -82,6 +82,7 @@ if &loadplugins
   Plug 'luochen1990/rainbow'
   Plug 'machakann/vim-sandwich'
   Plug 'mbbill/undotree'                              ,   { 'on' : 'UndotreeToggle' }
+  Plug 'mhinz/vim-signify'
   Plug 'mileszs/ack.vim'
   Plug 'nathanaelkane/vim-indent-guides'
   Plug 'nvie/vim-flake8'                              ,   { 'for' : [ 'python' ] }
