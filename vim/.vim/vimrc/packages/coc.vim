@@ -13,25 +13,20 @@ let g:go_mod_fmt_autosave = 0
 " CoC extensions
 let g:coc_global_extensions = [
       \ 'coc-actions',
-      \ 'coc-css',
-      \ 'coc-git',
       \ 'coc-go',
       \ 'coc-highlight',
-      \ 'coc-html',
       \ 'coc-json',
       \ 'coc-markdownlint',
       \ 'coc-perl',
       \ 'coc-python',
       \ 'coc-rls',
       \ 'coc-sh',
-      \ 'coc-sql',
       \ 'coc-vimlsp'
       \]
-
-" Having longer updatetime (default is 4000 ms = 4 s) leads to noticeable
-" delays and poor user experience.
-" CursorHold events and writing to swap files
-set updatetime=500
+      "\ 'coc-css',
+      "\ 'coc-git', " use vim-signify
+      "\ 'coc-html',
+      "\ 'coc-sql',
 
 " Don't pass messages to |ins-completion-menu|.
 set shortmess+=c

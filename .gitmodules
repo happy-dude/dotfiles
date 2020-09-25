@@ -250,6 +250,10 @@
 	path = vim/.vim/pack/plugged/opt/vim-sexp-mappings-for-regular-people
 	url = https://github.com/tpope/vim-sexp-mappings-for-regular-people.git
 	ignore = dirty
+[submodule "vim-signify"]
+	path = vim/.vim/pack/plugged/opt/vim-signify
+	url = https://github.com/mhinz/vim-signify.git
+	ignore = dirty
 [submodule "vim-solarized8"]
 	path = vim/.vim/pack/plugged/opt/vim-solarized8
 	url = https://github.com/lifepillar/vim-solarized8.git
