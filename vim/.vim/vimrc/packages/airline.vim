@@ -9,12 +9,29 @@ let g:airline_theme = 'base16_gruvbox_dark_hard'                        " gruvbo
 
 "let g:airline_highlighting_cache = 1                                    " performance: enable caching of the various syntax highlighting groups
 
-" No need to distinguish between 'INSERT' and 'INSERT COMP' modes
+" Display modes as 1 character on statusline
 " ref:  https://github.com/vim-airline/vim-airline/blob/master/autoload/airline/init.vim
 "       https://github.com/vim-airline/vim-airline/blob/master/doc/airline.txt#L189
-let g:airline_mode_map = {}
-let g:airline_mode_map['ic'] = 'INSERT'
-let g:airline_mode_map['ix'] = 'INSERT'
+let g:airline_mode_map = {
+      \ '__'     : '-',
+      \ 'c'      : 'C',
+      \ 'i'      : 'I',
+      \ 'ic'     : 'I',
+      \ 'ix'     : 'I',
+      \ 'n'      : 'N',
+      \ 'multi'  : 'M',
+      \ 'ni'     : 'N',
+      \ 'no'     : 'N',
+      \ 'R'      : 'R',
+      \ 'Rv'     : 'R',
+      \ 's'      : 'S',
+      \ 'S'      : 'S',
+      \ ''     : 'S',
+      \ 't'      : 'T',
+      \ 'v'      : 'V',
+      \ 'V'      : 'V',
+      \ ''     : 'V',
+      \ }
 
 " function combining airline#parts#filetype() and airline#parts#ffenc()
 " ref: https://github.com/vim-airline/vim-airline/blob/master/autoload/airline/parts.vim
