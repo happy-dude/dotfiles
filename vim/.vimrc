@@ -69,7 +69,6 @@ if &loadplugins
   Plug 'Happy-Dude/hlnext.vim'
   Plug 'cespare/vim-toml'                             ,   { 'for' : [ 'toml' ] }
   Plug 'chrisbra/csv.vim'                             ,   { 'for' : [ 'csv' ] }
-  Plug 'ctrlpvim/ctrlp.vim'
   Plug 'dense-analysis/ale'
   Plug 'easymotion/vim-easymotion'
   Plug 'editorconfig/editorconfig-vim'
@@ -107,6 +106,22 @@ if &loadplugins
   Plug 'wlangstroth/vim-racket'                       ,   { 'for' : [ 'racket' ] }
   Plug 'zirrostig/vim-schlepp'
 
+  " if fzf is available, use fzf.vim
+  " otherwise, use ctrlp which is pure vimscript
+  if executable('fzf')
+    Plug 'junegunn/fzf'
+    Plug 'junegunn/fzf.vim'
+
+    let s:fzf_settings    = s:vimpack_settings_dir . 'fzf.vim'
+    execute 'source' s:fzf_settings
+
+  else
+    Plug 'ctrlpvim/ctrlp.vim'
+
+    let s:ctrlp_settings  = s:vimpack_settings_dir . 'ctrlp.vim'
+    execute 'source' s:ctrlp_settings
+  endif
+
   " { Colorschemes
   Plug 'altercation/vim-colors-solarized'
   Plug 'chriskempson/base16-vim'
@@ -138,7 +153,6 @@ if &loadplugins
   let s:ack_settings              = s:vimpack_settings_dir . 'ack.vim'
   let s:airline_settings          = s:vimpack_settings_dir . 'airline.vim'
   let s:ale_settings              = s:vimpack_settings_dir . 'ale.vim'
-  let s:ctrlp_settings            = s:vimpack_settings_dir . 'ctrlp.vim'
   let s:editorconfig_settings     = s:vimpack_settings_dir . 'editorconfig.vim'
   let s:dirvish_settings          = s:vimpack_settings_dir . 'dirvish.vim'
   let s:indent_guides_settings    = s:vimpack_settings_dir . 'indent_guides.vim'
@@ -151,7 +165,6 @@ if &loadplugins
   execute 'source' s:ack_settings
   execute 'source' s:airline_settings
   execute 'source' s:ale_settings
-  execute 'source' s:ctrlp_settings
   execute 'source' s:dirvish_settings
   execute 'source' s:editorconfig_settings
   execute 'source' s:indent_guides_settings
