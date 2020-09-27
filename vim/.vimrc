@@ -150,17 +150,17 @@ if &loadplugins
   " }
 
   " { Source plugin settings
-  let s:ack_settings              = s:vimpack_settings_dir . 'ack.vim'
-  let s:airline_settings          = s:vimpack_settings_dir . 'airline.vim'
-  let s:ale_settings              = s:vimpack_settings_dir . 'ale.vim'
-  let s:editorconfig_settings     = s:vimpack_settings_dir . 'editorconfig.vim'
-  let s:dirvish_settings          = s:vimpack_settings_dir . 'dirvish.vim'
-  let s:indent_guides_settings    = s:vimpack_settings_dir . 'indent_guides.vim'
-  let s:latex_settings            = s:vimpack_settings_dir . 'latex.vim'
-  let s:rainbow_settings          = s:vimpack_settings_dir . 'rainbow.vim'
-  let s:schlepp_settings          = s:vimpack_settings_dir . 'schlepp.vim'
-  let s:slimv_settings            = s:vimpack_settings_dir . 'slimv.vim'
-  let s:solarized_settings        = s:vimpack_settings_dir . 'solarized.vim'
+  let s:ack_settings            = s:vimpack_settings_dir . 'ack.vim'
+  let s:airline_settings        = s:vimpack_settings_dir . 'airline.vim'
+  let s:ale_settings            = s:vimpack_settings_dir . 'ale.vim'
+  let s:editorconfig_settings   = s:vimpack_settings_dir . 'editorconfig.vim'
+  let s:dirvish_settings        = s:vimpack_settings_dir . 'dirvish.vim'
+  let s:indent_guides_settings  = s:vimpack_settings_dir . 'indent_guides.vim'
+  let s:latex_settings          = s:vimpack_settings_dir . 'latex.vim'
+  let s:rainbow_settings        = s:vimpack_settings_dir . 'rainbow.vim'
+  let s:schlepp_settings        = s:vimpack_settings_dir . 'schlepp.vim'
+  let s:slimv_settings          = s:vimpack_settings_dir . 'slimv.vim'
+  let s:solarized_settings      = s:vimpack_settings_dir . 'solarized.vim'
 
   execute 'source' s:ack_settings
   execute 'source' s:airline_settings
@@ -182,27 +182,27 @@ endif
 """""""""""""""""""""""""""""""
 "{ """"       vimrc        """"
 """""""""""""""""""""""""""""""
-let s:bell_settings                 = s:vimrc_dir . 'bell.vim'
-let s:buffer_settings               = s:vimrc_dir . 'buffer.vim'
-let s:cache_settings                = s:vimrc_dir . 'cache.vim'
-let s:clipboard_settings            = s:vimrc_dir . 'clipboard.vim'
-let s:colorscheme_settings          = s:vimrc_dir . 'colorscheme.vim'
-let s:cpoptions_settings            = s:vimrc_dir . 'cpoptions.vim'
-let s:cursorlinecolumn_settings     = s:vimrc_dir . 'cursorlinecolumn.vim'
-let s:diff_settings                 = s:vimrc_dir . 'diff.vim'
-let s:encoding_settings             = s:vimrc_dir . 'encoding.vim'
-let s:folding_settings              = s:vimrc_dir . 'folding.vim'
-let s:formatoptions_settings        = s:vimrc_dir . 'formatoptions.vim'
-let s:listchars_settings            = s:vimrc_dir . 'listchars.vim'
-let s:match_settings                = s:vimrc_dir . 'match.vim'
-let s:mouse_settings                = s:vimrc_dir . 'mouse.vim'
-let s:search_settings               = s:vimrc_dir . 'search.vim'
-let s:spellcheck_settings           = s:vimrc_dir . 'spellcheck.vim'
-let s:statusline_settings           = s:vimrc_dir . 'statusline.vim'
-let s:tabspaces_settings            = s:vimrc_dir . 'tabspaces.vim'
-let s:visual_settings               = s:vimrc_dir . 'visual.vim'
-let s:wildmenu_settings             = s:vimrc_dir . 'wildmenu.vim'
-let s:wordwrap_settings             = s:vimrc_dir . 'wordwrap.vim'
+let s:bell_settings             = s:vimrc_dir . 'bell.vim'
+let s:buffer_settings           = s:vimrc_dir . 'buffer.vim'
+let s:cache_settings            = s:vimrc_dir . 'cache.vim'
+let s:clipboard_settings        = s:vimrc_dir . 'clipboard.vim'
+let s:colorscheme_settings      = s:vimrc_dir . 'colorscheme.vim'
+let s:cpoptions_settings        = s:vimrc_dir . 'cpoptions.vim'
+let s:cursorlinecolumn_settings = s:vimrc_dir . 'cursorlinecolumn.vim'
+let s:diff_settings             = s:vimrc_dir . 'diff.vim'
+let s:encoding_settings         = s:vimrc_dir . 'encoding.vim'
+let s:folding_settings          = s:vimrc_dir . 'folding.vim'
+let s:formatoptions_settings    = s:vimrc_dir . 'formatoptions.vim'
+let s:listchars_settings        = s:vimrc_dir . 'listchars.vim'
+let s:match_settings            = s:vimrc_dir . 'match.vim'
+let s:mouse_settings            = s:vimrc_dir . 'mouse.vim'
+let s:search_settings           = s:vimrc_dir . 'search.vim'
+let s:spellcheck_settings       = s:vimrc_dir . 'spellcheck.vim'
+let s:statusline_settings       = s:vimrc_dir . 'statusline.vim'
+let s:tabspaces_settings        = s:vimrc_dir . 'tabspaces.vim'
+let s:visual_settings           = s:vimrc_dir . 'visual.vim'
+let s:wildmenu_settings         = s:vimrc_dir . 'wildmenu.vim'
+let s:wordwrap_settings         = s:vimrc_dir . 'wordwrap.vim'
 
 execute 'source' s:bell_settings
 execute 'source' s:buffer_settings
@@ -231,9 +231,9 @@ execute 'source' s:wordwrap_settings
 """""""""""""""""""""""""""""""
 "{ """"   Custom Configs   """"
 """""""""""""""""""""""""""""""
-let s:custom_mappings               = s:vimrc_dir . 'mappings.vim'
-let s:custom_autocmds               = s:vimrc_dir . 'autocmds.vim'
-let s:custom_functions              = s:vimrc_dir . 'functions.vim'
+let s:custom_mappings           = s:vimrc_dir . 'mappings.vim'
+let s:custom_autocmds           = s:vimrc_dir . 'autocmds.vim'
+let s:custom_functions          = s:vimrc_dir . 'functions.vim'
 
 execute 'source' s:custom_mappings
 execute 'source' s:custom_autocmds
