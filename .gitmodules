@@ -70,6 +70,14 @@
 	path = emacs/.config/emacs/plugins/evil-surround
 	url = https://github.com/emacs-evil/evil-surround.git
 	ignore = dirty
+[submodule "fzf"]
+	path = vim/.vim/pack/plugged/opt/fzf
+	url = https://github.com/junegunn/fzf.git
+	ignore = dirty
+[submodule "fzf.vim"]
+	path = vim/.vim/pack/plugged/opt/fzf.vim
+	url = https://github.com/junegunn/fzf.vim.git
+	ignore = dirty
 [submodule "hlnext.vim"]
 	path = vim/.vim/pack/plugged/opt/hlnext.vim
 	url = https://github.com/Happy-Dude/hlnext.vim
