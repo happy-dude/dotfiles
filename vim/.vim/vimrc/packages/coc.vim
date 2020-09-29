@@ -44,7 +44,7 @@ inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 " when going from normal mode to insert mode
 function! s:check_back_space() abort
   let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~# '\s' || getline('.')[col - 1]  =~# '\d'
+  return !col || getline('.')[col - 1] =~# '\(\s\|\d\)'
 endfunction
 
 " Use <c-space> to trigger completion.
