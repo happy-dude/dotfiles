@@ -42,13 +42,21 @@
                 "context"
             ]
         },
-        "lua": {
-            "command": "lua-lsp",
+        "lua-language-server": {
+            "cwd": "/Users/stahn_mchan/sources/lua-language-server",
+            "command": "./bin/macOS/lua-language-server",
+            "args": [
+                "-E",
+                "-e",
+                "LANG=\"en-US\"",
+                "./main.lua"
+            ],
             "filetypes": [
                 "lua"
             ]
         }
     },
+    "lua.enable": false,
     "markdownlint.onChange": false,
     "markdownlint.onOpen": false,
     "markdownlint.onSave": true
