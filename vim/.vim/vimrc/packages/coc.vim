@@ -13,6 +13,7 @@ let g:go_mod_fmt_autosave = 0
 " CoC extensions
 let g:coc_global_extensions = [
       \ 'coc-actions',
+      \ 'coc-clangd',
       \ 'coc-go',
       \ 'coc-highlight',
       \ 'coc-json',
