@@ -34,28 +34,6 @@
     "git.topRemovedSign.text": "\u203e\u203e",
     "git.untrackedDecorator": "\u2026\u2026",
     "languageserver": {
-        "ccls": {
-            "command": "ccls",
-            "filetypes": [
-                "c",
-                "cc",
-                "cpp",
-                "objc",
-                "objcpp"
-            ],
-            "initializationOptions": {
-                "cache": {
-                    "directory": "/tmp/ccls"
-                }
-            },
-            "rootPatterns": [
-                ".ccls",
-                "compile_commands.json",
-                ".vim/",
-                ".git/",
-                ".hg/"
-            ]
-        },
         "digestif": {
             "command": "digestif",
             "filetypes": [

@@ -12,12 +12,14 @@ let g:ale_echo_msg_format = '[%linter%] [%severity%] %s'
 
 function! ALEc ()                               " ALE: C
   let g:ale_c_gcc_options = '-Wall -Wextra -pedantic -g -ggdb -std=c11'
-  let g:ale_c_clang_options = '-Weverything -g -std=c11 -Wall'
+  let g:ale_c_clang_options = '-Weverything -g -ggdb -glldb -std=c11'
 endfunction
 
 function! ALEcpp ()                             " ALE: C++
   let g:ale_cpp_gcc_options = '--Wall -Wextra -pedantic -g -ggdb -std=c++14'
-  let g:ale_cpp_clang_options = '-Weverything -g -std=c++14'
+  let g:ale_cpp_clang_options = '-Weverything -g -ggdb -glldb -std=c++14'
+  let g:ale_cpp_clangtidy_options = '-Weverything -std=c++11 -x c++'
+  let g:ale_cpp_clangcheck_options = '-- -Weverything -std=c++11 -x c++'
 endfunction
 
 function! ALELinterStatus() abort
