@@ -24,8 +24,6 @@ if has('nvim')
   let s:vim_dir = '~/.config/nvim/'
   let s:vimrc_dir = '~/.config/nvim/vimrc/'
   let s:vimpack_settings_dir = '~/.config/nvim/vimrc/packages/'
-  set redrawdebug=compositor writedelay=10
-  set pumblend=35
 else
   let s:vim_dir = '~/.vim/'
   let s:vimrc_dir = '~/.vim/vimrc/'
