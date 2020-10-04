@@ -94,6 +94,18 @@
 	path = vim/.vim/pack/plugged/opt/nerdcommenter
 	url = https://github.com/preservim/nerdcommenter.git
 	ignore = dirty
+[submodule "nvim-treesitter"]
+	path = vim/.vim/pack/plugged/opt/nvim-treesitter
+	url = https://github.com/nvim-treesitter/nvim-treesitter.git
+	ignore = dirty
+[submodule "nvim-treesitter-textobjects"]
+	path = vim/.vim/pack/plugged/opt/nvim-treesitter-textobjects
+	url = https://github.com/nvim-treesitter/nvim-treesitter-textobjects
+	ignore = dirty
+[submodule "nvim-treesitter-refactor"]
+	path = vim/.vim/pack/plugged/opt/nvim-treesitter-refactor
+	url = https://github.com/nvim-treesitter/nvim-treesitter-refactor
+	ignore = dirty
 [submodule "org-mode"]
 	path = emacs/.config/emacs/plugins/org-mode
 	url = https://code.orgmode.org/bzg/org-mode.git
