@@ -123,6 +123,13 @@ max_line_length = 100
 indent_size = 2
 indent_style = space
 
+# Lua
+# ref:  http://lua-users.org/wiki/LuaStyleGuide
+[*.lua]
+charset = utf-8
+indent_size = 4
+indent_style = space
+
 # Makefiles
 # ref:  https://www.gnu.org/prep/standards/html_node/Makefile-Basics.html#Makefile-Basics
 [{[Mm]akefile,*.mak,*.mk,depend}]

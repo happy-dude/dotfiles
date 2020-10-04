@@ -135,6 +135,11 @@ if &loadplugins
   " { Neovim-only packages
   if has('nvim')
 
+    " nvim-treesitter
+    Plug 'nvim-treesitter/nvim-treesitter'
+    Plug 'nvim-treesitter/nvim-treesitter-textobjects'
+    Plug 'nvim-treesitter/nvim-treesitter-refactor'
+
     " Enable coc.nvim if node.js is installed
     if executable('node')
       Plug 'neoclide/coc.nvim'
@@ -239,4 +244,16 @@ execute 'source' s:custom_mappings
 execute 'source' s:custom_autocmds
 execute 'source' s:custom_functions
 " }
+
+
+"""""""""""""""""""""""""""""""
+"{ """" Neovim Lua Configs """"
+"""""""""""""""""""""""""""""""
+if has('nvim')
+lua <<EOF
+  require 'treesitter'
+EOF
+endif
+" }
+
 
