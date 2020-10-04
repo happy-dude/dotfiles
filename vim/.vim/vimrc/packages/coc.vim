@@ -17,6 +17,7 @@ let g:coc_global_extensions = [
       \ 'coc-go',
       \ 'coc-highlight',
       \ 'coc-json',
+      \ 'coc-lua',
       \ 'coc-markdownlint',
       \ 'coc-perl',
       \ 'coc-python',
