@@ -102,7 +102,6 @@ if &loadplugins
   Plug 'vim-pandoc/vim-pandoc'                        ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
   Plug 'vim-pandoc/vim-pandoc-syntax'                 ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
   Plug 'vim-perl/vim-perl'                            ,   { 'for' : [ 'perl', 'perl6', 'mason' ], 'branch' : 'dev' }
-  Plug 'vivien/vim-linux-coding-style'                ,   { 'for' : [ 'c', 'cpp' ] }
   Plug 'wlangstroth/vim-racket'                       ,   { 'for' : [ 'racket' ] }
   Plug 'zirrostig/vim-schlepp'
 
