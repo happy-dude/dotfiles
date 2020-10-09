@@ -23,7 +23,8 @@ let g:coc_global_extensions = [
       \ 'coc-python',
       \ 'coc-rls',
       \ 'coc-sh',
-      \ 'coc-vimlsp'
+      \ 'coc-vimlsp',
+      \ 'coc-vimtex'
       \]
       "\ 'coc-css',
       "\ 'coc-git', " use vim-signify

@@ -78,6 +78,7 @@ if &loadplugins
   Plug 'justinmk/vim-dirvish'
   Plug 'keith/swift.vim'                              ,   { 'for' : [ 'swift' ] }
   Plug 'kovisoft/slimv'                               ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
+  Plug 'lervag/vimtex'                                ,   { 'for' : [ 'tex' ] }
   Plug 'luochen1990/rainbow'
   Plug 'machakann/vim-sandwich'
   Plug 'mbbill/undotree'                              ,   { 'on' : 'UndotreeToggle' }
@@ -98,7 +99,6 @@ if &loadplugins
   Plug 'tpope/vim-unimpaired'
   Plug 'vim-airline/vim-airline'
   Plug 'vim-airline/vim-airline-themes'
-  Plug 'vim-latex/vim-latex'                          ,   { 'for' : [ 'tex' ] }
   Plug 'vim-pandoc/vim-pandoc'                        ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
   Plug 'vim-pandoc/vim-pandoc-syntax'                 ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
   Plug 'vim-perl/vim-perl'                            ,   { 'for' : [ 'perl', 'perl6', 'mason' ], 'branch' : 'dev' }
@@ -171,9 +171,6 @@ if &loadplugins
 
   let s:indent_guides_settings  = s:vimpack_settings_dir . 'indent_guides.vim'
   execute                       'source' s:indent_guides_settings
-
-  let s:latex_settings          = s:vimpack_settings_dir . 'latex.vim'
-  execute                       'source' s:latex_settings
 
   let s:rainbow_settings        = s:vimpack_settings_dir . 'rainbow.vim'
   execute                       'source' s:rainbow_settings
