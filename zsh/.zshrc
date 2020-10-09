@@ -23,6 +23,6 @@ export PATH="/usr/local/opt/llvm/bin:$PATH"
 export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
 
 export PATH="$HOME/.cargo/bin:$PATH"
-export PATH=$PATH:$(go env GOPATH)/bin
+export PATH="$(go env GOPATH)/bin:$PATH"
 export PATH="$HOME/.luarocks/bin:$PATH"
-
+export PATH="$HOME/node_modules/.bin:$PATH"
