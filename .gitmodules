@@ -166,6 +166,10 @@
 	path = vim/.vim/pack/plugged/opt/undotree
 	url = https://github.com/mbbill/undotree
 	ignore = dirty
+[submodule "vimtex"]
+	path = vim/.vim/pack/plugged/opt/vimtex
+	url = https://github.com/lervag/vimtex.git
+	ignore = dirty
 [submodule "vim-airline"]
 	path = vim/.vim/pack/plugged/opt/vim-airline
 	url = https://github.com/vim-airline/vim-airline.git
@@ -205,10 +209,6 @@
 [submodule "vim-indent-guides"]
 	path = vim/.vim/pack/plugged/opt/vim-indent-guides
 	url = https://github.com/nathanaelkane/vim-indent-guides.git
-	ignore = dirty
-[submodule "vim-latex"]
-	path = vim/.vim/pack/plugged/opt/vim-latex
-	url = https://github.com/vim-latex/vim-latex.git
 	ignore = dirty
 [submodule "vim-lucius"]
 	path = vim/.vim/pack/plugged/opt/vim-lucius
