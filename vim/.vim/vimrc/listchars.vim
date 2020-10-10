@@ -10,4 +10,6 @@ if v:version > 704 || v:version == 704 && has("patch338")
   set breakindent showbreak=↪\   " Set breakindent with .. for wrapped lines
   "set breakindent showbreak=..\ 
   "set breakindent showbreak=\\ 
+  "set breakindent showbreak=…\ 
+  "set breakindent showbreak=⋯\ 
 endif
