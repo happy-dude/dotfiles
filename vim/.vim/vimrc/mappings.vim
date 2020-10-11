@@ -19,8 +19,7 @@ inoremap    <Down>                  <C-o>gj
 inoremap    <Up>                    <C-o>gk
 inoremap    <silent><Up>            <C-o>gk
 inoremap    <silent><Down>          <C-o>gj
-" Home and end keys are broken -- dependent of TERM variable;
-" Not sure how to fix reliably
+" Home and end keys are dependent on TERM variable and terminfo capabilities
 noremap     <silent><Home>          g<Home>
 noremap     <silent><End>           g<End>
 inoremap    <silent><Home>          <C-o>g<Home>
@@ -35,6 +34,12 @@ inoremap    <silent><End>           <C-o>g<End>
 
 " Never "accidentally" enter ex mode
 nnoremap    Q           <nop>
+
+" Command history; use CTRL-F instead while in command mode
+nnoremap    q:          <nop>
+"
+" Search history; use CTRL-F instead while in search mode
+nnoremap    q/          <nop>
 
 " From https://github.com/tommcdo/vimfiles/blob/master/config/consistency.vim
 " Make Y behave like C and D
