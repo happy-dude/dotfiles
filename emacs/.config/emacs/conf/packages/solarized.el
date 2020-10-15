@@ -16,4 +16,5 @@
       ;; solarized-height-plus-3 1.0
       ;; solarized-height-plus-4 1.0)
       )
-(load-theme 'solarized-dark t)
+;(load-theme 'solarized-dark t)
+(load-theme 'solarized-gruvbox-dark t)
