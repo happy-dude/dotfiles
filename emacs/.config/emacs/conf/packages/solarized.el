@@ -1,4 +1,5 @@
 ;; Solarized theme
+
 (add-to-list 'load-path "~/.config/emacs/plugins/dash.el")
 (require 'dash)
 (require 'dash-functional)

@@ -1,4 +1,5 @@
 ;; org-mode
+
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 (add-to-list 'load-path "~/.config/emacs/plugins/org-mode/lisp")
 (add-to-list 'load-path "~/.config/emacs/plugins/org-mode/lisp" t)
@@ -88,7 +89,7 @@
         ("cl" "Life" entry (file+headline "~/org/work.org" "Life")
          "* %?\n%U" :prepend t)
         ))
-(setq org-todo-keywords 
+(setq org-todo-keywords
       '(
         (sequence "TODO" "PROCESS" "ORGANIZE" "REVIEW" "DO" "|" "DONE")                 ; GTD
         (sequence "|" "NOTDOING" "DELEGATED" "WAITING" "SOMEDAY")                       ; Blockers
