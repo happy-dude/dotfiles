@@ -18,13 +18,13 @@
 	path = vim/.vim/pack/plugged/opt/base16-vim
 	url = https://github.com/chriskempson/base16-vim
 	ignore = dirty
-[submodule "coc.nvim"]
-	path = vim/.vim/pack/plugged/opt/coc.nvim
-	url = https://github.com/neoclide/coc.nvim.git
-	ignore = dirty
 [submodule "clam.vim"]
 	path = vim/.vim/pack/plugged/opt/clam.vim
 	url = https://github.com/sjl/clam.vim.git
+	ignore = dirty
+[submodule "coc.nvim"]
+	path = vim/.vim/pack/plugged/opt/coc.nvim
+	url = https://github.com/neoclide/coc.nvim.git
 	ignore = dirty
 [submodule "csv.vim"]
 	path = vim/.vim/pack/plugged/opt/csv.vim
@@ -38,17 +38,25 @@
 	path = emacs/.config/emacs/plugins/dash.el
 	url = https://github.com/magnars/dash.el.git
 	ignore = dirty
-[submodule "editorconfig-vim"]
-	path = vim/.vim/pack/plugged/opt/editorconfig-vim
-	url = https://github.com/editorconfig/editorconfig-vim.git
-	ignore = dirty
 [submodule "editorconfig-emacs"]
 	path = emacs/.config/emacs/plugins/editorconfig-emacs
 	url = https://github.com/editorconfig/editorconfig-emacs.git
 	ignore = dirty
+[submodule "editorconfig-vim"]
+	path = vim/.vim/pack/plugged/opt/editorconfig-vim
+	url = https://github.com/editorconfig/editorconfig-vim.git
+	ignore = dirty
 [submodule "emacs-noflet"]
 	path = emacs/.config/emacs/plugins/emacs-noflet
 	url = https://github.com/nicferrier/emacs-noflet.git
+	ignore = dirty
+[submodule "emacsql"]
+	path = emacs/.config/emacs/plugins/emacsql
+	url = https://github.com/skeeto/emacsql.git
+	ignore = dirty
+[submodule "emacsql-sqlite3"]
+	path = emacs/.config/emacs/plugins/emacsql-sqlite3
+	url = https://github.com/cireu/emacsql-sqlite3.git
 	ignore = dirty
 [submodule "evil"]
 	path = emacs/.config/emacs/plugins/evil
@@ -69,6 +77,10 @@
 [submodule "evil-surround"]
 	path = emacs/.config/emacs/plugins/evil-surround
 	url = https://github.com/emacs-evil/evil-surround.git
+	ignore = dirty
+[submodule "f.el"]
+	path = emacs/.config/emacs/plugins/f.el
+	url = https://github.com/rejeep/f.el.git
 	ignore = dirty
 [submodule "fzf"]
 	path = vim/.vim/pack/plugged/opt/fzf
@@ -98,17 +110,21 @@
 	path = vim/.vim/pack/plugged/opt/nvim-treesitter
 	url = https://github.com/nvim-treesitter/nvim-treesitter.git
 	ignore = dirty
-[submodule "nvim-treesitter-textobjects"]
-	path = vim/.vim/pack/plugged/opt/nvim-treesitter-textobjects
-	url = https://github.com/nvim-treesitter/nvim-treesitter-textobjects
-	ignore = dirty
 [submodule "nvim-treesitter-refactor"]
 	path = vim/.vim/pack/plugged/opt/nvim-treesitter-refactor
 	url = https://github.com/nvim-treesitter/nvim-treesitter-refactor
 	ignore = dirty
+[submodule "nvim-treesitter-textobjects"]
+	path = vim/.vim/pack/plugged/opt/nvim-treesitter-textobjects
+	url = https://github.com/nvim-treesitter/nvim-treesitter-textobjects
+	ignore = dirty
 [submodule "org-mode"]
 	path = emacs/.config/emacs/plugins/org-mode
 	url = https://code.orgmode.org/bzg/org-mode.git
+	ignore = dirty
+[submodule "org-roam"]
+	path = emacs/.config/emacs/plugins/org-roam
+	url = https://github.com/org-roam/org-roam.git
 	ignore = dirty
 [submodule "prezto-sorin"]
 	path = zsh/.zprezto
@@ -125,6 +141,10 @@
 [submodule "rust.vim"]
 	path = vim/.vim/pack/plugged/opt/rust.vim
 	url = https://github.com/rust-lang/rust.vim.git
+	ignore = dirty
+[submodule "s.el"]
+	path = emacs/.config/emacs/plugins/s.el
+	url = https://github.com/magnars/s.el.git
 	ignore = dirty
 [submodule "seoul256.vim"]
 	path = vim/.vim/pack/plugged/opt/seoul256.vim
@@ -165,10 +185,6 @@
 [submodule "undotree"]
 	path = vim/.vim/pack/plugged/opt/undotree
 	url = https://github.com/mbbill/undotree
-	ignore = dirty
-[submodule "vimtex"]
-	path = vim/.vim/pack/plugged/opt/vimtex
-	url = https://github.com/lervag/vimtex.git
 	ignore = dirty
 [submodule "vim-airline"]
 	path = vim/.vim/pack/plugged/opt/vim-airline
@@ -286,23 +302,7 @@
 	path = vim/.vim/pack/plugged/opt/vim-unimpaired
 	url = https://github.com/tpope/vim-unimpaired
 	ignore = dirty
-[submodule "f.el"]
-	path = emacs/.config/emacs/plugins/f.el
-	url = https://github.com/rejeep/f.el.git
-	ignore = dirty
-[submodule "s.el"]
-	path = emacs/.config/emacs/plugins/s.el
-	url = https://github.com/magnars/s.el.git
-	ignore = dirty
-[submodule "emacsql"]
-	path = emacs/.config/emacs/plugins/emacsql
-	url = https://github.com/skeeto/emacsql.git
-	ignore = dirty
-[submodule "emacsql-sqlite3"]
-	path = emacs/.config/emacs/plugins/emacsql-sqlite3
-	url = https://github.com/cireu/emacsql-sqlite3.git
-	ignore = dirty
-[submodule "org-roam"]
-	path = emacs/.config/emacs/plugins/org-roam
-	url = https://github.com/org-roam/org-roam.git
+[submodule "vimtex"]
+	path = vim/.vim/pack/plugged/opt/vimtex
+	url = https://github.com/lervag/vimtex.git
 	ignore = dirty
