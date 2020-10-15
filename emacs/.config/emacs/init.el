@@ -22,3 +22,4 @@
 (load-file (concat package-conf-dir "slime.el"))
 (load-file (concat package-conf-dir "solarized.el"))
 (load-file (concat package-conf-dir "undo-tree.el"))
+(load-file (concat package-conf-dir "org-roam.el"))
