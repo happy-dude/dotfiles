@@ -50,6 +50,10 @@
 	path = emacs/.config/emacs/plugins/emacs-noflet
 	url = https://github.com/nicferrier/emacs-noflet.git
 	ignore = dirty
+[submodule "emacs-which-key"]
+	path = emacs/.config/emacs/plugins/emacs-which-key
+	url = https://github.com/justbur/emacs-which-key.git
+	ignore = dirty
 [submodule "emacsql"]
 	path = emacs/.config/emacs/plugins/emacsql
 	url = https://github.com/skeeto/emacsql.git
