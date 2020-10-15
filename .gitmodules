@@ -286,3 +286,23 @@
 	path = vim/.vim/pack/plugged/opt/vim-unimpaired
 	url = https://github.com/tpope/vim-unimpaired
 	ignore = dirty
+[submodule "f.el"]
+	path = emacs/.config/emacs/plugins/f.el
+	url = https://github.com/rejeep/f.el.git
+	ignore = dirty
+[submodule "s.el"]
+	path = emacs/.config/emacs/plugins/s.el
+	url = https://github.com/magnars/s.el.git
+	ignore = dirty
+[submodule "emacsql"]
+	path = emacs/.config/emacs/plugins/emacsql
+	url = https://github.com/skeeto/emacsql.git
+	ignore = dirty
+[submodule "emacsql-sqlite3"]
+	path = emacs/.config/emacs/plugins/emacsql-sqlite3
+	url = https://github.com/cireu/emacsql-sqlite3.git
+	ignore = dirty
+[submodule "org-roam"]
+	path = emacs/.config/emacs/plugins/org-roam
+	url = https://github.com/org-roam/org-roam.git
+	ignore = dirty
