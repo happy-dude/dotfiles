@@ -17,6 +17,13 @@
 ;; Disable line-wrapping
 (set-default 'truncate-lines t)
 
+;; Enable mouse support in terminal
+(unless (display-graphic-p)
+  (xterm-mouse-mode 1)
+  ;; enable mouse-based scrolling
+  (global-set-key (kbd "<mouse-4>") 'scroll-down-line)
+  (global-set-key (kbd "<mouse-5>") 'scroll-up-line))
+
 ;; Set default font
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
