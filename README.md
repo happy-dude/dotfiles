@@ -28,8 +28,7 @@ git checkout -b macos origin/macos
 
 This repo contains git [submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
 for many [configs](https://github.com/Happy-Dude/dotfiles/tree/master/zsh),
-[vim](https://github.com/Happy-Dude/dotfiles/tree/master/vim/.vim/pack/bundle/opt)
-, and
+[vim](https://github.com/Happy-Dude/dotfiles/tree/master/vim/.vim/pack/bundle/opt), and
 [emacs](https://github.com/Happy-Dude/dotfiles/tree/master/emacs/.config/emacs/plugins)
 plugin packages.
 
