@@ -15,10 +15,10 @@
   org-directory "~/org"
   org-default-notes-file (concat org-directory "/notes.org")
   )
-(setq org-agenda-files (list "~/org/notes.org"
-                             "~/org/work.org"
-                             "~/org/cal.org")
-      )
+(setq org-agenda-files (append (list "~/org/notes.org"
+                                     "~/org/work.org"
+                                     "~/org/cal.org")
+                               (directory-files-recursively "~/org/journal/" "\\.org$")))
 (setq org-capture-templates
       '(
         ("t" "Notes Unfiled" entry (file+headline "~/org/notes.org" "Unfiled")

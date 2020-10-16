@@ -17,8 +17,6 @@
 (require 'emacsql-sqlite3)
 
 (add-to-list 'load-path "~/.config/emacs/plugins/org-roam")
-(require 'org-roam)
-(require 'org-roam-protocol)
 
 ;; config
 ;; ref: https://www.orgroam.com/manual/Getting-Started.html#Getting-Started
@@ -33,11 +31,28 @@
                                    0
                                    nil
                                    file-file))))
-(add-hook 'after-init-hook 'org-roam-mode)
+(setq org-roam-capture-templates
+      '(("d" "default" plain
+         (function org-roam-capture--get-point)
+         "%?"
+         :file-name "%<%Y%m%d%H%M%S>-${slug}"
+         :head
+"#+TITLE: ${title}
+#+ROAM_KEY: ${ref}
+#+ROAM_ALIAS:
+#+ROAM_TAGS:
+#+CREATED: %u
+#+LAST_MODIFIED: %U
+- source :: ${ref}
+- tags   :: \n\n"
+         :unnarrowed t)))
 
+(require 'org-roam)
+(require 'org-roam-protocol)
+
+(add-hook 'after-init-hook 'org-roam-mode)
 
 (define-key org-roam-mode-map (kbd "C-c n l") 'org-roam)
 (define-key org-roam-mode-map (kbd "C-c n f") 'org-roam-find-file)
 (define-key org-roam-mode-map (kbd "C-c n g") 'org-roam-graph)
 (define-key org-mode-map (kbd "C-c n i") 'org-roam-insert)
-(define-key org-mode-map (kbd "C-c n I") 'org-roam-insert-immediate)
