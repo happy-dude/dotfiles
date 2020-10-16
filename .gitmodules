@@ -122,6 +122,10 @@
 	path = vim/.vim/pack/plugged/opt/nvim-treesitter-textobjects
 	url = https://github.com/nvim-treesitter/nvim-treesitter-textobjects
 	ignore = dirty
+[submodule "org-journal"]
+	path = emacs/.config/emacs/plugins/org-journal
+	url = https://github.com/bastibe/org-journal.git
+	ignore = dirty
 [submodule "org-mode"]
 	path = emacs/.config/emacs/plugins/org-mode
 	url = https://code.orgmode.org/bzg/org-mode.git
