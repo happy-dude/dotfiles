@@ -41,10 +41,18 @@
 #+ROAM_KEY: ${ref}
 #+ROAM_ALIAS:
 #+ROAM_TAGS:
+#+SOURCE:
 #+CREATED: %u
 #+LAST_MODIFIED: %U
-- source :: ${ref}
-- tags   :: \n\n"
+- tags ::
+
+* Summary
+** Questions
+
+* Notes
+** Purpose (Inspire)
+** Values (Guide)
+** Habits (Define)"
          :unnarrowed t)))
 
 (require 'org-roam)

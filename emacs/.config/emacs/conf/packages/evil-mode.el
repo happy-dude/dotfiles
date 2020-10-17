@@ -34,3 +34,6 @@
 (add-to-list 'load-path "~/.config/emacs/plugins/evil-rsi")
 (require 'evil-rsi)
 (evil-rsi-mode)
+
+;; use undo-tree for evil-mode
+(evil-set-undo-system 'undo-tree)

@@ -3,8 +3,8 @@
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 (add-to-list 'load-path "~/.config/emacs/plugins/org-mode/lisp")
 (add-to-list 'load-path "~/.config/emacs/plugins/org-mode/lisp" t)
-(define-key global-map "\C-cl" 'org-store-link)
-(define-key global-map "\C-ca" 'org-agenda)
+(define-key global-map (kbd "C-c l") 'org-store-link)
+(define-key global-map (kbd "C-c a") 'org-agenda)
 (global-set-key (kbd "C-c c") 'org-capture)
 (setq
   org-src-fontify-natively t
