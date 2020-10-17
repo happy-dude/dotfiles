@@ -44,6 +44,32 @@
 #+SOURCE:
 #+CREATED: %u
 #+LAST_MODIFIED: %U
+- source :: ${ref}
+- tags ::
+
+* Summary
+** Questions
+
+* Notes
+** Purpose (Inspire)
+** Values (Guide)
+** Habits (Define)"
+         :unnarrowed t)))
+
+(setq org-roam-capture-ref-templates
+      '(("r" "ref" plain
+         (function org-roam-capture--get-point)
+         "%?"
+         :file-name "%<%Y%m%d%H%M%S>-${slug}"
+         :head
+"#+TITLE: ${title}
+#+ROAM_KEY: ${ref}
+#+ROAM_ALIAS:
+#+ROAM_TAGS:
+#+SOURCE:
+#+CREATED: %u
+#+LAST_MODIFIED: %U
+- source :: ${ref}
 - tags ::
 
 * Summary
