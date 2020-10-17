@@ -24,7 +24,8 @@ fi
 export EDITOR='nvim'
 export VISUAL='nvim'
 
-alias ec='TERM=xterm-256color emacsclient -nw'
+alias et='TERM=xterm-256color emacsclient -nw'
+alias ef='emacsclient -nc'
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 export FZF_DEFAULT_COMMAND="$(which rg) --files --hidden --follow --glob '!.git'"
