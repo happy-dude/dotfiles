@@ -1,4 +1,4 @@
-;; org-roam
+;; org-roam settings
 
 ;; dependencies
 (add-to-list 'load-path "~/.config/emacs/plugins/dash.el")
@@ -19,6 +19,18 @@
 (add-to-list 'load-path "~/.config/emacs/plugins/org-roam")
 
 ;; config
+
+;; update last_modified when saving
+;; ref: https://github.com/emacs-mirror/emacs/blob/master/lisp/time-stamp.el#L44-L73
+(require 'time-stamp)
+(add-hook 'org-mode-hook
+          (lambda ()
+            (set (make-local-variable 'time-stamp-pattern)
+                 "8/^#\\+LAST_MODIFIED: %%$")
+            (set (make-local-variable 'time-stamp-format)
+                 "[%Y-%02m-%02d %3a %02I:%02M:%02S %P %Z] - %L")
+            (add-hook 'before-save-hook 'time-stamp nil 'local)))
+
 ;; ref: https://www.orgroam.com/manual/Getting-Started.html#Getting-Started
 (setq org-roam-directory "~/org/roam")
 (setq org-roam-db-location "~/org/roam/org-roam.db")
@@ -31,18 +43,18 @@
                                    0
                                    nil
                                    file-file))))
+
 (setq org-roam-capture-templates
       '(("d" "default" plain
          (function org-roam-capture--get-point)
          "%?"
-         :file-name "%<%Y%m%d%H%M%S>-${slug}"
+         :file-name "%<%Y%m%d>-${slug}"
          :head
 "#+TITLE: ${title}
 #+ROAM_KEY: ${ref}
 #+ROAM_ALIAS:
 #+ROAM_TAGS:
-#+SOURCE:
-#+CREATED: %u
+#+CREATED: %U
 #+LAST_MODIFIED: %U
 - source ::
   - ${ref}
@@ -63,14 +75,13 @@
       '(("r" "ref" plain
          (function org-roam-capture--get-point)
          "%?"
-         :file-name "%<%Y%m%d%H%M%S>-${slug}"
+         :file-name "%<%Y%m%d>-${slug}"
          :head
 "#+TITLE: ${title}
 #+ROAM_KEY: ${ref}
 #+ROAM_ALIAS:
 #+ROAM_TAGS:
-#+SOURCE:
-#+CREATED: %u
+#+CREATED: %U
 #+LAST_MODIFIED: %U
 - source ::
   - ${ref}
@@ -119,14 +130,3 @@
       org-roam-server-network-label-truncate t
       org-roam-server-network-label-truncate-length 60
       org-roam-server-network-label-wrap-length 20)
-
-;; update last_modified when saving
-(require 'time-stamp)
-;(add-hook 'write-file-functions 'time-stamp)
-(add-hook 'org-mode-hook
-          (lambda () (add-hook 'before-save-hook 'time-stamp nil 'local)))
-
-(add-hook 'org-mode-hook
-          (lambda ()
-            (set (make-local-variable 'time-stamp-pattern)
-                 "8/^#\\+LAST_MODIFIED: %%$")))

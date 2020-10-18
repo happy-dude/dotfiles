@@ -7,7 +7,7 @@
 (global-hl-line-mode +1)
 
 ;; Always show matching parentheses
-(show-paren-mode 1)
+(show-paren-mode t)
 (setq show-paren-delay 0)
 
 ;; Line numbers
