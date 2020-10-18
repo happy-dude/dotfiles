@@ -44,16 +44,19 @@
 #+SOURCE:
 #+CREATED: %u
 #+LAST_MODIFIED: %U
-- source :: ${ref}
+- source ::
+  - ${ref}
 - tags ::
 
 * Summary
 ** Questions
+** Impact
+*** Purpose (Inspire)
+*** Values (Guide)
+*** Habits (Define)
 
 * Notes
-** Purpose (Inspire)
-** Values (Guide)
-** Habits (Define)"
+-"
          :unnarrowed t)))
 
 (setq org-roam-capture-ref-templates
@@ -69,16 +72,19 @@
 #+SOURCE:
 #+CREATED: %u
 #+LAST_MODIFIED: %U
-- source :: ${ref}
+- source ::
+  - ${ref}
 - tags ::
 
 * Summary
 ** Questions
+** Impact
+*** Purpose (Inspire)
+*** Values (Guide)
+*** Habits (Define)
 
 * Notes
-** Purpose (Inspire)
-** Values (Guide)
-** Habits (Define)"
+-"
          :unnarrowed t)))
 
 (require 'org-roam)
