@@ -18,7 +18,7 @@
 
 (setq org-journal-date-format "%A, %d %B %Y")
 (setq org-journal-time-format "%r %Z ")
-(setq org-journal-dir "~/org/journal/")
+(setq org-journal-dir "~/org/roam/journal/")
 (setq org-journal-file-format "%Y-W%V.org")
 
 (require 'org-journal)
