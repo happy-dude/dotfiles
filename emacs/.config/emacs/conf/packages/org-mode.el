@@ -18,7 +18,7 @@
 (setq org-agenda-files (append (list "~/org/notes.org"
                                      "~/org/work.org"
                                      "~/org/cal.org")
-                               (directory-files-recursively "~/org/journal/" "\\.org$")))
+                               (directory-files-recursively "~/org/roam/" "\\.org$")))
 (setq org-capture-templates
       '(
         ("t" "Notes Unfiled" entry (file+headline "~/org/notes.org" "Unfiled")

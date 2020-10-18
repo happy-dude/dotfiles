@@ -50,6 +50,10 @@
 	path = emacs/.config/emacs/plugins/emacs-noflet
 	url = https://github.com/nicferrier/emacs-noflet.git
 	ignore = dirty
+[submodule "emacs-web-server"]
+	path = emacs/.config/emacs/plugins/emacs-web-server
+	url = https://github.com/skeeto/emacs-web-server.git
+	ignore = dirty
 [submodule "emacs-which-key"]
 	path = emacs/.config/emacs/plugins/emacs-which-key
 	url = https://github.com/justbur/emacs-which-key.git
@@ -133,6 +137,10 @@
 [submodule "org-roam"]
 	path = emacs/.config/emacs/plugins/org-roam
 	url = https://github.com/org-roam/org-roam.git
+	ignore = dirty
+[submodule "org-roam-server"]
+	path = emacs/.config/emacs/plugins/org-roam-server
+	url = https://github.com/org-roam/org-roam-server.git
 	ignore = dirty
 [submodule "prezto-sorin"]
 	path = zsh/.zprezto
