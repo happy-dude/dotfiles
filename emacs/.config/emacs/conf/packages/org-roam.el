@@ -113,3 +113,14 @@
       org-roam-server-network-label-truncate t
       org-roam-server-network-label-truncate-length 60
       org-roam-server-network-label-wrap-length 20)
+
+;; update last_modified when saving
+(require 'time-stamp)
+;(add-hook 'write-file-functions 'time-stamp)
+(add-hook 'org-mode-hook
+          (lambda () (add-hook 'before-save-hook 'time-stamp nil 'local)))
+
+(add-hook 'org-mode-hook
+          (lambda ()
+            (set (make-local-variable 'time-stamp-pattern)
+                 "8/^#\\+LAST_MODIFIED: %%$")))
