@@ -20,5 +20,6 @@
 (setq org-journal-time-format "%r %Z ")
 (setq org-journal-dir "~/org/roam/journal/")
 (setq org-journal-file-format "%Y-W%V.org")
+(global-set-key (kbd "C-c j") 'org-journal-new-entry)
 
 (require 'org-journal)
