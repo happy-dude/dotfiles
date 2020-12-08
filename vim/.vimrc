@@ -66,6 +66,7 @@ if &loadplugins
   " { Load plugin packages
   call plug#begin(s:vim_dir . 'pack/plugged/opt/')
   Plug 'AndrewRadev/splitjoin.vim'
+  Plug 'Glench/Vim-Jinja2-Syntax'
   Plug 'Happy-Dude/hlnext.vim'
   Plug 'cespare/vim-toml'                             ,   { 'for' : [ 'toml' ] }
   Plug 'chrisbra/csv.vim'                             ,   { 'for' : [ 'csv' ] }
@@ -89,6 +90,7 @@ if &loadplugins
   Plug 'othree/html5.vim'                             ,   { 'for' : [ 'html', 'javascript', 'php', 'xhtml', 'xml' ] }
   Plug 'preservim/nerdcommenter'
   Plug 'rust-lang/rust.vim'                           ,   { 'for' : [ 'rust' ] }
+  Plug 'saltstack/salt-vim'
   Plug 'sjl/clam.vim'
   Plug 'tpope/vim-fugitive'
   Plug 'tpope/vim-markdown'                           ,   { 'for' : [ 'markdown' ] }

@@ -162,6 +162,10 @@
 	path = emacs/.config/emacs/plugins/s.el
 	url = https://github.com/magnars/s.el.git
 	ignore = dirty
+[submodule "salt-vim"]
+	path = vim/.vim/pack/plugged/opt/salt-vim
+	url = https://github.com/saltstack/salt-vim.git
+	ignore = dirty
 [submodule "seoul256.vim"]
 	path = vim/.vim/pack/plugged/opt/seoul256.vim
 	url = https://github.com/junegunn/seoul256.vim.git
@@ -241,6 +245,10 @@
 [submodule "vim-indent-guides"]
 	path = vim/.vim/pack/plugged/opt/vim-indent-guides
 	url = https://github.com/nathanaelkane/vim-indent-guides.git
+	ignore = dirty
+[submodule "vim-jinja2-syntax"]
+	path = vim/.vim/pack/plugged/opt/Vim-Jinja2-Syntax
+	url = https://github.com/Glench/Vim-Jinja2-Syntax.git
 	ignore = dirty
 [submodule "vim-lucius"]
 	path = vim/.vim/pack/plugged/opt/vim-lucius
