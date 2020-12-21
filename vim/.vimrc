@@ -143,7 +143,7 @@ if &loadplugins
 
     " Enable coc.nvim if node.js is installed
     if executable('node')
-      Plug 'neoclide/coc.nvim'
+      Plug 'neoclide/coc.nvim'                        ,   { 'branch' : 'release' }
 
       let s:coc_settings = s:vimpack_settings_dir . 'coc.vim'
       execute 'source' s:coc_settings

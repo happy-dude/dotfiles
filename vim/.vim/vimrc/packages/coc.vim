@@ -14,6 +14,7 @@ let g:go_mod_fmt_autosave = 0
 let g:coc_global_extensions = [
       \ 'coc-actions',
       \ 'coc-clangd',
+      \ 'coc-extension-codemod',
       \ 'coc-go',
       \ 'coc-highlight',
       \ 'coc-json',
@@ -23,6 +24,7 @@ let g:coc_global_extensions = [
       \ 'coc-python',
       \ 'coc-rls',
       \ 'coc-sh',
+      \ 'coc-tsserver',
       \ 'coc-vimlsp',
       \ 'coc-vimtex'
       \]
