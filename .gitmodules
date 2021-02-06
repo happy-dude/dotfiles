@@ -200,7 +200,7 @@
 	ignore = dirty
 [submodule "undo-tree"]
 	path = emacs/.config/emacs/plugins/undo-tree
-	url = http://www.dr-qubit.org/git/undo-tree.git
+	url = https://gitlab.com/tsc25/undo-tree.git
 	ignore = dirty
 [submodule "undotree"]
 	path = vim/.vim/pack/plugged/opt/undotree
