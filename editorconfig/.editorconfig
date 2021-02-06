@@ -162,7 +162,6 @@ indent_size = 4
 indent_style = space
 insert_final_newline = true
 max_line_length = 80
-max_line_length = off
 trim_trailing_whitespace = true
 
 # PHP
