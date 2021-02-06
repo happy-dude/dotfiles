@@ -14,6 +14,23 @@ if has("autocmd")
   " Makefiles are tab sensitive
   au FileType make                                    set noexpandtab
 
+  " Perl
+  if executable('perltidy')
+
+    command -range=% -nargs=* PerlTidy <line1>,<line2>!perltidy -st -q
+    function PerlTidySave()
+      let l = line(".")
+      let c = col(".")
+      :PerlTidy
+      call cursor(l, c)
+    endfun
+
+    autocmd BufWrite *.pl                             :call PerlTidySave()
+    au FileType perl                                  setlocal equalprg=perltidy\ -st\ -q
+    au FileType perl                                  setlocal formatprg=perltidy\ -st\ -q
+
+  endif
+
   " Don't use bottom restore cursor, Frew's JumpCursorOnEdit works fine
   " Discussion: http://stackoverflow.com/questions/164847/what-is-in-your-vimrc/171558#171558
   " Restore cursor position

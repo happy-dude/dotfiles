@@ -38,6 +38,8 @@ endif
 
 if &loadplugins
 
+  filetype off                " Turn filetype plugin off until after plugins are loaded
+
   if has('packages')
     " { vim-plug
     packadd! vim-plug
@@ -48,7 +50,6 @@ if &loadplugins
     " Unconventional path to plugin (inside submodule)
     runtime pack/bundle/opt/vim-pathogen/autoload/pathogen.vim
 
-    filetype off                " Turn filetype plugin off until after plugins are loaded
 
     " pathogen: Activate vim-plug
     execute pathogen#infect('pack/bundle/opt/vim-plug/')
@@ -57,8 +58,6 @@ if &loadplugins
     "execute pathogen#infect('pack/{}/opt/{}')
     "execute pathogen#helptags()
 
-    syntax enable               " Enable syntax highlighting
-    filetype plugin indent on   " Enable filetype plugin and filetype-based indentation
     " }
 
   endif
@@ -103,7 +102,7 @@ if &loadplugins
   Plug 'vim-airline/vim-airline-themes'
   Plug 'vim-pandoc/vim-pandoc'                        ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
   Plug 'vim-pandoc/vim-pandoc-syntax'                 ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
-  Plug 'vim-perl/vim-perl'                            ,   { 'for' : [ 'perl', 'perl6', 'mason' ], 'branch' : 'dev' }
+  Plug 'vim-perl/vim-perl'                            ,   { 'for' : [ 'perl', 'perl6', 'mason' ], 'branch' : 'dev', 'do': 'make clean carp dancer highlight-all-pragmas moose test-more try-tiny' }
   Plug 'wlangstroth/vim-racket'                       ,   { 'for' : [ 'racket' ] }
   Plug 'zirrostig/vim-schlepp'
 
@@ -190,6 +189,9 @@ if &loadplugins
   execute                       'source' s:vimtex_settings
 
   " }
+
+  syntax enable               " Enable syntax highlighting
+  filetype plugin indent on   " Enable filetype plugin and filetype-based indentation
 
 endif
 " }
