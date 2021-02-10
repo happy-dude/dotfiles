@@ -102,7 +102,7 @@ if &loadplugins
   Plug 'vim-airline/vim-airline-themes'
   Plug 'vim-pandoc/vim-pandoc'                        ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
   Plug 'vim-pandoc/vim-pandoc-syntax'                 ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
-  Plug 'vim-perl/vim-perl'                            ,   { 'for' : [ 'perl', 'perl6', 'mason' ], 'branch' : 'dev', 'do': 'make clean carp dancer highlight-all-pragmas moose test-more try-tiny' }
+  "Plug 'vim-perl/vim-perl'                            ,   { 'for' : [ 'perl', 'perl6', 'mason' ], 'branch' : 'dev', 'do': 'make clean carp dancer highlight-all-pragmas moose test-more try-tiny' }
   Plug 'wlangstroth/vim-racket'                       ,   { 'for' : [ 'racket' ] }
   Plug 'zirrostig/vim-schlepp'
 
