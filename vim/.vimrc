@@ -142,7 +142,7 @@ if &loadplugins
 
     " Enable coc.nvim if node.js is installed
     if executable('node')
-      Plug 'neoclide/coc.nvim'                        ,   { 'branch' : 'release' }
+      Plug 'neoclide/coc.nvim'                        ,   {'branch': 'master', 'do': 'yarn install --frozen-lockfile'}
 
       let s:coc_settings = s:vimpack_settings_dir . 'coc.vim'
       execute 'source' s:coc_settings
