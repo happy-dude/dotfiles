@@ -17,11 +17,11 @@ let g:coc_global_extensions = [
       \ 'coc-extension-codemod',
       \ 'coc-go',
       \ 'coc-highlight',
+      \ 'coc-jedi',
       \ 'coc-json',
       \ 'coc-lua',
       \ 'coc-markdownlint',
       \ 'coc-perl',
-      \ 'coc-python',
       \ 'coc-rls',
       \ 'coc-sh',
       \ 'coc-tsserver',
@@ -29,8 +29,9 @@ let g:coc_global_extensions = [
       \ 'coc-vimtex'
       \]
       "\ 'coc-css',
-      "\ 'coc-git', " use vim-signify
+      "\ 'coc-git',     " use vim-signify
       "\ 'coc-html',
+      "\ 'coc-python',  " use coc-jedi
       "\ 'coc-sql',
 
 " Don't pass messages to |ins-completion-menu|.
