@@ -146,6 +146,10 @@
 	path = zsh/.zprezto
 	url = https://github.com/sorin-ionescu/prezto.git
 	ignore = dirty
+[submodule "queue.el"]
+	path = emacs/.config/emacs/plugins/queue
+	url = https://github.com/emacs-straight/queue.git
+	ignore = dirty
 [submodule "rainbow"]
 	path = vim/.vim/pack/plugged/opt/rainbow
 	url = https://github.com/luochen1990/rainbow.git
