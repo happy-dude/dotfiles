@@ -5,7 +5,7 @@ local configs = require 'nvim-treesitter.configs'
 local parsers = require 'nvim-treesitter.parsers'
 
 require 'nvim-treesitter.configs'.setup {
-    ensure_installed = "all",       -- one of "all", "language", or a list of languages
+    ensure_installed = "maintained",    -- one of "all", "language", or a list of languages
 
     -- nvim-treesitter native modules
     highlight = {
