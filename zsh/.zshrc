@@ -35,6 +35,8 @@ export CPPFLAGS="-I/usr/local/opt/llvm/include"
 export PATH="/usr/local/opt/llvm/bin:$PATH"
 export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
 
+source ~/perl5/perlbrew/etc/bashrc
+perlbrew use 5.34.0
 source "$HOME/.cargo/env"
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$(go env GOPATH)/bin:$PATH"
