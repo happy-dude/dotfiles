@@ -21,24 +21,33 @@ fi
 [[ ! -f ~/dotfiles/zsh/.p10k.zsh ]] || source ~/dotfiles/zsh/.p10k.zsh
 
 # Customize to your needs...
-export EDITOR='nvim'
-export VISUAL='nvim'
 
+# emacsclient
 alias et='TERM=xterm-256color emacsclient -nw'
 alias ef='emacsclient -nc'
 
+# luamake from sumneko
+alias luamake=/Users/stahn_mchan/sources/lua-language-server/3rd/luamake/luamake
+
+# fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 export FZF_DEFAULT_COMMAND="$(which rg) --files --hidden --follow --glob '!.git'"
 
+# nvim default editor
+export EDITOR='nvim'
+export VISUAL='nvim'
+
+# LLVM, Xcode SDK
 export LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib"
 export CPPFLAGS="-I/usr/local/opt/llvm/include"
 export PATH="/usr/local/opt/llvm/bin:$PATH"
 export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
 
+# programming language environments
 source ~/perl5/perlbrew/etc/bashrc
 perlbrew use 5.34.0
-source "$HOME/.cargo/env"
-export PATH="$HOME/.cargo/bin:$PATH"
-export PATH="$(go env GOPATH)/bin:$PATH"
 export PATH="$HOME/.luarocks/bin:$PATH"
 export PATH="$HOME/node_modules/.bin:$PATH"
+export PATH="$(go env GOPATH)/bin:$PATH"
+source "$HOME/.cargo/env"
+export PATH="$HOME/.cargo/bin:$PATH"
