@@ -9,8 +9,8 @@ require 'nvim-treesitter.configs'.setup {
 
     -- nvim-treesitter native modules
     highlight = {
-        enable = true,              -- false will disable the whole extension
-        -- disable = { }            -- list of language that will be disabled
+        enable  = true,             -- false will disable the whole extension
+        disable = { 'commonlisp' }  -- list of language that will be disabled
         -- custom_captures = { }    -- custom highlight groups for captures
     },
     incremental_selection = {
