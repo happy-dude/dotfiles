@@ -146,40 +146,4 @@
 
     /*** End of: Megabar Styler One-Offs ***/
 
-    /*** Proton Tabs Tweaks ***/
-
-    /* Adjust tab corner shape, optionally remove space below tabs */
-
-    #tabbrowser-tabs {
-        --user-tab-rounding: 0px;
-    }
-    @media (-moz-proton) {
-        .tab-background {
-            border-radius: var(--user-tab-rounding) var(--user-tab-rounding) 0px 0px !important;
-            margin-block: 1px 0 !important;
-        }
-    }
-
-    /* Inactive tabs: Separator line style */
-
-    @media (-moz-proton) {
-        .tab-background:not([selected=true]):not([multiselected=true]):not([beforeselected-visible="true"]) {
-            border-right: 1px solid rgba(0, 0, 0, .20) !important;
-        }
-        /* For dark backgrounds */
-        [brighttext="true"] .tab-background:not([selected=true]):not([multiselected=true]):not([beforeselected-visible="true"]) {
-            border-right: 1px solid var(--lwt-selected-tab-background-color, rgba(255, 255, 255, .20)) !important;
-        }
-        .tab-background:not([selected=true]):not([multiselected=true]) {
-            border-radius: 0 !important;
-        }
-        /* Remove padding between tabs */
-        .tabbrowser-tab {
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-        }
-    }
-
-    /* Tweak Options as of 5/30/2021; Generated Sat Jun 05 2021 19:45:01 GMT-0500 (Central Daylight Time) */
-
 }
