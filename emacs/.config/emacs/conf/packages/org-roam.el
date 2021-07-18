@@ -98,8 +98,6 @@
 (require 'org-roam)
 (require 'org-roam-protocol)
 
-(add-hook 'after-init-hook 'org-roam-mode)
-
 (define-key global-map (kbd "C-c n l") 'org-roam-buffer-toggle)
 (define-key global-map (kbd "C-c n f") 'org-roam-node-find)
 (define-key global-map (kbd "C-c n g") 'org-roam-graph)
