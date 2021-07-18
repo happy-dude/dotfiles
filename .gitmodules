@@ -110,6 +110,14 @@
 	path = vim/.vim/pack/plugged/opt/jellybeans.vim
 	url = https://github.com/nanotech/jellybeans.vim.git
 	ignore = dirty
+[submodule "libgit2"]
+	path = emacs/.config/emacs/plugins/libegit2
+	url = https://github.com/magit/libegit2.git
+	ignore = dirty
+[submodule "magit"]
+	path = emacs/.config/emacs/plugins/magit
+	url = https://github.com/magit/magit.git
+	ignore = dirty
 [submodule "nerdcommenter"]
 	path = vim/.vim/pack/plugged/opt/nerdcommenter
 	url = https://github.com/preservim/nerdcommenter.git
@@ -201,6 +209,10 @@
 [submodule "tomorrow-theme"]
 	path = other/themes/tomorrow_theme-chriskempson
 	url = https://github.com/chriskempson/tomorrow-theme.git
+	ignore = dirty
+[submodule "transient"]
+	path = emacs/.config/emacs/plugins/transient
+	url = https://github.com/magit/transient.git
 	ignore = dirty
 [submodule "undo-tree"]
 	path = emacs/.config/emacs/plugins/undo-tree
@@ -333,4 +345,8 @@
 [submodule "vimtex"]
 	path = vim/.vim/pack/plugged/opt/vimtex
 	url = https://github.com/lervag/vimtex.git
+	ignore = dirty
+[submodule "with-editor"]
+	path = emacs/.config/emacs/plugins/with-editor
+	url = https://github.com/magit/with-editor.git
 	ignore = dirty
