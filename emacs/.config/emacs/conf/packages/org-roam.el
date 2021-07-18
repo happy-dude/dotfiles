@@ -111,6 +111,8 @@
 (define-key org-roam-mode-map (kbd "C-c n g") 'org-roam-graph)
 (define-key org-mode-map (kbd "C-c n i") 'org-roam-insert)
 
+(org-roam-setup)
+
 ;; org-roam-server settings
 ;(add-to-list 'load-path "~/.config/emacs/plugins/emacs-web-server")
 ;(require 'simple-httpd)
