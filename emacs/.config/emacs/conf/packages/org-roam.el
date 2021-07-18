@@ -20,6 +20,9 @@
 
 ;; config
 
+;; acknowledge v2 migration
+(setq org-roam-v2-ack t)
+
 ;; update last_modified when saving
 ;; ref: https://github.com/emacs-mirror/emacs/blob/master/lisp/time-stamp.el#L44-L73
 (require 'time-stamp)
