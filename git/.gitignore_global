@@ -9,6 +9,8 @@
 *~
 *vim/shada
 *emacs/.config/emacs/bookmarks
+*emacs/.config/emacs/transient
+*emacs/.config/emacs/.org-id-locations
 
 # Ignore xmonad compiled files and executables
 *.hi
