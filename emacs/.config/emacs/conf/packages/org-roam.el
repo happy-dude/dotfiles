@@ -48,11 +48,8 @@
                                    file-file))))
 
 (setq org-roam-capture-templates
-      '(("d" "default" plain
-         (function org-roam-capture--get-point)
-         "%?"
-         :file-name "%<%Y%m%d>-${slug}"
-         :head
+      '(("d" "default" plain "%?"
+         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 "#+TITLE: ${title}
 #+ROAM_KEY: ${ref}
 #+ROAM_ALIAS:
@@ -71,15 +68,12 @@
 *** Habits (Define)
 
 * Notes
--"
+-")
          :unnarrowed t)))
 
 (setq org-roam-capture-ref-templates
-      '(("r" "ref" plain
-         (function org-roam-capture--get-point)
-         "%?"
-         :file-name "%<%Y%m%d>-${slug}"
-         :head
+      '(("r" "ref" plain "%?"
+         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
 "#+TITLE: ${title}
 #+ROAM_KEY: ${ref}
 #+ROAM_ALIAS:
@@ -98,7 +92,7 @@
 *** Habits (Define)
 
 * Notes
--"
+-")
          :unnarrowed t)))
 
 (require 'org-roam)
