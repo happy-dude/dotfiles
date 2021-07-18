@@ -106,10 +106,11 @@
 
 (add-hook 'after-init-hook 'org-roam-mode)
 
-(define-key org-roam-mode-map (kbd "C-c n l") 'org-roam)
-(define-key org-roam-mode-map (kbd "C-c n f") 'org-roam-find-file)
-(define-key org-roam-mode-map (kbd "C-c n g") 'org-roam-graph)
-(define-key org-mode-map (kbd "C-c n i") 'org-roam-insert)
+(define-key global-map (kbd "C-c n l") 'org-roam-buffer-toggle)
+(define-key global-map (kbd "C-c n f") 'org-roam-node-find)
+(define-key global-map (kbd "C-c n g") 'org-roam-graph)
+(define-key global-map (kbd "C-c n i") 'org-roam-node-insert)
+(define-key global-map (kbd "C-c n c") 'org-roam-capture)
 
 (org-roam-setup)
 
