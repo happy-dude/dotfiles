@@ -16,6 +16,9 @@
 (add-to-list 'load-path "~/.config/emacs/plugins/emacsql-sqlite3")
 (require 'emacsql-sqlite3)
 
+(add-to-list 'load-path "~/.config/emacs/plugins/magit/lisp")
+(require 'magit-section)
+
 (add-to-list 'load-path "~/.config/emacs/plugins/org-roam")
 
 ;; config
@@ -104,7 +107,7 @@
 (define-key global-map (kbd "C-c n i") 'org-roam-node-insert)
 (define-key global-map (kbd "C-c n c") 'org-roam-capture)
 
-(org-roam-setup)
+(add-hook 'after-init-hook 'org-roam-setup)
 
 ;; org-roam-server settings
 ;(add-to-list 'load-path "~/.config/emacs/plugins/emacs-web-server")
