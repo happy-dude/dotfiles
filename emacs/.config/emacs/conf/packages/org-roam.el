@@ -103,6 +103,7 @@
          :unnarrowed t)))
 
 (require 'org-roam)
+(require 'org-roam-graph)
 (require 'org-roam-protocol)
 
 (define-key global-map (kbd "C-c n l") 'org-roam-buffer-toggle)
