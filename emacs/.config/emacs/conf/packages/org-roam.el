@@ -52,16 +52,18 @@
 
 (setq org-roam-capture-templates
       '(("d" "default" plain "%?"
-         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-"#+TITLE: ${title}
-#+ROAM_KEY: ${ref}
-#+ROAM_ALIAS:
-#+ROAM_TAGS:
+         :if-new (file+head "%<%Y%m%d>-${slug}.org"
+":PROPERTIES:
+:ID: %(org-id-new)
+:ROAM_REFS: ${ref}
+:END:
+#+TITLE: ${title}
 #+CREATED: %U
 #+LAST_MODIFIED: %U
-- source ::
-  - ${ref}
-- tags ::
+#+FILETAGS:
+- sources ::
+  -
+- nodes ::
 
 * Summary
 ** Questions
@@ -76,16 +78,18 @@
 
 (setq org-roam-capture-ref-templates
       '(("r" "ref" plain "%?"
-         :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-"#+TITLE: ${title}
-#+ROAM_KEY: ${ref}
-#+ROAM_ALIAS:
-#+ROAM_TAGS:
+         :if-new (file+head "%<%Y%m%d>-${slug}.org"
+":PROPERTIES:
+:ID: %(org-id-new)
+:ROAM_REFS: ${ref}
+:END:
+#+TITLE: ${title}
 #+CREATED: %U
 #+LAST_MODIFIED: %U
-- source ::
-  - ${ref}
-- tags ::
+#+FILETAGS:
+- sources ::
+  -
+- nodes ::
 
 * Summary
 ** Questions
