@@ -8,6 +8,7 @@
 (defun org-journal-file-header-func (time)
   "Custom function to create journal header."
   (concat
+    (org-id-get-create)
     (pcase org-journal-file-type
       (`daily "#+TITLE: Daily Journal\n#+STARTUP: showeverything")
       (`weekly (concat "#+TITLE: Weekly Journal - " (format-time-string "%Y-W%V") "\n#+STARTUP: folded"))
