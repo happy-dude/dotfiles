@@ -4,6 +4,8 @@ local api = vim.api
 local configs = require 'nvim-treesitter.configs'
 local parsers = require 'nvim-treesitter.parsers'
 
+require'nvim-treesitter.install'.compilers = { "clang" }
+
 require 'nvim-treesitter.configs'.setup {
     ensure_installed = "maintained",    -- one of "all", "language", or a list of languages
 
