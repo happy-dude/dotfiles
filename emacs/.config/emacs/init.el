@@ -13,15 +13,15 @@
 (load-file (concat conf-dir "visual.el"))
 
 ;; Load emacs packages configs
+(load-file (concat package-conf-dir "org-mode-capture.el"))
+(load-file (concat package-conf-dir "org-mode.el"))
+(load-file (concat package-conf-dir "org-roam.el"))
 (load-file (concat package-conf-dir "annalist.el"))
 (load-file (concat package-conf-dir "editorconfig.el"))
 (load-file (concat package-conf-dir "evil-mode.el"))
 ;(load-file (concat package-conf-dir "magit.el"))
 (load-file (concat package-conf-dir "org-babel.el"))
 (load-file (concat package-conf-dir "org-journal.el"))
-(load-file (concat package-conf-dir "org-mode-capture.el"))
-(load-file (concat package-conf-dir "org-mode.el"))
-(load-file (concat package-conf-dir "org-roam.el"))
 (load-file (concat package-conf-dir "rainbow.el"))
 (load-file (concat package-conf-dir "slime.el"))
 (load-file (concat package-conf-dir "solarized.el"))
