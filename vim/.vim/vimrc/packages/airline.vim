@@ -4,8 +4,8 @@
 "let g:airline#extensions#tabline#enabled = 1                            " displays buffers in tabline
 "let g:airline#extensions#tabline#formatter = 'unique_tail_improved'     " improve path format in tabline
 
-let g:airline_theme                         = 'base16_gruvbox_dark_hard' " gruvbox theme
-let g:airline_base16_gruvbox_dark_hard_old  = 1
+let g:airline_theme                         = 'gruvbox_material'        " gruvbox-material theme
+"let g:airline_theme                         = 'base16_gruvbox_dark_hard' " gruvbox theme
 "let g:airline_theme = 'distinguished'
 
 "let g:airline_highlighting_cache = 1                                    " performance: enable caching of the various syntax highlighting groups

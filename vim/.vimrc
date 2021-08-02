@@ -130,6 +130,7 @@ if &loadplugins
   Plug 'lifepillar/vim-gruvbox8'
   Plug 'lifepillar/vim-solarized8'
   Plug 'nanotech/jellybeans.vim'
+  Plug 'sainnhe/gruvbox-material'
   " }
 
   " { Neovim-only packages

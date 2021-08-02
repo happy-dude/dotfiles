@@ -98,6 +98,10 @@
 	path = vim/.vim/pack/plugged/opt/fzf.vim
 	url = https://github.com/junegunn/fzf.vim.git
 	ignore = dirty
+[submodule "gruvbox-material"]
+	path = vim/.vim/pack/plugged/opt/gruvbox-material
+	url = https://github.com/sainnhe/gruvbox-material.git
+	ignore = dirty
 [submodule "hlnext.vim"]
 	path = vim/.vim/pack/plugged/opt/hlnext.vim
 	url = https://github.com/Happy-Dude/hlnext.vim
