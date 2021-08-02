@@ -166,36 +166,52 @@ font:
 # If `true`, bold text is drawn using the bright color variants.
 draw_bold_text_with_bright_colors: false
 
-# Colors (Gruvbox dark)
+# Cursor will use theme color
+custom_cursor_colors: true
+
+# https://github.com/aarowill/base16-alacritty/blob/master/colors/base16-gruvbox-dark-medium-256.yml
+# Base16 Gruvbox dark, medium 256 - alacritty color config
+# Dawid Kurek (dawikur@gmail.com), morhetz (https://github.com/morhetz/gruvbox)
 colors:
   # Default colors
   primary:
-    # hard contrast: background = '#1d2021'
-    background: '#282828'
-    # soft contrast: background = '#32302f'
-    foreground: '#ebdbb2'
+    background: '0x282828'
+    foreground: '0xd5c4a1'
+
+  # Colors the cursor will use if `custom_cursor_colors` is true
+  cursor:
+    text: '0x282828'
+    cursor: '0xd5c4a1'
 
   # Normal colors
   normal:
-    black:   '#282828'
-    red:     '#cc241d'
-    green:   '#98971a'
-    yellow:  '#d79921'
-    blue:    '#458588'
-    magenta: '#b16286'
-    cyan:    '#689d6a'
-    white:   '#a89984'
+    black:   '0x282828'
+    red:     '0xfb4934'
+    green:   '0xb8bb26'
+    yellow:  '0xfabd2f'
+    blue:    '0x83a598'
+    magenta: '0xd3869b'
+    cyan:    '0x8ec07c'
+    white:   '0xd5c4a1'
 
   # Bright colors
   bright:
-    black:   '#928374'
-    red:     '#fb4934'
-    green:   '#b8bb26'
-    yellow:  '#fabd2f'
-    blue:    '#83a598'
-    magenta: '#d3869b'
-    cyan:    '#8ec07c'
-    white:   '#ebdbb2'
+    black:   '0x665c54'
+    red:     '0xfb4934'
+    green:   '0xb8bb26'
+    yellow:  '0xfabd2f'
+    blue:    '0x83a598'
+    magenta: '0xd3869b'
+    cyan:    '0x8ec07c'
+    white:   '0xfbf1c7'
+
+  indexed_colors:
+    - { index: 16, color: '0xfe8019' }
+    - { index: 17, color: '0xd65d0e' }
+    - { index: 18, color: '0x3c3836' }
+    - { index: 19, color: '0x504945' }
+    - { index: 20, color: '0xbdae93' }
+    - { index: 21, color: '0xebdbb2' }
 
   # Cursor colors
   #
