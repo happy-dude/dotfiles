@@ -141,6 +141,9 @@ if &loadplugins
     Plug 'nvim-treesitter/nvim-treesitter-refactor'
     Plug 'nvim-treesitter/nvim-treesitter-textobjects'
 
+    " orgmode.nvim
+    Plug 'kristijanhusak/orgmode.nvim'
+
     " Enable coc.nvim if node.js is installed
     if executable('node')
       Plug 'neoclide/coc.nvim'                        ,   {'branch': 'master', 'do': 'yarn install --frozen-lockfile'}
@@ -286,6 +289,10 @@ execute                         'source' s:custom_functions
 if has('nvim')
 lua <<EOF
   require 'treesitter'
+  require('orgmode').setup({
+    org_agenda_files = {'~/org/**/*'},
+    org_default_notes_file = '~/org/notes.org',
+  })
 EOF
 endif
 " }
