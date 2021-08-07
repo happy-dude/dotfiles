@@ -113,26 +113,3 @@
 (define-key global-map (kbd "C-c n c") 'org-roam-capture)
 
 (add-hook 'after-init-hook 'org-roam-setup)
-
-;; org-roam-server settings
-;(add-to-list 'load-path "~/.config/emacs/plugins/emacs-web-server")
-;(require 'simple-httpd)
-;(setq
-;  httpd-root "/var/www"
-;  httpd-port 8049)
-;(httpd-start)
-;
-;(add-to-list 'load-path "~/.config/emacs/plugins/org-roam-server")
-;(require 'org-roam-server)
-;
-;(setq org-roam-server-host "127.0.0.1"
-;      org-roam-server-port 8049
-;      org-roam-server-authenticate nil
-;      org-roam-server-export-inline-images t
-;      org-roam-server-serve-files nil
-;      org-roam-server-served-file-extensions '("pdf" "mp4" "ogv")
-;      org-roam-server-network-poll t
-;      org-roam-server-network-arrows nil
-;      org-roam-server-network-label-truncate t
-;      org-roam-server-network-label-truncate-length 60
-;      org-roam-server-network-label-wrap-length 20)
