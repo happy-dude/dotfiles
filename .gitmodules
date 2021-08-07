@@ -130,6 +130,14 @@
 	path = vim/.vim/pack/plugged/opt/nerdcommenter
 	url = https://github.com/preservim/nerdcommenter.git
 	ignore = dirty
+[submodule "nvim-dap"]
+	path = vim/.vim/pack/plugged/opt/nvim-dap
+	url = https://github.com/mfussenegger/nvim-dap.git
+	ignore = dirty
+[submodule "nvim-dap-ui"]
+	path = vim/.vim/pack/plugged/opt/nvim-dap-ui
+	url = https://github.com/rcarriga/nvim-dap-ui.git
+	ignore = dirty
 [submodule "nvim-treesitter"]
 	path = vim/.vim/pack/plugged/opt/nvim-treesitter
 	url = https://github.com/nvim-treesitter/nvim-treesitter.git

@@ -144,6 +144,10 @@ if &loadplugins
     " orgmode.nvim
     Plug 'kristijanhusak/orgmode.nvim'
 
+    " nvim-dap
+    Plug 'mfussenegger/nvim-dap'
+    Plug 'rcarriga/nvim-dap-ui'
+
     " Enable coc.nvim if node.js is installed
     if executable('node')
       Plug 'neoclide/coc.nvim'                        ,   {'branch': 'master', 'do': 'yarn install --frozen-lockfile'}
