@@ -131,10 +131,14 @@ indent_style = space
 
 # Lua
 # ref:  http://lua-users.org/wiki/LuaStyleGuide
+#       https://github.com/johnnymorganz/stylua
+#       https://github.com/neovim/neovim/pull/14987
 [*.lua]
 charset = utf-8
-indent_size = 4
+end_of_line = lf
+indent_size = 2
 indent_style = space
+max_line_length = 120
 
 # Makefiles
 # ref:  https://www.gnu.org/prep/standards/html_node/Makefile-Basics.html#Makefile-Basics
