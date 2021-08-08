@@ -1,7 +1,6 @@
 -- nvim-treesitter config
 
 local api = vim.api
-local configs = require 'nvim-treesitter.configs'
 local parsers = require 'nvim-treesitter.parsers'
 
 require'nvim-treesitter.install'.compilers = { "clang" }
@@ -12,7 +11,7 @@ require 'nvim-treesitter.configs'.setup {
     -- nvim-treesitter native modules
     highlight = {
         enable  = true,             -- false will disable the whole extension
-        disable = { 'commonlisp' }  -- list of language that will be disabled
+        -- disable = { 'commonlisp' }  -- list of language that will be disabled
         -- custom_captures = { }    -- custom highlight groups for captures
     },
     incremental_selection = {
@@ -51,6 +50,39 @@ require 'nvim-treesitter.configs'.setup {
         highlight_current_scope =   { enable = false },
         highlight_definitions =     { enable = false },     -- provided by coc.nvim
         navigation =                { enable = false },
+    },
+    rainbow = {
+      enable = true,
+      extended_mode = true, -- Also highlight non-bracket delimiters like html tags, boolean or table: lang -> boolean
+      max_file_lines = 1000, -- Do not enable for files with more than 1000 lines, int
+      colors = {
+          "#FE2712",
+          "#66B032",
+          "#0392CE",
+          "#FD5308",
+          "#0247FE",
+          "#FB9902",
+          "#8601AF",
+          "#FEFE33",
+          "#A7194B",
+          "#D0EA2B",
+      },
+      termcolors = {
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "9",
+          "10",
+          "11" ,
+          "12",
+          "13",
+          "14",
+          "15",
+      },
     },
 }
 

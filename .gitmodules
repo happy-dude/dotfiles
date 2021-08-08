@@ -150,6 +150,10 @@
 	path = vim/.vim/pack/plugged/opt/nvim-treesitter-textobjects
 	url = https://github.com/nvim-treesitter/nvim-treesitter-textobjects
 	ignore = dirty
+[submodule "nvim-ts-rainbow"]
+	path = vim/.vim/pack/plugged/opt/nvim-ts-rainbow
+	url = https://github.com/p00f/nvim-ts-rainbow.git
+	ignore = dirty
 [submodule "org-journal"]
 	path = emacs/.config/emacs/plugins/org-journal
 	url = https://github.com/bastibe/org-journal.git

@@ -79,7 +79,7 @@ if &loadplugins
   Plug 'keith/swift.vim'                              ,   { 'for' : [ 'swift' ] }
   Plug 'kovisoft/slimv'                               ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
   Plug 'lervag/vimtex'                                ,   { 'for' : [ 'tex' ] }
-  Plug 'luochen1990/rainbow'
+  Plug 'luochen1990/rainbow'                          ,   !has('nvim') ? {} : { 'on': [] }
   Plug 'machakann/vim-sandwich'
   Plug 'mbbill/undotree'                              ,   { 'on' : 'UndotreeToggle' }
   Plug 'mhinz/vim-signify'
@@ -140,6 +140,7 @@ if &loadplugins
     Plug 'nvim-treesitter/nvim-treesitter'
     Plug 'nvim-treesitter/nvim-treesitter-refactor'
     Plug 'nvim-treesitter/nvim-treesitter-textobjects'
+    Plug 'p00f/nvim-ts-rainbow'
 
     " orgmode.nvim
     Plug 'kristijanhusak/orgmode.nvim'
