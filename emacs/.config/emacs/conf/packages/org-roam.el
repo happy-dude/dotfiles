@@ -20,6 +20,7 @@
 (require 'magit-section)
 
 (add-to-list 'load-path "~/.config/emacs/plugins/org-roam")
+(add-to-list 'load-path "~/.config/emacs/plugins/org-roam/extensions")
 
 ;; config
 
