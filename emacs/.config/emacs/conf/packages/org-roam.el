@@ -113,7 +113,7 @@
 (define-key global-map (kbd "C-c n i") 'org-roam-node-insert)
 (define-key global-map (kbd "C-c n c") 'org-roam-capture)
 
-(add-hook 'after-init-hook 'org-roam-setup)
+(add-hook 'after-init-hook 'org-roam-db-autosync-mode)
 
 ;; org-roam-ui settings
 (add-to-list 'load-path "~/.config/emacs/plugins/emacs-web-server")
