@@ -42,21 +42,6 @@
                 "context"
             ]
         },
-        "golang": {
-            "command": "gopls",
-            "rootPatterns": [
-                "go.mod",
-                ".vim/",
-                ".git/",
-                ".hg/"
-            ],
-            "filetypes": [
-                "go"
-            ],
-            "initializationOptions": {
-                "usePlaceholders": true
-            }
-        },
         "lua-language-server": {
             "cwd": "/Users/stahn_mchan/sources/lua-language-server",
             "command": "./bin/macOS/lua-language-server",
