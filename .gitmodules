@@ -377,3 +377,6 @@
 	path = emacs/.config/emacs/plugins/with-editor
 	url = https://github.com/magit/with-editor.git
 	ignore = dirty
+[submodule "hop.nvim"]
+	path = vim/.vim/pack/plugged/opt/hop.nvim
+	url = https://github.com/phaazon/hop.nvim.git

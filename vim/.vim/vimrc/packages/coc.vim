@@ -10,6 +10,12 @@ let g:go_doc_keywordprg_enabled = 0         "  godoc window
 let g:go_fmt_autosave = 0                   "  fmt on autosave
 let g:go_mod_fmt_autosave = 0
 
+" Disable linting when EasyMotion is modifying buffer
+if get(g:, 'EasyMotion_loaded', 1)
+  autocmd User EasyMotionPromptBegin silent! CocDisable
+  autocmd User EasyMotionPromptEnd silent! CocEnable
+endif
+
 " CoC extensions
 let g:coc_global_extensions = [
       \ 'coc-actions',
