@@ -370,6 +370,9 @@
 	path = vim/.vim/pack/plugged/opt/vimtex
 	url = https://github.com/lervag/vimtex.git
 	ignore = dirty
+[submodule "which-key.nvim"]
+	path = vim/.vim/pack/plugged/opt/which-key.nvim
+	url = https://github.com/folke/which-key.nvim.git
 [submodule "with-editor"]
 	path = emacs/.config/emacs/plugins/with-editor
 	url = https://github.com/magit/with-editor.git

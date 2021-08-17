@@ -145,6 +145,9 @@ if &loadplugins
     " orgmode.nvim
     Plug 'kristijanhusak/orgmode.nvim'
 
+    " which-key.nvim
+    Plug 'folke/which-key.nvim'
+
     " nvim-dap
     Plug 'mfussenegger/nvim-dap'
     Plug 'rcarriga/nvim-dap-ui'
@@ -293,11 +296,12 @@ execute                         'source' s:custom_functions
 """""""""""""""""""""""""""""""
 if has('nvim')
 lua <<EOF
-  require 'treesitter'
-  require('orgmode').setup({
+  require('treesitter')
+  require('orgmode').setup{
     org_agenda_files = {'~/org/**/*'},
     org_default_notes_file = '~/org/notes.org',
-  })
+  }
+  require('which-key').setup{}
 EOF
 endif
 " }
