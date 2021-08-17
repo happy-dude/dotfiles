@@ -110,6 +110,9 @@
 	path = vim/.vim/pack/plugged/opt/hlnext.vim
 	url = https://github.com/Happy-Dude/hlnext.vim
 	ignore = dirty
+[submodule "hop.nvim"]
+	path = vim/.vim/pack/plugged/opt/hop.nvim
+	url = https://github.com/phaazon/hop.nvim.git
 [submodule "html5.vim"]
 	path = vim/.vim/pack/plugged/opt/html5.vim
 	url = https://github.com/othree/html5.vim.git
@@ -377,6 +380,3 @@
 	path = emacs/.config/emacs/plugins/with-editor
 	url = https://github.com/magit/with-editor.git
 	ignore = dirty
-[submodule "hop.nvim"]
-	path = vim/.vim/pack/plugged/opt/hop.nvim
-	url = https://github.com/phaazon/hop.nvim.git

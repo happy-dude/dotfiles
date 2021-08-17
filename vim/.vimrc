@@ -70,7 +70,7 @@ if &loadplugins
   Plug 'cespare/vim-toml'                             ,   { 'for' : [ 'toml' ] }
   Plug 'chrisbra/csv.vim'                             ,   { 'for' : [ 'csv' ] }
   Plug 'dense-analysis/ale'
-  Plug 'easymotion/vim-easymotion'
+  Plug 'easymotion/vim-easymotion'                    ,   !has('nvim') ? {} : { 'on': [] }
   Plug 'editorconfig/editorconfig-vim'
   Plug 'fatih/vim-go'                                 ,   { 'for' : [ 'go', 'gomod', 'gohtmltmpl' ] }
   Plug 'gregsexton/MatchTag'                          ,   { 'for' : [ 'html', 'xml' ] }
@@ -140,13 +140,16 @@ if &loadplugins
     Plug 'nvim-treesitter/nvim-treesitter'
     Plug 'nvim-treesitter/nvim-treesitter-refactor'
     Plug 'nvim-treesitter/nvim-treesitter-textobjects'
-    Plug 'p00f/nvim-ts-rainbow'
+    Plug 'p00f/nvim-ts-rainbow'                           " luochen1990/rainbow
 
     " orgmode.nvim
     Plug 'kristijanhusak/orgmode.nvim'
 
     " which-key.nvim
     Plug 'folke/which-key.nvim'
+
+    " hop.nvim
+    Plug 'phaazon/hop.nvim'                               " vim-easymotion
 
     " nvim-dap
     Plug 'mfussenegger/nvim-dap'
@@ -297,6 +300,7 @@ execute                         'source' s:custom_functions
 if has('nvim')
 lua <<EOF
   require('treesitter')
+  require('hop_nvim')
   require('orgmode').setup{
     org_agenda_files = {'~/org/**/*'},
     org_default_notes_file = '~/org/notes.org',
