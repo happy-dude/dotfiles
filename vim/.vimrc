@@ -188,8 +188,10 @@ if &loadplugins
   let s:indent_guides_settings  = s:vimpack_settings_dir . 'indent_guides.vim'
   execute                       'source' s:indent_guides_settings
 
-  let s:rainbow_settings        = s:vimpack_settings_dir . 'rainbow.vim'
-  execute                       'source' s:rainbow_settings
+  if !has('nvim')               " disable rainbow in neovim
+    let s:rainbow_settings      = s:vimpack_settings_dir . 'rainbow.vim'
+    execute                     'source' s:rainbow_settings
+  endif
 
   let s:schlepp_settings        = s:vimpack_settings_dir . 'schlepp.vim'
   execute                       'source' s:schlepp_settings
@@ -299,8 +301,11 @@ execute                         'source' s:custom_functions
 """""""""""""""""""""""""""""""
 if has('nvim')
 lua <<EOF
-  require('treesitter')
+  -- configs in lua/ directory
   require('hop_nvim')
+  require('treesitter')
+
+  -- barebones configs
   require('orgmode').setup{
     org_agenda_files = {'~/org/**/*'},
     org_default_notes_file = '~/org/notes.org',
