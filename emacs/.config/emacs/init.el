@@ -26,3 +26,4 @@
 (load-file (concat package-conf-dir "which-key.el"))
 (load-file (concat package-conf-dir "rainbow.el"))
 (load-file (concat package-conf-dir "solarized.el"))
+(load-file (concat package-conf-dir "tree-sitter.el"))

@@ -46,6 +46,10 @@
 	path = vim/.vim/pack/plugged/opt/editorconfig-vim
 	url = https://github.com/editorconfig/editorconfig-vim.git
 	ignore = dirty
+[submodule "elisp-tree-sitter"]
+	path = emacs/.config/emacs/plugins/elisp-tree-sitter
+	url = https://github.com/emacs-tree-sitter/elisp-tree-sitter.git
+	ignore = dirty
 [submodule "emacs-noflet"]
 	path = emacs/.config/emacs/plugins/emacs-noflet
 	url = https://github.com/nicferrier/emacs-noflet.git
@@ -376,6 +380,7 @@
 [submodule "which-key.nvim"]
 	path = vim/.vim/pack/plugged/opt/which-key.nvim
 	url = https://github.com/folke/which-key.nvim.git
+	ignore = dirty
 [submodule "with-editor"]
 	path = emacs/.config/emacs/plugins/with-editor
 	url = https://github.com/magit/with-editor.git
