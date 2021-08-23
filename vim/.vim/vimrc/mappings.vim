@@ -7,6 +7,13 @@ if has("gui_running")
   inoremap    <C-BS>      <C-w>
 endif
 
+" If HLNext plugin is loaded, overload CTRL-L to also clear the highlight group
+" default: nnoremap <C-L> <Cmd>nohlsearch<Bar>diffupdate<CR><C-L>
+" ref: https://github.com/neovim/neovim/pull/15385
+if get(g:, "loaded_HLNext", 1)
+  nnoremap  <C-L>   <Cmd>call HLNextOff()<Bar>nohlsearch<Bar>diffupdate<CR><C-L>
+endif
+
 " To move up and down logical lines instead of physical lines
 " Instead of changing the Home row keys, use the arrow keys
 nnoremap    <expr><Down>            (v:count == 0 ? 'gj' : 'j')
