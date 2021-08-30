@@ -307,7 +307,7 @@ lua <<EOF
 
   -- barebones configs
   require('orgmode').setup{
-    org_agenda_files = {'~/org/**/*'},
+    org_agenda_files = {'~/org/*', '~/org/roam/**'},
     org_default_notes_file = '~/org/notes.org',
   }
   require('which-key').setup{}
