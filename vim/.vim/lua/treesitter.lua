@@ -55,7 +55,7 @@ require('nvim-treesitter.configs').setup {
     enable = true,
     extended_mode = true, -- Also highlight non-bracket delimiters like html tags, boolean or table: lang -> boolean
     max_file_lines = 1000, -- Do not enable for files with more than 1000 lines, int
-    colors = {      -- table of guifg values
+    colors = { -- table of guifg values
       '#FE2712',
       '#66B032',
       '#0392CE',
@@ -67,7 +67,7 @@ require('nvim-treesitter.configs').setup {
       '#A7194B',
       '#D0EA2B',
     },
-    termcolors = {  -- table of ctermfg values
+    termcolors = { -- table of ctermfg values
       '1',
       '2',
       '3',
@@ -87,17 +87,29 @@ require('nvim-treesitter.configs').setup {
 }
 
 -- turn on treesitter folding for supported languages
--- TODO: submit a patch that enables folding as a nvim-treesitter module
-local ft_str = ''
-local autocmd_fold_str = ''
+-- ref: https://github.com/nvim-treesitter/nvim-treesitter/issues/475#issuecomment-748532035
+local define_modules = require('nvim-treesitter').define_modules
+local query = require 'nvim-treesitter.query'
 
-for _, ft in pairs(parsers.available_parsers()) do
-  if ft == 'c_sharp' then
-    ft_str = ft_str .. 'cs' .. ','
-  else
-    ft_str = ft_str .. ft .. ','
-  end
-end
+local foldmethod_backups = {}
+local foldexpr_backups = {}
 
-autocmd_fold_str = 'autocmd Filetype ' .. ft_str .. ' setlocal foldmethod=expr foldexpr=nvim_treesitter#foldexpr()'
-api.nvim_command(autocmd_fold_str)
+define_modules {
+  folding = {
+    enable = true,
+    attach = function(bufnr)
+      -- Fold settings are actually window based...
+      foldmethod_backups[bufnr] = vim.wo.foldmethod
+      foldexpr_backups[bufnr] = vim.wo.foldexpr
+      vim.wo.foldmethod = 'expr'
+      vim.wo.foldexpr = 'nvim_treesitter#foldexpr()'
+    end,
+    detach = function(bufnr)
+      vim.wo.foldmethod = foldmethod_backups[bufnr]
+      vim.wo.foldexpr = foldexpr_backups[bufnr]
+      foldmethod_backups[bufnr] = nil
+      foldexpr_backups[bufnr] = nil
+    end,
+    is_supported = query.has_folds,
+  },
+}
