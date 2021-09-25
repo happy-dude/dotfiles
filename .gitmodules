@@ -167,7 +167,7 @@
 	ignore = dirty
 [submodule "org-mode"]
 	path = emacs/.config/emacs/plugins/org-mode
-	url = https://code.orgmode.org/bzg/org-mode.git
+	url = https://git.savannah.gnu.org/git/emacs/org-mode.git
 	ignore = dirty
 [submodule "org-roam"]
 	path = emacs/.config/emacs/plugins/org-roam
