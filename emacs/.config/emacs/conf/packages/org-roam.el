@@ -116,16 +116,16 @@
 (add-hook 'after-init-hook 'org-roam-db-autosync-mode)
 
 ;; org-roam-ui settings
-(add-to-list 'load-path "~/.config/emacs/plugins/emacs-web-server")
-(require 'simple-httpd)
-
-(add-to-list 'load-path "~/.config/emacs/plugins/emacs-websocket")
-(require 'websocket)
-
-(add-to-list 'load-path "~/.config/emacs/plugins/org-roam-ui")
-(require 'org-roam-ui)
-
-(setq org-roam-ui-sync-theme t
-      org-roam-ui-follow t
-      org-roam-ui-update-on-save t
-      org-roam-ui-open-on-start t)
+;(add-to-list 'load-path "~/.config/emacs/plugins/emacs-web-server")
+;(require 'simple-httpd)
+;
+;(add-to-list 'load-path "~/.config/emacs/plugins/emacs-websocket")
+;(require 'websocket)
+;
+;(add-to-list 'load-path "~/.config/emacs/plugins/org-roam-ui")
+;(require 'org-roam-ui)
+;
+;(setq org-roam-ui-sync-theme t
+;      org-roam-ui-follow t
+;      org-roam-ui-update-on-save t
+;      org-roam-ui-open-on-start t)
