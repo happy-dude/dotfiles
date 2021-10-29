@@ -5,6 +5,18 @@ local parsers = require 'nvim-treesitter.parsers'
 
 require('nvim-treesitter.install').compilers = { 'clang' }
 
+-- orgmode.nvim
+-- enable org-mode treesitter support (ref: https://github.com/kristijanhusak/orgmode.nvim/tree/tree-sitter#setup)
+local parser_config = require('nvim-treesitter.parsers').get_parser_configs()
+parser_config.org = {
+  install_info = {
+    url = 'https://github.com/milisims/tree-sitter-org',
+    revision = 'main',
+    files = { 'src/parser.c', 'src/scanner.cc' },
+  },
+  filetype = 'org',
+}
+
 require('nvim-treesitter.configs').setup {
   ensure_installed = 'maintained', -- one of "all", "language", or a list of languages
 
@@ -13,6 +25,7 @@ require('nvim-treesitter.configs').setup {
     enable = true, -- false will disable the whole extension
     disable = { 'perl' }, -- list of language that will be disabled
     -- custom_captures = { }    -- custom highlight groups for captures
+    additional_vim_regex_highlighting = { 'org' }, -- Required since TS highlighter doesn't support all orgmode.nvim syntax features (conceal)
   },
   incremental_selection = {
     enable = true,
