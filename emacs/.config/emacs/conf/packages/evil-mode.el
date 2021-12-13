@@ -22,13 +22,6 @@
 (require 'evil-surround)
 (global-evil-surround-mode 1)
 
-;; evil-org-mode
-;; https://github.com/Somelauw/evil-org-mode/issues/93
-(fset 'evil-redirect-digit-argument 'ignore)
-(add-to-list 'evil-digit-bound-motions 'evil-org-beginning-of-line)
-(evil-define-key 'motion 'evil-org-mode
-    (kbd "0") 'evil-org-beginning-of-line)
-
 (add-to-list 'load-path "~/.config/emacs/plugins/evil-org-mode")
 (require 'evil-org)
 (add-hook 'org-mode-hook 'evil-org-mode)
