@@ -20,6 +20,12 @@ parser_config.org = {
 require('nvim-treesitter.configs').setup {
   ensure_installed = 'maintained', -- one of "all", "language", or a list of languages
 
+  -- Install languages synchronously (only applied to `ensure_installed`)
+  sync_install = true,
+
+  -- List of parsers to ignore installing
+  ignore_install = { "norg" },
+
   -- nvim-treesitter native modules
   highlight = {
     enable = true, -- false will disable the whole extension
