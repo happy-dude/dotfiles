@@ -16,6 +16,8 @@ parser_config.org = {
   },
   filetype = 'org',
 }
+-- Load custom tree-sitter grammar for org filetype
+require('orgmode').setup_ts_grammar()
 
 require('nvim-treesitter.configs').setup {
   ensure_installed = 'maintained', -- one of "all", "language", or a list of languages
