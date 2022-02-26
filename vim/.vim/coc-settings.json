@@ -41,19 +41,6 @@
                 "plaintex",
                 "context"
             ]
-        },
-        "lua-language-server": {
-            "cwd": "/Users/stahn_mchan/sources/lua-language-server",
-            "command": "./bin/macOS/lua-language-server",
-            "args": [
-                "-E",
-                "-e",
-                "LANG=\"en-US\"",
-                "./main.lua"
-            ],
-            "filetypes": [
-                "lua"
-            ]
         }
     },
     "lua.enable": false,
