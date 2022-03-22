@@ -10,6 +10,10 @@
 	path = vim/.vim/pack/plugged/opt/ale
 	url = https://github.com/dense-analysis/ale
 	ignore = dirty
+[submodule "aniseed"]
+	path = vim/.vim/pack/plugged/opt/aniseed
+	url = https://github.com/Olical/aniseed.git
+	ignore = dirty
 [submodule "annalist.el"]
 	path = emacs/.config/emacs/plugins/annalist.el
 	url = https://github.com/noctuid/annalist.el.git
@@ -148,6 +152,10 @@
 [submodule "nvim-dap-ui"]
 	path = vim/.vim/pack/plugged/opt/nvim-dap-ui
 	url = https://github.com/rcarriga/nvim-dap-ui.git
+	ignore = dirty
+[submodule "nvim-parinfer"]
+	path = vim/.vim/pack/plugged/opt/nvim-parinfer
+	url = https://github.com/gpanders/nvim-parinfer.git
 	ignore = dirty
 [submodule "nvim-treesitter"]
 	path = vim/.vim/pack/plugged/opt/nvim-treesitter

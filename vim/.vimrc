@@ -74,7 +74,7 @@ if &loadplugins
   Plug 'editorconfig/editorconfig-vim'
   Plug 'fatih/vim-go'                                 ,   { 'for' : [ 'go', 'gomod', 'gohtmltmpl' ] }
   Plug 'gregsexton/MatchTag'                          ,   { 'for' : [ 'html', 'xml' ] }
-  Plug 'guns/vim-sexp'                                ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
+  Plug 'guns/vim-sexp'                                ,   { 'for' : [ 'clojure', 'fennel', 'lisp', 'scheme', 'racket' ] }
   Plug 'justinmk/vim-dirvish'
   Plug 'keith/swift.vim'                              ,   { 'for' : [ 'swift' ] }
   Plug 'lervag/vimtex'                                ,   { 'for' : [ 'tex' ] }
@@ -94,7 +94,7 @@ if &loadplugins
   Plug 'tpope/vim-markdown'                           ,   { 'for' : [ 'markdown' ] }
   Plug 'tpope/vim-repeat'
   Plug 'tpope/vim-rsi'
-  Plug 'tpope/vim-sexp-mappings-for-regular-people'   ,   { 'for' : [ 'clojure', 'lisp', 'scheme', 'racket' ] }
+  Plug 'tpope/vim-sexp-mappings-for-regular-people'   ,   { 'for' : [ 'clojure', 'fennel', 'lisp', 'scheme', 'racket' ] }
   Plug 'tpope/vim-speeddating'
   Plug 'tpope/vim-unimpaired'
   Plug 'vim-airline/vim-airline'
@@ -135,8 +135,17 @@ if &loadplugins
   " { Neovim-only packages
   if has('nvim')
 
-    " conjure
-    Plug 'Olical/conjure'
+    " hop.nvim
+    Plug 'phaazon/hop.nvim'                               " vim-easymotion
+
+    " Lisp + neovim-lua-based REPL
+    Plug 'Olical/aniseed'
+    Plug 'Olical/conjure'                                 " kovisoft/slimv
+    Plug 'gpanders/nvim-parinfer'
+
+    " nvim-dap
+    Plug 'mfussenegger/nvim-dap'
+    Plug 'rcarriga/nvim-dap-ui'
 
     " nvim-treesitter
     Plug 'nvim-treesitter/nvim-treesitter'
@@ -149,13 +158,6 @@ if &loadplugins
 
     " which-key.nvim
     Plug 'folke/which-key.nvim'
-
-    " hop.nvim
-    Plug 'phaazon/hop.nvim'                               " vim-easymotion
-
-    " nvim-dap
-    Plug 'mfussenegger/nvim-dap'
-    Plug 'rcarriga/nvim-dap-ui'
 
     " Enable coc.nvim if node.js is installed
     if executable('node')
@@ -190,7 +192,7 @@ if &loadplugins
   let s:indent_guides_settings  = s:vimpack_settings_dir . 'indent_guides.vim'
   execute                       'source' s:indent_guides_settings
 
-  if !has('nvim')               " disable rainbow in neovim
+  if !has('nvim')               " disable rainbow in vim
     let s:rainbow_settings      = s:vimpack_settings_dir . 'rainbow.vim'
     execute                     'source' s:rainbow_settings
   endif
