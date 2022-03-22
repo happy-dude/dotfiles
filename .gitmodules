@@ -26,6 +26,10 @@
 	path = vim/.vim/pack/plugged/opt/coc.nvim
 	url = https://github.com/neoclide/coc.nvim.git
 	ignore = dirty
+[submodule "conjure"]
+	path = vim/.vim/pack/plugged/opt/conjure
+	url = https://github.com/Olical/conjure.git
+	ignore = dirty
 [submodule "csv.vim"]
 	path = vim/.vim/pack/plugged/opt/csv.vim
 	url = https://github.com/chrisbra/csv.vim.git
@@ -216,10 +220,6 @@
 [submodule "slime"]
 	path = emacs/.config/emacs/plugins/slime
 	url = https://github.com/slime/slime.git
-	ignore = dirty
-[submodule "slimv"]
-	path = vim/.vim/pack/plugged/opt/slimv
-	url = https://github.com/kovisoft/slimv.git
 	ignore = dirty
 [submodule "solarized"]
 	path = other/themes/solarized_theme-altercation
