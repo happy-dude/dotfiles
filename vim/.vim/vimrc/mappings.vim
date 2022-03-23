@@ -1,5 +1,9 @@
 " custom mappings
 
+" Default leader: \ (backslash)
+" Local leader: , (comma) -- recommended for conjure and vim REPL environments
+let maplocalleader = ","
+
 " Map Ctrl-Backspace to delete previous word in insert mode like Ctrl-w
 " Note how this mapping does not work in terminal vim because of term-keys
 " However, this mapping will work just fine in gvim
