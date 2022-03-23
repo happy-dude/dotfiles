@@ -77,6 +77,7 @@ if &loadplugins
   Plug 'guns/vim-sexp'                                ,   { 'for' : [ 'clojure', 'fennel', 'lisp', 'scheme', 'racket' ] }
   Plug 'justinmk/vim-dirvish'
   Plug 'keith/swift.vim'                              ,   { 'for' : [ 'swift' ] }
+  Plug 'kovisoft/slimv'                               ,   { 'for' : [ 'clojure', 'fennel', 'lisp', 'scheme', 'racket' ] }
   Plug 'lervag/vimtex'                                ,   { 'for' : [ 'tex' ] }
   Plug 'luochen1990/rainbow'                          ,   !has('nvim') ? {} : { 'on': [] }
   Plug 'machakann/vim-sandwich'
@@ -147,7 +148,7 @@ if &loadplugins
     " Lisp + neovim-lua-based REPL
     Plug 'Olical/aniseed'                             ,   { 'for' : [ 'fennel' ] }
     Plug 'Olical/conjure'                             ,   { 'for' : [ 'clojure', 'fennel', 'lisp', 'scheme', 'racket' ] }
-    Plug 'gpanders/nvim-parinfer'
+    "Plug 'gpanders/nvim-parinfer'
 
     " nvim-dap
     Plug 'mfussenegger/nvim-dap'
@@ -199,6 +200,9 @@ if &loadplugins
 
   "let s:schlepp_settings        = s:vimpack_settings_dir . 'schlepp.vim'
   "execute                       'source' s:schlepp_settings
+
+  let s:slimv_settings          = s:vimpack_settings_dir . 'slimv.vim'
+  execute                       'source' s:slimv_settings
 
   let s:solarized_settings      = s:vimpack_settings_dir . 'solarized.vim'
   execute                       'source' s:solarized_settings

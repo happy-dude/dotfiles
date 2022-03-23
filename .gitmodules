@@ -229,6 +229,10 @@
 	path = emacs/.config/emacs/plugins/slime
 	url = https://github.com/slime/slime.git
 	ignore = dirty
+[submodule "slimv"]
+	path = vim/.vim/pack/plugged/opt/slimv
+	url = https://github.com/kovisoft/slimv.git
+	ignore = dirty
 [submodule "solarized"]
 	path = other/themes/solarized_theme-altercation
 	url = https://github.com/altercation/solarized.git
