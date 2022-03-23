@@ -137,10 +137,16 @@ if &loadplugins
 
     " hop.nvim
     Plug 'phaazon/hop.nvim'                               " vim-easymotion
+    "
+    " orgmode.nvim
+    Plug 'kristijanhusak/orgmode.nvim'
+
+    " which-key.nvim
+    Plug 'folke/which-key.nvim'
 
     " Lisp + neovim-lua-based REPL
-    Plug 'Olical/aniseed'
-    Plug 'Olical/conjure'                                 " kovisoft/slimv
+    Plug 'Olical/aniseed'                             ,   { 'for' : [ 'fennel' ] }
+    Plug 'Olical/conjure'                             ,   { 'for' : [ 'clojure', 'fennel', 'lisp', 'scheme', 'racket' ] }
     Plug 'gpanders/nvim-parinfer'
 
     " nvim-dap
@@ -152,12 +158,6 @@ if &loadplugins
     Plug 'nvim-treesitter/nvim-treesitter-refactor'
     Plug 'nvim-treesitter/nvim-treesitter-textobjects'
     Plug 'p00f/nvim-ts-rainbow'                           " luochen1990/rainbow
-
-    " orgmode.nvim
-    Plug 'kristijanhusak/orgmode.nvim'
-
-    " which-key.nvim
-    Plug 'folke/which-key.nvim'
 
     " Enable coc.nvim if node.js is installed
     if executable('node')
@@ -197,8 +197,8 @@ if &loadplugins
     execute                     'source' s:rainbow_settings
   endif
 
-  let s:schlepp_settings        = s:vimpack_settings_dir . 'schlepp.vim'
-  execute                       'source' s:schlepp_settings
+  "let s:schlepp_settings        = s:vimpack_settings_dir . 'schlepp.vim'
+  "execute                       'source' s:schlepp_settings
 
   let s:solarized_settings      = s:vimpack_settings_dir . 'solarized.vim'
   execute                       'source' s:solarized_settings
