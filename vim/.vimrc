@@ -103,7 +103,7 @@ if &loadplugins
   Plug 'vim-pandoc/vim-pandoc-syntax'                 ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
   Plug 'vim-perl/vim-perl'                            ,   { 'for' : [ 'perl', 'perl6', 'mason' ], 'branch' : 'dev', 'do': 'make clean carp dancer highlight-all-pragmas moose test-more try-tiny' }
   Plug 'wlangstroth/vim-racket'                       ,   { 'for' : [ 'racket' ] }
-  Plug 'zirrostig/vim-schlepp'
+  "Plug 'zirrostig/vim-schlepp'
 
   " if fzf is available, use fzf.vim
   " otherwise, use ctrlp which is pure vimscript
