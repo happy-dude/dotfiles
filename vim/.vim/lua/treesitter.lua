@@ -31,7 +31,7 @@ require('nvim-treesitter.configs').setup {
   -- nvim-treesitter native modules
   highlight = {
     enable = true, -- false will disable the whole extension
-    disable = { 'perl' }, -- list of language that will be disabled
+    -- disable = { },           -- list of languages where highlighting will be disabled
     -- custom_captures = { }    -- custom highlight groups for captures
     additional_vim_regex_highlighting = { 'org' }, -- Required since TS highlighter doesn't support all orgmode.nvim syntax features (conceal)
   },
