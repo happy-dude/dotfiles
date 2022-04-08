@@ -41,7 +41,7 @@
    (makefile    . t)
    ;(matlab      . t)
    ;(max         . t)
-   (mscgen      . t)
+   ;(mscgen      . t)
    ;(ocaml       . t)
    ;(octave      . t)
    (org         . t)
