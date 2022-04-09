@@ -5,6 +5,10 @@ if has("autocmd")
   " TXT files
   "autocmd FileType text                              setlocal spell
 
+  " org files                                         " conceal links in normal and command modes
+  au FileType org                                     set conceallevel=2
+  au FileType org                                     set concealcursor=nc
+
   " help files
   au FileType help                                    set nonumber                    " no line numbers when viewing help
   au FileType help                                    nnoremap <buffer><CR> <C-]>     " Enter selects subject

@@ -308,13 +308,9 @@ if has('nvim')
 lua <<EOF
   -- configs in lua/ directory
   require('hop_nvim')
+  require('org')
   require('treesitter')
 
-  -- barebones configs
-  require('orgmode').setup{
-    org_agenda_files = {'~/org/*', '~/org/roam/**'},
-    org_default_notes_file = '~/org/notes.org',
-  }
   require('which-key').setup{}
 EOF
 endif
