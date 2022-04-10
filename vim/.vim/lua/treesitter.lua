@@ -5,7 +5,7 @@ local api = vim.api
 require('nvim-treesitter.install').compilers = { 'clang' }
 
 require('nvim-treesitter.configs').setup {
-  ensure_installed = 'maintained', -- one of "all", "language", or a list of languages
+  ensure_installed = 'all', -- one of "all", "language", or a list of languages
 
   -- Install languages synchronously (only applied to `ensure_installed`)
   sync_install = true,
