@@ -46,5 +46,6 @@
     "lua.enable": false,
     "markdownlint.onChange": false,
     "markdownlint.onOpen": false,
-    "markdownlint.onSave": true
+    "markdownlint.onSave": true,
+    "Lua.telemetry.enable": false
 }
