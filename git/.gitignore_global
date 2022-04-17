@@ -11,6 +11,8 @@
 *emacs/.config/emacs/bookmarks
 *emacs/.config/emacs/transient
 *emacs/.config/emacs/.org-id-locations
+*.vscode
+*vim/.vim/spell
 
 # Ignore xmonad compiled files and executables
 *.hi
