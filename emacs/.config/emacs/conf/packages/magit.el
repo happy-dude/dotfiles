@@ -4,6 +4,9 @@
 (add-to-list 'load-path "~/.config/emacs/plugins/dash.el")
 (require 'dash)
 
+(add-to-list 'load-path "~/.config/emacs/plugins/compat")
+(require 'compat)
+
 (add-to-list 'load-path "~/.config/emacs/plugins/libegit2")
 (require 'libgit)
 

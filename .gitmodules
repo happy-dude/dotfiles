@@ -30,6 +30,10 @@
 	path = vim/.vim/pack/plugged/opt/coc.nvim
 	url = https://github.com/neoclide/coc.nvim.git
 	ignore = dirty
+[submodule "compat"]
+	path = emacs/.config/emacs/plugins/compat
+	url = https://git.sr.ht/~pkal/compat
+	ignore = dirty
 [submodule "conjure"]
 	path = vim/.vim/pack/plugged/opt/conjure
 	url = https://github.com/Olical/conjure.git

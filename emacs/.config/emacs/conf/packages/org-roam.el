@@ -16,6 +16,9 @@
 (add-to-list 'load-path "~/.config/emacs/plugins/emacsql-sqlite3")
 (require 'emacsql-sqlite3)
 
+(add-to-list 'load-path "~/.config/emacs/plugins/compat")
+(require 'compat)
+
 (add-to-list 'load-path "~/.config/emacs/plugins/magit/lisp")
 (require 'magit-section)
 
