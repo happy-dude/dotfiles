@@ -103,7 +103,7 @@ font:
     # Use Fira Code Retina, Fira Code Bold
     #     Roboto Mono Italic, Roboto Mono Bold Italic
 
-    family: Fira Code
+    family: FiraCode Nerd Font Mono
 
     # The `style` can be specified to pick a specific face.
     style: Retina
@@ -114,7 +114,7 @@ font:
     #
     # If the bold family is not specified, it will fall back to the
     # value specified for the normal font.
-    family: Fira Code
+    family: FiraCode Nerd Font Mono
 
     # The `style` can be specified to pick a specific face.
     style: Bold
@@ -125,7 +125,7 @@ font:
     #
     # If the italic family is not specified, it will fall back to the
     # value specified for the normal font.
-    family: Roboto Mono
+    family: MesloLGS NF
 
     # The `style` can be specified to pick a specific face.
     style: Italic
@@ -136,7 +136,7 @@ font:
     #
     # If the bold italic family is not specified, it will fall back to the
     # value specified for the normal font.
-    family: Roboto Mono
+    family: MesloLGS NF
 
     # The `style` can be specified to pick a specific face.
     style: Bold Italic
