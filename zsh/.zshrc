@@ -27,7 +27,7 @@ alias et='TERM=xterm-256color emacsclient -nw'
 alias ef='emacsclient -nc'
 
 # luamake from sumneko
-alias luamake=/Users/stahn_mchan/sources/lua-language-server/3rd/luamake/luamake
+alias luamake="$HOME/sources/lua-language-server/3rd/luamake/luamake"
 
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
@@ -38,14 +38,14 @@ export EDITOR='nvim'
 export VISUAL='nvim'
 
 # LLVM, Xcode SDK
-export LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib"
-export CPPFLAGS="-I/usr/local/opt/llvm/include"
-export PATH="/usr/local/opt/llvm/bin:$PATH"
+export LDFLAGS="-L$(brew --prefix)/opt/llvm/lib -Wl,-rpath,$(brew --prefix)/opt/llvm/lib"
+export CPPFLAGS="-I$(brew --prefix)/opt/llvm/include"
+export PATH="$(brew --prefix)/opt/llvm/bin:$PATH"
 export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
 
 # programming language environments
 source ~/perl5/perlbrew/etc/bashrc
-perlbrew use 5.34.0
+perlbrew use 5.36.0
 export PATH="$HOME/.luarocks/bin:$PATH"
 export PATH="$HOME/node_modules/.bin:$PATH"
 export PATH="$(go env GOPATH)/bin:$PATH"
