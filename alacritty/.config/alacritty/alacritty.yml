@@ -394,7 +394,7 @@ live_config_reload: true
 #   - (Linux/BSD) user login shell
 #   - (Windows) powershell
 shell:
-  program: /usr/local/bin/zsh
+  program: /opt/homebrew/bin/zsh
   args:
     - --login
     - -c
@@ -626,7 +626,7 @@ key_bindings:
 
     # macOS
    - { key: N,      mods: Command,  command:
-     { program: "/usr/local/bin/alacritty", args: ["-e", "zsh"] }  }
+     { program: "/opt/homebrew/bin/alacritty", args: ["-e", "zsh"] }  }
    - { key: Space,  mods: Alt,      chars: " "                     }
    - { key: Left,   mods: Alt,      chars: "\x1bb"                      }
    - { key: Right,  mods: Alt,      chars: "\x1bf"                      }

@@ -15,13 +15,13 @@ parser_config.org = {
 }
 
 require('nvim-treesitter.configs').setup {
-  ensure_installed = 'all', -- one of "all", "language", or a list of languages
+  --ensure_installed = 'all', -- one of "all", "language", or a list of languages
 
   -- Install languages synchronously (only applied to `ensure_installed`)
   sync_install = true,
 
   -- List of parsers to ignore installing
-  ignore_install = { "norg" },
+  ignore_install = { "norg", "phpdoc" },
 
   -- nvim-treesitter native modules
   highlight = {

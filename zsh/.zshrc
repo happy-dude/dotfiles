@@ -110,20 +110,25 @@ export VISUAL='nvim'
 #export PATH="$(brew --prefix)/opt/llvm/bin:$PATH"
 #export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
 
+# Homebrew curl
+export PATH="/opt/homebrew/opt/curl/bin:$PATH"
+
 # programming language environments
 source ~/perl5/perlbrew/etc/bashrc
 perlbrew use 5.38.2
 export PATH="$HOME/.luarocks/bin:$PATH"
 export PATH="$HOME/node_modules/.bin:$PATH"
-export PATH="/usr/local/go/bin:$PATH"
+export GOPATH=$HOME/go
 export PATH="$(go env GOPATH)/bin:$PATH"
+#export PATH="/usr/local/go/bin:$PATH"
+source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
+source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
 source "$HOME/.cargo/env"
 export PATH="$HOME/.cargo/bin:$PATH"
 # docker
+export BUILDKIT_PROGRESS=plain
+export DOCKER_DEFAULT_PLATFORM=linux/amd64
 export DOCKER_BUILDKIT=1
-export BUILDKIT_PROGRESS=plain                  # building the VM may output auth URLs the user needs to click
-#export DOCKER_DEFAULT_PLATFORM=linux/amd64     # for Apple Silicon: building the VM only works in a amd64 environment at the moment
-#export DOCKER_HOST=unix:///home/schan/.docker/desktop/docker.sock          # linux docker-desktop host -- comment if using baseline docker-ce
 
 # eza
 if command -v eza &> /dev/null
