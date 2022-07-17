@@ -22,6 +22,9 @@ fi
 
 # Customize to your needs...
 
+# git
+alias gl="git log --date=relative --pretty='format:%C(blue)%h%C(auto)%d %s %C(8)- %an, %ad' --graph --all"
+
 # emacsclient
 alias et='TERM=xterm-256color emacsclient -nw'
 alias ef='emacsclient -nc'
