@@ -21,9 +21,6 @@ endif
 
 " vimconf directories for vimrc and plugin settings
 if has('nvim')
-  let g:do_filetype_lua = 1
-  let g:did_load_filetypes = 0
-
   let s:vim_dir = '~/.config/nvim/'
   let s:vimrc_dir = '~/.config/nvim/vimrc/'
   let s:vimpack_settings_dir = '~/.config/nvim/vimrc/packages/'
