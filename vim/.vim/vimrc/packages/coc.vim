@@ -27,7 +27,7 @@ let g:coc_global_extensions = [
       \ 'coc-json',
       \ 'coc-markdownlint',
       \ 'coc-perl',
-      \ 'coc-rls',
+      \ 'coc-rust-analyzer',
       \ 'coc-sh',
       \ 'coc-sumneko-lua',
       \ 'coc-tsserver',
