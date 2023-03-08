@@ -158,7 +158,11 @@ if &loadplugins
     Plug 'nvim-treesitter/nvim-treesitter'
     Plug 'nvim-treesitter/nvim-treesitter-refactor'
     Plug 'nvim-treesitter/nvim-treesitter-textobjects'
-    Plug 'https://gitlab.com/HiPhish/nvim-ts-rainbow2.git'  " HiPhish/nvim-ts-rainbow2
+    Plug 'https://gitlab.com/HiPhish/nvim-ts-rainbow2.git'  " luochen1990/rainbow
+
+    " neogit
+    Plug 'nvim-lua/plenary.nvim'
+    Plug 'TimUntersberger/neogit'
 
     " Enable coc.nvim if node.js is installed
     if executable('node')
@@ -313,6 +317,7 @@ lua <<EOF
   require('org')
   require('treesitter')
 
+  require('neogit').setup{}
   require('which-key').setup{}
 EOF
 endif

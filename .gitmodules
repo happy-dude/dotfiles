@@ -145,6 +145,10 @@
 	path = emacs/.config/emacs/plugins/magit
 	url = https://github.com/magit/magit.git
 	ignore = dirty
+[submodule "neogit"]
+	path = vim/.vim/pack/plugged/opt/neogit
+	url = https://github.com/TimUntersberger/neogit.git
+	ignore = dirty
 [submodule "nerdcommenter"]
 	path = vim/.vim/pack/plugged/opt/nerdcommenter
 	url = https://github.com/preservim/nerdcommenter.git
@@ -196,6 +200,10 @@
 [submodule "orgmode.nvim"]
 	path = vim/.vim/pack/plugged/opt/orgmode.nvim
 	url = https://github.com/kristijanhusak/orgmode.nvim.git
+	ignore = dirty
+[submodule "plenary.nvim"]
+	path = vim/.vim/pack/plugged/opt/plenary.nvim
+	url = https://github.com/nvim-lua/plenary.nvim.git
 	ignore = dirty
 [submodule "prezto-sorin"]
 	path = zsh/.zprezto
