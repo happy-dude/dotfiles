@@ -86,3 +86,5 @@ else
     echo "exa could not be found"
     exit
 fi
+# Created by `pipx` on 2023-06-09 20:07:02
+export PATH="$PATH:/Users/stahn_mchan/.local/bin"
