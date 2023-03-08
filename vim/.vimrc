@@ -158,7 +158,7 @@ if &loadplugins
     Plug 'nvim-treesitter/nvim-treesitter'
     Plug 'nvim-treesitter/nvim-treesitter-refactor'
     Plug 'nvim-treesitter/nvim-treesitter-textobjects'
-    Plug 'p00f/nvim-ts-rainbow'                           " luochen1990/rainbow
+    Plug 'https://gitlab.com/HiPhish/nvim-ts-rainbow2.git'  " HiPhish/nvim-ts-rainbow2
 
     " Enable coc.nvim if node.js is installed
     if executable('node')
@@ -317,5 +317,3 @@ lua <<EOF
 EOF
 endif
 " }
-
-

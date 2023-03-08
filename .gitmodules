@@ -173,9 +173,9 @@
 	path = vim/.vim/pack/plugged/opt/nvim-treesitter-textobjects
 	url = https://github.com/nvim-treesitter/nvim-treesitter-textobjects
 	ignore = dirty
-[submodule "nvim-ts-rainbow"]
-	path = vim/.vim/pack/plugged/opt/nvim-ts-rainbow
-	url = https://github.com/p00f/nvim-ts-rainbow.git
+[submodule "nvim-ts-rainbow2"]
+	path = vim/.vim/pack/plugged/opt/nvim-ts-rainbow2
+	url = https://gitlab.com/HiPhish/nvim-ts-rainbow2.git
 	ignore = dirty
 [submodule "org-journal"]
 	path = emacs/.config/emacs/plugins/org-journal
