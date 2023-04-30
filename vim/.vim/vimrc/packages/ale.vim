@@ -11,15 +11,15 @@ let g:ale_statusline_format = ['%dE', '%dW', 'OK']
 let g:ale_echo_msg_format = '[%linter%] [%severity%] %s'
 
 function! ALEc ()                               " ALE: C
-  let g:ale_c_gcc_options = '-Wall -Wextra -pedantic -g -ggdb -std=c11'
-  let g:ale_c_clang_options = '-Weverything -g -ggdb -glldb -std=c11'
+  let g:ale_c_gcc_options =  '-std=c17 -g3 -ggdb3 -glldb -Wall -Wextra -pedantic -Wconversion -Wdouble-promotion -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion -fsanitize=address,undefined -fsanitize-trap=alignment -fno-omit-frame-pointer'
+  let g:ale_c_clang_options = '-std=c17 -g3 -ggdb3 -glldb -Weverything -pedantic -Wconversion -Wdouble-promotion -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion -fsanitize=address,undefined -fsanitize-trap=alignment -fno-omit-frame-pointer'
 endfunction
 
 function! ALEcpp ()                             " ALE: C++
-  let g:ale_cpp_gcc_options = '--Wall -Wextra -pedantic -g -ggdb -std=c++14'
-  let g:ale_cpp_clang_options = '-Weverything -g -ggdb -glldb -std=c++14'
-  let g:ale_cpp_clangtidy_options = '-Weverything -std=c++11 -x c++'
-  let g:ale_cpp_clangcheck_options = '-- -Weverything -std=c++11 -x c++'
+  let g:ale_cpp_gcc_options = '-std=c++20 -g3 -ggdb3 -glldb -Wall -Wextra -pedantic -Wconversion -Wdouble-promotion -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion -fsanitize=address,undefined -fsanitize-trap=alignment -fno-omit-frame-pointer'
+  let g:ale_cpp_clang_options =  '-std=c++20 -g3 -ggdb3 -glldb -Weverything -pedantic -Wconversion -Wdouble-promotion -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion -fsanitize=address,undefined -fsanitize-trap=alignment -fno-omit-frame-pointer'
+  let g:ale_cpp_clangtidy_options =   '-std=c++20 -g3 -ggdb3 -glldb -Weverything -pedantic -Wconversion -Wdouble-promotion -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion -fsanitize=address,undefined -fsanitize-trap=alignment -fno-omit-frame-pointer -x c++'
+  let g:ale_cpp_clangcheck_options = '-- -std=c++20 -g3 -ggdb3 -glldb -Weverything -pedantic -Wconversion -Wdouble-promotion -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion -fsanitize=address,undefined -fsanitize-trap=alignment -fno-omit-frame-pointer -x c++'
 endfunction
 
 function! ALELinterStatus() abort

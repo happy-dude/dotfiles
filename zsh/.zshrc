@@ -22,6 +22,19 @@ fi
 
 # Customize to your needs...
 
+# cc flags
+if command -v clang &> /dev/null
+then
+    alias cc='clang -g3 -ggdb3 -glldb -Weverything -pedantic -Wconversion -Wdouble-promotion \
+        -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion \
+        -fsanitize=address,undefined -fsanitize-trap=alignment -fno-omit-frame-pointer'
+elif command -v gcc &> /dev/null
+then
+    alias cc='gcc -g3 -ggdb3 -glldb -Wall -Wextra -pedantic -Wconversion -Wdouble-promotion \
+        -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion \
+        -fsanitize=address,undefined -fsanitize-trap=alignment -fno-omit-frame-pointer'
+fi
+
 # git
 alias gl="git log --date=relative --pretty='format:%C(blue)%h%C(auto)%d %s %C(8)- %an, %ad' --graph --all"
 
