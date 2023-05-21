@@ -74,10 +74,10 @@ if &loadplugins
   Plug 'editorconfig/editorconfig-vim'
   Plug 'fatih/vim-go'                                 ,   { 'for' : [ 'go', 'gomod', 'gohtmltmpl' ] }
   Plug 'gregsexton/MatchTag'                          ,   { 'for' : [ 'html', 'xml' ] }
-  Plug 'guns/vim-sexp'                                ,   { 'for' : [ 'clojure', 'fennel', 'lisp', 'scheme', 'racket' ] }
+  Plug 'guns/vim-sexp'
   Plug 'justinmk/vim-dirvish'
   Plug 'keith/swift.vim'                              ,   { 'for' : [ 'swift' ] }
-  Plug 'kovisoft/slimv'                               ,   { 'for' : [ 'clojure', 'fennel', 'lisp', 'scheme', 'racket' ] }
+  Plug 'kovisoft/slimv'
   Plug 'lervag/vimtex'                                ,   { 'for' : [ 'tex' ] }
   Plug 'luochen1990/rainbow'                          ,   !has('nvim') ? {} : { 'on': [] }
   Plug 'machakann/vim-sandwich'
@@ -95,7 +95,7 @@ if &loadplugins
   Plug 'tpope/vim-markdown'                           ,   { 'for' : [ 'markdown' ] }
   Plug 'tpope/vim-repeat'
   Plug 'tpope/vim-rsi'
-  Plug 'tpope/vim-sexp-mappings-for-regular-people'   ,   { 'for' : [ 'clojure', 'fennel', 'lisp', 'scheme', 'racket' ] }
+  Plug 'tpope/vim-sexp-mappings-for-regular-people'
   Plug 'tpope/vim-speeddating'
   Plug 'tpope/vim-unimpaired'
   Plug 'vim-airline/vim-airline'
@@ -146,8 +146,8 @@ if &loadplugins
     Plug 'folke/which-key.nvim'
 
     " Lisp + neovim-lua-based REPL
-    Plug 'Olical/aniseed'                             ,   { 'for' : [ 'fennel' ] }
-    Plug 'Olical/conjure'                             ,   { 'for' : [ 'clojure', 'fennel', 'lisp', 'scheme', 'racket' ] }
+    Plug 'Olical/aniseed'
+    Plug 'Olical/conjure'
     "Plug 'gpanders/nvim-parinfer'
 
     " nvim-dap
