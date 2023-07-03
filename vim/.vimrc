@@ -162,7 +162,7 @@ if &loadplugins
 
     " neogit
     Plug 'nvim-lua/plenary.nvim'
-    Plug 'TimUntersberger/neogit'
+    Plug 'NeogitOrg/neogit'
 
     " Enable coc.nvim if node.js is installed
     if executable('node')
