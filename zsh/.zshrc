@@ -61,7 +61,7 @@ export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
 
 # programming language environments
 source ~/perl5/perlbrew/etc/bashrc
-perlbrew use 5.36.0
+perlbrew use 5.38.0
 export PATH="$HOME/.luarocks/bin:$PATH"
 export PATH="$HOME/node_modules/.bin:$PATH"
 export PATH="$(go env GOPATH)/bin:$PATH"
