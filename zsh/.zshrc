@@ -68,22 +68,22 @@ export PATH="$(go env GOPATH)/bin:$PATH"
 source "$HOME/.cargo/env"
 export PATH="$HOME/.cargo/bin:$PATH"
 
-# exa
-if command -v exa &> /dev/null
+# eza
+if command -v eza &> /dev/null
 then
-    alias ls='exa'                                                          # ls
-    alias l='exa -lbF --git'                                                # list, size, type, git
-    alias ll='exa -lbGF --git'                                              # long list
-    alias llm='exa -lbGd --git --sort=modified'                             # long list, modified date sort
-    alias la='exa -lbhHigUmuSa --time-style=long-iso --git --color-scale'   # all list
-    alias lx='exa -lbhHigUmuSa@ --time-style=long-iso --git --color-scale'  # all + extended list
+    alias ls='eza'                                                          # ls
+    alias l='eza -lbF --git'                                                # list, size, type, git
+    alias ll='eza -lbGF --git'                                              # long list
+    alias llm='eza -lbGd --git --sort=modified'                             # long list, modified date sort
+    alias la='eza -lbhHigUmuSa --time-style=long-iso --git --color-scale'   # all list
+    alias lx='eza -lbhHigUmuSa@ --time-style=long-iso --git --color-scale'  # all + extended list
 
     # specialty views
-    alias lS='exa -1'                                                       # one column, just names
-    alias lt='exa -lbGF --tree --level=2'                                   # tree
-    alias lg='exa -lbGd --git --sort=modified --tree --level=2'             # tree w/ git
+    alias lS='eza -1'                                                       # one column, just names
+    alias lt='eza -lbGF --tree --level=2'                                   # tree
+    alias lg='eza -lbGd --git --sort=modified --tree --level=2'             # tree w/ git
 else
-    echo "exa could not be found"
+    echo "eza could not be found"
     exit
 fi
 # Created by `pipx` on 2023-06-09 20:07:02
