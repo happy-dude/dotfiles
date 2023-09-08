@@ -10,9 +10,9 @@ parser_config.org = {
   install_info = {
     url = 'https://github.com/milisims/tree-sitter-org',
     revision = 'main',
-    files = { 'src/parser.c', 'src/scanner.cc' },
+    files = { 'src/parser.c', 'src/scanner.c' },
   },
-  filetype = 'perl',
+  filetype = 'org',
 }
 
 require('nvim-treesitter.configs').setup {

@@ -109,7 +109,7 @@ if &loadplugins
   " if fzf is available, use fzf.vim
   " otherwise, use ctrlp which is pure vimscript
   if executable('fzf')
-    Plug 'junegunn/fzf'
+    Plug 'junegunn/fzf'                               ,   { 'do': { -> fzf#install() } }
     Plug 'junegunn/fzf.vim'
 
     let s:fzf_settings    = s:vimpack_settings_dir . 'fzf.vim'
@@ -166,7 +166,7 @@ if &loadplugins
 
     " Enable coc.nvim if node.js is installed
     if executable('node')
-      Plug 'neoclide/coc.nvim'                        ,   {'branch': 'master', 'do': 'yarn install --frozen-lockfile'}
+      Plug 'neoclide/coc.nvim'                        ,   {'branch': 'master', 'do': 'npm ci'}
 
       let s:coc_settings = s:vimpack_settings_dir . 'coc.vim'
       execute 'source' s:coc_settings

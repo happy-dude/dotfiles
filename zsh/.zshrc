@@ -22,6 +22,12 @@ fi
 
 # Customize to your needs...
 
+# Turn off terminal flow control (ctrl-q and ctrl-s)
+#stty -ixon -ixoff
+
+# LESS mouse scrolling
+#export LESS="--mouse"
+
 # cc flags
 if command -v clang &> /dev/null
 then
@@ -47,6 +53,7 @@ alias luamake="$HOME/sources/lua-language-server/3rd/luamake/luamake"
 
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+#[ -d $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/ ] && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/*.zsh
 export FZF_DEFAULT_COMMAND="$(which rg) --files --hidden --follow --glob '!.git'"
 
 # nvim default editor
@@ -65,6 +72,7 @@ perlbrew use 5.38.0
 export PATH="$HOME/.luarocks/bin:$PATH"
 export PATH="$HOME/node_modules/.bin:$PATH"
 export PATH="$(go env GOPATH)/bin:$PATH"
+#export PATH="/usr/local/go/bin:$PATH"
 source "$HOME/.cargo/env"
 export PATH="$HOME/.cargo/bin:$PATH"
 
@@ -88,3 +96,4 @@ else
 fi
 # Created by `pipx` on 2023-06-09 20:07:02
 export PATH="$PATH:/Users/stahn_mchan/.local/bin"
+#export PATH="$PATH:/home/schan/.local/bin"
