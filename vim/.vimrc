@@ -137,7 +137,7 @@ if &loadplugins
   if has('nvim')
 
     " hop.nvim
-    Plug 'phaazon/hop.nvim'                               " vim-easymotion
+    Plug 'smoka7/hop.nvim'                               " vim-easymotion
     "
     " orgmode.nvim
     Plug 'kristijanhusak/orgmode.nvim'
