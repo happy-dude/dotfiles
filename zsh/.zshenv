@@ -9,4 +9,4 @@
 if [[ ( "$SHLVL" -eq 1 && ! -o LOGIN ) && -s "${ZDOTDIR:-$HOME}/.zprofile" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprofile"
 fi
-if [ -e /Users/stahn_mchan/.nix-profile/etc/profile.d/nix.sh ]; then . /Users/stahn_mchan/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
+. /home/schan/.local/share/cloudflare-warp-certs/config.sh

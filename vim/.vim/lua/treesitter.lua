@@ -2,7 +2,7 @@
 
 local api = vim.api
 
-require('nvim-treesitter.install').compilers = { 'clang' }
+require('nvim-treesitter.install').compilers = { 'gcc' }
 
 local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
 parser_config.org = {

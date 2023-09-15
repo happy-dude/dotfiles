@@ -48,6 +48,10 @@ config.font_size = 16.0
 config.custom_block_glyphs = true
 config.harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' }   -- disable ligatures
 
+wezterm.on('open-uri', function(window, pane, uri)
+  wezterm.open_with(uri, 'firefox-trunk')
+end)
+
 config.leader = {
   key = '`',
   mods = 'CTRL',
