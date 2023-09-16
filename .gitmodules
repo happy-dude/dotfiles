@@ -6,10 +6,6 @@
 	path = vim/.vim/pack/plugged/opt/ale
 	url = https://github.com/dense-analysis/ale
 	ignore = dirty
-[submodule "aniseed"]
-	path = vim/.vim/pack/plugged/opt/aniseed
-	url = https://github.com/Olical/aniseed.git
-	ignore = dirty
 [submodule "annalist.el"]
 	path = emacs/.config/emacs/plugins/annalist.el
 	url = https://github.com/noctuid/annalist.el.git
@@ -153,6 +149,10 @@
 [submodule "nerdcommenter"]
 	path = vim/.vim/pack/plugged/opt/nerdcommenter
 	url = https://github.com/preservim/nerdcommenter.git
+	ignore = dirty
+[submodule "nfnl"]
+	path = vim/.vim/pack/plugged/opt/nfnl
+	url = https://github.com/Olical/nfnl.git
 	ignore = dirty
 [submodule "nvim-dap"]
 	path = vim/.vim/pack/plugged/opt/nvim-dap

@@ -146,7 +146,7 @@ if &loadplugins
     Plug 'folke/which-key.nvim'
 
     " Lisp + neovim-lua-based REPL
-    Plug 'Olical/aniseed'
+    Plug 'Olical/nfnl'
     Plug 'Olical/conjure'
     "Plug 'gpanders/nvim-parinfer'
 
