@@ -158,7 +158,7 @@ if &loadplugins
     Plug 'nvim-treesitter/nvim-treesitter'
     Plug 'nvim-treesitter/nvim-treesitter-refactor'
     Plug 'nvim-treesitter/nvim-treesitter-textobjects'
-    Plug 'https://gitlab.com/HiPhish/nvim-ts-rainbow2.git'  " luochen1990/rainbow
+    Plug 'https://gitlab.com/HiPhish/rainbow-delimiters.nvim.git'   " luochen1990/rainbow
 
     " neogit
     Plug 'nvim-lua/plenary.nvim'

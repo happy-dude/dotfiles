@@ -178,10 +178,6 @@
 	path = vim/.vim/pack/plugged/opt/nvim-treesitter-textobjects
 	url = https://github.com/nvim-treesitter/nvim-treesitter-textobjects
 	ignore = dirty
-[submodule "nvim-ts-rainbow2"]
-	path = vim/.vim/pack/plugged/opt/nvim-ts-rainbow2
-	url = https://gitlab.com/HiPhish/nvim-ts-rainbow2.git
-	ignore = dirty
 [submodule "org-journal"]
 	path = emacs/.config/emacs/plugins/org-journal
 	url = https://github.com/bastibe/org-journal.git
@@ -221,6 +217,10 @@
 [submodule "rainbow-delimiters"]
 	path = emacs/.config/emacs/plugins/rainbow-delimiters
 	url = https://github.com/Fanael/rainbow-delimiters.git
+	ignore = dirty
+[submodule "rainbow-delimiters.nvim"]
+	path = vim/.vim/pack/plugged/opt/rainbow-delimiters.nvim
+	url = https://gitlab.com/HiPhish/rainbow-delimiters.nvim.git
 	ignore = dirty
 [submodule "rust.vim"]
 	path = vim/.vim/pack/plugged/opt/rust.vim
