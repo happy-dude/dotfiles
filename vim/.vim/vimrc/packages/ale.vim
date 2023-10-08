@@ -2,6 +2,7 @@
 
 let g:ale_open_list = 1                         " Show ALE messages in a loclist pane
 let g:ale_lint_on_text_changed = "never"        " Lint only when files are saved; linting when text changes is overkill/ annoying
+let g:ale_lint_on_save = 0
 let g:ale_lint_on_insert_leave = 0
 let g:ale_lint_on_enter = 0
 

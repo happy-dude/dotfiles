@@ -7,7 +7,7 @@ else
   let s:vim_plugged_dir = '~/.vim/pack/plugged/opt/'
 endif
 
-if (&t_Co >= 16) && (($TERM =~# "color") || ($TERM =~# "alacritty")) && (has("termguicolors")) && (!has("gui_running"))
+if (&t_Co >= 16) && (($TERM =~# "color") || ($TERM =~# "alacritty") || ($TERM =~# "wezterm")) && (has("termguicolors")) && (!has("gui_running"))
 
   set notermguicolors     " Personally prefer the flattened 256-color palettes instead of true color ones
 
