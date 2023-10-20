@@ -24,13 +24,16 @@ endif
 
 " relativenumber is a Vim 7.3 option
 " If the option doesn't exist, fall back to just absolute line numbers
-if exists('+relativenumber') && (version >= 704) || (version == 703) && has("patch1115")
-  set relativenumber  " Display how far away each line is from the current one by default
-  set number          " When used with relativenumber, the absolute line of the current
-  set numberwidth=5   " Aesthetic uses only... and for displaying large line numbers
-
-elseif exists('+relativenumber')
+"if exists('+relativenumber') && (version >= 704) || (version == 703) && has("patch1115")
+"  set relativenumber  " Display how far away each line is from the current one by default
+"  set number          " When used with relativenumber, the absolute line of the current
+"  set numberwidth=5   " Aesthetic uses only... and for displaying large line numbers
+"
+"elseif exists('+relativenumber')
+if exists('+relativenumber')
   set relativenumber  "Display how far away each line is from the current one by default
+  set number
+  set numberwidth=5   " Aesthetic uses only... and for displaying large line numbers
 
   " Switch to absolute line numbers whenever Vim loses focus
   autocmd FocusLost * :set number
