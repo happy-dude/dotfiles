@@ -41,11 +41,15 @@
                 "plaintex",
                 "context"
             ]
-        }
+        },
     },
-    "lua.enable": false,
     "markdownlint.onChange": false,
     "markdownlint.onOpen": false,
     "markdownlint.onSave": true,
-    "Lua.telemetry.enable": false
+    "lua.enable": false,
+    "Lua.telemetry.enable": false,
+    "Lua.workspace.library": [
+        "${3rd}/luv/library"
+        ],
+    "sumneko-lua.enableNvimLuaDev": true
 }

@@ -313,6 +313,7 @@ lua <<EOF
   -- configs in lua/ directory
   require('qol')
 
+  require('debugging')
   require('hop_nvim')
   require('org')
   require('treesitter')
