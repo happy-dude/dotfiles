@@ -23,10 +23,11 @@ fi
 # Customize to your needs...
 
 # Turn off terminal flow control (ctrl-q and ctrl-s)
-#stty -ixon -ixoff
+# already set in prezto with `unsetopt FLOW_CONTROL` in modules/completion/init.zsh
+#stty -F/dev/tty -ixon -ixoff
 
 # LESS mouse scrolling
-#export LESS="--mouse"
+export LESS='--mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --window=-4 --CLEAR-SCREEN'
 
 # cc flags
 if command -v clang &> /dev/null
@@ -40,6 +41,9 @@ then
         -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion \
         -fsanitize=address,undefined -fsanitize-trap=alignment -fno-omit-frame-pointer'
 fi
+
+# virtme
+alias vmeamd="virtme-run --show-boot-console --show-command --memory 8G --rw --kdir . --mods=auto --net user -a nokaslr --qemu-opts -enable-kvm -cpu host -s"
 
 # git
 alias gl="git log --date=relative --pretty='format:%C(blue)%h%C(auto)%d %s %C(8)- %an, %ad' --graph --all"
@@ -61,20 +65,25 @@ export EDITOR='nvim'
 export VISUAL='nvim'
 
 # LLVM, Xcode SDK
-export LDFLAGS="-L$(brew --prefix)/opt/llvm/lib -Wl,-rpath,$(brew --prefix)/opt/llvm/lib"
-export CPPFLAGS="-I$(brew --prefix)/opt/llvm/include"
-export PATH="$(brew --prefix)/opt/llvm/bin:$PATH"
-export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
+#export LDFLAGS="-L$(brew --prefix)/opt/llvm/lib -Wl,-rpath,$(brew --prefix)/opt/llvm/lib"
+#export CPPFLAGS="-I$(brew --prefix)/opt/llvm/include"
+#export PATH="$(brew --prefix)/opt/llvm/bin:$PATH"
+#export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
 
 # programming language environments
 source ~/perl5/perlbrew/etc/bashrc
 perlbrew use 5.38.0
 export PATH="$HOME/.luarocks/bin:$PATH"
 export PATH="$HOME/node_modules/.bin:$PATH"
-export PATH="$(go env GOPATH)/bin:$PATH"
-#export PATH="/usr/local/go/bin:$PATH"
+#export PATH="$(go env GOPATH)/bin:$PATH"
+export PATH="/usr/local/go/bin:$PATH"
 source "$HOME/.cargo/env"
 export PATH="$HOME/.cargo/bin:$PATH"
+# docker
+export DOCKER_BUILDKIT=1
+export BUILDKIT_PROGRESS=plain                  # building the VM may output auth URLs the user needs to click
+#export DOCKER_DEFAULT_PLATFORM=linux/amd64     # for Apple Silicon: building the VM only works in a amd64 environment at the moment
+#export DOCKER_HOST=unix:///home/schan/.docker/desktop/docker.sock          # linux docker-desktop host -- comment if using baseline docker-ce
 
 # eza
 if command -v eza &> /dev/null
@@ -95,5 +104,5 @@ else
     exit
 fi
 # Created by `pipx` on 2023-06-09 20:07:02
-export PATH="$PATH:/Users/stahn_mchan/.local/bin"
-#export PATH="$PATH:/home/schan/.local/bin"
+#export PATH="$PATH:/Users/stahn_mchan/.local/bin"
+export PATH="$PATH:/home/schan/.local/bin"
