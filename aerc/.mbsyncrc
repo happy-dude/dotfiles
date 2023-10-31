@@ -1,0 +1,21 @@
+IMAPAccount lostsanctum
+Host imap.migadu.com
+User schan@lostsanctum.dev
+PassCmd "pass show email/aerc-schan@lostsanctum.dev"
+SSLType IMAPS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore lostsanctum-remote
+Account lostsanctum
+
+MaildirStore lostsanctum-local
+Path ~/.mail/
+Inbox ~/.mail/INBOX
+SubFolders Verbatim
+
+Channel lostsanctum
+Far :lostsanctum-remote:
+Near :lostsanctum-local:
+Patterns *
+Create Both
+SyncState *

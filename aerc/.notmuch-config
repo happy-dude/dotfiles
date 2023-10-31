@@ -1,0 +1,19 @@
+[database]
+
+path=/home/schan/.mail
+
+[user]
+name=Stanley Chan
+primary_email=schan@lostsanctum.dev
+
+[new]
+tags=unread;inbox;sent;
+ignore=
+
+[search]
+exclude_tags=deleted;spam;
+[maildir]
+synchronize_flags=true
+
+[crypto]
+gpg_path=gpg
