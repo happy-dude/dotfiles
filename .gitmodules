@@ -24,7 +24,7 @@
 	ignore = dirty
 [submodule "compat"]
 	path = emacs/.config/emacs/plugins/compat
-	url = https://git.sr.ht/~pkal/compat
+	url = https://github.com/emacs-compat/compat.git
 	ignore = dirty
 [submodule "conjure"]
 	path = vim/.vim/pack/plugged/opt/conjure
