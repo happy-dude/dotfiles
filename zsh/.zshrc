@@ -34,12 +34,14 @@ if command -v clang &> /dev/null
 then
     alias cc='clang -g3 -ggdb3 -glldb -Weverything -pedantic -Wconversion -Wdouble-promotion \
         -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion \
-        -fsanitize=address,undefined -fsanitize-trap=alignment -fno-omit-frame-pointer'
+        -fsanitize=address,undefined -fsanitize-trap=alignment -fno-omit-frame-pointer \
+        -Wl,-z,relro,-z,now,-z,noexecstack,-z,noexecheap -fstack-protector-all -pie -fPIE -D_FORTIFY_SOURCE=2'
 elif command -v gcc &> /dev/null
 then
-    alias cc='gcc -g3 -ggdb3 -glldb -Wall -Wextra -pedantic -Wconversion -Wdouble-promotion \
+    alias cc='gcc -g3 -ggdb3 -Wall -Wextra -pedantic -Wconversion -Wdouble-promotion \
         -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion \
-        -fsanitize=address,undefined -fsanitize-trap=alignment -fno-omit-frame-pointer'
+        -fsanitize=address,undefined -fsanitize-trap=alignment -fno-omit-frame-pointer \
+        -Wl,-z,relro,-z,now,-z,noexecstack,-z,noexecheap -fstack-protector-all -pie -fPIE -D_FORTIFY_SOURCE=2'
 fi
 
 # virtme
