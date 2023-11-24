@@ -1,0 +1,65 @@
+#
+# aerc gruvbox styleset
+#
+# This styleset uses the terminal defaults as its fallback.
+# More information on how to configure the styleset can be found in
+# the aerc-stylesets(7) manpage. Please read the manual before
+# modifying or creating a styleset.
+#
+
+*.default=true
+
+default.bg=#282828
+
+title.reverse=true
+header.bold=true
+header.fg=#d4be98
+
+*error.bold=true
+error.fg=#ea6962
+warning.fg=#d8a657
+success.fg=#a9b665
+
+statusline*.default=true
+statusline_default.reverse=true
+statusline_error.fg=#ea6962
+statusline_error.reverse=true
+statusline_default.fg=#3c3836
+statusline_default.bg=#d8a657
+
+dirlist_default.selected.fg=#d4be98
+dirlist_default.selected.bg=#3c3836
+dirlist_recent.selected.fg=#3c3836
+dirlist_recent.selected.bg=#d4be98
+dirlist_unread.fg=#a9b665
+dirlist_unread.selected.fg=#a9b665
+dirlist_unread.selected.bg=#3c3836
+
+msglist_default.selected.fg=#3c3836
+msglist_default.selected.bg=#d4be98
+msglist_unread.bold=true
+msglist_unread.fg=#a9b665
+msglist_unread.selected.bg=#3c3836
+msglist_read.selected.fg=#d4be98
+msglist_read.selected.bg=#3c3836
+msglist_marked.fg=#d8a657
+msglist_marked.selected.fg=#d8a657
+msglist_marked.selected.bg=#3c3836
+msglist_deleted.fg=#ea6962
+msglist_result.fg=#d4be98
+msglist_result.selected.bg=#3c3836
+
+msglist_deleted.selected.reverse=toggle
+
+completion_pill.reverse=true
+
+tab.reverse=true
+border.reverse=true
+tab.bg=#d8a657
+tab.fg=#3c3836
+tab.selected.bg=#3c3836
+tab.selected.fg=#d8a657
+border.fg=#3c3836
+
+selector_focused.reverse=true
+selector_chooser.bold=true
