@@ -48,8 +48,9 @@ fi
 alias vmeamd="virtme-run --show-boot-console --show-command --memory 8G --rw --kdir . --mods=auto --net user -a nokaslr --qemu-opts -enable-kvm -cpu host -s"
 
 # git
-alias gl="git log --date=relative --abbrev=8 -n 160 \
+alias gl="git log --date=relative --abbrev=12 -n 160 \
     --pretty='format:%C(dim blue)%h%C(auto)%d %s %>|(68,trunc)%C(8)- %C(dim magenta)%an%C(8), %ad' --graph --all"
+alias gits="git --no-pager show --no-patch --format='commit %h (\"%s\")%n'"
 
 # emacsclient
 alias et='TERM=xterm-256color emacsclient -nw'
