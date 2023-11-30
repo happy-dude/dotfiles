@@ -50,6 +50,11 @@
     "Lua.telemetry.enable": false,
     "Lua.workspace.library": [
         "${3rd}/luv/library"
-        ],
-    "sumneko-lua.enableNvimLuaDev": true
+    ],
+    "sumneko-lua.enableNvimLuaDev": true,
+    "workspace.ignoredFolders": [
+        "$HOME",
+        "$HOME/.cargo/**",
+        "$HOME/.rustup/**"
+    ]
 }
