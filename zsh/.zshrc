@@ -45,7 +45,7 @@ then
 fi
 
 # virtme
-alias vmeamd="virtme-run --show-boot-console --show-command --memory 8G --rw --kdir . --mods=auto --net user -a nokaslr --qemu-opts -enable-kvm -cpu host -s"
+alias vmeamd="~/sources/virtme-ng/virtme-run --show-boot-console --show-command --memory 8G --rw --rwdir=/home/schan/cf-repos/bpf-lsm --kdir . --mods=auto --net user -a nokaslr"
 
 # git
 alias gl="git log --date=relative --abbrev=12 -n 160 \
