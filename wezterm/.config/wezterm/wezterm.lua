@@ -30,6 +30,9 @@ config.window_padding = {
   bottom = '0.25cell',
 }
 
+config.initial_cols = 120
+config.initial_rows = 36
+
 config.window_decorations = 'TITLE | RESIZE'
 config.text_background_opacity = 1.0
 config.scrollback_lines = 50000
