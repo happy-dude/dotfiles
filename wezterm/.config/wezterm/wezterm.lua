@@ -12,6 +12,8 @@ end
 
 -- This is where you actually apply your config choices
 
+config.enable_wayland = false
+
 config.set_environment_variables = {
   TERMINFO_DIRS = '/home/schan/.terminfo',
 }
@@ -42,7 +44,7 @@ config.hide_tab_bar_if_only_one_tab = true
 
 config.color_scheme = 'Gruvbox Material (Gogh)'
 config.font = wezterm.font('Fira Code')
-config.font_size = 14.0
+config.font_size = 16.0
 config.custom_block_glyphs = true
 config.harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' }   -- disable ligatures
 

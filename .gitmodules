@@ -162,6 +162,10 @@
 	path = vim/.vim/pack/plugged/opt/nvim-dap-ui
 	url = https://github.com/rcarriga/nvim-dap-ui.git
 	ignore = dirty
+[submodule "nvim-nio"]
+	path = vim/.vim/pack/plugged/opt/nvim-nio
+	url = https://github.com/nvim-neotest/nvim-nio.git
+	ignore = dirty
 [submodule "nvim-parinfer"]
 	path = vim/.vim/pack/plugged/opt/nvim-parinfer
 	url = https://github.com/gpanders/nvim-parinfer.git
