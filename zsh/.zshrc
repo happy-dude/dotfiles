@@ -35,15 +35,13 @@ then
     alias cc='clang \
         -g3 -ggdb3 -glldb \
         -Weverything -pedantic \
-	-Wimplicit-fallthrough \
-	-Wmissing-prototypes \
         -Wconversion \
         -Wdouble-promotion \
-	-fno-omit-frame-pointer \
-	-fstack-protector-all \
+	-Wimplicit-fallthrough \
+	-Wmissing-prototypes \
         -fno-omit-frame-pointer \
-        -fsanitize-trap=alignment \
         -fsanitize=address,undefined \
+        -fsanitize-trap=alignment \
         -fstack-protector-all \
         -fPIE \
         -fPIC \
@@ -54,15 +52,13 @@ then
     alias cc='gcc \
         -g3 -ggdb3 \
         -Wall -Wextra -pedantic \
-	-Wimplicit-fallthrough \
-	-Wmissing-prototypes \
         -Wconversion \
         -Wdouble-promotion \
-	-fno-omit-frame-pointer \
-	-fstack-protector-all \
+	-Wimplicit-fallthrough \
+	-Wmissing-prototypes \
         -fno-omit-frame-pointer \
-        -fsanitize-trap=alignment \
         -fsanitize=address,undefined \
+        -fsanitize-trap=alignment \
         -fstack-protector-all \
         -fPIE \
         -fPIC \
