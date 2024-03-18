@@ -30,6 +30,11 @@ fi
 export LESS='--mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --window=-4 --CLEAR-SCREEN'
 
 # cc flags
+# https://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html
+# https://clang.llvm.org/docs/UsersManual.html#diagnostics-enable-everything
+# https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
+# https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html
+# https://songdongsheng.github.io/2021/03/21/statically-linked-executable-hardening-with-pie/
 if command -v clang &> /dev/null
 then
     alias cc='clang \
@@ -42,11 +47,13 @@ then
         -fno-omit-frame-pointer \
         -fsanitize=address,undefined \
         -fsanitize-trap=alignment \
-        -fstack-protector-all \
+        -fstack-clash-protection \
+        -fstack-protector-strong \
         -fPIE \
         -fPIC \
-        -D_FORTIFY_SOURCE=2 \
-        -Wl,-z,relro,-z,now,-z,noexecstack,-z,noexecheap,-pie'
+        -D_FORTIFY_SOURCE=3 \
+        -D_GLIBCXX_ASSERTIONS \
+        -Wl,-z,defs,-z,relro,-z,now,-z,noexecstack,-z,noexecheap,-pie'
 elif command -v gcc &> /dev/null
 then
     alias cc='gcc \
@@ -59,11 +66,14 @@ then
         -fno-omit-frame-pointer \
         -fsanitize=address,undefined \
         -fsanitize-trap=alignment \
-        -fstack-protector-all \
+        -fstack-clash-protection \
+        -fstack-protector-strong \
+        -ftrivial-auto-var-init=zero \
         -fPIE \
         -fPIC \
-        -D_FORTIFY_SOURCE=2 \
-        -Wl,-z,relro,-z,now,-z,noexecstack,-z,noexecheap,-pie'
+        -D_FORTIFY_SOURCE=3 \
+        -D_GLIBCXX_ASSERTIONS \
+        -Wl,-z,defs,-z,relro,-z,now,-z,noexecstack,-z,noexecheap,-pie'
 fi
 
 # virtme
