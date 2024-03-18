@@ -32,16 +32,42 @@ export LESS='--mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --
 # cc flags
 if command -v clang &> /dev/null
 then
-    alias cc='clang -g3 -ggdb3 -glldb -Weverything -pedantic -Wconversion -Wdouble-promotion \
-        -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion \
-        -fsanitize=address,undefined -fsanitize-trap=alignment -fno-omit-frame-pointer \
-        -Wl,-z,relro,-z,now,-z,noexecstack,-z,noexecheap -fstack-protector-all -pie -fPIE -D_FORTIFY_SOURCE=2'
+    alias cc='clang \
+        -g3 -ggdb3 -glldb \
+        -Weverything -pedantic \
+	-Wimplicit-fallthrough \
+	-Wmissing-prototypes \
+        -Wconversion \
+        -Wdouble-promotion \
+	-fno-omit-frame-pointer \
+	-fstack-protector-all \
+        -fno-omit-frame-pointer \
+        -fsanitize-trap=alignment \
+        -fsanitize=address,undefined \
+        -fstack-protector-all \
+        -fPIE \
+        -fPIC \
+        -D_FORTIFY_SOURCE=2 \
+        -Wl,-z,relro,-z,now,-z,noexecstack,-z,noexecheap,-pie'
 elif command -v gcc &> /dev/null
 then
-    alias cc='gcc -g3 -ggdb3 -Wall -Wextra -pedantic -Wconversion -Wdouble-promotion \
-        -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion \
-        -fsanitize=address,undefined -fsanitize-trap=alignment -fno-omit-frame-pointer \
-        -Wl,-z,relro,-z,now,-z,noexecstack,-z,noexecheap -fstack-protector-all -pie -fPIE -D_FORTIFY_SOURCE=2'
+    alias cc='gcc \
+        -g3 -ggdb3 \
+        -Wall -Wextra -pedantic \
+	-Wimplicit-fallthrough \
+	-Wmissing-prototypes \
+        -Wconversion \
+        -Wdouble-promotion \
+	-fno-omit-frame-pointer \
+	-fstack-protector-all \
+        -fno-omit-frame-pointer \
+        -fsanitize-trap=alignment \
+        -fsanitize=address,undefined \
+        -fstack-protector-all \
+        -fPIE \
+        -fPIC \
+        -D_FORTIFY_SOURCE=2 \
+        -Wl,-z,relro,-z,now,-z,noexecstack,-z,noexecheap,-pie'
 fi
 
 # virtme
@@ -79,8 +105,8 @@ source ~/perl5/perlbrew/etc/bashrc
 perlbrew use 5.38.0
 export PATH="$HOME/.luarocks/bin:$PATH"
 export PATH="$HOME/node_modules/.bin:$PATH"
-#export PATH="$(go env GOPATH)/bin:$PATH"
 export PATH="/usr/local/go/bin:$PATH"
+export PATH="$(go env GOPATH)/bin:$PATH"
 source "$HOME/.cargo/env"
 export PATH="$HOME/.cargo/bin:$PATH"
 # docker

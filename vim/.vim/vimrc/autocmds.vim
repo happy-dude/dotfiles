@@ -8,6 +8,8 @@ if has("autocmd")
   " org files                                         " conceal links in normal and command modes
   au FileType org                                     set conceallevel=2
   au FileType org                                     set concealcursor=nc
+  au FileType org                                     set wrap
+  au FileType org                                     set spell
 
   " help files
   au FileType help                                    set nonumber                    " no line numbers when viewing help

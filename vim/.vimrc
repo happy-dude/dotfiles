@@ -152,6 +152,7 @@ if &loadplugins
 
     " nvim-dap
     Plug 'mfussenegger/nvim-dap'
+    Plug 'nvim-neotest/nvim-nio'
     Plug 'rcarriga/nvim-dap-ui'
 
     " nvim-treesitter
