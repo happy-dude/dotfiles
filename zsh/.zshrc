@@ -26,6 +26,10 @@ fi
 # already set in prezto with `unsetopt FLOW_CONTROL` in modules/completion/init.zsh
 #stty -F/dev/tty -ixon -ixoff
 
+# use neovim as manpager
+export MANPAGER='nvim +Man!'
+export MANWIDTH=80
+
 # LESS mouse scrolling
 export LESS='--mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --window=-4 --CLEAR-SCREEN'
 
@@ -42,8 +46,8 @@ then
         -Weverything -pedantic \
         -Wconversion \
         -Wdouble-promotion \
-	-Wimplicit-fallthrough \
-	-Wmissing-prototypes \
+        -Wimplicit-fallthrough \
+        -Wmissing-prototypes \
         -fno-omit-frame-pointer \
         -fsanitize=address,undefined \
         -fsanitize-trap=alignment \
@@ -61,8 +65,8 @@ then
         -Wall -Wextra -pedantic \
         -Wconversion \
         -Wdouble-promotion \
-	-Wimplicit-fallthrough \
-	-Wmissing-prototypes \
+        -Wimplicit-fallthrough \
+        -Wmissing-prototypes \
         -fno-omit-frame-pointer \
         -fsanitize=address,undefined \
         -fsanitize-trap=alignment \
@@ -108,7 +112,7 @@ export VISUAL='nvim'
 
 # programming language environments
 source ~/perl5/perlbrew/etc/bashrc
-perlbrew use 5.38.0
+perlbrew use 5.38.2
 export PATH="$HOME/.luarocks/bin:$PATH"
 export PATH="$HOME/node_modules/.bin:$PATH"
 export PATH="/usr/local/go/bin:$PATH"
