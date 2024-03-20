@@ -70,7 +70,7 @@ Thumbs.db
 # https://github.com/paulbarbu/loadable-kernel-modules/blob/master/.gitignore
 # Loadable kernel modules #
 ###########################
-.*
+#.*
 *.o.*
 *.a
 *.s

@@ -20,9 +20,11 @@
         "typescriptreact",
         "yaml"
     ],
+    "diagnostic.checkCurrentLine": true,
     "diagnostic.errorSign": ">>",
     "diagnostic.refreshAfterSave": true,
     "diagnostic.warningSign": "--",
+    "inlayHint.enableParameter": false,
     "git.addedSign.text": "++",
     "git.branchCharacter": ".\ue0a0",
     "git.changeRemovedSign.text": "\u2243\u2243",
