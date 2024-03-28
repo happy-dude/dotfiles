@@ -1,8 +1,8 @@
 ;; magit settings
 
 ;; dependencies
-(add-to-list 'load-path "~/.config/emacs/plugins/seq")
-(require 'seq)
+;(add-to-list 'load-path "~/.config/emacs/plugins/seq")
+;(require 'seq)
 
 (add-to-list 'load-path "~/.config/emacs/plugins/dash.el")
 (require 'dash)
