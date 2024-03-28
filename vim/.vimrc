@@ -64,110 +64,111 @@ if &loadplugins
 
   " { Load plugin packages
   call plug#begin(s:vim_dir . 'pack/plugged/opt/')
-  Plug 'AndrewRadev/splitjoin.vim'
-  Plug 'Glench/Vim-Jinja2-Syntax'
-  Plug 'Happy-Dude/hlnext.vim'
-  Plug 'cespare/vim-toml'                             ,   { 'for' : [ 'toml' ] }
-  Plug 'chrisbra/csv.vim'                             ,   { 'for' : [ 'csv' ] }
-  Plug 'dense-analysis/ale'
-  Plug 'easymotion/vim-easymotion'                    ,   !has('nvim') ? {} : { 'on': [] }
-  Plug 'editorconfig/editorconfig-vim'
+  Plug 'AndrewRadev/splitjoin.vim'                    ,   { 'branch' : 'main' }
+  Plug 'Glench/Vim-Jinja2-Syntax'                     ,   { 'branch' : 'master' }
+  Plug 'Happy-Dude/hlnext.vim'                        ,   { 'branch' : 'master' }
+  Plug 'cespare/vim-toml'                             ,   { 'branch' : 'main', 'for' : [ 'toml' ] }
+  Plug 'chrisbra/csv.vim'                             ,   { 'branch' : 'master', 'for' : [ 'csv' ] }
+  Plug 'dense-analysis/ale'                           ,   { 'branch' : 'master' }
+  Plug 'easymotion/vim-easymotion'                    ,   !has('nvim') ? { 'branch' : 'master' } : { 'branch' : 'master', 'on': [] }
+  Plug 'editorconfig/editorconfig-vim'                ,   { 'branch' : 'master' }
   Plug 'fatih/vim-go'                                 ,   { 'for' : [ 'go', 'gomod', 'gohtmltmpl' ] }
   Plug 'gregsexton/MatchTag'                          ,   { 'for' : [ 'html', 'xml' ] }
-  Plug 'guns/vim-sexp'
-  Plug 'justinmk/vim-dirvish'
-  Plug 'keith/swift.vim'                              ,   { 'for' : [ 'swift' ] }
-  Plug 'kovisoft/slimv'
-  Plug 'lervag/vimtex'                                ,   { 'for' : [ 'tex' ] }
-  Plug 'luochen1990/rainbow'                          ,   !has('nvim') ? {} : { 'on': [] }
-  Plug 'machakann/vim-sandwich'
-  Plug 'mbbill/undotree'                              ,   { 'on' : 'UndotreeToggle' }
-  Plug 'mhinz/vim-signify'
-  Plug 'mileszs/ack.vim'
-  Plug 'nathanaelkane/vim-indent-guides'
-  Plug 'nvie/vim-flake8'                              ,   { 'for' : [ 'python' ] }
-  Plug 'othree/html5.vim'                             ,   { 'for' : [ 'html', 'javascript', 'php', 'xhtml', 'xml' ] }
-  Plug 'preservim/nerdcommenter'
-  Plug 'rust-lang/rust.vim'                           ,   { 'for' : [ 'rust' ] }
-  Plug 'saltstack/salt-vim'
-  Plug 'sjl/clam.vim'
-  Plug 'tpope/vim-fugitive'
-  Plug 'tpope/vim-markdown'                           ,   { 'for' : [ 'markdown' ] }
-  Plug 'tpope/vim-repeat'
-  Plug 'tpope/vim-rsi'
-  Plug 'tpope/vim-sexp-mappings-for-regular-people'
-  Plug 'tpope/vim-speeddating'
-  Plug 'tpope/vim-unimpaired'
-  Plug 'vim-airline/vim-airline'
-  Plug 'vim-airline/vim-airline-themes'
-  Plug 'vim-pandoc/vim-pandoc'                        ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
-  Plug 'vim-pandoc/vim-pandoc-syntax'                 ,   { 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
-  Plug 'vim-perl/vim-perl'                            ,   { 'for' : [ 'perl', 'perl6', 'mason' ], 'branch' : 'dev', 'do': 'make clean carp dancer highlight-all-pragmas moose test-more try-tiny' }
-  Plug 'wlangstroth/vim-racket'                       ,   { 'for' : [ 'racket' ] }
-  "Plug 'zirrostig/vim-schlepp'
+  Plug 'guns/vim-sexp'                                ,   { 'branch' : 'master' }
+  Plug 'justinmk/vim-dirvish'                         ,   { 'branch' : 'master' }
+  Plug 'keith/swift.vim'                              ,   { 'branch' : 'master', 'for' : [ 'swift' ] }
+  Plug 'kovisoft/slimv'                               ,   { 'branch' : 'master' }
+  Plug 'lervag/vimtex'                                ,   { 'branch' : 'master', 'for' : [ 'tex' ] }
+  Plug 'luochen1990/rainbow'                          ,   !has('nvim') ? { 'branch' : 'master' } : { 'branch' : 'master', 'on': [] }
+  Plug 'machakann/vim-sandwich'                       ,   { 'branch' : 'master' }
+  Plug 'mbbill/undotree'                              ,   { 'branch' : 'master', 'on' : 'UndotreeToggle' }
+  Plug 'mhinz/vim-signify'                            ,   { 'branch' : 'master' }
+  Plug 'mileszs/ack.vim'                              ,   { 'branch' : 'master' }
+  Plug 'nathanaelkane/vim-indent-guides'              ,   { 'branch' : 'master' }
+  Plug 'nvie/vim-flake8'                              ,   { 'branch' : 'master', 'for' : [ 'python' ] }
+  Plug 'othree/html5.vim'                             ,   { 'branch' : 'master', 'for' : [ 'html', 'javascript', 'php', 'xhtml', 'xml' ] }
+  Plug 'preservim/nerdcommenter'                      ,   { 'branch' : 'master' }
+  Plug 'rust-lang/rust.vim'                           ,   { 'branch' : 'master', 'for' : [ 'rust' ] }
+  Plug 'vmware-archive/salt-vim'                      ,   { 'branch' : 'master' }
+  Plug 'sjl/clam.vim'                                 ,   { 'branch' : 'master' }
+  Plug 'tpope/vim-fugitive'                           ,   { 'branch' : 'master' }
+  Plug 'tpope/vim-markdown'                           ,   { 'branch' : 'master', 'for' : [ 'markdown' ] }
+  Plug 'tpope/vim-repeat'                             ,   { 'branch' : 'master' }
+  Plug 'tpope/vim-rsi'                                ,   { 'branch' : 'master' }
+  Plug 'tpope/vim-sexp-mappings-for-regular-people'   ,   { 'branch' : 'master' }
+  Plug 'tpope/vim-speeddating'                        ,   { 'branch' : 'master' }
+  Plug 'tpope/vim-unimpaired'                         ,   { 'branch' : 'master' }
+  Plug 'vim-airline/vim-airline'                      ,   { 'branch' : 'master' }
+  Plug 'vim-airline/vim-airline-themes'               ,   { 'branch' : 'master' }
+  Plug 'vim-pandoc/vim-pandoc'                        ,   { 'branch' : 'master', 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
+  Plug 'vim-pandoc/vim-pandoc-syntax'                 ,   { 'branch' : 'master', 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
+  Plug 'vim-perl/vim-perl'                            ,   { 'branch' : 'dev', 'for' : [ 'perl', 'perl6', 'mason' ], 'do': 'make clean carp dancer highlight-all-pragmas moose test-more try-tiny' }
+  Plug 'wlangstroth/vim-racket'                       ,   { 'branch' : 'master', 'for' : [ 'racket' ] }
+  "Plug 'zirrostig/vim-schlepp'                        ,   { 'branch' : 'master' }
 
   " if fzf is available, use fzf.vim
   " otherwise, use ctrlp which is pure vimscript
   if executable('fzf')
-    Plug 'junegunn/fzf'                               ,   { 'do': { -> fzf#install() } }
-    Plug 'junegunn/fzf.vim'
+    Plug 'junegunn/fzf'                               ,   { 'branch' : 'master', 'do': { -> fzf#install() } }
+    Plug 'junegunn/fzf.vim'                           ,   { 'branch' : 'master' }
 
     let s:fzf_settings    = s:vimpack_settings_dir . 'fzf.vim'
     execute 'source' s:fzf_settings
 
   else
-    Plug 'ctrlpvim/ctrlp.vim'
+    Plug 'ctrlpvim/ctrlp.vim'                         ,   { 'branch' : 'master' }
 
     let s:ctrlp_settings  = s:vimpack_settings_dir . 'ctrlp.vim'
     execute 'source' s:ctrlp_settings
   endif
 
   " { Colorschemes
-  Plug 'altercation/vim-colors-solarized'
-  Plug 'chriskempson/base16-vim'
-  Plug 'jonathanfilip/vim-lucius'
-  Plug 'junegunn/seoul256.vim'
-  Plug 'lifepillar/vim-gruvbox8'
-  Plug 'lifepillar/vim-solarized8'
-  Plug 'nanotech/jellybeans.vim'
-  Plug 'sainnhe/gruvbox-material'
+  Plug 'altercation/vim-colors-solarized'             , { 'branch' : 'master' }
+  Plug 'chriskempson/base16-vim'                      , { 'branch' : 'master' }
+  Plug 'jonathanfilip/vim-lucius'                     , { 'branch' : 'master' }
+  Plug 'junegunn/seoul256.vim'                        , { 'branch' : 'master' }
+  Plug 'lifepillar/vim-gruvbox8'                      , { 'branch' : 'master' }
+  Plug 'lifepillar/vim-solarized8'                    , { 'branch' : 'master' }
+  Plug 'nanotech/jellybeans.vim'                      , { 'branch' : 'master' }
+  Plug 'sainnhe/gruvbox-material'                     , { 'branch' : 'master' }
   " }
 
   " { Neovim-only packages
   if has('nvim')
 
-    " hop.nvim
-    Plug 'smoka7/hop.nvim'                               " vim-easymotion
+    " hop.nvim; replace vim-easymotion
+    Plug 'smoka7/hop.nvim'                            , { 'branch' : 'master' }
     "
     " orgmode.nvim
-    Plug 'kristijanhusak/orgmode.nvim'
+    Plug 'kristijanhusak/orgmode.nvim'                , { 'branch' : 'master' }
 
     " which-key.nvim
-    Plug 'folke/which-key.nvim'
+    Plug 'folke/which-key.nvim'                       , { 'branch' : 'main' }
 
     " Lisp + neovim-lua-based REPL
-    Plug 'Olical/nfnl'
-    Plug 'Olical/conjure'
-    "Plug 'gpanders/nvim-parinfer'
+    Plug 'Olical/nfnl'                                , { 'branch' : 'main' }
+    Plug 'Olical/conjure'                             , { 'branch' : 'master' }
+    "Plug 'gpanders/nvim-parinfer'                     , { 'branch' : 'master' }
 
     " nvim-dap
-    Plug 'mfussenegger/nvim-dap'
-    Plug 'nvim-neotest/nvim-nio'
-    Plug 'rcarriga/nvim-dap-ui'
+    Plug 'mfussenegger/nvim-dap'                      , { 'branch' : 'master' }
+    Plug 'nvim-neotest/nvim-nio'                      , { 'branch' : 'master' }
+    Plug 'rcarriga/nvim-dap-ui'                       , { 'branch' : 'master' }
 
     " nvim-treesitter
-    Plug 'nvim-treesitter/nvim-treesitter'
-    Plug 'nvim-treesitter/nvim-treesitter-refactor'
-    Plug 'nvim-treesitter/nvim-treesitter-textobjects'
-    Plug 'https://gitlab.com/HiPhish/rainbow-delimiters.nvim.git'   " luochen1990/rainbow
+    Plug 'nvim-treesitter/nvim-treesitter'            , { 'branch' : 'master' }
+    Plug 'nvim-treesitter/nvim-treesitter-refactor'   , { 'branch' : 'master' }
+    Plug 'nvim-treesitter/nvim-treesitter-textobjects', { 'branch' : 'master' }
+    " replace luochen1990/rainbow
+    Plug 'https://gitlab.com/HiPhish/rainbow-delimiters.nvim.git'   , { 'branch' : 'master' }
 
     " neogit
-    Plug 'nvim-lua/plenary.nvim'
-    Plug 'NeogitOrg/neogit'
+    Plug 'nvim-lua/plenary.nvim'                      , { 'branch' : 'master' }
+    Plug 'NeogitOrg/neogit'                           , { 'branch' : 'master' }
 
     " Enable coc.nvim if node.js is installed
     if executable('node')
-      Plug 'neoclide/coc.nvim'                        ,   {'branch': 'master', 'do': 'npm ci'}
+      Plug 'neoclide/coc.nvim'                        , { 'branch' : 'master', 'do': 'npm ci'}
 
       let s:coc_settings = s:vimpack_settings_dir . 'coc.vim'
       execute 'source' s:coc_settings

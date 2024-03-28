@@ -1,416 +1,520 @@
 [submodule "ack.vim"]
 	path = vim/.vim/pack/plugged/opt/ack.vim
 	url = https://github.com/mileszs/ack.vim.git
+	branch = master
 	ignore = dirty
 [submodule "ale"]
 	path = vim/.vim/pack/plugged/opt/ale
 	url = https://github.com/dense-analysis/ale
+	branch = master
 	ignore = dirty
 [submodule "annalist.el"]
 	path = emacs/.config/emacs/plugins/annalist.el
 	url = https://github.com/noctuid/annalist.el.git
+	branch = master
 	ignore = dirty
 [submodule "base16-vim"]
 	path = vim/.vim/pack/plugged/opt/base16-vim
 	url = https://github.com/chriskempson/base16-vim
+	branch = master
 	ignore = dirty
 [submodule "clam.vim"]
 	path = vim/.vim/pack/plugged/opt/clam.vim
 	url = https://github.com/sjl/clam.vim.git
+	branch = master
 	ignore = dirty
 [submodule "coc.nvim"]
 	path = vim/.vim/pack/plugged/opt/coc.nvim
 	url = https://github.com/neoclide/coc.nvim.git
+	branch = master
 	ignore = dirty
 [submodule "compat"]
 	path = emacs/.config/emacs/plugins/compat
 	url = https://github.com/emacs-compat/compat.git
+	branch = main
 	ignore = dirty
 [submodule "conjure"]
 	path = vim/.vim/pack/plugged/opt/conjure
 	url = https://github.com/Olical/conjure.git
+	branch = master
 	ignore = dirty
 [submodule "csv.vim"]
 	path = vim/.vim/pack/plugged/opt/csv.vim
 	url = https://github.com/chrisbra/csv.vim.git
+	branch = master
 	ignore = dirty
 [submodule "ctrlp.vim"]
 	path = vim/.vim/pack/plugged/opt/ctrlp.vim
 	url = https://github.com/ctrlpvim/ctrlp.vim.git
+	branch = master
 	ignore = dirty
 [submodule "dash.el"]
 	path = emacs/.config/emacs/plugins/dash.el
 	url = https://github.com/magnars/dash.el.git
+	branch = master
 	ignore = dirty
 [submodule "editorconfig-emacs"]
 	path = emacs/.config/emacs/plugins/editorconfig-emacs
 	url = https://github.com/editorconfig/editorconfig-emacs.git
+	branch = master
 	ignore = dirty
 [submodule "editorconfig-vim"]
 	path = vim/.vim/pack/plugged/opt/editorconfig-vim
 	url = https://github.com/editorconfig/editorconfig-vim.git
+	branch = master
 	ignore = dirty
 [submodule "elisp-tree-sitter"]
 	path = emacs/.config/emacs/plugins/elisp-tree-sitter
 	url = https://github.com/emacs-tree-sitter/elisp-tree-sitter.git
+	branch = master
 	ignore = dirty
 [submodule "emacs-noflet"]
 	path = emacs/.config/emacs/plugins/emacs-noflet
 	url = https://github.com/nicferrier/emacs-noflet.git
+	branch = master
 	ignore = dirty
 [submodule "emacsql"]
 	path = emacs/.config/emacs/plugins/emacsql
 	url = https://github.com/skeeto/emacsql.git
+	branch = main
 	ignore = dirty
 [submodule "emacsql-sqlite3"]
 	path = emacs/.config/emacs/plugins/emacsql-sqlite3
 	url = https://github.com/cireu/emacsql-sqlite3.git
+	branch = master
 	ignore = dirty
 [submodule "emacs-web-server"]
 	path = emacs/.config/emacs/plugins/emacs-web-server
 	url = https://github.com/skeeto/emacs-web-server.git
+	branch = master
 	ignore = dirty
 [submodule "emacs-websocket"]
 	path = emacs/.config/emacs/plugins/emacs-websocket
 	url = https://github.com/ahyatt/emacs-websocket.git
+	branch = main
 	ignore = dirty
 [submodule "emacs-which-key"]
 	path = emacs/.config/emacs/plugins/emacs-which-key
 	url = https://github.com/justbur/emacs-which-key.git
+	branch = master
 	ignore = dirty
 [submodule "evil"]
 	path = emacs/.config/emacs/plugins/evil
 	url = https://github.com/emacs-evil/evil.git
+	branch = master
 	ignore = dirty
 [submodule "evil-collection"]
 	path = emacs/.config/emacs/plugins/evil-collection
 	url = https://github.com/emacs-evil/evil-collection.git
+	branch = master
 	ignore = dirty
 [submodule "evil-org-mode"]
 	path = emacs/.config/emacs/plugins/evil-org-mode
 	url = https://github.com/Somelauw/evil-org-mode.git
+	branch = master
 	ignore = dirty
 [submodule "evil-rsi"]
 	path = emacs/.config/emacs/plugins/evil-rsi
 	url = https://github.com/linktohack/evil-rsi
+	branch = master
 	ignore = dirty
 [submodule "evil-surround"]
 	path = emacs/.config/emacs/plugins/evil-surround
 	url = https://github.com/emacs-evil/evil-surround.git
+	branch = master
 	ignore = dirty
 [submodule "f.el"]
 	path = emacs/.config/emacs/plugins/f.el
 	url = https://github.com/rejeep/f.el.git
+	branch = master
 	ignore = dirty
 [submodule "fzf"]
 	path = vim/.vim/pack/plugged/opt/fzf
 	url = https://github.com/junegunn/fzf.git
+	branch = master
 	ignore = dirty
 [submodule "fzf.vim"]
 	path = vim/.vim/pack/plugged/opt/fzf.vim
 	url = https://github.com/junegunn/fzf.vim.git
+	branch = master
 	ignore = dirty
 [submodule "gruvbox-material"]
 	path = vim/.vim/pack/plugged/opt/gruvbox-material
 	url = https://github.com/sainnhe/gruvbox-material.git
+	branch = master
 	ignore = dirty
 [submodule "hlnext.vim"]
 	path = vim/.vim/pack/plugged/opt/hlnext.vim
 	url = https://github.com/Happy-Dude/hlnext.vim
+	branch = master
 	ignore = dirty
 [submodule "hop.nvim"]
 	path = vim/.vim/pack/plugged/opt/hop.nvim
 	url = https://github.com/smoka7/hop.nvim.git
+	branch = master
 	ignore = dirty
 [submodule "html5.vim"]
 	path = vim/.vim/pack/plugged/opt/html5.vim
 	url = https://github.com/othree/html5.vim.git
+	branch = master
 	ignore = dirty
 [submodule "jellybeans.vim"]
 	path = vim/.vim/pack/plugged/opt/jellybeans.vim
 	url = https://github.com/nanotech/jellybeans.vim.git
+	branch = master
 	ignore = dirty
 [submodule "libgit2"]
 	path = emacs/.config/emacs/plugins/libegit2
 	url = https://github.com/magit/libegit2.git
+	branch = main
 	ignore = dirty
 [submodule "magit"]
 	path = emacs/.config/emacs/plugins/magit
 	url = https://github.com/magit/magit.git
+	branch = main
 	ignore = dirty
 [submodule "MatchTag"]
 	path = vim/.vim/pack/plugged/opt/MatchTag
 	url = https://github.com/gregsexton/MatchTag.git
+	branch = master
 	ignore = dirty
 [submodule "neogit"]
 	path = vim/.vim/pack/plugged/opt/neogit
 	url = https://github.com/NeogitOrg/neogit.git
+	branch = master
 	ignore = dirty
 [submodule "nerdcommenter"]
 	path = vim/.vim/pack/plugged/opt/nerdcommenter
 	url = https://github.com/preservim/nerdcommenter.git
+	branch = master
 	ignore = dirty
 [submodule "nfnl"]
 	path = vim/.vim/pack/plugged/opt/nfnl
 	url = https://github.com/Olical/nfnl.git
+	branch = main
 	ignore = dirty
 [submodule "nvim-dap"]
 	path = vim/.vim/pack/plugged/opt/nvim-dap
 	url = https://github.com/mfussenegger/nvim-dap.git
+	branch = master
 	ignore = dirty
 [submodule "nvim-dap-ui"]
 	path = vim/.vim/pack/plugged/opt/nvim-dap-ui
 	url = https://github.com/rcarriga/nvim-dap-ui.git
+	branch = master
 	ignore = dirty
 [submodule "nvim-nio"]
 	path = vim/.vim/pack/plugged/opt/nvim-nio
 	url = https://github.com/nvim-neotest/nvim-nio.git
+	branch = master
 	ignore = dirty
 [submodule "nvim-parinfer"]
 	path = vim/.vim/pack/plugged/opt/nvim-parinfer
 	url = https://github.com/gpanders/nvim-parinfer.git
+	branch = master
 	ignore = dirty
 [submodule "nvim-treesitter"]
 	path = vim/.vim/pack/plugged/opt/nvim-treesitter
 	url = https://github.com/nvim-treesitter/nvim-treesitter.git
+	branch = master
 	ignore = dirty
 [submodule "nvim-treesitter-refactor"]
 	path = vim/.vim/pack/plugged/opt/nvim-treesitter-refactor
 	url = https://github.com/nvim-treesitter/nvim-treesitter-refactor
+	branch = master
 	ignore = dirty
 [submodule "nvim-treesitter-textobjects"]
 	path = vim/.vim/pack/plugged/opt/nvim-treesitter-textobjects
 	url = https://github.com/nvim-treesitter/nvim-treesitter-textobjects
+	branch = master
 	ignore = dirty
 [submodule "org-journal"]
 	path = emacs/.config/emacs/plugins/org-journal
 	url = https://github.com/bastibe/org-journal.git
+	branch = master
 	ignore = dirty
 [submodule "org-mode"]
 	path = emacs/.config/emacs/plugins/org-mode
 	url = https://git.savannah.gnu.org/git/emacs/org-mode.git
+	branch = main
 	ignore = dirty
 [submodule "orgmode.nvim"]
 	path = vim/.vim/pack/plugged/opt/orgmode.nvim
 	url = https://github.com/kristijanhusak/orgmode.nvim.git
+	branch = master
 	ignore = dirty
 [submodule "org-roam"]
 	path = emacs/.config/emacs/plugins/org-roam
 	url = https://github.com/org-roam/org-roam.git
+	branch = main
 	ignore = dirty
 [submodule "org-roam-ui"]
 	path = emacs/.config/emacs/plugins/org-roam-ui
 	url = https://github.com/org-roam/org-roam-ui.git
+	branch = main
 	ignore = dirty
 [submodule "plenary.nvim"]
 	path = vim/.vim/pack/plugged/opt/plenary.nvim
 	url = https://github.com/nvim-lua/plenary.nvim.git
+	branch = master
 	ignore = dirty
 [submodule "prezto-sorin"]
 	path = zsh/.zprezto
 	url = https://github.com/sorin-ionescu/prezto.git
+	branch = master
 	ignore = dirty
 [submodule "queue.el"]
 	path = emacs/.config/emacs/plugins/queue
 	url = https://github.com/emacs-straight/queue.git
+	branch = master
 	ignore = dirty
 [submodule "rainbow"]
 	path = vim/.vim/pack/plugged/opt/rainbow
 	url = https://github.com/luochen1990/rainbow.git
+	branch = master
 	ignore = dirty
 [submodule "rainbow-delimiters"]
 	path = emacs/.config/emacs/plugins/rainbow-delimiters
 	url = https://github.com/Fanael/rainbow-delimiters.git
+	branch = master
 	ignore = dirty
 [submodule "rainbow-delimiters.nvim"]
 	path = vim/.vim/pack/plugged/opt/rainbow-delimiters.nvim
 	url = https://gitlab.com/HiPhish/rainbow-delimiters.nvim.git
+	branch = master
 	ignore = dirty
 [submodule "rust.vim"]
 	path = vim/.vim/pack/plugged/opt/rust.vim
 	url = https://github.com/rust-lang/rust.vim.git
+	branch = master
 	ignore = dirty
 [submodule "salt-vim"]
 	path = vim/.vim/pack/plugged/opt/salt-vim
-	url = https://github.com/saltstack/salt-vim.git
+	url = https://github.com/vmware-archive/salt-vim.git
+	branch = master
 	ignore = dirty
 [submodule "s.el"]
 	path = emacs/.config/emacs/plugins/s.el
 	url = https://github.com/magnars/s.el.git
+	branch = master
 	ignore = dirty
 [submodule "seoul256.vim"]
 	path = vim/.vim/pack/plugged/opt/seoul256.vim
 	url = https://github.com/junegunn/seoul256.vim.git
+	branch = master
 	ignore = dirty
 [submodule "slime"]
 	path = emacs/.config/emacs/plugins/slime
 	url = https://github.com/slime/slime.git
+	branch = master
 	ignore = dirty
 [submodule "slimv"]
 	path = vim/.vim/pack/plugged/opt/slimv
 	url = https://github.com/kovisoft/slimv.git
+	branch = master
 	ignore = dirty
 [submodule "solarized"]
 	path = other/themes/solarized_theme-altercation
 	url = https://github.com/altercation/solarized.git
+	branch = master
 	ignore = dirty
 [submodule "solarized-emacs"]
 	path = emacs/.config/emacs/themes/solarized-emacs
 	url = https://github.com/bbatsov/solarized-emacs.git
+	branch = master
 	ignore = dirty
 [submodule "splitjoin.vim"]
 	path = vim/.vim/pack/plugged/opt/splitjoin.vim
 	url = https://github.com/AndrewRadev/splitjoin.vim.git
+	branch = main
 	ignore = dirty
 [submodule "swift.vim"]
 	path = vim/.vim/pack/plugged/opt/swift.vim
 	url = https://github.com/keith/swift.vim.git
+	branch = master
 	ignore = dirty
 [submodule "tomorrow-theme"]
 	path = other/themes/tomorrow_theme-chriskempson
 	url = https://github.com/chriskempson/tomorrow-theme.git
+	branch = master
 	ignore = dirty
 [submodule "transient"]
 	path = emacs/.config/emacs/plugins/transient
 	url = https://github.com/magit/transient.git
+	branch = main
 	ignore = dirty
 [submodule "undo-tree"]
 	path = emacs/.config/emacs/plugins/undo-tree
 	url = https://gitlab.com/tsc25/undo-tree.git
+	branch = master
 	ignore = dirty
 [submodule "undotree"]
 	path = vim/.vim/pack/plugged/opt/undotree
 	url = https://github.com/mbbill/undotree
+	branch = master
 	ignore = dirty
 [submodule "vim-airline"]
 	path = vim/.vim/pack/plugged/opt/vim-airline
 	url = https://github.com/vim-airline/vim-airline.git
+	branch = master
 	ignore = dirty
 [submodule "vim-airline-themes"]
 	path = vim/.vim/pack/plugged/opt/vim-airline-themes
 	url = https://github.com/vim-airline/vim-airline-themes.git
+	branch = master
 	ignore = dirty
 [submodule "vim-colors-solarized"]
 	path = vim/.vim/pack/plugged/opt/vim-colors-solarized
 	url = https://github.com/altercation/vim-colors-solarized.git
+	branch = master
 	ignore = dirty
 [submodule "vim-dirvish"]
 	path = vim/.vim/pack/plugged/opt/vim-dirvish
 	url = https://github.com/justinmk/vim-dirvish.git
+	branch = master
 	ignore = dirty
 [submodule "vim-easymotion"]
 	path = vim/.vim/pack/plugged/opt/vim-easymotion
 	url = https://github.com/easymotion/vim-easymotion.git
+	branch = master
 	ignore = dirty
 [submodule "vim-flake8"]
 	path = vim/.vim/pack/plugged/opt/vim-flake8
 	url = https://github.com/nvie/vim-flake8.git
+	branch = master
 	ignore = dirty
 [submodule "vim-fugitive"]
 	path = vim/.vim/pack/plugged/opt/vim-fugitive
 	url = https://github.com/tpope/vim-fugitive.git
+	branch = master
 	ignore = dirty
 [submodule "vim-go"]
 	path = vim/.vim/pack/plugged/opt/vim-go
 	url = https://github.com/fatih/vim-go.git
+	branch = master
 	ignore = dirty
 [submodule "vim-gruvbox8"]
 	path = vim/.vim/pack/plugged/opt/vim-gruvbox8
 	url = https://github.com/lifepillar/vim-gruvbox8.git
+	branch = master
 	ignore = dirty
 [submodule "vim-indent-guides"]
 	path = vim/.vim/pack/plugged/opt/vim-indent-guides
 	url = https://github.com/nathanaelkane/vim-indent-guides.git
+	branch = master
 	ignore = dirty
 [submodule "vim-jinja2-syntax"]
 	path = vim/.vim/pack/plugged/opt/Vim-Jinja2-Syntax
 	url = https://github.com/Glench/Vim-Jinja2-Syntax.git
+	branch = master
 	ignore = dirty
 [submodule "vim-lucius"]
 	path = vim/.vim/pack/plugged/opt/vim-lucius
 	url = https://github.com/jonathanfilip/vim-lucius.git
+	branch = master
 	ignore = dirty
 [submodule "vim-markdown"]
 	path = vim/.vim/pack/plugged/opt/vim-markdown
 	url = https://github.com/tpope/vim-markdown.git
+	branch = master
 	ignore = dirty
 [submodule "vim-pandoc"]
 	path = vim/.vim/pack/plugged/opt/vim-pandoc
 	url = https://github.com/vim-pandoc/vim-pandoc.git
+	branch = master
 	ignore = dirty
 [submodule "vim-pandoc-syntax"]
 	path = vim/.vim/pack/plugged/opt/vim-pandoc-syntax
 	url = https://github.com/vim-pandoc/vim-pandoc-syntax.git
+	branch = master
 	ignore = dirty
 [submodule "vim-pathogen"]
 	path = vim/.vim/pack/bundle/opt/vim-pathogen
 	url = https://github.com/tpope/vim-pathogen.git
+	branch = master
 	ignore = dirty
 [submodule "vim-perl"]
 	path = vim/.vim/pack/plugged/opt/vim-perl
 	url = https://github.com/vim-perl/vim-perl.git
+	branch = dev
 	ignore = dirty
 [submodule "vim-plug"]
 	path = vim/.vim/pack/bundle/opt/vim-plug/autoload
 	url = https://github.com/junegunn/vim-plug.git
+	branch = master
 	ignore = dirty
 [submodule "vim-racket"]
 	path = vim/.vim/pack/plugged/opt/vim-racket
 	url = https://github.com/wlangstroth/vim-racket
+	branch = master
 	ignore = dirty
 [submodule "vim-repeat"]
 	path = vim/.vim/pack/plugged/opt/vim-repeat
 	url = https://github.com/tpope/vim-repeat.git
+	branch = master
 	ignore = dirty
 [submodule "vim-rsi"]
 	path = vim/.vim/pack/plugged/opt/vim-rsi
 	url = https://github.com/tpope/vim-rsi.git
+	branch = master
 	ignore = dirty
 [submodule "vim-sandwich"]
 	path = vim/.vim/pack/plugged/opt/vim-sandwich
 	url = https://github.com/machakann/vim-sandwich
+	branch = master
 	ignore = dirty
 [submodule "vim-schelepp"]
 	path = vim/.vim/pack/plugged/opt/vim-schlepp
 	url = https://github.com/zirrostig/vim-schlepp.git
+	branch = master
 	ignore = dirty
 [submodule "vim-sexp"]
 	path = vim/.vim/pack/plugged/opt/vim-sexp
 	url = https://github.com/guns/vim-sexp.git
+	branch = master
 	ignore = dirty
 [submodule "vim-sexp-mappings-for-regular-people"]
 	path = vim/.vim/pack/plugged/opt/vim-sexp-mappings-for-regular-people
 	url = https://github.com/tpope/vim-sexp-mappings-for-regular-people.git
+	branch = master
 	ignore = dirty
 [submodule "vim-signify"]
 	path = vim/.vim/pack/plugged/opt/vim-signify
 	url = https://github.com/mhinz/vim-signify.git
+	branch = master
 	ignore = dirty
 [submodule "vim-solarized8"]
 	path = vim/.vim/pack/plugged/opt/vim-solarized8
 	url = https://github.com/lifepillar/vim-solarized8.git
+	branch = master
 	ignore = dirty
 [submodule "vim-speeddating"]
 	path = vim/.vim/pack/plugged/opt/vim-speeddating
 	url = https://github.com/tpope/vim-speeddating.git
+	branch = master
 	ignore = dirty
 [submodule "vimtex"]
 	path = vim/.vim/pack/plugged/opt/vimtex
 	url = https://github.com/lervag/vimtex.git
+	branch = master
 	ignore = dirty
 [submodule "vim-toml"]
 	path = vim/.vim/pack/plugged/opt/vim-toml
 	url = https://github.com/cespare/vim-toml.git
+	branch = main
 	ignore = dirty
 [submodule "vim-unimpaired"]
 	path = vim/.vim/pack/plugged/opt/vim-unimpaired
 	url = https://github.com/tpope/vim-unimpaired
+	branch = master
 	ignore = dirty
 [submodule "which-key.nvim"]
 	path = vim/.vim/pack/plugged/opt/which-key.nvim
 	url = https://github.com/folke/which-key.nvim.git
+	branch = main
 	ignore = dirty
 [submodule "with-editor"]
 	path = emacs/.config/emacs/plugins/with-editor
 	url = https://github.com/magit/with-editor.git
+	branch = main
 	ignore = dirty
