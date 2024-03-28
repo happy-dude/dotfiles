@@ -1,6 +1,7 @@
 {
     "coc.preferences.formatOnSaveFiletypes": [
         "Markdown",
+        "c",
         "coc-cfn-lint",
         "css",
         "go",
@@ -13,6 +14,7 @@
         "markdownlint",
         "python",
         "ruby",
+        "rust",
         "sql",
         "terraform",
         "typescript",
