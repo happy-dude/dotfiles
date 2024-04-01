@@ -21,14 +21,14 @@ require('nvim-treesitter.configs').setup {
   sync_install = true,
 
   -- List of parsers to ignore installing
-  ignore_install = { "norg", "phpdoc" },
+  ignore_install = { "org", "norg", "phpdoc" },
 
   -- nvim-treesitter native modules
   highlight = {
     enable = true, -- false will disable the whole extension
     -- disable = { },           -- list of languages where highlighting will be disabled
     -- custom_captures = { }    -- custom highlight groups for captures
-    additional_vim_regex_highlighting = { 'org' }, -- Required since TS highlighter doesn't support all orgmode.nvim syntax features (conceal)
+    -- additional_vim_regex_highlighting = { 'org' }, -- Required since TS highlighter doesn't support all orgmode.nvim syntax features (conceal)
   },
   incremental_selection = {
     enable = true,

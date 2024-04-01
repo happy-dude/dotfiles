@@ -49,7 +49,7 @@ config.custom_block_glyphs = true
 config.harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' }   -- disable ligatures
 
 config.leader = {
-  key = '`',
+  key = 'Escape',
   mods = 'CTRL',
   timeout_milliseconds = 1000,
 }

@@ -181,7 +181,7 @@
 [submodule "neogit"]
 	path = vim/.vim/pack/plugged/opt/neogit
 	url = https://github.com/NeogitOrg/neogit.git
-	branch = master
+	branch = nightly
 	ignore = dirty
 [submodule "nerdcommenter"]
 	path = vim/.vim/pack/plugged/opt/nerdcommenter
