@@ -53,7 +53,7 @@ wezterm.on('open-uri', function(window, pane, uri)
 end)
 
 config.leader = {
-  key = '`',
+  key = 'Escape',
   mods = 'CTRL',
   timeout_milliseconds = 1000,
 }
