@@ -164,7 +164,7 @@ if &loadplugins
 
     " neogit
     Plug 'nvim-lua/plenary.nvim'                      , { 'branch' : 'master' }
-    Plug 'NeogitOrg/neogit'                           , { 'branch' : 'master' }
+    Plug 'NeogitOrg/neogit'                           , { 'branch' : 'nightly' }
 
     " Enable coc.nvim if node.js is installed
     if executable('node')
