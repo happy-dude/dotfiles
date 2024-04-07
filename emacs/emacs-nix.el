@@ -482,16 +482,11 @@
 ;; evil-surround
 (global-evil-surround-mode 1)
 
+(require 'evil-org)
 (add-hook 'org-mode-hook 'evil-org-mode)
-(add-hook 'evil-org-mode-hook
-          (lambda ()
-            (evil-org-set-key-theme '(navigation
-                                       insert
-                                       textobjects
-                                       additional
-                                       calendar
-                                       ))
-            (evil-org-agenda-set-keys)))
+(evil-org-set-key-theme '(navigation insert textobjects additional calendar))
+(require 'evil-org-agenda)
+(evil-org-agenda-set-keys)
 
 ;; evil-rsi
 (evil-rsi-mode)
