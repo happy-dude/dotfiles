@@ -21,6 +21,7 @@ config.term = 'wezterm'
 config.automatically_reload_config = true
 
 config.default_prog = { '/usr/bin/zsh', '--login', '-c', 'tmux attach -t "mux" || tmux new -s "mux"' }
+-- config.default_prog = { '/usr/bin/zsh', '--login' }
 wezterm.action.SpawnCommandInNewWindow({
   args = { 'zsh' },
 })
@@ -44,7 +45,7 @@ config.hide_tab_bar_if_only_one_tab = true
 
 config.color_scheme = 'Gruvbox Material (Gogh)'
 config.font = wezterm.font('Fira Code')
-config.font_size = 16.0
+config.font_size = 14.0
 config.custom_block_glyphs = true
 config.harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' }   -- disable ligatures
 
