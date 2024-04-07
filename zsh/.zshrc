@@ -22,6 +22,11 @@ fi
 
 # Customize to your needs...
 
+# Nix home-manager
+if [[ -s "${ZDOTDIR:-$HOME}/.nix-profile/etc/profile.d/hm-session-vars.sh" ]]; then
+    source ~/.nix-profile/etc/profile.d/hm-session-vars.sh
+fi
+
 # Turn off terminal flow control (ctrl-q and ctrl-s)
 # already set in prezto with `unsetopt FLOW_CONTROL` in modules/completion/init.zsh
 #stty -F/dev/tty -ixon -ixoff
