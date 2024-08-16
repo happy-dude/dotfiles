@@ -32,7 +32,7 @@ xmonad-x86*
 # Compiled source #
 ###################
 core
-*.com
+#*.com
 *.class
 *.dll
 *.exe
