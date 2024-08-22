@@ -1,0 +1,14 @@
+#command = zsh -c 'tmux attach -t "mux" || tmux new -s "mux"'
+#command = /usr/bin/zsh --login
+
+window-width = 120
+window-height = 38
+
+theme = GruvboxDark
+font-family = Fira Code
+font-size = 16
+
+#cursor-style = block
+#cursor-style-blink = false
+
+#keybind = ctrl+shift+n=
