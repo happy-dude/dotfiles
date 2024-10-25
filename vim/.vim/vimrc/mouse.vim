@@ -4,7 +4,7 @@
 if has('mouse')
   set mouse=a
   if !has('nvim')
-    if ($TERM =~ "xterm" || $TERM =~ "screen" || $TERM =~ "urxvt")
+    if ($TERM =~ "xterm" || $TERM =~ "screen" || $TERM =~ "urxvt" || $TERM =~ "ghostty")
       " for some reason, doing this directly with 'set ttymouse=xterm2'
       " doesn't work -- 'set ttymouse?' returns xterm2 but the mouse
       " makes tmux enter copy mode instead of selecting or scrolling
