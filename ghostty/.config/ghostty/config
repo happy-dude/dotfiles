@@ -1,16 +1,8 @@
-<<<<<<< Updated upstream
-#command = zsh -c 'tmux attach -t "mux" || tmux new -s "mux"'
-#command = /usr/bin/zsh --login
-
-window-width = 120
-window-height = 38
-=======
 #command = zsh --login -c 'tmux attach -t "mux" || tmux new -s "mux"'
 command = /usr/bin/zsh --login
 
 window-width = 132
 window-height = 48
->>>>>>> Stashed changes
 
 theme = GruvboxDark
 font-family = Fira Code
