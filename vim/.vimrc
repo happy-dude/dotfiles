@@ -65,7 +65,6 @@ if &loadplugins
   " { Load plugin packages
   call plug#begin(s:vim_dir . 'pack/plugged/opt/')
   Plug 'AndrewRadev/splitjoin.vim'                    ,   { 'branch' : 'main' }
-  Plug 'Glench/Vim-Jinja2-Syntax'                     ,   { 'branch' : 'master' }
   Plug 'Happy-Dude/hlnext.vim'                        ,   { 'branch' : 'master' }
   Plug 'cespare/vim-toml'                             ,   { 'branch' : 'main', 'for' : [ 'toml' ] }
   Plug 'chrisbra/csv.vim'                             ,   { 'branch' : 'master', 'for' : [ 'csv' ] }

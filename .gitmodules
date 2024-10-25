@@ -403,11 +403,6 @@
 	url = https://github.com/nathanaelkane/vim-indent-guides.git
 	branch = master
 	ignore = dirty
-[submodule "vim-jinja2-syntax"]
-	path = vim/.vim/pack/plugged/opt/Vim-Jinja2-Syntax
-	url = https://github.com/Glench/Vim-Jinja2-Syntax.git
-	branch = master
-	ignore = dirty
 [submodule "vim-lucius"]
 	path = vim/.vim/pack/plugged/opt/vim-lucius
 	url = https://github.com/jonathanfilip/vim-lucius.git
