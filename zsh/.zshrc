@@ -109,6 +109,9 @@ export FZF_DEFAULT_COMMAND="$(which rg) --files --hidden --follow --glob '!.git'
 export EDITOR='nvim'
 export VISUAL='nvim'
 
+# homebrew
+#eval "$($(brew --prefix)/bin/brew shellenv)"
+
 # LLVM, Xcode SDK
 #export LDFLAGS="-L$(brew --prefix)/opt/llvm/lib -Wl,-rpath,$(brew --prefix)/opt/llvm/lib"
 #export CPPFLAGS="-I$(brew --prefix)/opt/llvm/include"
