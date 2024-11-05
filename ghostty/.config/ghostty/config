@@ -1,5 +1,5 @@
 #command = zsh --login -c 'tmux attach -t "mux" || tmux new -s "mux"'
-command = /usr/bin/zsh --login
+command = $(which zsh) --login
 
 window-width = 132
 window-height = 48
