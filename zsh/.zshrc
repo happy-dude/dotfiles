@@ -86,7 +86,7 @@ then
 fi
 
 # virtme
-alias vmeamd="~/sources/virtme-ng/virtme-run --show-boot-console --show-command --memory 8G --rw --rwdir=/home/schan/cf/bpf-lsm --kdir . --mods=auto --net user -a nokaslr"
+alias vmeamd="~/sources/virtme-ng/virtme-run --show-boot-console --show-command --memory 8G --rw --rwdir=$HOME/cf/bpf-lsm --kdir . --mods=auto --net user -a nokaslr"
 
 # git
 alias gl="git log --date=relative --abbrev=12 -n 160 \
@@ -116,19 +116,27 @@ export VISUAL='nvim'
 #export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
 
 # programming language environments
-source ~/perl5/perlbrew/etc/bashrc
-perlbrew use 5.38.2
-export PATH="$HOME/.luarocks/bin:$PATH"
-export PATH="$HOME/node_modules/.bin:$PATH"
-export PATH="/usr/local/go/bin:$PATH"
-export PATH="$(go env GOPATH)/bin:$PATH"
-source "$HOME/.cargo/env"
-export PATH="$HOME/.cargo/bin:$PATH"
+
 # docker
 export DOCKER_BUILDKIT=1
 export BUILDKIT_PROGRESS=plain                  # building the VM may output auth URLs the user needs to click
 #export DOCKER_DEFAULT_PLATFORM=linux/amd64     # for Apple Silicon: building the VM only works in a amd64 environment at the moment
-#export DOCKER_HOST=unix:///home/schan/.docker/desktop/docker.sock          # linux docker-desktop host -- comment if using baseline docker-ce
+#export DOCKER_HOST=unix://$HOME/.docker/desktop/docker.sock          # linux docker-desktop host -- comment if using baseline docker-ce
+# go
+export PATH="/usr/local/go/bin:$PATH"
+export PATH="$(go env GOPATH)/bin:$PATH"
+# lua
+export PATH="$HOME/.luarocks/bin:$PATH"
+# node / nvm
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+export PATH="$HOME/node_modules/.bin:$PATH"
+# perl
+source ~/perl5/perlbrew/etc/bashrc
+# rust
+source "$HOME/.cargo/env"
+export PATH="$HOME/.cargo/bin:$PATH"
 
 # eza
 if command -v eza &> /dev/null
@@ -148,6 +156,5 @@ else
     echo "eza could not be found"
     exit
 fi
-# Created by `pipx` on 2023-06-09 20:07:02
-#export PATH="$PATH:/Users/stahn_mchan/.local/bin"
-export PATH="$PATH:/home/schan/.local/bin"
+
+export PATH="$PATH:$HOME/.local/bin"
