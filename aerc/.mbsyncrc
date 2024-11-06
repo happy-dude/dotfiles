@@ -1,7 +1,7 @@
 IMAPAccount lostsanctum
 Host imap.migadu.com
 User schan@lostsanctum.dev
-PassCmd "pass show email/aerc-schan@lostsanctum.dev"
+PassCmd "pass show email/aerc/schan@lostsanctum.dev"
 SSLType IMAPS
 CertificateFile /etc/ssl/certs/ca-certificates.crt
 
