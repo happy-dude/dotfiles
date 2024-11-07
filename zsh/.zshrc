@@ -157,7 +157,6 @@ then
     alias lg='eza -lbGd --git --sort=modified --tree --level=2'             # tree w/ git
 else
     echo "eza could not be found"
-    exit
 fi
 
 export PATH="$PATH:$HOME/.local/bin"
