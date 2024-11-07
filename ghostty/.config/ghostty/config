@@ -13,3 +13,10 @@ font-size = 16
 #cursor-style-blink = false
 
 #keybind = ctrl+shift+n=
+keybind = alt+delete=esc:d
+keybind = alt+left=esc:b
+keybind = alt+right=esc:f
+keybind = super+backspace=text:\x15
+keybind = super+delete=text:\x0b
+keybind = super+left=text:\x01
+keybind = super+right=text:\x05
