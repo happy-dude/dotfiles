@@ -30,6 +30,7 @@
       fzf
       ripgrep
       stow
+      tree
 
       # # Adds the 'hello' command to your environment. It prints a friendly
       # # "Hello, world!" when run.
