@@ -101,8 +101,8 @@ alias ef='emacsclient -nc'
 alias luamake="$HOME/sources/lua-language-server/3rd/luamake/luamake"
 
 # fzf
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-#[ -d $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/ ] && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/*.zsh
+#[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+[ -d $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/ ] && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/*.zsh
 export FZF_DEFAULT_COMMAND="$(which rg) --files --hidden --follow --glob '!.git'"
 
 # nvim default editor
