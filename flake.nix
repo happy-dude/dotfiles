@@ -41,6 +41,7 @@
             ./home.nix
             #./aerc
             ./emacs
+            ./nix
             ./tmux
             #./wezterm
 
