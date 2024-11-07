@@ -82,14 +82,14 @@
 ;; Set default font
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
-(add-hook 'after-make-frame-functions (lambda (frame) (set-fontset-font t '(#Xe100 . #Xe16f) "Fira Code Retina")))
-(set-fontset-font t '(#Xe100 . #Xe16f) "Fira Code Retina")
+(add-hook 'after-make-frame-functions (lambda (frame) (set-fontset-font t '(#Xe100 . #Xe16f) "FiraCode Nerd Font Mono")))
+(set-fontset-font t '(#Xe100 . #Xe16f) "FiraCode Nerd Font Mono")
 (add-to-list 'default-frame-alist
-             '(font . "Fira Code Retina-16"))
+             '(font . "FiraCode Nerd Font Mono-16"))
 
 ;; Solarized theme
 (add-hook 'org-mode-hook
-          (lambda () (set-frame-font "Fira Code Retina 16")))
+          (lambda () (set-frame-font "FiraCode Nerd Font Mono 16")))
 (setq solarized-use-variable-pitch nil
       solarized-scale-org-headlines nil
       ;; solarized-height-minus-1 1.0
