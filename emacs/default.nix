@@ -4,7 +4,7 @@
   home.file.".emacs".source = ./init.el;
   programs.emacs = {
     enable = true;
-    package = pkgs.emacs-gtk;
+    package = pkgs.emacs29-pgtk;
     extraPackages =
       epkgs: with epkgs; [
         annalist
