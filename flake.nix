@@ -11,7 +11,13 @@
     };
   };
 
-  outputs = { nixpkgs, home-manager, self, ... }:
+  outputs =
+    {
+      nixpkgs,
+      home-manager,
+      self,
+      ...
+    }:
     let
       lib = nixpkgs.lib;
       #system = "x86_64-linux";
@@ -19,23 +25,23 @@
       pkgs = import nixpkgs { inherit system; };
     in
     {
-    homeConfigurations = {
+      homeConfigurations = {
         "stanleychan" = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
+          inherit pkgs;
 
-        # Specify your home configuration modules here, for example,
-        # the path to your home.nix.
-        modules = [
-          ./home.nix
-          #./aerc
-          ./emacs
-        ];
+          # Specify your home configuration modules here, for example,
+          # the path to your home.nix.
+          modules = [
+            ./home.nix
+            #./aerc
+            ./emacs
+          ];
 
-        # Optionally use extraSpecialArgs
-        # to pass through arguments to home.nix
+          # Optionally use extraSpecialArgs
+          # to pass through arguments to home.nix
+        };
       };
       #formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
       formatter.aarch64-linux = nixpkgs.legacyPackages.aarch64-linux.nixfmt-rfc-style;
-      };
     };
 }
