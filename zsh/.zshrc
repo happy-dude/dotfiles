@@ -24,7 +24,7 @@ fi
 
 # Nix home-manager
 if [[ -s "${ZDOTDIR:-$HOME}/.nix-profile/etc/profile.d/hm-session-vars.sh" ]]; then
-    source ~/.nix-profile/etc/profile.d/hm-session-vars.sh
+    source $HOME/.nix-profile/etc/profile.d/hm-session-vars.sh
 fi
 
 # Turn off terminal flow control (ctrl-q and ctrl-s)
