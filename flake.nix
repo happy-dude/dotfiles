@@ -9,6 +9,9 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # neovim nightly overlay: https://github.com/nix-community/neovim-nightly-overlay
+    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
   };
 
   outputs =
@@ -17,12 +20,15 @@
       home-manager,
       self,
       ...
-    }:
+    }@inputs:
     let
       lib = nixpkgs.lib;
       #system = "x86_64-linux";
       system = "aarch64-linux";
       pkgs = import nixpkgs { inherit system; };
+      overlays = [
+        inputs.neovim-nightly-overlay.overlays.default
+      ];
     in
     {
       homeConfigurations = {
@@ -37,6 +43,10 @@
             ./emacs
             ./tmux
             #./wezterm
+
+            {
+              nixpkgs.overlays = overlays;
+            }
           ];
 
           # Optionally use extraSpecialArgs

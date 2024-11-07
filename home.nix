@@ -32,6 +32,7 @@
       fzf
       htop
       moreutils
+      neovim
       procs
       ripgrep
       roswell
@@ -39,6 +40,7 @@
       stow
       tokei
       tree
+      vim
 
       # # Adds the 'hello' command to your environment. It prints a friendly
       # # "Hello, world!" when run.
@@ -62,17 +64,17 @@
     # plain files is through 'home.file'.
     file = {
       # simple conf files
-      ".config/bat/config".source   =   ./bat/.config/bat/config;
-      ".gdbinit".source             =   ./gdb/.gdbinit;
-      ".gitignore_global".source    =   ./git/.gitignore_global;
+      ".config/bat/config".source = ./bat/.config/bat/config;
+      ".gdbinit".source = ./gdb/.gdbinit;
+      ".gitignore_global".source = ./git/.gitignore_global;
 
       # code
-      ".clang-format".source        =   ./editorconfig/.clang-format;
-      ".editorconfig".source        =   ./editorconfig/.editorconfig;
-      ".golangci.yml".source        =   ./go/.golangci.yml;
-      "ros_swank".source            =   ./roswell/ros_swank;
-      ".roswell/helper.el".source   =   ./roswell/.roswell/helper.el;
-      ".stylua.toml".source         =   ./editorconfig/.stylua.toml;
+      ".clang-format".source = ./editorconfig/.clang-format;
+      ".editorconfig".source = ./editorconfig/.editorconfig;
+      ".golangci.yml".source = ./go/.golangci.yml;
+      "ros_swank".source = ./roswell/ros_swank;
+      ".roswell/helper.el".source = ./roswell/.roswell/helper.el;
+      ".stylua.toml".source = ./editorconfig/.stylua.toml;
 
       # # Building this configuration will create a copy of 'dotfiles/screenrc' in
       # # the Nix store. Activating the configuration will then make '~/.screenrc' a
