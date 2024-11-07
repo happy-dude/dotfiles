@@ -28,6 +28,7 @@
       bear
       eza
       fzf
+      moreutils
       ripgrep
       stow
       tree
