@@ -35,6 +35,7 @@
             ./home.nix
             #./aerc
             ./emacs
+            ./tmux
           ];
 
           # Optionally use extraSpecialArgs
