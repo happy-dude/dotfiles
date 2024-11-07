@@ -36,7 +36,7 @@
             #./aerc
             ./emacs
             ./tmux
-            ./wezterm
+            #./wezterm
           ];
 
           # Optionally use extraSpecialArgs
