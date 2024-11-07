@@ -26,13 +26,18 @@
     packages = with pkgs; [
       bat
       bear
+      dust
       eza
+      fd
       fzf
+      htop
       moreutils
+      procs
       ripgrep
       roswell
       sbcl
       stow
+      tokei
       tree
 
       # # Adds the 'hello' command to your environment. It prints a friendly
