@@ -30,6 +30,8 @@
       fzf
       moreutils
       ripgrep
+      roswell
+      sbcl
       stow
       tree
 
@@ -63,6 +65,8 @@
       ".clang-format".source        =   ./editorconfig/.clang-format;
       ".editorconfig".source        =   ./editorconfig/.editorconfig;
       ".golangci.yml".source        =   ./go/.golangci.yml;
+      "ros_swank".source            =   ./roswell/ros_swank;
+      ".roswell/helper.el".source   =   ./roswell/.roswell/helper.el;
       ".stylua.toml".source         =   ./editorconfig/.stylua.toml;
 
       # # Building this configuration will create a copy of 'dotfiles/screenrc' in
