@@ -26,13 +26,16 @@
     packages = with pkgs; [
       bat
       bear
+      curl
       dust
       eza
       fd
       fzf
       htop
+      jq
       moreutils
       neovim
+      pass
       procs
       ripgrep
       roswell
@@ -41,6 +44,8 @@
       tokei
       tree
       vim
+      xclip
+      xsel
 
       # # Adds the 'hello' command to your environment. It prints a friendly
       # # "Hello, world!" when run.
