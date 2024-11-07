@@ -25,8 +25,11 @@
     # environment.
     packages = with pkgs; [
       bat
+      bear
       eza
       fzf
+      ripgrep
+      stow
 
       # # Adds the 'hello' command to your environment. It prints a friendly
       # # "Hello, world!" when run.
