@@ -102,7 +102,7 @@ alias luamake="$HOME/sources/lua-language-server/3rd/luamake/luamake"
 
 # fzf
 #[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-[ -d $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/ ] && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/*.zsh
+[ -d $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/ ] && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/completion.zsh && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/key-bindings.zsh
 export FZF_DEFAULT_COMMAND="$(which rg) --files --hidden --follow --glob '!.git'"
 
 # nvim default editor
