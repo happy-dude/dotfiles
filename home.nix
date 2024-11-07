@@ -53,11 +53,16 @@
     # Home Manager is pretty good at managing dotfiles. The primary way to manage
     # plain files is through 'home.file'.
     file = {
-      ".config/bat/config".source = ./bat/.config/bat/config;
+      # simple conf files
+      ".config/bat/config".source   =   ./bat/.config/bat/config;
+      ".gdbinit".source             =   ./gdb/.gdbinit;
+      ".gitignore_global".source    =   ./git/.gitignore_global;
 
-      ".clang-format".source = ./editorconfig/.clang-format;
-      ".editorconfig".source = ./editorconfig/.editorconfig;
-      ".stylua.toml".source = ./editorconfig/.stylua.toml;
+      # code
+      ".clang-format".source        =   ./editorconfig/.clang-format;
+      ".editorconfig".source        =   ./editorconfig/.editorconfig;
+      ".golangci.yml".source        =   ./go/.golangci.yml;
+      ".stylua.toml".source         =   ./editorconfig/.stylua.toml;
 
       # # Building this configuration will create a copy of 'dotfiles/screenrc' in
       # # the Nix store. Activating the configuration will then make '~/.screenrc' a
