@@ -10,7 +10,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # neovim nightly overlay: https://github.com/nix-community/neovim-nightly-overlay
+    # neovim nightly overlay
+    # https://github.com/nix-community/neovim-nightly-overlay
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
   };
 
@@ -35,8 +36,6 @@
         "stanleychan" = home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
 
-          # Specify your home configuration modules here, for example,
-          # the path to your home.nix.
           modules = [
             ./home.nix
             ./aerc
@@ -50,9 +49,6 @@
               nixpkgs.overlays = overlays;
             }
           ];
-
-          # Optionally use extraSpecialArgs
-          # to pass through arguments to home.nix
         };
       };
       #formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
