@@ -24,6 +24,7 @@
     # The home.packages option allows you to install Nix packages into your
     # environment.
     packages = with pkgs; [
+      aerc
       bat
       bear
       curl
@@ -32,9 +33,13 @@
       fd
       fzf
       htop
+      isync
       jq
+      less
       moreutils
       neovim
+      notmuch
+      pandoc
       pass
       procs
       ripgrep

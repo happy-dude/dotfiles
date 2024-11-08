@@ -39,7 +39,7 @@
           # the path to your home.nix.
           modules = [
             ./home.nix
-            #./aerc
+            #./aerc ### order matters in programs.aerc.extraConfig.filters
             ./emacs
             ./fonts
             ./nix
