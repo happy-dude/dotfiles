@@ -43,7 +43,7 @@
             ./fonts
             ./nix
             ./tmux
-            #./wezterm
+            ./wezterm
 
             {
               nixpkgs.overlays = overlays;
