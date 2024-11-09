@@ -22,12 +22,12 @@ endif
 " vimconf directories for vimrc and plugin settings
 if has('nvim')
   let s:vim_dir = '~/.config/nvim/'
-  let s:vimrc_dir = '~/.config/nvim/vimrc/'
-  let s:vimpack_settings_dir = '~/.config/nvim/vimrc/packages/'
+  let s:vimrc_dir = '~/.config/nvim/vimrc_dir/'
+  let s:vimpack_settings_dir = '~/.config/nvim/vimrc_dir/packages/'
 else
   let s:vim_dir = '~/.vim/'
-  let s:vimrc_dir = '~/.vim/vimrc/'
-  let s:vimpack_settings_dir = '~/.vim/vimrc/packages/'
+  let s:vimrc_dir = '~/.vim/vimrc_dir/'
+  let s:vimpack_settings_dir = '~/.vim/vimrc_dir/packages/'
 endif
 " }
 
