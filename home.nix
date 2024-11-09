@@ -10,7 +10,7 @@
     username = "stanleychan";
     homeDirectory = "/home/stanleychan";
 
-    stateVersion = "24.05"; # Please read the comment before changing.
+    stateVersion = "24.11"; # Please read the comment before changing.
 
     packages = with pkgs; [
       bat
@@ -54,8 +54,9 @@
       ".stylua.toml".source = ./editorconfig/.stylua.toml;
     };
 
-    sessionVariables = {
-    };
+    sessionVariables =
+      {
+      };
   };
 
   programs.home-manager.enable = true;
