@@ -44,6 +44,7 @@
             ./nix
             ./tmux
             ./wezterm
+            #./zsh
 
             {
               nixpkgs.overlays = overlays;
