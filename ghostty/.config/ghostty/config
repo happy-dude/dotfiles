@@ -1,0 +1,22 @@
+#command = $(which zsh) --login -c 'tmux attach -t "mux" || tmux new -s "mux"'
+command = $(which zsh) --login
+
+window-width = 132
+window-height = 48
+
+theme = GruvboxDark
+#font-family = Fira Code
+font-family = FiraCode Nerd Font Mono
+font-size = 16
+
+#cursor-style = block
+#cursor-style-blink = false
+
+#keybind = ctrl+shift+n=
+keybind = alt+delete=esc:d
+keybind = alt+left=esc:b
+keybind = alt+right=esc:f
+keybind = super+backspace=text:\x15
+keybind = super+delete=text:\x0b
+keybind = super+left=text:\x01
+keybind = super+right=text:\x05

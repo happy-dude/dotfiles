@@ -7,7 +7,7 @@
 (add-to-list 'custom-theme-load-path "~/.config/emacs/themes/solarized-emacs")
 (require 'solarized)
 (add-hook 'org-mode-hook
-          (lambda () (set-frame-font "Fira Code Retina 16")))
+          (lambda () (set-frame-font "FiraCode Nerd Font Mono 16")))
 (setq solarized-use-variable-pitch nil
       solarized-scale-org-headlines nil
       ;; solarized-height-minus-1 1.0

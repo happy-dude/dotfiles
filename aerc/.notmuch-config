@@ -1,6 +1,5 @@
 [database]
-
-path=/home/schan/.mail
+path=/home/stanleychan/.mail
 
 [user]
 name=Stanley Chan

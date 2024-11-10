@@ -15,12 +15,13 @@ end
 config.enable_wayland = false
 
 config.set_environment_variables = {
-  TERMINFO_DIRS = '/home/schan/.terminfo',
+  TERMINFO_DIRS = '/home/stanleychan/.terminfo',
 }
 config.term = 'wezterm'
 config.automatically_reload_config = true
 
 config.default_prog = { '/usr/bin/zsh', '--login', '-c', 'tmux attach -t "mux" || tmux new -s "mux"' }
+-- config.default_prog = { '/usr/bin/zsh', '--login' }
 wezterm.action.SpawnCommandInNewWindow({
   args = { 'zsh' },
 })
@@ -43,10 +44,15 @@ config.enable_tab_bar = true
 config.hide_tab_bar_if_only_one_tab = true
 
 config.color_scheme = 'Gruvbox Material (Gogh)'
-config.font = wezterm.font('Fira Code')
-config.font_size = 16.0
+--config.font = wezterm.font('Fira Code')
+config.font = wezterm.font('FiraCode Nerd Font Mono')
+config.font_size = 14.0
 config.custom_block_glyphs = true
 config.harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' }   -- disable ligatures
+
+wezterm.on('open-uri', function(window, pane, uri)
+  wezterm.open_with(uri, 'firefox-trunk')
+end)
 
 config.leader = {
   key = 'Escape',

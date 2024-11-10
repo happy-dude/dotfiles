@@ -22,6 +22,11 @@ fi
 
 # Customize to your needs...
 
+# Nix home-manager
+if [[ -s "${ZDOTDIR:-$HOME}/.nix-profile/etc/profile.d/hm-session-vars.sh" ]]; then
+    source $HOME/.nix-profile/etc/profile.d/hm-session-vars.sh
+fi
+
 # Turn off terminal flow control (ctrl-q and ctrl-s)
 # already set in prezto with `unsetopt FLOW_CONTROL` in modules/completion/init.zsh
 #stty -F/dev/tty -ixon -ixoff
@@ -81,7 +86,7 @@ then
 fi
 
 # virtme
-alias vmeamd="~/sources/virtme-ng/virtme-run --show-boot-console --show-command --memory 8G --rw --rwdir=/home/schan/cf-repos/bpf-lsm --kdir . --mods=auto --net user -a nokaslr"
+alias vmeamd="~/sources/virtme-ng/virtme-run --show-boot-console --show-command --memory 8G --rw --rwdir=$HOME/cf/bpf-lsm --kdir . --mods=auto --net user -a nokaslr"
 
 # git
 alias gl="git log --date=relative --abbrev=12 -n 160 \
@@ -96,13 +101,16 @@ alias ef='emacsclient -nc'
 alias luamake="$HOME/sources/lua-language-server/3rd/luamake/luamake"
 
 # fzf
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-#[ -d $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/ ] && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/*.zsh
+#[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+[ -d $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/ ] && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/completion.zsh && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/key-bindings.zsh
 export FZF_DEFAULT_COMMAND="$(which rg) --files --hidden --follow --glob '!.git'"
 
 # nvim default editor
 export EDITOR='nvim'
 export VISUAL='nvim'
+
+# homebrew
+#eval "$($(brew --prefix)/bin/brew shellenv)"
 
 # LLVM, Xcode SDK
 #export LDFLAGS="-L$(brew --prefix)/opt/llvm/lib -Wl,-rpath,$(brew --prefix)/opt/llvm/lib"
@@ -114,21 +122,27 @@ export VISUAL='nvim'
 export PATH="/opt/homebrew/opt/curl/bin:$PATH"
 
 # programming language environments
-source ~/perl5/perlbrew/etc/bashrc
-perlbrew use 5.38.2
-export PATH="$HOME/.luarocks/bin:$PATH"
-export PATH="$HOME/node_modules/.bin:$PATH"
-export GOPATH=$HOME/go
+
+# docker
+export DOCKER_BUILDKIT=1
+export BUILDKIT_PROGRESS=plain                  # building the VM may output auth URLs the user needs to click
+#export DOCKER_DEFAULT_PLATFORM=linux/amd64     # for Apple Silicon: building the VM only works in a amd64 environment at the moment
+#export DOCKER_HOST=unix://$HOME/.docker/desktop/docker.sock          # linux docker-desktop host -- comment if using baseline docker-ce
+# go
+export PATH="/usr/local/go/bin:$PATH"
 export PATH="$(go env GOPATH)/bin:$PATH"
-#export PATH="/usr/local/go/bin:$PATH"
-source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
-source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
+# lua
+export PATH="$HOME/.luarocks/bin:$PATH"
+# node / nvm
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+export PATH="$HOME/node_modules/.bin:$PATH"
+# perl
+source ~/perl5/perlbrew/etc/bashrc
+# rust
 source "$HOME/.cargo/env"
 export PATH="$HOME/.cargo/bin:$PATH"
-# docker
-export BUILDKIT_PROGRESS=plain
-export DOCKER_DEFAULT_PLATFORM=linux/amd64
-export DOCKER_BUILDKIT=1
 
 # eza
 if command -v eza &> /dev/null
@@ -146,8 +160,6 @@ then
     alias lg='eza -lbGd --git --sort=modified --tree --level=2'             # tree w/ git
 else
     echo "eza could not be found"
-    exit
 fi
-# Created by `pipx` on 2023-06-09 20:07:02
-#export PATH="$PATH:/Users/stahn_mchan/.local/bin"
-export PATH="$PATH:/home/schan/.local/bin"
+
+export PATH="$PATH:$HOME/.local/bin"

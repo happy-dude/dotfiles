@@ -7,7 +7,7 @@ else
   let s:vim_plugged_dir = '~/.vim/pack/plugged/opt/'
 endif
 
-if (&t_Co >= 16) && (($TERM =~# "color") || ($TERM =~# "alacritty") || ($TERM =~# "wezterm")) && (has("termguicolors")) && (!has("gui_running"))
+if (&t_Co >= 16) && (($TERM =~# "color") || ($TERM =~# "alacritty") || ($TERM =~# "wezterm") || ($TERM =~# "ghostty")) && (has("termguicolors")) && (!has("gui_running"))
 
   set notermguicolors     " Personally prefer the flattened 256-color palettes instead of true color ones
 
@@ -43,7 +43,7 @@ if (&t_Co >= 16) && (($TERM =~# "color") || ($TERM =~# "alacritty") || ($TERM =~
 endif
 
 if has('gui_running')
-  set guifont=Fira\ Code\ Retina:h16
+  set guifont=FiraCode Nerd Font Mono:h16
 
   if filereadable(expand(s:vim_plugged_dir . "/vim-solarized8/colors/solarized8_flat.vim"))
     set background=dark

@@ -22,12 +22,12 @@ endif
 " vimconf directories for vimrc and plugin settings
 if has('nvim')
   let s:vim_dir = '~/.config/nvim/'
-  let s:vimrc_dir = '~/.config/nvim/vimrc/'
-  let s:vimpack_settings_dir = '~/.config/nvim/vimrc/packages/'
+  let s:vimrc_dir = '~/.config/nvim/vimrc_dir/'
+  let s:vimpack_settings_dir = '~/.config/nvim/vimrc_dir/packages/'
 else
   let s:vim_dir = '~/.vim/'
-  let s:vimrc_dir = '~/.vim/vimrc/'
-  let s:vimpack_settings_dir = '~/.vim/vimrc/packages/'
+  let s:vimrc_dir = '~/.vim/vimrc_dir/'
+  let s:vimpack_settings_dir = '~/.vim/vimrc_dir/packages/'
 endif
 " }
 
@@ -65,7 +65,6 @@ if &loadplugins
   " { Load plugin packages
   call plug#begin(s:vim_dir . 'pack/plugged/opt/')
   Plug 'AndrewRadev/splitjoin.vim'                    ,   { 'branch' : 'main' }
-  Plug 'Glench/Vim-Jinja2-Syntax'                     ,   { 'branch' : 'master' }
   Plug 'Happy-Dude/hlnext.vim'                        ,   { 'branch' : 'master' }
   Plug 'cespare/vim-toml'                             ,   { 'branch' : 'main', 'for' : [ 'toml' ] }
   Plug 'chrisbra/csv.vim'                             ,   { 'branch' : 'master', 'for' : [ 'csv' ] }
@@ -164,7 +163,7 @@ if &loadplugins
 
     " neogit
     Plug 'nvim-lua/plenary.nvim'                      , { 'branch' : 'master' }
-    Plug 'NeogitOrg/neogit'                           , { 'branch' : 'nightly' }
+    Plug 'NeogitOrg/neogit'                           , { 'branch' : 'master' }
 
     " Enable coc.nvim if node.js is installed
     if executable('node')

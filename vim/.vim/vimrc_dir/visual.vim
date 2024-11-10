@@ -11,8 +11,10 @@ set title               " Show title in console title bar
 set showtabline=2       " Display tab line even if single file opened
 set tm=500              " Set tooltip menu
 
-set guioptions=em       " e ensures tab bar is displayed in GUI; m ensures menu bar is displayed
-set guitablabel=%t      " Display buffer name on tab label
+if has("gui_running")
+  set guioptions=em       " e ensures tab bar is displayed in GUI; m ensures menu bar is displayed
+  set guitablabel=%t      " Display buffer name on tab label
+endif
 
 set showcmd             " Display commands as they are typed
 "set cmdheight=1         " Set the commandbar height -- default
