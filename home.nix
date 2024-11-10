@@ -37,6 +37,7 @@
       vim
       xclip
       xsel
+      yt-dlp
     ];
 
     file = {

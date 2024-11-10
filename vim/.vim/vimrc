@@ -146,7 +146,7 @@ if &loadplugins
 
     " Lisp + neovim-lua-based REPL
     Plug 'Olical/nfnl'                                , { 'branch' : 'main' }
-    Plug 'Olical/conjure'                             , { 'branch' : 'master' }
+    Plug 'Olical/conjure'                             , { 'branch' : 'master', 'for' : [ 'clojure', 'fennel', 'janet', 'hy', 'julia', 'racket', 'scheme', 'lua', 'lisp', 'python', 'sql' ] }
     "Plug 'gpanders/nvim-parinfer'                     , { 'branch' : 'master' }
 
     " nvim-dap
