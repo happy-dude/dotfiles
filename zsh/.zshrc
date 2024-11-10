@@ -110,13 +110,13 @@ export EDITOR='nvim'
 export VISUAL='nvim'
 
 # homebrew
-#eval "$($(brew --prefix)/bin/brew shellenv)"
+eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # LLVM, Xcode SDK
-#export LDFLAGS="-L$(brew --prefix)/opt/llvm/lib -Wl,-rpath,$(brew --prefix)/opt/llvm/lib"
-#export CPPFLAGS="-I$(brew --prefix)/opt/llvm/include"
-#export PATH="$(brew --prefix)/opt/llvm/bin:$PATH"
-#export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
+export LDFLAGS="-L$(brew --prefix)/opt/llvm/lib -Wl,-rpath,$(brew --prefix)/opt/llvm/lib"
+export CPPFLAGS="-I$(brew --prefix)/opt/llvm/include"
+export PATH="$(brew --prefix)/opt/llvm/bin:$PATH"
+export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
 
 # Homebrew curl
 export PATH="/opt/homebrew/opt/curl/bin:$PATH"
@@ -139,7 +139,7 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 export PATH="$HOME/node_modules/.bin:$PATH"
 # perl
-source ~/perl5/perlbrew/etc/bashrc
+#source ~/perl5/perlbrew/etc/bashrc
 # rust
 source "$HOME/.cargo/env"
 export PATH="$HOME/.cargo/bin:$PATH"
