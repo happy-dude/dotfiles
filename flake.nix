@@ -10,6 +10,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # nixGL
+    # https://nix-community.github.io/home-manager/index.xhtml#sec-usage-gpu-non-nixos
+    # https://github.com/nix-community/nixGL
+    nixgl = {
+      url = "github:nix-community/nixGL";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # neovim nightly overlay
     # https://github.com/nix-community/neovim-nightly-overlay
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
@@ -19,6 +27,7 @@
     {
       nixpkgs,
       home-manager,
+      nixgl,
       self,
       ...
     }@inputs:
@@ -26,15 +35,21 @@
       lib = nixpkgs.lib;
       #system = "x86_64-linux";
       system = "aarch64-linux";
-      pkgs = import nixpkgs { inherit system; };
-      overlays = [
-        inputs.neovim-nightly-overlay.overlays.default
-      ];
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [
+          inputs.neovim-nightly-overlay.overlays.default
+          nixgl.overlay
+        ];
+      };
     in
     {
       homeConfigurations = {
         "stanleychan" = home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
+          extraSpecialArgs = {
+            inherit inputs;
+          };
 
           modules = [
             ./home.nix
@@ -46,9 +61,6 @@
             ./wezterm
             ./zsh
 
-            {
-              nixpkgs.overlays = overlays;
-            }
           ];
         };
       };

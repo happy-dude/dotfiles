@@ -2,10 +2,15 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 
 {
+  nixGL.packages = inputs.nixgl.packages;
+  nixGL.defaultWrapper = "mesa";
+  nixGL.installScripts = [ "mesa" ];
+
   home = {
     username = "stanleychan";
     homeDirectory = "/home/stanleychan";

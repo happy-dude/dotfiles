@@ -9,7 +9,7 @@
 
   programs.wezterm = {
     enable = false;
-    package = pkgs.wezterm;
+    package = (config.lib.nixGL.wrap pkgs.wezterm);
     extraConfig = ''
       ${builtins.readFile ./.config/wezterm/wezterm.lua}
     '';
