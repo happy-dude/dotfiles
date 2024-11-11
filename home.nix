@@ -43,6 +43,9 @@
       xclip
       xsel
       yt-dlp
+
+      # graphical packages
+      (config.lib.nixGL.wrap glxinfo)
     ];
 
     file = {
