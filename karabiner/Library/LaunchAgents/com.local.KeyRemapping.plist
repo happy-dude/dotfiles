@@ -8,6 +8,8 @@
     <array>
         <string>/usr/bin/hidutil</string>
         <string>property</string>
+        <string>--matching</string>
+        <string>{"VendorID": 0x0000, "ProductID": 0x0000, "LocationID":0xce}</string>
         <string>--set</string>
         <string>{"UserKeyMapping":[
             {
