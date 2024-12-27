@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  ghostty,
   inputs,
   ...
 }:
@@ -46,6 +47,7 @@
 
       # graphical packages
       (config.lib.nixGL.wrap glxinfo)
+      (config.lib.nixGL.wrap ghostty.packages.${pkgs.system}.default)
     ];
 
     file = {
@@ -63,9 +65,8 @@
       ".stylua.toml".source = ./editorconfig/.stylua.toml;
     };
 
-    sessionVariables =
-      {
-      };
+    sessionVariables = {
+    };
   };
 
   programs.home-manager.enable = true;

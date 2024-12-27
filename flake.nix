@@ -1,5 +1,5 @@
 {
-  description = "stanleychan Home Manager configuration";
+  description = "schan Home Manager configuration";
 
   inputs = {
     # Specify the source of Home Manager and Nixpkgs.
@@ -21,6 +21,12 @@
     # neovim nightly overlay
     # https://github.com/nix-community/neovim-nightly-overlay
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
+
+    # ghostty
+    # https://ghostty.org/docs/install/binary#nix-flake
+    # https://github.com/ghostty-org/ghostty/blob/main/flake.nix
+    ghostty.url = "github:ghostty-org/ghostty";
+
   };
 
   outputs =
@@ -28,6 +34,7 @@
       nixpkgs,
       home-manager,
       nixgl,
+      ghostty,
       self,
       ...
     }@inputs:
@@ -45,10 +52,11 @@
     in
     {
       homeConfigurations = {
-        "stanleychan" = home-manager.lib.homeManagerConfiguration {
+        "schan" = home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           extraSpecialArgs = {
             inherit inputs;
+            inherit ghostty;
           };
 
           modules = [
