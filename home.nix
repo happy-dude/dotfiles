@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  ghostty,
   inputs,
   ...
 }:
@@ -47,7 +46,7 @@
 
       # graphical packages
       (config.lib.nixGL.wrap glxinfo)
-      (config.lib.nixGL.wrap ghostty.packages.${pkgs.system}.default)
+      (config.lib.nixGL.wrap ghostty)
     ];
 
     file = {

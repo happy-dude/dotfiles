@@ -46,6 +46,7 @@
         inherit system;
         overlays = [
           inputs.neovim-nightly-overlay.overlays.default
+          ghostty.overlays.default
           nixgl.overlay
         ];
       };
@@ -56,7 +57,6 @@
           inherit pkgs;
           extraSpecialArgs = {
             inherit inputs;
-            inherit ghostty;
           };
 
           modules = [
