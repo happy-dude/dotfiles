@@ -12,6 +12,12 @@ font-size = 16
 #cursor-style = block
 #cursor-style-blink = false
 
+# splits
+#keybind = ctrl+shift+o=new_split:right
+#keybind = ctrl+shift+e=new_split:down
+keybind = ctrl+shift+|=new_split:right
+keybind = ctrl+shift+-=new_split:down
+
 #keybind = ctrl+shift+n=
 keybind = alt+delete=esc:d
 keybind = alt+left=esc:b
