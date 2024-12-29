@@ -12,7 +12,6 @@
         dash
         editorconfig
         emacsql
-        emacsql-sqlite
         evil
         evil-collection
         evil-org
