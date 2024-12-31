@@ -6,7 +6,7 @@
     defaultFonts = {
       serif = [ "DejaVu Serif" ];
       sansSerif = [ "DejaVu Sans" ];
-      monospace = [ "FiraCode Nerd Font" ];
+      monospace = [ "ComicShannsMono Nerd Font" ];
       emoji = [ "Noto Color Emoji" ];
     };
   };
@@ -15,6 +15,7 @@
     ubuntu_font_family
     fira
     fira-code
+    intel-one-mono
     noto-fonts
     noto-fonts-color-emoji
 
@@ -24,6 +25,7 @@
     nerd-fonts.fira-code
     nerd-fonts.jetbrains-mono
     nerd-fonts.iosevka-term
+    nerd-fonts.intone-mono
     nerd-fonts.noto
   ];
 }

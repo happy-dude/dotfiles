@@ -6,7 +6,7 @@ window-height = 48
 
 theme = GruvboxDark
 #font-family = Fira Code
-font-family = FiraCode Nerd Font Mono
+font-family = ComicShannsMono Nerd Font
 font-size = 16
 
 #cursor-style = block
