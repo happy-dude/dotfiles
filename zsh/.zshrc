@@ -27,9 +27,25 @@ if [[ -s "${ZDOTDIR:-$HOME}/.nix-profile/etc/profile.d/hm-session-vars.sh" ]]; t
     source $HOME/.nix-profile/etc/profile.d/hm-session-vars.sh
 fi
 
+# homebrew
+#eval "$($(brew --prefix)/bin/brew shellenv)"
+
+# ghostty
+# ghostty requires OpenGL 3.3, which UTM 4.x unfortunately does not support (yet?)
+# workaround: use `LIBGL_ALWAYS_SOFTWARE=true ghostty` alias
+# refs:
+#   https://github.com/ghostty-org/ghostty/discussions/2602
+#   https://github.com/utmapp/UTM/issues/4285
+#   https://docs.mesa3d.org/envvars.html#envvar-LIBGL_ALWAYS_SOFTWARE
+alias ghostty="LIBGL_ALWAYS_SOFTWARE=true ghostty"
+
 # Turn off terminal flow control (ctrl-q and ctrl-s)
 # already set in prezto with `unsetopt FLOW_CONTROL` in modules/completion/init.zsh
 #stty -F/dev/tty -ixon -ixoff
+
+# nvim default editor
+export EDITOR='nvim'
+export VISUAL='nvim'
 
 # use neovim as manpager
 export MANPAGER='nvim +Man!'
@@ -85,41 +101,22 @@ then
         -Wl,-z,defs,-z,relro,-z,now,-z,noexecstack,-z,noexecheap,-pie'
 fi
 
-# virtme
-alias vmeamd="~/sources/virtme-ng/virtme-run --show-boot-console --show-command --memory 8G --rw --rwdir=$HOME/cf/bpf-lsm --kdir . --mods=auto --net user -a nokaslr"
-
 # git
 alias gl="git log --date=relative --abbrev=12 -n 160 \
     --pretty='format:%C(dim blue)%h%C(auto)%d %s %>|(68,trunc)%C(8)- %C(dim magenta)%an%C(8), %ad' --graph --all"
 alias gits="git --no-pager show --no-patch --format='commit %h (\"%s\")%n'"
-
-# emacsclient
-alias et='TERM=xterm-256color emacsclient -nw'
-alias ef='emacsclient -nc'
-
-# luamake from sumneko
-alias luamake="$HOME/sources/lua-language-server/3rd/luamake/luamake"
 
 # fzf
 #[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 [ -d $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/ ] && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/completion.zsh && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/key-bindings.zsh
 export FZF_DEFAULT_COMMAND="$(which rg) --files --hidden --follow --glob '!.git'"
 
-# nvim default editor
-export EDITOR='nvim'
-export VISUAL='nvim'
+# emacsclient
+alias et='TERM=xterm-256color emacsclient -nw'
+alias ef='emacsclient -nc'
 
-# ghostty
-# ghostty requires OpenGL 3.3, which UTM 4.x unfortunately does not support (yet?)
-# workaround: use `LIBGL_ALWAYS_SOFTWARE=true ghostty` alias
-# refs:
-#   https://github.com/ghostty-org/ghostty/discussions/2602
-#   https://github.com/utmapp/UTM/issues/4285
-#   https://docs.mesa3d.org/envvars.html#envvar-LIBGL_ALWAYS_SOFTWARE
-alias ghostty="LIBGL_ALWAYS_SOFTWARE=true ghostty"
-
-# homebrew
-#eval "$($(brew --prefix)/bin/brew shellenv)"
+# virtme
+alias vmeamd="~/sources/virtme-ng/virtme-run --show-boot-console --show-command --memory 8G --rw --rwdir=$HOME/cf/bpf-lsm --kdir . --mods=auto --net user -a nokaslr"
 
 # LLVM, Xcode SDK
 #export LDFLAGS="-L$(brew --prefix)/opt/llvm/lib -Wl,-rpath,$(brew --prefix)/opt/llvm/lib"
@@ -139,6 +136,8 @@ export PATH="/usr/local/go/bin:$PATH"
 export PATH="$(go env GOPATH)/bin:$PATH"
 # lua
 export PATH="$HOME/.luarocks/bin:$PATH"
+# luamake from sumneko
+alias luamake="$HOME/sources/lua-language-server/3rd/luamake/luamake"
 # node / nvm
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
