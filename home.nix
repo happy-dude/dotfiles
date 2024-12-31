@@ -21,6 +21,7 @@
       bat
       bear
       curl
+      dex
       dust
       eza
       fd

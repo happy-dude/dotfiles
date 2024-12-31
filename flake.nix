@@ -65,6 +65,7 @@
             ./emacs
             ./fonts
             ./nix
+            ./xdg
             ./tmux
             ./wezterm
             ./zsh
