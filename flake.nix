@@ -63,6 +63,7 @@
             ./home.nix
             ./aerc
             ./emacs
+            ./fish
             ./fonts
             ./nix
             ./xdg
@@ -73,7 +74,6 @@
           ];
         };
       };
-      #formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
       formatter.aarch64-linux = nixpkgs.legacyPackages.${system}.nixfmt-rfc-style;
     };
 }

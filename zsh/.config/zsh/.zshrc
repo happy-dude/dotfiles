@@ -41,7 +41,8 @@ alias ghostty="LIBGL_ALWAYS_SOFTWARE=true ghostty"
 
 # Turn off terminal flow control (ctrl-q and ctrl-s)
 # already set in prezto with `unsetopt FLOW_CONTROL` in modules/completion/init.zsh
-#stty -F/dev/tty -ixon -ixoff
+#stty -F/dev/tty -ixon -ixoff   Linux
+#stty -ixon -ixoff              macOS
 
 # nvim default editor
 export EDITOR='nvim'
@@ -109,7 +110,10 @@ alias gits="git --no-pager show --no-patch --format='commit %h (\"%s\")%n'"
 # fzf
 #[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 [ -d $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/ ] && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/completion.zsh && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/key-bindings.zsh
-export FZF_DEFAULT_COMMAND="$(which rg) --files --hidden --follow --glob '!.git'"
+if command -v rg &> /dev/null
+then
+    export FZF_DEFAULT_COMMAND="$(which rg) --files --hidden --follow --glob '!.git'"
+fi
 
 # emacsclient
 alias et='TERM=xterm-256color emacsclient -nw'
@@ -139,10 +143,10 @@ export PATH="$HOME/.luarocks/bin:$PATH"
 # luamake from sumneko
 alias luamake="$HOME/sources/lua-language-server/3rd/luamake/luamake"
 # node / nvm
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-export PATH="$HOME/node_modules/.bin:$PATH"
+#export NVM_DIR="$HOME/.nvm"
+#[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+#[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+#export PATH="$HOME/node_modules/.bin:$PATH"
 # perl
 source ~/perl5/perlbrew/etc/bashrc
 # rust

@@ -32,6 +32,7 @@
       less
       moreutils
       neovim
+      nix-prefetch-github
       pandoc
       pass
       procs

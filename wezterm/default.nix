@@ -1,7 +1,6 @@
 { config, pkgs, ... }:
 
 {
-
   # wezterm installed via home-manager errors on Ubuntu 24.10
   # need to investigate further; until then, install via PPA and only link config
 

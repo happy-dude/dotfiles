@@ -1,5 +1,6 @@
 #command = $(which zsh) --login -c 'tmux attach -t "mux" || tmux new -s "mux"'
-command = $(which zsh) --login
+#command = $(which zsh) --login
+command = /home/stanleychan/.nix-profile/bin/fish --login
 
 window-width = 132
 window-height = 48
