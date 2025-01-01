@@ -3,6 +3,8 @@
 #set -q __fish_home_manager_config_sourced; and exit
 #set -g __fish_home_manager_config_sourced 1
 
+fish_add_path -p "/nix/var/nix/profiles/default/bin"
+
 # homebrew
 #eval "$(/opt/homebrew/bin/brew shellenv)"
 #if test -d (brew --prefix)"/share/fish/completions"
@@ -129,10 +131,9 @@ fish_add_path "$HOME/.luarocks/bin"
 # luamake from sumneko
 alias luamake="$HOME/sources/lua-language-server/3rd/luamake/luamake"
 # node / nvm
-#set -gx NVM_DIR "$HOME/.nvm"
-#[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-#[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-#fish_add_path -p "$HOME/node_modules/.bin"
+set -gx NVM_DIR "$HOME/.nvm"
+# nvm scripts not compatible with non-POSIX fish, use nvm.fish plugin
+set --universal nvm_default_version v23.5.0
 # perl
 #source ~/perl5/perlbrew/etc/bashrc
 # rust

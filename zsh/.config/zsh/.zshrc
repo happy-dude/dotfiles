@@ -143,10 +143,10 @@ export PATH="$HOME/.luarocks/bin:$PATH"
 # luamake from sumneko
 alias luamake="$HOME/sources/lua-language-server/3rd/luamake/luamake"
 # node / nvm
-#export NVM_DIR="$HOME/.nvm"
-#[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-#[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 #export PATH="$HOME/node_modules/.bin:$PATH"
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                    # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 # perl
 source ~/perl5/perlbrew/etc/bashrc
 # rust
