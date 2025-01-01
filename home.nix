@@ -2,10 +2,15 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 
 {
+  nixGL.packages = inputs.nixgl.packages;
+  nixGL.defaultWrapper = "mesa";
+  nixGL.installScripts = [ "mesa" ];
+
   home = {
     username = "stanleychan";
     homeDirectory = "/home/stanleychan";
@@ -13,9 +18,11 @@
     stateVersion = "24.11"; # Please read the comment before changing.
 
     packages = with pkgs; [
+      babelfish
       bat
       bear
       curl
+      dex
       dust
       eza
       fd
@@ -25,6 +32,7 @@
       less
       moreutils
       neovim
+      nix-prefetch-github
       pandoc
       pass
       procs
@@ -38,6 +46,10 @@
       xclip
       xsel
       yt-dlp
+
+      # graphical packages
+      (config.lib.nixGL.wrap glxinfo)
+      (config.lib.nixGL.wrap ghostty)
     ];
 
     file = {
@@ -55,9 +67,8 @@
       ".stylua.toml".source = ./editorconfig/.stylua.toml;
     };
 
-    sessionVariables =
-      {
-      };
+    sessionVariables = {
+    };
   };
 
   programs.home-manager.enable = true;

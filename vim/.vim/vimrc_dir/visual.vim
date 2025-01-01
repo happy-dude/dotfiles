@@ -11,7 +11,7 @@ set title               " Show title in console title bar
 set showtabline=2       " Display tab line even if single file opened
 set tm=500              " Set tooltip menu
 
-if has("gui_running")
+if has("gui_running") && !has('nvim')
   set guioptions=em       " e ensures tab bar is displayed in GUI; m ensures menu bar is displayed
   set guitablabel=%t      " Display buffer name on tab label
 endif
