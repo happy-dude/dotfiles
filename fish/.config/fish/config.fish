@@ -3,20 +3,20 @@
 #set -q __fish_home_manager_config_sourced; and exit
 #set -g __fish_home_manager_config_sourced 1
 
-fish_add_path -p "/nix/var/nix/profiles/default/bin"
+#fish_add_path -p "/nix/var/nix/profiles/default/bin"
 
 # homebrew
-#eval "$(/opt/homebrew/bin/brew shellenv)"
-#if test -d (brew --prefix)"/share/fish/completions"
-#    set -p fish_complete_path (brew --prefix)/share/fish/completions
-#end
-#
-#if test -d (brew --prefix)"/share/fish/vendor_completions.d"
-#    set -p fish_complete_path (brew --prefix)/share/fish/vendor_completions.d
-#end
+eval "$(/opt/homebrew/bin/brew shellenv)"
+if test -d (brew --prefix)"/share/fish/completions"
+    set -p fish_complete_path (brew --prefix)/share/fish/completions
+end
+
+if test -d (brew --prefix)"/share/fish/vendor_completions.d"
+    set -p fish_complete_path (brew --prefix)/share/fish/vendor_completions.d
+end
 
 # Homebrew curl
-#fish_add_path -p "/opt/homebrew/opt/curl/bin"
+fish_add_path -p "/opt/homebrew/opt/curl/bin"
 
 # ghostty
 # ghostty requires OpenGL 3.3, which UTM 4.x unfortunately does not support (yet?)
@@ -25,7 +25,7 @@ fish_add_path -p "/nix/var/nix/profiles/default/bin"
 #   https://github.com/ghostty-org/ghostty/discussions/2602
 #   https://github.com/utmapp/UTM/issues/4285
 #   https://docs.mesa3d.org/envvars.html#envvar-LIBGL_ALWAYS_SOFTWARE
-alias ghostty="LIBGL_ALWAYS_SOFTWARE=true ghostty"
+#alias ghostty="LIBGL_ALWAYS_SOFTWARE=true ghostty"
 
 # Turn off terminal flow control (ctrl-q and ctrl-s)
 # already default by off in fish
@@ -111,10 +111,10 @@ alias ef='emacsclient -nc'
 alias vmeamd="~/sources/virtme-ng/virtme-run --show-boot-console --show-command --memory 8G --rw --rwdir=$HOME/cf/bpf-lsm --kdir . --mods=auto --net user -a nokaslr"
 
 # LLVM, Xcode SDK
-#set -gx LDFLAGS "-L$(brew --prefix)/opt/llvm/lib -Wl,-rpath,$(brew --prefix)/opt/llvm/lib"
-#set -gx CPPFLAGS "-I$(brew --prefix)/opt/llvm/include"
-#fish_add_path -p "$(brew --prefix)/opt/llvm/bin"
-#set -gx SDKROOT $(xcrun --sdk macosx --show-sdk-path)
+set -gx LDFLAGS "-L$(brew --prefix)/opt/llvm/lib -Wl,-rpath,$(brew --prefix)/opt/llvm/lib"
+set -gx CPPFLAGS "-I$(brew --prefix)/opt/llvm/include"
+fish_add_path -p "$(brew --prefix)/opt/llvm/bin"
+set -gx SDKROOT $(xcrun --sdk macosx --show-sdk-path)
 
 # programming language environments
 
