@@ -16,7 +16,7 @@
 
   home.file.".zprezto".source = builtins.fetchGit {
     url = "https://github.com/sorin-ionescu/prezto/";
-    rev = "9195b66161b196238cbd52a8a4abd027bdaf5f73";
+    rev = "427268c64fa386d2eda2adbce0b67436cd0d7c02";
     submodules = true;
   };
 

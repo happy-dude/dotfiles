@@ -1,10 +1,3 @@
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
-
 #
 # Executes commands at the start of an interactive session.
 #
@@ -17,10 +10,17 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
 
+# Customize to your needs...
+
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
 # To customize prompt, run `p10k configure` or edit ~/dotfiles/zsh/.p10k.zsh.
 [[ ! -f ~/dotfiles/zsh/.p10k.zsh ]] || source ~/dotfiles/zsh/.p10k.zsh
-
-# Customize to your needs...
 
 # Nix home-manager
 if [[ -s "${ZDOTDIR:-$HOME}/.nix-profile/etc/profile.d/hm-session-vars.sh" ]]; then
@@ -153,16 +153,16 @@ export PATH="$HOME/.cargo/bin:$PATH"
 if command -v eza &> /dev/null
 then
     alias ls='eza'                                                          # ls
-    alias l='eza -lbF --git'                                                # list, size, type, git
-    alias ll='eza -lbGF --git'                                              # long list
-    alias llm='eza -lbGd --git --sort=modified'                             # long list, modified date sort
-    alias la='eza -lbhHigUmuSa --time-style=long-iso --git --color-scale'   # all list
-    alias lx='eza -lbhHigUmuSa@ --time-style=long-iso --git --color-scale'  # all + extended list
+    alias l='eza -lahbF --git'                                              # list, size, type, git
+    alias ll='eza -labGF --git'                                             # long list
+    alias lla='eza -labhHigUmuS --time-style=long-iso --git --color-scale'  # all list
+    alias llm='eza -labGd --git --sort=modified'                            # long list, modified date sort
+    alias lx='eza -labhHigUmuS@ --time-style=long-iso --git --color-scale'  # all + extended list
 
     # specialty views
-    alias lS='eza -1'                                                       # one column, just names
-    alias lt='eza -lbGF --tree --level=2'                                   # tree
-    alias lg='eza -lbGd --git --sort=modified --tree --level=2'             # tree w/ git
+    alias lS='eza -a1'                                                      # one column, just names
+    alias lg='eza -labGd --git --sort=modified --tree --level=2'            # tree w/ git
+    alias lt='eza -labGF --tree --level=2'                                  # tree
 else
     echo "eza could not be found"
 fi
