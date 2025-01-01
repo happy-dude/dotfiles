@@ -20,10 +20,10 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 # To customize prompt, run `p10k configure` or edit ~/dotfiles/zsh/.p10k.zsh.
-[[ ! -f ~/dotfiles/zsh/.p10k.zsh ]] || source ~/dotfiles/zsh/.p10k.zsh
+[[ ! -f "${ZDOTDIR:-$HOME}/.p10k.zsh" ]] || source "${ZDOTDIR:-$HOME}/.p10k.zsh"
 
 # Nix home-manager
-if [[ -s "${ZDOTDIR:-$HOME}/.nix-profile/etc/profile.d/hm-session-vars.sh" ]]; then
+if [[ -s "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]]; then
     source $HOME/.nix-profile/etc/profile.d/hm-session-vars.sh
 fi
 

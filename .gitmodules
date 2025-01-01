@@ -259,7 +259,7 @@
 	branch = master
 	ignore = dirty
 [submodule "prezto-sorin"]
-	path = zsh/.zprezto
+	path = zsh/.config/zsh/.zprezto
 	url = https://github.com/sorin-ionescu/prezto.git
 	branch = master
 	ignore = dirty
