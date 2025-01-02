@@ -17,7 +17,7 @@ font-size = 16
 # splits
 #keybind = ctrl+shift+o=new_split:right
 #keybind = ctrl+shift+e=new_split:down
-keybind = ctrl+shift+|=new_split:right
+keybind = ctrl+shift+\=new_split:right
 keybind = ctrl+shift+minus=new_split:down
 
 #keybind = ctrl+shift+n=
