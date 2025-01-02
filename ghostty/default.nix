@@ -33,7 +33,7 @@
         #"ctrl+shift+o=new_split:right"
         #"ctrl+shift+e=new_split:down"
         "ctrl+shift+|=new_split:right"
-        "ctrl+shift+-=new_split:down"
+        "ctrl+shift+minus=new_split:down"
 
         #"ctrl+shift+n="
         "alt+delete=esc:d"

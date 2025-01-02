@@ -18,7 +18,7 @@ font-size = 16
 #keybind = ctrl+shift+o=new_split:right
 #keybind = ctrl+shift+e=new_split:down
 keybind = ctrl+shift+|=new_split:right
-keybind = ctrl+shift+-=new_split:down
+keybind = ctrl+shift+minus=new_split:down
 
 #keybind = ctrl+shift+n=
 keybind = alt+delete=esc:d
