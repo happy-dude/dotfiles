@@ -65,6 +65,7 @@
             ./emacs
             ./fish
             ./fonts
+            ./ghostty
             ./nix
             ./xdg
             ./tmux

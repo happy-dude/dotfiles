@@ -49,7 +49,6 @@
 
       # graphical packages
       (config.lib.nixGL.wrap glxinfo)
-      (config.lib.nixGL.wrap ghostty)
     ];
 
     file = {
