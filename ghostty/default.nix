@@ -39,10 +39,10 @@
         "alt+delete=esc:d"
         "alt+left=esc:b"
         "alt+right=esc:f"
-        "super+backspace=text:\x15"
-        "super+delete=text:\x0b"
-        "super+left=text:\x01"
-        "super+right=text:\x05"
+        "super+backspace=text:\\x15"
+        "super+delete=text:\\x0b"
+        "super+left=text:\\x01"
+        "super+right=text:\\x05"
       ];
     };
   };
