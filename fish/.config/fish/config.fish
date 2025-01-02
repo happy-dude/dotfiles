@@ -25,7 +25,10 @@ fish_add_path -p "/nix/var/nix/profiles/default/bin"
 #   https://github.com/ghostty-org/ghostty/discussions/2602
 #   https://github.com/utmapp/UTM/issues/4285
 #   https://docs.mesa3d.org/envvars.html#envvar-LIBGL_ALWAYS_SOFTWARE
-alias ghostty="LIBGL_ALWAYS_SOFTWARE=true ghostty"
+function ghostty
+    set -lx LIBGL_ALWAYS_SOFTWARE true
+    command ghostty $argv
+end
 
 # Turn off terminal flow control (ctrl-q and ctrl-s)
 # already default by off in fish
