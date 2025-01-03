@@ -25,17 +25,57 @@
       font-family = "ComicShannsMono Nerd Font Mono";
       font-size = 16;
 
-      #cursor-style = "block";
-      #cursor-style-blink = false;
-
       keybind = [
-        # splits
-        #"ctrl+shift+o=new_split:right"
-        #"ctrl+shift+e=new_split:down"
-        "ctrl+shift+\\=new_split:right"
-        "ctrl+shift+minus=new_split:down"
+        # ref: https://ghostty.org/docs/config/keybind
 
-        #"ctrl+shift+n="
+        # use ctrl + ` as leader
+        # ref: https://ghostty.org/docs/config/keybind/sequence
+
+        # windows
+        "ctrl+grave_accent>n=new_window"
+        "ctrl+grave_accent>t=new_tab"
+
+        # splits
+        "ctrl+grave_accent>\\=new_split:right"
+        "ctrl+grave_accent>minus=new_split:down"
+
+        # splits: resizing
+        "ctrl+grave_accent>equal=equalize_splits"
+        "ctrl+grave_accent>shift+up=resize_split:up,10"
+        "ctrl+grave_accent>shift+down=resize_split:down,10"
+        "ctrl+grave_accent>shift+right=resize_split:right,10"
+        "ctrl+grave_accent>shift+left=resize_split:left,10"
+
+        # splits: navigation
+        "ctrl+grave_accent>left_bracket=goto_split:previous"
+        "ctrl+grave_accent>right_bracket=goto_split:next"
+        "ctrl+grave_accent>up=goto_split:up"
+        "ctrl+grave_accent>down=goto_split:down"
+        "ctrl+grave_accent>right=goto_split:right"
+        "ctrl+grave_accent>left=goto_split:left"
+
+        # tabs: navigation
+        "ctrl+grave_accent>one=goto_tab:1"
+        "ctrl+grave_accent>two=goto_tab:2"
+        "ctrl+grave_accent>three=goto_tab:3"
+        "ctrl+grave_accent>four=goto_tab:4"
+        "ctrl+grave_accent>five=goto_tab:5"
+        "ctrl+grave_accent>six=goto_tab:6"
+        "ctrl+grave_accent>seven=goto_tab:7"
+        "ctrl+grave_accent>eight=goto_tab:8"
+        "ctrl+grave_accent>nine=last_tab"
+
+        # clipboard / selection
+        "ctrl+grave_accent>a=select_all"
+        "ctrl+grave_accent>y=copy_to_clipboard"
+        "ctrl+grave_accent>p=paste_from_clipboard"
+
+        # screen
+        "ctrl+grave_accent>comma=reload_config"
+        "ctrl+grave_accent>r=reset"
+        "ctrl+grave_accent>l=clear_screen"
+
+        # backspace niceties
         "alt+delete=esc:d"
         "alt+left=esc:b"
         "alt+right=esc:f"
