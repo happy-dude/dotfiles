@@ -22,7 +22,8 @@
       theme = "GruvboxDark";
       #font-family = "Fira Code";
       #font-family = "FiraCode Nerd Font Mono";
-      font-family = "ComicShannsMono Nerd Font Mono";
+      #font-family = "ComicShannsMono Nerd Font Mono";
+      font-family = "FantasqueSansM Nerd Font Mono";
       font-size = 16;
 
       keybind = [

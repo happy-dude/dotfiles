@@ -22,6 +22,7 @@
     nerd-fonts.comic-shanns-mono
     nerd-fonts.dejavu-sans-mono
     nerd-fonts.droid-sans-mono
+    nerd-fonts.fantasque-sans-mono
     nerd-fonts.fira-code
     nerd-fonts.jetbrains-mono
     nerd-fonts.iosevka-term
