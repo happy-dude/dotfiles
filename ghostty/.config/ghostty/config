@@ -6,9 +6,21 @@ window-width = 132
 window-height = 48
 
 theme = GruvboxDark
-#font-family = Fira Code
-#font-family = FiraCode Nerd Font Mono
-font-family = ComicShannsMono Nerd Font Mono
+#font-family = "CaskaydiaCove Nerd Font Mono"
+#font-family = "ComicShannsMono Nerd Font Mono"
+#font-family = "DejaVuSansM Nerd Font Mono"
+#font-family = "DroidSansM Nerd Font Mono"
+font-family = "FantasqueSansM Nerd Font Mono"
+#font-family = "Fira Code"
+#font-family = "FiraCode Nerd Font Mono";
+#font-family = "IntoneMono Nerd Font Mono";
+#font-family = "IosevkaTerm Nerd Font Mono"
+#font-family = "JetBrainsMono Nerd Font Mono";
+#font-family = "MesloLGL Nerd Font Mono"
+#font-family = "Mononoki Nerd Font Mono"
+#font-family = "NotoSansM Nerd Font Mono"
+#font-family = "UbuntuMono Nerd Font Mono"
+#font-family = "ZedMono Nerd Font Mono"
 font-size = 16
 
 # Keybinds

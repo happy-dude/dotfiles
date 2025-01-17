@@ -6,7 +6,7 @@
     defaultFonts = {
       serif = [ "DejaVu Serif" ];
       sansSerif = [ "DejaVu Sans" ];
-      monospace = [ "ComicShannsMono Nerd Font" ];
+      monospace = [ "FantasqueSansM Nerd Font Mono" ];
       emoji = [ "Noto Color Emoji" ];
     };
   };
@@ -19,13 +19,19 @@
     noto-fonts
     noto-fonts-color-emoji
 
+    nerd-fonts.caskaydia-cove
     nerd-fonts.comic-shanns-mono
     nerd-fonts.dejavu-sans-mono
     nerd-fonts.droid-sans-mono
+    nerd-fonts.fantasque-sans-mono
     nerd-fonts.fira-code
-    nerd-fonts.jetbrains-mono
-    nerd-fonts.iosevka-term
     nerd-fonts.intone-mono
+    nerd-fonts.iosevka-term
+    nerd-fonts.jetbrains-mono
+    nerd-fonts.meslo-lg
+    nerd-fonts.mononoki
     nerd-fonts.noto
+    nerd-fonts.ubuntu-mono
+    nerd-fonts.zed-mono
   ];
 }

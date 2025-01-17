@@ -18,9 +18,11 @@
     stateVersion = "24.11"; # Please read the comment before changing.
 
     packages = with pkgs; [
+      asciinema_3
       babelfish
       bat
       bear
+      cosign
       curl
       dex
       dust
