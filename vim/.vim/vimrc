@@ -169,12 +169,12 @@ if &loadplugins
     Plug 'neovim/nvim-lspconfig'                      , { 'branch' : 'master' }
 
     " Enable coc.nvim if node.js is installed
-    "if executable('node')
-    "  Plug 'neoclide/coc.nvim'                        , { 'branch' : 'master', 'do': 'npm ci'}
+    if executable('node')
+      Plug 'neoclide/coc.nvim'                        , { 'branch' : 'master', 'do': 'npm ci'}
 
-    "  let s:coc_settings = s:vimpack_settings_dir . 'coc.vim'
-    "  execute 'source' s:coc_settings
-    "endif
+      let s:coc_settings = s:vimpack_settings_dir . 'coc.vim'
+      execute 'source' s:coc_settings
+    endif
 
     " Enable rustowl if rust is installed
     if executable('rustc')
