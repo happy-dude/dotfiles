@@ -155,7 +155,7 @@ api.nvim_set_hl(0, 'RainbowDelimiterMagenta' , {default = true, fg = '#A7194B', 
 vim.g.rainbow_delimiters = {
     strategy = {
         [''] = rainbow_delimiters.strategy['global'],
-        vim = rainbow_delimiters.strategy['local'],
+        --vim = rainbow_delimiters.strategy['local'],
     },
     query = {
         [''] = 'rainbow-delimiters',
