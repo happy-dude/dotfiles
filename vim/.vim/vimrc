@@ -322,6 +322,13 @@ lua <<EOF
   -- configs in lua/ directory
   require('qol')
 
+  require('rustowl')
+  require('lspconfig').rustowl.setup {
+    trigger = {
+      hover = true,
+    },
+  }
+
   require('debugging')
   require('hop_nvim')
   require('org')
