@@ -38,6 +38,7 @@
       pandoc
       pass
       procs
+      qemu
       ripgrep
       roswell
       sbcl

@@ -177,7 +177,7 @@ if &loadplugins
     endif
 
     " Enable rustowl if rust is installed
-    if executable('rustc')
+    if executable('cargo')
       Plug 'cordx56/rustowl'                          , { 'branch' : 'main' }
     endif
 
