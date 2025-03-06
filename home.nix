@@ -15,7 +15,7 @@
     username = "stanleychan";
     homeDirectory = "/home/stanleychan";
 
-    stateVersion = "24.11"; # Please read the comment before changing.
+    stateVersion = "25.05";
 
     packages = with pkgs; [
       asciinema_3
