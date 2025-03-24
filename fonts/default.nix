@@ -12,6 +12,10 @@
   };
 
   home.packages = with pkgs; [
+    atkinson-hyperlegible
+    atkinson-hyperlegible-mono
+    atkinson-hyperlegible-next
+    atkinson-monolegible
     ubuntu_font_family
     fira
     fira-code
