@@ -29,7 +29,9 @@
       eza
       fd
       fzf
+      hexyl
       htop
+      hyperfine
       jq
       less
       moreutils
