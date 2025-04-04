@@ -165,9 +165,6 @@ if &loadplugins
     Plug 'nvim-lua/plenary.nvim'                      , { 'branch' : 'master' }
     Plug 'NeogitOrg/neogit'                           , { 'branch' : 'master' }
 
-    " nvim-lspconfig
-    Plug 'neovim/nvim-lspconfig'                      , { 'branch' : 'master' }
-
     " Enable coc.nvim if node.js is installed
     if executable('node')
       Plug 'neoclide/coc.nvim'                        , { 'branch' : 'master', 'do': 'npm ci'}
@@ -322,11 +319,11 @@ lua <<EOF
   -- configs in lua/ directory
   require('qol')
 
-  require('rustowl')
-  require('lspconfig').rustowl.setup {
-    trigger = {
-      hover = true,
-    },
+ require('rustowl').setup {
+    auto_attach = true,   -- Auto attach the RustOwl LSP client when opening a Rust file
+    auto_enable = true,   -- Enable RustOwl immediately when attaching the LSP client
+    idle_time = 500,      -- Time in milliseconds to hover with the cursor before triggering RustOwl
+    client = {},          -- LSP client configuration that gets passed to `vim.lsp.start`
   }
 
   require('debugging')
