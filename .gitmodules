@@ -503,10 +503,6 @@
 	url = https://github.com/tpope/vim-unimpaired
 	branch = master
 	ignore = dirty
-[submodule "vim/.vim/pack/plugged/opt/nvim-lspconfig"]
-	path = vim/.vim/pack/plugged/opt/nvim-lspconfig
-	url = https://github.com/neovim/nvim-lspconfig.git
-	ignore = dirty
 [submodule "vim/.vim/pack/plugged/opt/rustowl"]
 	path = vim/.vim/pack/plugged/opt/rustowl
 	url = https://github.com/cordx56/rustowl.git
