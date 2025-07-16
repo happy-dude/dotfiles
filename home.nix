@@ -47,6 +47,7 @@
       stow
       tokei
       tree
+      util-linux
       vim
       xclip
       xsel
