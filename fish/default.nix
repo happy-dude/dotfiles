@@ -25,8 +25,8 @@
         src = pkgs.fetchFromGitHub {
           owner = "jorgebucaran";
           repo = "nvm.fish";
-          rev = "a0892d0bb2304162d5faff561f030bb418cac34d";
-          hash = "sha256-GTEkCm+OtxMS3zJI5gnFvvObkrpepq1349/LcEPQRDo=";
+          rev = "846f1f20b2d1d0a99e344f250493c41a450f9448";
+          hash = "sha256-u3qhoYBDZ0zBHbD+arDxLMM8XoLQlNI+S84wnM3nDzg=";
         };
       }
       {
@@ -70,8 +70,8 @@
         src = pkgs.fetchFromGitHub {
           owner = "jethrokuan";
           repo = "z";
-          rev = "85f863f20f24faf675827fb00f3a4e15c7838d76";
-          hash = "sha256-+FUBM7CodtZrYKqU542fQD+ZDGrd2438trKM0tIESs0=";
+          rev = "067e867debee59aee231e789fc4631f80fa5788e";
+          hash = "sha256-emmjTsqt8bdI5qpx1bAzhVACkg0MNB/uffaRjjeuFxU=";
         };
       }
     ];
