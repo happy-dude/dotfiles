@@ -85,17 +85,54 @@
         ${builtins.readFile .config/aerc/accounts.conf}
       '';
 
-    extraConfig =
-      let
-        iniFormat = pkgs.formats.iniWithGlobalSection { };
-        cfgText = iniFormat.generate "aerc.conf" {
-          globalSection = { };
-          sections = { };
-        };
-      in
-      ''
-        ${builtins.readFile .config/aerc/aerc.conf}
+    extraConfig = {
+      general = {
+        "unsafe-accounts-conf" = true;
+        "enable-osc8" = true;
+      };
+
+      ui = ''
+        index-columns=date<12,name<18,flags>2,subject<*
+        column-name=" {{index (.From | names) 0}}"
+        column-to=" {{index (.To | names) 0}}"
+        column-separator=" ⋮ "
+        timestamp-format=2006-01-02 03:04 PM MST
+        mouse-enabled=true
+        styleset-name=gruvbox_material_dark_medium
+        threading-enabled=true
+        show-thread-context=true
       '';
+
+      statusline = "";
+
+      viewer = ''
+        pager=bat -p --pager="less --mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --window=-4 --CLEAR-SCREEN"
+      '';
+
+      compose = ''
+        empty-subject-warning=true
+        no-attachment-warning=^[^>]*attach(ed|ment)
+      '';
+
+      multipart-converters = "";
+
+      filters = ''
+        text/plain=colorize
+        text/calendar=calendar
+        message/delivery-status=colorize
+        message/rfc822=colorize
+        text/html=pandoc -f html -t plain | colorize
+        text/html=html | colorize
+        text/*=bat -fP --file-name="$AERC_FILENAME"
+        .headers=colorize
+      '';
+
+      openers = "";
+
+      hooks = "";
+
+      templates = "";
+    };
 
     extraBinds =
       let
