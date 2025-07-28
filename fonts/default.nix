@@ -4,8 +4,8 @@
   fonts.fontconfig = {
     enable = true;
     defaultFonts = {
-      serif = [ "DejaVu Serif" ];
-      sansSerif = [ "DejaVu Sans" ];
+      serif = [ "Noto Serif" ];
+      sansSerif = [ "Noto Sans" ];
       monospace = [ "FantasqueSansM Nerd Font Mono" ];
       emoji = [ "Noto Color Emoji" ];
     };
