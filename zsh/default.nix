@@ -1,7 +1,6 @@
 { config, pkgs, ... }:
 
 {
-  home.file.".zshenv".source = ./.zshenv;
   xdg.configFile."zsh/.p10k.zsh".source = ./.config/zsh/.p10k.zsh;
   xdg.configFile."zsh/.zlogin".source = ./.config/zsh/.zlogin;
   xdg.configFile."zsh/.zlogout".source = ./.config/zsh/.zlogout;
@@ -17,12 +16,16 @@
 
   xdg.configFile."zsh/.zprezto".source = builtins.fetchGit {
     url = "https://github.com/sorin-ionescu/prezto/";
-    rev = "427268c64fa386d2eda2adbce0b67436cd0d7c02";
+    rev = "6e564503f1c5e6ddba2bcf5d9065e5872ca207d2";
     submodules = true;
   };
 
   programs.zsh = {
     enable = true;
+    envExtra = ''
+      # Put the content of your .zshenv file here
+      ${builtins.readFile ./.zshenv}
+    '';
   };
 
 }
