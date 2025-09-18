@@ -19,7 +19,7 @@
       window-width = 132;
       window-height = 48;
 
-      theme = "GruvboxDark";
+      theme = "Gruvbox Dark";
       #font-family = "Atkinson Hyperlegible Mono"
       #font-family = "CaskaydiaCove Nerd Font Mono";
       #font-family = "ComicShannsMono Nerd Font Mono";
