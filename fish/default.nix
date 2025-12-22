@@ -20,15 +20,15 @@
           hash = "sha256-qt3t1iKRRNuiLWiVoiAYOu+9E7jsyECyIqZJ/oRIT1A=";
         };
       }
-      {
-        name = "nvm.fish";
-        src = pkgs.fetchFromGitHub {
-          owner = "jorgebucaran";
-          repo = "nvm.fish";
-          rev = "846f1f20b2d1d0a99e344f250493c41a450f9448";
-          hash = "sha256-u3qhoYBDZ0zBHbD+arDxLMM8XoLQlNI+S84wnM3nDzg=";
-        };
-      }
+      #{
+      #  name = "nvm.fish";
+      #  src = pkgs.fetchFromGitHub {
+      #    owner = "jorgebucaran";
+      #    repo = "nvm.fish";
+      #    rev = "846f1f20b2d1d0a99e344f250493c41a450f9448";
+      #    hash = "sha256-u3qhoYBDZ0zBHbD+arDxLMM8XoLQlNI+S84wnM3nDzg=";
+      #  };
+      #}
       {
         name = "puffer-fish";
         src = pkgs.fetchFromGitHub {
