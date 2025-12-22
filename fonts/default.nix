@@ -16,7 +16,7 @@
     atkinson-hyperlegible-mono
     atkinson-hyperlegible-next
     atkinson-monolegible
-    ubuntu_font_family
+    ubuntu-classic
     fira
     fira-code
     intel-one-mono
