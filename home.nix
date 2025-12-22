@@ -7,22 +7,21 @@
 }:
 
 {
-  nixGL.packages = inputs.nixgl.packages;
-  nixGL.defaultWrapper = "mesa";
-  nixGL.installScripts = [ "mesa" ];
+  targets.genericLinux.nixGL.packages = inputs.nixgl.packages;
+  targets.genericLinux.nixGL.defaultWrapper = "mesa";
+  targets.genericLinux.nixGL.installScripts = [ "mesa" ];
 
   home = {
     username = "stanleychan";
     homeDirectory = "/home/stanleychan";
 
-    stateVersion = "25.05";
+    stateVersion = "25.11";
 
     packages = with pkgs; [
       asciinema_3
       babelfish
       bat
       bear
-      cosign
       curl
       dex
       dust
@@ -54,7 +53,7 @@
       yt-dlp
 
       # graphical packages
-      (config.lib.nixGL.wrap glxinfo)
+      (config.lib.nixGL.wrap mesa-demos)
     ];
 
     file = {
