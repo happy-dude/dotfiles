@@ -38,6 +38,7 @@
       neovim
       nodejs
       nix-prefetch-github
+      nixfmt-rfc-style
       pandoc
       pass
       procs
@@ -48,6 +49,7 @@
       stow
       tokei
       tree
+      tree-sitter
       util-linux
       vim
       xclip
