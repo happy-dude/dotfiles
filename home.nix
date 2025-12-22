@@ -58,6 +58,7 @@
 
       # graphical packages
       (config.lib.nixGL.wrap mesa-demos)
+      (config.lib.nixGL.wrap solaar)
     ];
 
     file = {
