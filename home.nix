@@ -12,8 +12,8 @@
   targets.genericLinux.nixGL.installScripts = [ "mesa" ];
 
   home = {
-    username = "stanleychan";
-    homeDirectory = "/home/stanleychan";
+    username = "schan";
+    homeDirectory = "/home/schan";
 
     stateVersion = "25.11";
 
@@ -28,6 +28,7 @@
       eza
       fd
       fzf
+      go
       hexyl
       htop
       hyperfine
@@ -35,6 +36,7 @@
       less
       moreutils
       neovim
+      nodejs
       nix-prefetch-github
       pandoc
       pass

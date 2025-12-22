@@ -134,9 +134,9 @@ fish_add_path "$HOME/.luarocks/bin"
 # luamake from sumneko
 alias luamake="$HOME/sources/lua-language-server/3rd/luamake/luamake"
 # node / nvm
-set -gx NVM_DIR "$HOME/.nvm"
+#set -gx NVM_DIR "$HOME/.nvm"
 # nvm scripts not compatible with non-POSIX fish, use nvm.fish plugin
-set --universal nvm_default_version v24.4.1
+#set --universal nvm_default_version v24.4.1
 # perl
 #source ~/perl5/perlbrew/etc/bashrc
 # rust

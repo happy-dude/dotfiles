@@ -21,7 +21,7 @@ require('nvim-treesitter.configs').setup {
   sync_install = true,
 
   -- List of parsers to ignore installing
-  ignore_install = { "org", "norg" },
+  ignore_install = { "ipkg", "org", "norg" },
 
   -- nvim-treesitter native modules
   highlight = {
