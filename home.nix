@@ -23,6 +23,7 @@
       bat
       bear
       curl
+      desktop-file-utils
       dex
       dust
       eza
@@ -36,11 +37,12 @@
       less
       moreutils
       neovim
-      nodejs
       nix-prefetch-github
       nixfmt-rfc-style
+      nodejs
       pandoc
       pass
+      pinentry-all
       procs
       qemu
       ripgrep
@@ -55,6 +57,77 @@
       xclip
       xsel
       yt-dlp
+
+      # "Development Tools"
+      buildbot
+      colordiff
+      cvs
+      cvsps
+      darcs
+      dejagnu
+      diffstat
+      doxygen
+      expect
+      gettext
+      git
+      git-annex
+      git-cola
+      git2cl
+      gitg
+      gtranslator
+      highlight
+      lcov
+      meld
+      monotone
+      mr
+      nemiver
+      patch
+      patchutils
+      qgit
+      quilt
+      rapidsvn
+      rcs
+      robodoc
+      scanmem
+      subunit
+      subversion
+      tig
+      tortoisehg
+
+      # "C Development Tools and Libraries"
+      astyle
+      autoconf
+      automake
+      bison
+      cbmc
+      ccache
+      check
+      cmake
+      coan
+      cproto
+      cscope
+      ctags
+      elfutils
+      flex
+      gccgo
+      gdb
+      glibc
+      gnumake
+      indent
+      libclang
+      libgcc
+      libtool
+      ltrace
+      nasm
+      perf
+      pkgconf
+      scons
+      remake
+      splint
+      strace
+      valgrind
+      yasm
+      zzuf
 
       # graphical packages
       (config.lib.nixGL.wrap mesa-demos)
