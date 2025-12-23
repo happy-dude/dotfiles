@@ -103,6 +103,7 @@
       cbmc
       ccache
       check
+      clang-tools
       cmake
       coan
       cproto
@@ -115,7 +116,6 @@
       glibc
       gnumake
       indent
-      libclang
       libgcc
       libtool
       ltrace
