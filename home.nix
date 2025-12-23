@@ -55,6 +55,7 @@
       util-linux
       vim
       xclip
+      xdg-utils
       xsel
       yt-dlp
 
