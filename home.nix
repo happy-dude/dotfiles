@@ -118,6 +118,7 @@
       indent
       libgcc
       libtool
+      lldb
       ltrace
       nasm
       perf
@@ -128,6 +129,7 @@
       strace
       valgrind
       yasm
+      zlib
       zzuf
 
       # graphical packages
