@@ -2,6 +2,7 @@
 # done automatically in fish config
 #set -q __fish_home_manager_config_sourced; and exit
 #set -g __fish_home_manager_config_sourced 1
+set -gx GPG_TTY (tty) #nix gpg pinentry workaround
 
 fish_add_path -p "/nix/var/nix/profiles/default/bin"
 
@@ -25,10 +26,10 @@ fish_add_path -p "/nix/var/nix/profiles/default/bin"
 #   https://github.com/ghostty-org/ghostty/discussions/2602
 #   https://github.com/utmapp/UTM/issues/4285
 #   https://docs.mesa3d.org/envvars.html#envvar-LIBGL_ALWAYS_SOFTWARE
-function ghostty
-    set -lx LIBGL_ALWAYS_SOFTWARE true
-    command ghostty $argv
-end
+#function ghostty
+#    set -lx LIBGL_ALWAYS_SOFTWARE true
+#    command ghostty $argv
+#end
 
 # Turn off terminal flow control (ctrl-q and ctrl-s)
 # already default by off in fish
