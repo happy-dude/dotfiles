@@ -12,8 +12,8 @@
   targets.genericLinux.nixGL.installScripts = [ "mesa" ];
 
   home = {
-    username = "stanleychan";
-    homeDirectory = "/home/stanleychan";
+    username = "schan";
+    homeDirectory = "/home/schan";
 
     stateVersion = "25.11";
 
@@ -23,11 +23,13 @@
       bat
       bear
       curl
+      desktop-file-utils
       dex
       dust
       eza
       fd
       fzf
+      go
       hexyl
       htop
       hyperfine
@@ -36,8 +38,11 @@
       moreutils
       neovim
       nix-prefetch-github
+      nixfmt-rfc-style
+      nodejs
       pandoc
       pass
+      pinentry-all
       procs
       qemu
       ripgrep
@@ -46,14 +51,90 @@
       stow
       tokei
       tree
+      tree-sitter
       util-linux
       vim
       xclip
+      xdg-utils
       xsel
       yt-dlp
 
+      # "Development Tools"
+      buildbot
+      colordiff
+      cvs
+      cvsps
+      darcs
+      dejagnu
+      diffstat
+      doxygen
+      expect
+      gettext
+      git
+      git-annex
+      git-cola
+      git2cl
+      gitg
+      gtranslator
+      highlight
+      lcov
+      meld
+      monotone
+      mr
+      nemiver
+      patch
+      patchutils
+      qgit
+      quilt
+      rapidsvn
+      rcs
+      robodoc
+      scanmem
+      subunit
+      subversion
+      tig
+      tortoisehg
+
+      # "C Development Tools and Libraries"
+      astyle
+      autoconf
+      automake
+      bison
+      cbmc
+      ccache
+      check
+      clang-tools
+      cmake
+      coan
+      cproto
+      cscope
+      ctags
+      elfutils
+      flex
+      gccgo
+      gdb
+      glibc
+      gnumake
+      indent
+      libgcc
+      libtool
+      lldb
+      ltrace
+      nasm
+      perf
+      pkgconf
+      scons
+      remake
+      splint
+      strace
+      valgrind
+      yasm
+      zlib
+      zzuf
+
       # graphical packages
       (config.lib.nixGL.wrap mesa-demos)
+      (config.lib.nixGL.wrap solaar)
     ];
 
     file = {

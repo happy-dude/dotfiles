@@ -17,6 +17,17 @@
   #xdg.configFile."aerc/stylesets/gruvbox_material_dark_medium".source = ./.config/aerc/stylesets/gruvbox_material_dark_medium;
   #xdg.configFile."aerc/stylesets/gruvbox_material_dark_soft".source = ./.config/aerc/stylesets/gruvbox_material_dark_soft;
 
+  programs.gpg = {
+    enable = true;
+    settings = {
+      use-agent = true;
+    };
+  };
+  home.file.".gnupg/gpg-agent.conf".text = ''
+    pinentry-program ${pkgs.pinentry-curses}/bin/pinentry-curses
+    allow-loopback-pinentry
+  '';
+
   programs.mbsync = {
     enable = true;
     extraConfig = ''
@@ -48,7 +59,7 @@
     enable = true;
     extraConfig = {
       database = {
-        path = "/home/stanleychan/.mail";
+        path = "/home/schan/.mail";
       };
       user = {
         name = "Stanley Chan";

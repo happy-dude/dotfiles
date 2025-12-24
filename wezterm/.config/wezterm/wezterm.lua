@@ -15,7 +15,7 @@ end
 config.enable_wayland = false
 
 config.set_environment_variables = {
-  TERMINFO_DIRS = '/home/stanleychan/.terminfo',
+  TERMINFO_DIRS = '/home/schan/.terminfo',
 }
 config.term = 'wezterm'
 config.automatically_reload_config = true

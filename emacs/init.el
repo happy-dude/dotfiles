@@ -497,10 +497,14 @@
 
 (global-undo-tree-mode)
 
-;; slime
-(load (expand-file-name "~/.roswell/helper.el"))
-;(setq inferior-lisp-program "sbcl")
+;; Use Roswell's lisp
 (setq inferior-lisp-program "ros -Q run")
+;; slime
+;(load (expand-file-name "~/.roswell/helper.el"))
+
+;; Use Nix-installed SLIME
+(require 'slime-autoloads)
+(slime-setup '(slime-fancy slime-asdf))
 
 ;; which-key settings
 (which-key-mode t)
