@@ -16,12 +16,14 @@
 
   xdg.configFile."zsh/.zprezto".source = builtins.fetchGit {
     url = "https://github.com/sorin-ionescu/prezto/";
-    rev = "6e564503f1c5e6ddba2bcf5d9065e5872ca207d2";
+    rev = "7b3b798eb5038eb05938399f245fa643c630a7f1";
     submodules = true;
   };
 
   programs.zsh = {
     enable = true;
+    enableCompletion = false; # Let prezto handle compinit
+
     envExtra = ''
       # Put the content of your .zshenv file here
       ${builtins.readFile ./.zshenv}

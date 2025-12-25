@@ -38,6 +38,7 @@
       moreutils
       neovim
       nix-prefetch-github
+      nix-zsh-completions
       nixfmt-rfc-style
       nodejs
       pandoc

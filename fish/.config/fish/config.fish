@@ -137,7 +137,7 @@ alias luamake="$HOME/sources/lua-language-server/3rd/luamake/luamake"
 # node / nvm
 set -gx NVM_DIR "$HOME/.nvm"
 # nvm scripts not compatible with non-POSIX fish, use nvm.fish plugin
-set --universal nvm_default_version lts
+set --universal nvm_default_version system
 # perl
 #source ~/perl5/perlbrew/etc/bashrc
 # rust
