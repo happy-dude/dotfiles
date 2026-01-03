@@ -40,6 +40,9 @@ fish_add_path -p "/nix/var/nix/profiles/default/bin"
 set -gx EDITOR 'nvim'
 set -gx VISUAL 'nvim'
 
+# ctrl-x ctrl-e to open $EDITOR, like in zsh
+bind \cx\ce edit_command_buffer
+
 # use neovim as manpager
 set -gx MANPAGER 'nvim +Man!'
 set -gx MANWIDTH 80
