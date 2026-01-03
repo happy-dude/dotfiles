@@ -21,6 +21,8 @@
   };
 
   programs.zsh = {
+    dotDir = config.home.homeDirectory;
+
     enable = true;
     enableCompletion = false; # Let prezto handle compinit
 
