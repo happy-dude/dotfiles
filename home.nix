@@ -106,7 +106,6 @@
       check
       clang-tools
       cmake
-      coan
       cproto
       cscope
       ctags
@@ -125,8 +124,6 @@
       perf
       pkgconf
       scons
-      remake
-      splint
       strace
       valgrind
       yasm
