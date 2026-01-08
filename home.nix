@@ -26,6 +26,7 @@
       desktop-file-utils
       dex
       dust
+      exiftool
       eza
       fd
       fzf
@@ -33,6 +34,8 @@
       hexyl
       htop
       hyperfine
+      imagemagick
+      img2pdf
       jq
       less
       moreutils
