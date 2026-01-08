@@ -1,0 +1,24 @@
+__patch:
+# Rx: custom:set:config=default,key=installed_from,value=rime-cantonese {
+  - patch/+:
+      installed_from: rime-cantonese
+# }
+# Rx: custom:clear_schema_list: {
+  - patch/+:
+      schema_list: []
+# }
+# Rx: custom:add:schema=jyut6ping3 {
+  - patch/+:
+      schema_list/+/+:
+        - schema: jyut6ping3
+# }
+# Rx: custom:add:schema=luna_pinyin {
+  - patch/+:
+      schema_list/+/+:
+        - schema: luna_pinyin
+# }
+# Rx: custom:add:schema=cangjie5 {
+  - patch/+:
+      schema_list/+/+:
+        - schema: cangjie5
+# }

@@ -517,3 +517,8 @@
 	url = https://github.com/magit/with-editor.git
 	branch = main
 	ignore = dirty
+[submodule "rime/.local/share/fcitx5/themes/catppuccin-fcitx5"]
+	path = rime/.local/share/fcitx5/themes/catppuccin-fcitx5
+	url = https://github.com/catppuccin/fcitx5.git
+	branch = main
+	ignore = dirty
