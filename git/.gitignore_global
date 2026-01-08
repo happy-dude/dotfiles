@@ -154,3 +154,23 @@ extra_certificates
 signing_key.priv
 signing_key.x509
 x509.genkey
+
+# RIME files
+# User databases (LevelDB, constantly changing)
+rime/.local/share/fcitx5/rime/*.userdb/
+
+# Sync directory (machine-specific)
+rime/.local/share/fcitx5/rime/sync/
+
+# Build output (regenerated on deploy)
+rime/.local/share/fcitx5/rime/build/
+
+# Runtime state files
+rime/.local/share/fcitx5/rime/user.yaml
+rime/.local/share/fcitx5/rime/installation.yaml
+
+# Trash/temp
+rime/.local/share/fcitx5/rime/trash/
+
+# Theme git repos (if cloned)
+rime/.local/share/fcitx5/themes/*/.git/
