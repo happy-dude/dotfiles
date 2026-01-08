@@ -2,10 +2,13 @@ patch:
   schema/dependencies:
     - terra_pinyin
     - luna_pinyin
-    - jyut6ping3
+    - loengfan
     - stroke
+    - cangjie5
 
   engine/filters:
-    - lua_filter@tonal_pinyin_filter
+    - lua_filter@jyutping_pinyin_filter
+    - simplifier@emoji_cantonese_suggestion
     - simplifier
     - uniquifier
+
