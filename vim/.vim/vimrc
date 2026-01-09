@@ -24,6 +24,12 @@ if has('nvim')
   let s:vim_dir = '~/.config/nvim/'
   let s:vimrc_dir = '~/.config/nvim/vimrc_dir/'
   let s:vimpack_settings_dir = '~/.config/nvim/vimrc_dir/packages/'
+
+  " Disable unused providers and silence checkhealth warnings
+  let g:loaded_node_provider = 0
+  let g:loaded_perl_provider = 0
+  let g:loaded_python3_provider = 0
+  let g:loaded_ruby_provider = 0
 else
   let s:vim_dir = '~/.vim/'
   let s:vimrc_dir = '~/.vim/vimrc_dir/'
