@@ -42,7 +42,7 @@
       neovim
       nix-prefetch-github
       nix-zsh-completions
-      nixfmt-rfc-style
+      nixfmt
       nodejs
       pandoc
       pass
