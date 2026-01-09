@@ -59,7 +59,15 @@ git submodule status --recursive
 if command -v nvim &>/dev/null; then
     echo
     echo "=== Updating vim-plug plugins ==="
-    nvim --headless +PlugUpgrade +PlugUpdate +qall || echo "Warning: PlugUpdate may have failed (vim-plug not installed?)"
+    # Use -V1 for verbose messages, redirect all output to stdout
+    # PlugUpgrade and PlugUpdate with explicit message capture
+    nvim -V1 --headless \
+        +'PlugUpgrade' \
+        +'PlugUpdate' \
+        +'messages' \
+        +'qall' 2>&1 || {
+        echo "Warning: vim-plug update encountered an error (exit code: $?)"
+    }
 else
     echo
     echo "Skipping vim-plug updates (nvim not found)"
@@ -71,12 +79,15 @@ fi
 if command -v nvim &>/dev/null; then
     echo
     echo "=== Updating Treesitter parsers ==="
-    if nvim --headless +"TSUpdateSync" +qa; then
-        echo "Treesitter parsers updated"
-    else
-        echo "TSUpdateSync not available, trying TSUpdate..."
-        nvim --headless +"TSUpdate" +"sleep 60" +qa || echo "Warning: TSUpdate may have failed (nvim-treesitter not installed?)"
-    fi
+    # TSUpdate can take time; show all output
+    nvim -V1 --headless \
+        +'TSUpdate' \
+        +'sleep 30' \
+        +'messages' \
+        +'qall' 2>&1 || {
+        echo "Warning: TSUpdate encountered an error (exit code: $?)"
+        echo "nvim-treesitter may not be installed or configured"
+    }
 else
     echo
     echo "Skipping Treesitter updates (nvim not found)"
@@ -88,11 +99,22 @@ fi
 if command -v nvim &>/dev/null; then
     echo
     echo "=== Updating coc.nvim extensions ==="
-    if nvim --headless +"CocUpdateSync" +qa; then
-        echo "coc.nvim extensions updated"
+    # Try CocUpdateSync first, fall back to CocUpdate with sleep
+    if nvim -V1 --headless \
+        +'CocUpdateSync' \
+        +'messages' \
+        +'qall' 2>&1; then
+        echo "coc.nvim extensions updated (sync)"
     else
-        echo "CocUpdateSync not available, trying CocUpdate..."
-        nvim --headless +"CocUpdate" +"sleep 30" +qa || echo "Warning: CocUpdate may have failed (coc.nvim not installed?)"
+        echo "CocUpdateSync not available or failed, trying CocUpdate..."
+        nvim -V1 --headless \
+            +'CocUpdate' \
+            +'sleep 30' \
+            +'messages' \
+            +'qall' 2>&1 || {
+            echo "Warning: CocUpdate encountered an error (exit code: $?)"
+            echo "coc.nvim may not be installed"
+        }
     fi
 else
     echo
@@ -105,13 +127,30 @@ fi
 if command -v nvim &>/dev/null && command -v go &>/dev/null; then
     echo
     echo "=== Updating Go binaries ==="
-    if nvim --headless test.go +"GoUpdateBinaries" +"sleep 60" +qa; then
+    # Create temp file for Go commands (some plugins need a .go file open)
+    TMPGO=$(mktemp --suffix=.go)
+    trap "rm -f '$TMPGO'" EXIT
+    echo 'package main' > "$TMPGO"
+
+    if nvim -V1 --headless "$TMPGO" \
+        +'GoUpdateBinaries' \
+        +'sleep 60' \
+        +'messages' \
+        +'qall' 2>&1; then
         echo "vim-go binaries updated"
-    elif nvim --headless test.go +"GoInstallBinaries" +"sleep 60" +qa; then
+    elif nvim -V1 --headless "$TMPGO" \
+        +'GoInstallBinaries' \
+        +'sleep 60' \
+        +'messages' \
+        +'qall' 2>&1; then
         echo "go.nvim binaries updated"
     else
-        echo "Warning: Go binary update may have failed (no vim-go or go.nvim?)"
+        echo "Warning: Go binary update encountered an error (exit code: $?)"
+        echo "vim-go or go.nvim may not be installed"
     fi
+
+    rm -f "$TMPGO"
+    trap - EXIT
 else
     echo
     echo "Skipping Go binary updates (nvim or go not found)"
