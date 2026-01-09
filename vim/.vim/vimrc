@@ -155,9 +155,8 @@ if &loadplugins
     Plug 'rcarriga/nvim-dap-ui'                       , { 'branch' : 'master' }
 
     " nvim-treesitter
-    Plug 'nvim-treesitter/nvim-treesitter'            , { 'branch' : 'master' }
-    Plug 'nvim-treesitter/nvim-treesitter-refactor'   , { 'branch' : 'master' }
-    Plug 'nvim-treesitter/nvim-treesitter-textobjects', { 'branch' : 'master' }
+    Plug 'nvim-treesitter/nvim-treesitter'            , { 'branch' : 'main' }
+    Plug 'nvim-treesitter/nvim-treesitter-textobjects', { 'branch' : 'main' }
     " replace luochen1990/rainbow
     Plug 'https://gitlab.com/HiPhish/rainbow-delimiters.nvim.git'   , { 'branch' : 'master' }
 
