@@ -20,7 +20,8 @@ __patch:
 # Rx: custom:add:schema=cangjie5 {
   - patch/+:
       schema_list/+/+:
-        - schema: cangjie5
+        - schema: cangjie5_colemak
+#        - schema: cangjie5
 # }
 # Add page size
   - patch/+:

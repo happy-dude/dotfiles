@@ -1,11 +1,20 @@
 -- cangjie_display.lua
 -- Displays Cangjie codes: | NLDW 陳 弓中田木 | AGGU 曉 日土土山 |
 
+-- Cangjie letter → radical
+--  Q  W  E  R  T  Y  U  I  O  P
+--  手 田 水 口 廿 卜 山 戈 人 心
+--
+--  A  S  D  F  G  H  J  K  L
+--  日 尸 木 火 土 竹 十 大 中
+--
+--  Z  X  C  V  B  N  M
+--  符 難 金 女 月 弓 一
+--
 local cangjie_radicals = {
-  a = "日", b = "月", c = "金", d = "木", e = "水", f = "火", g = "土",
-  h = "竹", i = "戈", j = "十", k = "大", l = "中", m = "一", n = "弓",
-  o = "人", p = "心", q = "手", r = "口", s = "尸", t = "廿", u = "山",
-  v = "女", w = "田", x = "難", y = "卜", z = "符"
+  q = "手", w = "田", e = "水", r = "口", t = "廿", y = "卜", u = "山", i = "戈", o = "人", p = "心",
+  a = "日", s = "尸", d = "木", f = "火", g = "土", h = "竹", j = "十", k = "大", l = "中",
+  z = "符", x = "難", c = "金", v = "女", b = "月", n = "弓", m = "一"
 }
 
 local function code_to_radicals(code)
@@ -53,7 +62,6 @@ local function filter(input, env)
           local radicals = code_to_radicals(code)
 
           if radicals then
-            -- Format: NLDW 陳 弓中田木
             table.insert(parts, upper_code .. " " .. char .. " " .. radicals)
           else
             table.insert(parts, upper_code .. " " .. char)
@@ -62,7 +70,6 @@ local function filter(input, env)
       end
 
       if #parts > 0 then
-        -- Format: | NLDW 陳 弓中田木 | AGGU 曉 日土土山 |
         cand.comment = "| " .. table.concat(parts, " | ") .. " |"
       end
     end
