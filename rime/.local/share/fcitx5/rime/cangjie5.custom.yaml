@@ -1,0 +1,11 @@
+# cangjie5.custom.yaml
+
+patch:
+  engine/filters:
+    - simplifier
+    - uniquifier
+    - single_char_filter
+    - lua_filter@cangjie_display
+
+  # Optional: remove the existing comment_format if you want only the Lua output
+  # translator/comment_format: []

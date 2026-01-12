@@ -70,4 +70,3 @@ local function init(env)
 end
 
 return { init = init, func = filter }
-
