@@ -29,6 +29,7 @@
       exiftool
       eza
       fd
+      ffmpeg
       fzf
       go
       hexyl
