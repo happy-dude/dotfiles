@@ -16,8 +16,8 @@
       #command = ${pkgs.zsh} --login;
       command = "${pkgs.fish}/bin/fish --login";
 
-      window-width = 132;
-      window-height = 48;
+      #window-width = 132;
+      #window-height = 48;
 
       theme = "Gruvbox Dark";
       #font-family = "Atkinson Hyperlegible Mono"
@@ -36,7 +36,7 @@
       #font-family = "NotoSansM Nerd Font Mono";
       #font-family = "UbuntuMono Nerd Font Mono";
       #font-family = "ZedMono Nerd Font Mono";
-      font-size = 16;
+      font-size = 12;
 
       keybind = [
         # ref: https://ghostty.org/docs/config/keybind
