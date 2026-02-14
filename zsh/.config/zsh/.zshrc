@@ -59,6 +59,7 @@ export MANWIDTH=80
 
 # LESS mouse scrolling
 export LESS='--mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --window=-4 --CLEAR-SCREEN'
+export PAGER='less --mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --window=-4 --CLEAR-SCREEN'
 
 # cc flags
 # https://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html

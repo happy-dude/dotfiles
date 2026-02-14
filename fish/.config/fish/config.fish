@@ -49,6 +49,7 @@ set -gx MANWIDTH 80
 
 ## LESS mouse scrolling
 set -gx LESS '--mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --window=-4 --CLEAR-SCREEN'
+set -gx PAGER 'less --mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --window=-4 --CLEAR-SCREEN'
 
 ## cc flags
 ## https://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html

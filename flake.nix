@@ -78,6 +78,7 @@
             ./ghostty
             ./nix
             ./xdg
+            ./tldr
             ./tmux
             ./wezterm
             ./zsh
