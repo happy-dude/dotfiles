@@ -129,6 +129,7 @@
       pkgconf
       scons
       strace
+      tealdeer
       valgrind
       yasm
       zlib
