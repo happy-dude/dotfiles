@@ -48,6 +48,16 @@
           inputs.neovim-nightly-overlay.overlays.default
           ghostty.overlays.default
           nixgl.overlay
+          (final: prev: {
+            roswell = prev.roswell.overrideAttrs (oldAttrs: rec {
+              src = prev.fetchFromGitHub {
+                owner = "roswell";
+                repo = "roswell";
+                rev = "b16e0e7391c1e5c7ba1352b32a54b058084ba9d0";
+                hash = "sha256-QuUwHe7KTB5bqeI5gnLjkAjy8wKp7E7tFDrdYepqB+s=";
+              };
+            });
+          })
         ];
       };
     in
@@ -75,6 +85,7 @@
           ];
         };
       };
-      formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-rfc-style;
+      #formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-rfc-style;
+      formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-tree;
     };
 }

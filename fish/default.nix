@@ -2,6 +2,8 @@
 
 {
   #xdg.configFile."fish/config.fish".source = ./.config/fish/config.fish;
+  xdg.configFile."fish/completions/nix.fish".source =
+    "${pkgs.nix}/share/fish/vendor_completions.d/nix.fish";
 
   programs.fish = {
     enable = true;
@@ -20,22 +22,22 @@
           hash = "sha256-qt3t1iKRRNuiLWiVoiAYOu+9E7jsyECyIqZJ/oRIT1A=";
         };
       }
-      #{
-      #  name = "nvm.fish";
-      #  src = pkgs.fetchFromGitHub {
-      #    owner = "jorgebucaran";
-      #    repo = "nvm.fish";
-      #    rev = "846f1f20b2d1d0a99e344f250493c41a450f9448";
-      #    hash = "sha256-u3qhoYBDZ0zBHbD+arDxLMM8XoLQlNI+S84wnM3nDzg=";
-      #  };
-      #}
+      {
+        name = "nvm.fish";
+        src = pkgs.fetchFromGitHub {
+          owner = "jorgebucaran";
+          repo = "nvm.fish";
+          rev = "cc70373951379cb986a99f059bfc1e9834a3bdd7";
+          hash = "sha256-ZY443mWe/J2eSylzgNEJiLvurqE9StWGb0fvGHthqA0=";
+        };
+      }
       {
         name = "puffer-fish";
         src = pkgs.fetchFromGitHub {
           owner = "nickeb96";
           repo = "puffer-fish";
-          rev = "12d062eae0ad24f4ec20593be845ac30cd4b5923";
-          hash = "sha256-2niYj0NLfmVIQguuGTA7RrPIcorJEPkxhH6Dhcy+6Bk=";
+          rev = "83174b07de60078be79985ef6123d903329622b8";
+          hash = "sha256-Dhx5+XRxJvlhdnFyimNxFyFiASrGU4ZwyefsDwtKnSg=";
         };
       }
       {
@@ -61,8 +63,8 @@
         src = pkgs.fetchFromGitHub {
           owner = "IlanCosman";
           repo = "tide";
-          rev = "44c521ab292f0eb659a9e2e1b6f83f5f0595fcbd";
-          hash = "sha256-85iU1QzcZmZYGhK30/ZaKwJNLTsx+j3w6St8bFiQWxc=";
+          rev = "fcda500d2c2996e25456fb46cd1a5532b3157b16";
+          hash = "sha256-dzYEYC1bYP0rWpmz0fmBFwskxWYuKBMTssMELXXz5H0=";
         };
       }
       {
@@ -70,8 +72,8 @@
         src = pkgs.fetchFromGitHub {
           owner = "jethrokuan";
           repo = "z";
-          rev = "067e867debee59aee231e789fc4631f80fa5788e";
-          hash = "sha256-emmjTsqt8bdI5qpx1bAzhVACkg0MNB/uffaRjjeuFxU=";
+          rev = "d2f502f5575b18a32e1bee2f2b3f869a5053c159";
+          hash = "sha256-4c9ScQVf55b2ANaR7Lp/oqLeuK+FxH/wKmSNLV+b/CE=";
         };
       }
     ];

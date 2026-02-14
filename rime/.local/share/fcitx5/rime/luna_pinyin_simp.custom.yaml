@@ -1,0 +1,11 @@
+patch:
+  schema/dependencies:
+    - terra_pinyin
+    - luna_pinyin
+    - jyut6ping3
+    - stroke
+
+  engine/filters:
+    - lua_filter@tonal_pinyin_filter
+    - simplifier
+    - uniquifier

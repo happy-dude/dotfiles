@@ -15,7 +15,7 @@
     username = "schan";
     homeDirectory = "/home/schan";
 
-    stateVersion = "25.11";
+    stateVersion = "26.05";
 
     packages = with pkgs; [
       asciinema_3
@@ -26,19 +26,24 @@
       desktop-file-utils
       dex
       dust
+      exiftool
       eza
       fd
+      ffmpeg
       fzf
       go
       hexyl
       htop
       hyperfine
+      imagemagick
+      img2pdf
       jq
       less
       moreutils
       neovim
       nix-prefetch-github
-      nixfmt-rfc-style
+      nix-zsh-completions
+      nixfmt
       nodejs
       pandoc
       pass
@@ -105,7 +110,6 @@
       check
       clang-tools
       cmake
-      coan
       cproto
       cscope
       ctags
@@ -124,9 +128,8 @@
       perf
       pkgconf
       scons
-      remake
-      splint
       strace
+      tealdeer
       valgrind
       yasm
       zlib

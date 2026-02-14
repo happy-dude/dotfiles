@@ -181,7 +181,7 @@
 [submodule "neogit"]
 	path = vim/.vim/pack/plugged/opt/neogit
 	url = https://github.com/NeogitOrg/neogit.git
-	branch = nightly
+	branch = master
 	ignore = dirty
 [submodule "nerdcommenter"]
 	path = vim/.vim/pack/plugged/opt/nerdcommenter
@@ -216,17 +216,12 @@
 [submodule "nvim-treesitter"]
 	path = vim/.vim/pack/plugged/opt/nvim-treesitter
 	url = https://github.com/nvim-treesitter/nvim-treesitter.git
-	branch = master
-	ignore = dirty
-[submodule "nvim-treesitter-refactor"]
-	path = vim/.vim/pack/plugged/opt/nvim-treesitter-refactor
-	url = https://github.com/nvim-treesitter/nvim-treesitter-refactor
-	branch = master
+	branch = main
 	ignore = dirty
 [submodule "nvim-treesitter-textobjects"]
 	path = vim/.vim/pack/plugged/opt/nvim-treesitter-textobjects
 	url = https://github.com/nvim-treesitter/nvim-treesitter-textobjects
-	branch = master
+	branch = main
 	ignore = dirty
 [submodule "org-journal"]
 	path = emacs/.config/emacs/plugins/org-journal
@@ -515,5 +510,10 @@
 [submodule "with-editor"]
 	path = emacs/.config/emacs/plugins/with-editor
 	url = https://github.com/magit/with-editor.git
+	branch = main
+	ignore = dirty
+[submodule "rime/.local/share/fcitx5/themes/catppuccin-fcitx5"]
+	path = rime/.local/share/fcitx5/themes/catppuccin-fcitx5
+	url = https://github.com/catppuccin/fcitx5.git
 	branch = main
 	ignore = dirty

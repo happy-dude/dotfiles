@@ -1,0 +1,6 @@
+tonal_pinyin_filter = require("tonal_pinyin")
+jyutping_pinyin_filter = require("jyutping_pinyin")
+colemak_remap = require("cangjie5_colemak_remap")
+cangjie_display = require("cangjie_display")
+--test_filter = require("test")
+

@@ -1,5 +1,8 @@
 ;; Settings related to visuals, line numbers, fonts, etc.
 
+;; UI: show icons with text below
+(setq tool-bar-style 'image)
+
 ;; Hide welcome screen
 (setq inhibit-startup-screen t)
 

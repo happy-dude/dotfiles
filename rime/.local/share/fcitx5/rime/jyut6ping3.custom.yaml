@@ -1,0 +1,14 @@
+patch:
+  schema/dependencies:
+    - terra_pinyin
+    - luna_pinyin
+    - loengfan
+    - stroke
+    - cangjie5
+
+  engine/filters:
+    - lua_filter@jyutping_pinyin_filter
+    - simplifier@emoji_cantonese_suggestion
+    - simplifier
+    - uniquifier
+

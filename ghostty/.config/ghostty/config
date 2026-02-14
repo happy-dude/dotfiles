@@ -2,8 +2,8 @@
 #command = $(which zsh) --login
 command = /Users/stanleychan/.cargo/bin/fish --login
 
-window-width = 132
-window-height = 48
+#window-width = 132
+#window-height = 48
 
 theme = Gruvbox Dark
 #font-family = "Atkinson Hyperlegible Mono"
@@ -22,7 +22,7 @@ font-family = "FantasqueSansM Nerd Font Mono"
 #font-family = "NotoSansM Nerd Font Mono"
 #font-family = "UbuntuMono Nerd Font Mono"
 #font-family = "ZedMono Nerd Font Mono"
-font-size = 16
+font-size = 12
 
 # Keybinds
 # ref: https://ghostty.org/docs/config/keybind
