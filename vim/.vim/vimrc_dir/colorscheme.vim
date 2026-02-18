@@ -9,7 +9,8 @@ endif
 
 if (&t_Co >= 16) && (($TERM =~# "color") || ($TERM =~# "alacritty") || ($TERM =~# "wezterm") || ($TERM =~# "ghostty")) && (has("termguicolors")) && (!has("gui_running"))
 
-  set notermguicolors     " Personally prefer the flattened 256-color palettes instead of true color ones
+  set termguicolors     " Prefer true color palettes instead of cterm 256-color palettes
+
 
   " Colorscheme preferences:
   "   gruvbox-material, solarized8_flat, gruvbox8_hard
@@ -19,6 +20,7 @@ if (&t_Co >= 16) && (($TERM =~# "color") || ($TERM =~# "alacritty") || ($TERM =~
     set background=dark
     let g:gruvbox_material_palette = 'mix'
     let g:gruvbox_material_background = 'medium'
+    let g:gruvbox_material_transparent_background = 1
     colorscheme gruvbox-material
   elseif filereadable(expand(s:vim_plugged_dir . "/vim-solarized8/colors/solarized8_flat.vim"))
     set background=dark
