@@ -115,9 +115,9 @@
       ctags
       elfutils
       flex
-      gccgo
       gdb
       glibc
+      go
       gnumake
       indent
       libgcc
