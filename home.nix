@@ -108,7 +108,7 @@
       cbmc
       ccache
       check
-      clang-tools
+      #clang-tools
       cmake
       cproto
       cscope
@@ -117,7 +117,6 @@
       flex
       gdb
       glibc
-      go
       gnumake
       indent
       libgcc
@@ -137,6 +136,11 @@
       # graphical packages
       (config.lib.nixGL.wrap mesa-demos)
       (config.lib.nixGL.wrap solaar)
+
+      # resolve collisions for generic binaries (cc, c++, ld, etc.)
+      (lib.hiPrio gcc) # Provides gcc, g++
+      (lib.lowPrio clang) # Provides clang, clang++
+      (lib.lowPrio llvm) # Provides llvm-ar, llvm-nm, etc.
     ];
 
     file = {
