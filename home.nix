@@ -108,7 +108,6 @@
       cbmc
       ccache
       check
-      #clang-tools
       cmake
       cproto
       cscope
@@ -138,9 +137,10 @@
       (config.lib.nixGL.wrap solaar)
 
       # resolve collisions for generic binaries (cc, c++, ld, etc.)
-      (lib.hiPrio gcc) # Provides gcc, g++
-      (lib.lowPrio clang) # Provides clang, clang++
-      (lib.lowPrio llvm) # Provides llvm-ar, llvm-nm, etc.
+      (lib.hiPrio gcc) # gcc, g++
+      (lib.lowPrio clang) # clang, clang++
+      (lib.lowPrio clang-tools) # clangd
+      (lib.lowPrio llvm) # llvm-ar, llvm-nm, etc.
     ];
 
     file = {
