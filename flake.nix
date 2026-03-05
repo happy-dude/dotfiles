@@ -82,6 +82,7 @@
             ./tmux
             ./wezterm
             ./zsh
+            ./yt-dlp
 
           ];
         };

@@ -1,0 +1,7 @@
+--embed-subs
+--ignore-errors
+--merge-output-format mkv
+--output "%(autonumber)02d - %(title)s-%(id)s.%(ext)s"
+--sub-lang "en.*,zh.*,yue.*"
+--write-auto-sub
+--write-sub

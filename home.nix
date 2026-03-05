@@ -24,6 +24,7 @@
       bear
       curl
       desktop-file-utils
+      deno
       dex
       dust
       exiftool
@@ -62,7 +63,6 @@
       xclip
       xdg-utils
       xsel
-      yt-dlp
 
       # "Development Tools"
       buildbot
