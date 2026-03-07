@@ -24,7 +24,6 @@
       bear
       curl
       desktop-file-utils
-      deno
       dex
       dust
       exiftool
