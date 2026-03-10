@@ -54,6 +54,7 @@
       roswell
       sbcl
       stow
+      texliveFull
       tokei
       tree
       tree-sitter
