@@ -49,15 +49,15 @@
           hash = "sha256-cRSZeqtXSaEKuHeTSk3Kpmwf98mKJ986x1KSxa/HggU=";
         };
       }
-      {
-        name = "sponge";
-        src = pkgs.fetchFromGitHub {
-          owner = "meaningful-ooo";
-          repo = "sponge";
-          rev = "384299545104d5256648cee9d8b117aaa9a6d7be";
-          hash = "sha256-MdcZUDRtNJdiyo2l9o5ma7nAX84xEJbGFhAVhK+Zm1w=";
-        };
-      }
+      #{
+      #  name = "sponge";
+      #  src = pkgs.fetchFromGitHub {
+      #    owner = "meaningful-ooo";
+      #    repo = "sponge";
+      #    rev = "384299545104d5256648cee9d8b117aaa9a6d7be";
+      #    hash = "sha256-MdcZUDRtNJdiyo2l9o5ma7nAX84xEJbGFhAVhK+Zm1w=";
+      #  };
+      #}
       {
         name = "tide";
         src = pkgs.fetchFromGitHub {

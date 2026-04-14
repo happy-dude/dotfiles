@@ -54,6 +54,7 @@
       roswell
       sbcl
       stow
+      texliveFull
       tokei
       tree
       tree-sitter
@@ -62,7 +63,6 @@
       xclip
       xdg-utils
       xsel
-      yt-dlp
 
       # "Development Tools"
       buildbot
@@ -108,14 +108,12 @@
       cbmc
       ccache
       check
-      clang-tools
       cmake
       cproto
       cscope
       ctags
       elfutils
       flex
-      gccgo
       gdb
       glibc
       gnumake
@@ -129,7 +127,6 @@
       pkgconf
       scons
       strace
-      tealdeer
       valgrind
       yasm
       zlib
@@ -138,6 +135,12 @@
       # graphical packages
       (config.lib.nixGL.wrap mesa-demos)
       (config.lib.nixGL.wrap solaar)
+
+      # resolve collisions for generic binaries (cc, c++, ld, etc.)
+      (lib.hiPrio gcc) # gcc, g++
+      (lib.lowPrio clang) # clang, clang++
+      (lib.lowPrio clang-tools) # clangd
+      (lib.lowPrio llvm) # llvm-ar, llvm-nm, etc.
     ];
 
     file = {

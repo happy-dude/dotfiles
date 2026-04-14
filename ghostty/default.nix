@@ -16,6 +16,9 @@
       #command = ${pkgs.zsh} --login;
       command = "${pkgs.fish}/bin/fish --login";
 
+      # https://ghostty.org/docs/features/shell-integration
+      shell-integration-features = "ssh-terminfo,ssh-env";
+
       #window-width = 132;
       #window-height = 48;
 

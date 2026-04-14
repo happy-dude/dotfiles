@@ -78,9 +78,11 @@
             ./ghostty
             ./nix
             ./xdg
+            ./tldr
             ./tmux
             ./wezterm
             ./zsh
+            ./yt-dlp
 
           ];
         };
