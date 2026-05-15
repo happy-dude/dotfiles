@@ -18,7 +18,7 @@
     stateVersion = "26.05";
 
     packages = with pkgs; [
-      asciinema_3
+      asciinema
       babelfish
       bat
       bear
