@@ -2,7 +2,6 @@
 
 patch:
   engine/filters:
-    - simplifier
     - uniquifier
     - single_char_filter
     - lua_filter@cangjie_display

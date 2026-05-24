@@ -9,6 +9,19 @@ patch:
   engine/filters:
     - lua_filter@jyutping_pinyin_filter
     - simplifier@emoji_cantonese_suggestion
-    - simplifier
+    - simplifier@variants_hk
+    - simplifier@trad_tw
+    - simplifier@simplification
     - uniquifier
 
+  # Override upstream's t2hkf.json (not installed) with t2hk.json
+  variants_hk:
+    option_name: variants_hk
+    opencc_config: t2hk.json
+    tips: none
+
+  # Missing upstream — required for Simplified toggle to work
+  simplification:
+    option_name: simplification
+    opencc_config: t2s.json
+    tips: none
