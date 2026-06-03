@@ -31,6 +31,7 @@
       fd
       ffmpeg
       fzf
+      ghostscript
       go
       hexyl
       htop
@@ -45,6 +46,7 @@
       nix-zsh-completions
       nixfmt
       nodejs
+      ocrmypdf
       pandoc
       pass
       pinentry-all
@@ -54,6 +56,7 @@
       roswell
       sbcl
       stow
+      stylua
       texliveFull
       tokei
       tree
