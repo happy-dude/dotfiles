@@ -43,6 +43,34 @@ set -gx VISUAL 'nvim'
 # ctrl-x ctrl-e to open $EDITOR, like in zsh
 bind \cx\ce edit_command_buffer
 
+# History toggle: `nohist` switches to a private, unsaved history session by
+# clearing the $fish_history session name (handy for routine/secret commands you
+# don't want recorded) — exactly what `fish --private` does from launch. Because
+# this swaps the whole session (not just disable saving), commands typed while off
+# are recallable until you run `yeshist`, but prior "fish"-session history isn't
+# visible during that window. `yeshist` restores the saved "fish" session; commands
+# from the off window are then dropped, never hitting disk. The tide prompt shows a
+# magenta `no-hist` block while off.
+#
+# These export (`-gx`, not just `-g`) on purpose: tide computes the prompt in a
+# forked `fish -c` subprocess, which only inherits *exported* variables. A plain
+# global would toggle history correctly but stay invisible to that subprocess, so
+# the `_tide_item_nohist` block below would never render. Exporting fixes that.
+function nohist;  set -gx fish_history '';   echo 'history off'; end
+function yeshist; set -gx fish_history fish; echo 'history on';  end
+
+# tide item: render a magenta-on-black warning while history saving is off.
+function _tide_item_nohist
+    # Only warn when fish_history is *explicitly* set to empty (via nohist). By
+    # default the variable is unset (history on), which `test -z` alone would
+    # wrongly flag as off, showing no-hist on every fresh shell.
+    set -q fish_history; and test -z "$fish_history"; or return
+    _tide_print_item nohist '󰋗 no-hist'
+end
+set -g tide_nohist_bg_color magenta
+set -g tide_nohist_color black
+set -g tide_left_prompt_items nohist $tide_left_prompt_items
+
 # use neovim as manpager
 set -gx MANPAGER 'nvim +Man!'
 set -gx MANWIDTH 80
