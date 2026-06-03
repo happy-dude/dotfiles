@@ -27,6 +27,39 @@ fi
 # To customize prompt, run `p10k configure` or edit ~/dotfiles/zsh/.p10k.zsh.
 [[ ! -f "${ZDOTDIR:-$HOME}/.p10k.zsh" ]] || source "${ZDOTDIR:-$HOME}/.p10k.zsh"
 
+# History toggle: `nohist` stops persisting this session's commands to disk (handy
+# for routine/secret commands you don't want recorded). `yeshist` restores saving.
+# In-memory history still works either way, so up-arrow recall is unaffected.
+#
+# Do NOT implement this by unsetting HISTFILE: prezto sets SHARE_HISTORY, so commands
+# typed while "off" stay in the in-memory list and get flushed to disk the moment
+# HISTFILE is restored (yeshist) or the shell exits — they leak. Instead a
+# zshaddhistory hook drops lines from the *saved* history while the toggle is on, so
+# they never reach the file even after yeshist. Registered via add-zsh-hook so it
+# stacks with (rather than clobbers) any other zshaddhistory hook.
+typeset -g _NOHIST=0
+nohist()  { _NOHIST=1; }
+yeshist() { _NOHIST=0; }
+autoload -Uz add-zsh-hook
+_nohist_addhistory() { (( _NOHIST )) && return 1; return 0; }
+add-zsh-hook zshaddhistory _nohist_addhistory
+
+# Powerlevel10k: show a magenta-on-black `no-hist` block while history saving is off.
+# Kept here rather than in .p10k.zsh so re-running `p10k configure` won't clobber it.
+# p10k reads its config lazily on first prompt (after this file runs), so defining the
+# segment and appending to the elements array here is enough — no `p10k reload` needed.
+function prompt_nohist() {
+  (( _NOHIST )) || return
+  p10k segment -b 5 -f 0 -i '󰋗' -t 'no-hist'
+}
+function instant_prompt_nohist() { prompt_nohist }
+typeset -g POWERLEVEL9K_NOHIST_BACKGROUND=5   # magenta
+typeset -g POWERLEVEL9K_NOHIST_FOREGROUND=0   # black
+# Prepend the segment to whatever .p10k.zsh configured (guard against re-source dupes).
+if (( ! ${POWERLEVEL9K_LEFT_PROMPT_ELEMENTS[(I)nohist]} )); then
+  POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(nohist $POWERLEVEL9K_LEFT_PROMPT_ELEMENTS)
+fi
+
 # Nix home-manager
 if [[ -s "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]]; then
     source $HOME/.nix-profile/etc/profile.d/hm-session-vars.sh

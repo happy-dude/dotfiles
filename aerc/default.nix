@@ -59,7 +59,7 @@
     enable = true;
     extraConfig = {
       database = {
-        path = "/home/schan/.mail";
+        path = "${config.home.homeDirectory}/.mail";
       };
       user = {
         name = "Stanley Chan";

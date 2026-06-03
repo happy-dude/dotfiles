@@ -8,6 +8,10 @@ shell-integration-features = ssh-terminfo,ssh-env
 #window-width = 132
 #window-height = 48
 
+# always show the tab bar, even with a single tab (Linux/GTK)
+window-show-tab-bar = always
+gtk-tabs-location = top
+
 theme = Gruvbox Dark
 #font-family = "Atkinson Hyperlegible Mono"
 #font-family = "CaskaydiaCove Nerd Font Mono"
