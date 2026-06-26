@@ -506,9 +506,14 @@ fi
 
 if [ "$SKIP_PULL" -eq 0 ]; then
     section_start "Pulling latest changes for main repo"
-    vmsg "Dirty top-level worktree is allowed here via --autostash."
-    git pull --rebase --autostash
-    section_end "done"
+    if git rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; then
+        vmsg "Dirty top-level worktree is allowed here via --autostash."
+        git pull --rebase --autostash
+        section_end "done"
+    else
+        warn "No upstream tracking branch configured; skipping pull (use --skip-pull to suppress this warning)"
+        section_end "skipped"
+    fi
 else
     section_start "Skipping main repo pull (--skip-pull)"
     section_end "skipped"

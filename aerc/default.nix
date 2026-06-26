@@ -51,6 +51,7 @@
       Near :lostsanctum-local:
       Patterns *
       Create Both
+      Expunge Both
       SyncState *
     '';
   };
