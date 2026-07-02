@@ -50,11 +50,13 @@
       pandoc
       pass
       pinentry-all
+      prettier
       procs
       qemu
       ripgrep
       roswell
       sbcl
+      shellcheck
       stow
       stylua
       texliveFull
