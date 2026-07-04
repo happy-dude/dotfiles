@@ -60,13 +60,15 @@
           })
         ];
       };
-    in
-    {
-      homeConfigurations = {
-        "schan" = home-manager.lib.homeManagerConfiguration {
+      # Build a Home Manager config for a given username; home dir is
+      # /home/<username>. All machines share the same modules — only the
+      # username differs (e.g. schan on the personal box, stachan on work).
+      mkHome =
+        username:
+        home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           extraSpecialArgs = {
-            inherit inputs;
+            inherit inputs username;
           };
 
           modules = [
@@ -87,6 +89,11 @@
 
           ];
         };
+    in
+    {
+      homeConfigurations = {
+        "schan" = mkHome "schan"; # personal computer
+        "stachan" = mkHome "stachan"; # work computer
       };
       #formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-rfc-style;
       formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-tree;
