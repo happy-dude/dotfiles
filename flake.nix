@@ -53,8 +53,8 @@
               src = prev.fetchFromGitHub {
                 owner = "roswell";
                 repo = "roswell";
-                rev = "b16e0e7391c1e5c7ba1352b32a54b058084ba9d0";
-                hash = "sha256-QuUwHe7KTB5bqeI5gnLjkAjy8wKp7E7tFDrdYepqB+s=";
+                rev = "05a2c2fa3bf1f36dc7d10786edf918ef01fcd0a7";
+                hash = "sha256-ppgwclpEw17VBoVp2/o5OsX681k3uUBR912oXULz2Ow=";
               };
             });
           })
@@ -81,6 +81,7 @@
             ./tldr
             ./tmux
             ./wezterm
+            ./zed
             ./zsh
             ./yt-dlp
 

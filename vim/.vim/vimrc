@@ -176,6 +176,11 @@ if &loadplugins
 
       let s:coc_settings = s:vimpack_settings_dir . 'coc.vim'
       execute 'source' s:coc_settings
+
+      Plug 'MeanderingProgrammer/render-markdown.nvim', { 'branch' : 'main' }
+      Plug 'hakonharnes/img-clip.nvim'                , { 'branch' : 'main' }
+      Plug 'olimorris/codecompanion.nvim'             , { 'branch' : 'main' }
+      Plug 'ravitemer/codecompanion-history.nvim'     , { 'branch' : 'main' }
     endif
 
     " Enable rustowl if rust is installed
@@ -350,6 +355,11 @@ lua <<EOF
   require('hop_nvim')
   require('org')
   require('treesitter')
+
+  -- CodeCompanion.nvim + AI-adjacent (render-markdown, img-clip). See
+  -- lua/codecompanion_nvim.lua (named _nvim to avoid shadowing the plugin's
+  -- own `codecompanion` module).
+  require('codecompanion_nvim')
 
   require('neogit').setup{}
   require('which-key').setup{}

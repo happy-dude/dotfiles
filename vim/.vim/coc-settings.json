@@ -60,5 +60,15 @@
         "$HOME",
         "$HOME/.cargo/**",
         "$HOME/.rustup/**"
+    ],
+    "suggest.autoTrigger": "always",
+    "coc.source.around.filetypes": [
+        "codecompanion"
+    ],
+    "coc.source.buffer.filetypes": [
+        "codecompanion"
+    ],
+    "coc.source.file.filetypes": [
+        "codecompanion"
     ]
 }
