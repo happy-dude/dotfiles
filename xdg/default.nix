@@ -81,7 +81,7 @@
     src_dir="$HOME/.nix-profile/share/applications"
 
     # Host filesystem path (toolbox mounts host at /run/host)
-    host_icon_dest="/run/host$HOME/.local/share/icons/hicolor"
+    host_icon_dest="$HOME/.local/share/icons/hicolor"
     local_icon_src="$HOME/.nix-profile/share/icons/hicolor"
 
     # Create destination if it doesn't exist
@@ -109,6 +109,6 @@
     done
 
     # Update icon cache on host
-    /run/host/usr/bin/gtk-update-icon-cache -f -t "$host_icon_dest" 2>/dev/null || true
+    /usr/bin/gtk-update-icon-cache -f -t "$host_icon_dest" 2>/dev/null || true
   '';
 }
