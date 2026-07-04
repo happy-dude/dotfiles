@@ -3,6 +3,7 @@
   lib,
   pkgs,
   inputs,
+  username,
   ...
 }:
 
@@ -12,8 +13,8 @@
   targets.genericLinux.nixGL.installScripts = [ "mesa" ];
 
   home = {
-    username = "schan";
-    homeDirectory = "/home/schan";
+    inherit username;
+    homeDirectory = "/home/${username}";
 
     stateVersion = "26.11";
 

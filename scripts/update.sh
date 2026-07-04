@@ -71,7 +71,9 @@ SECTION_TIMES=()
 
 PLUM_DIR="${PLUM_DIR:-$HOME/plum}"
 RIME_FRONTEND="${RIME_FRONTEND:-fcitx5-rime}"
-HOME_MANAGER_FLAKE="${HOME_MANAGER_FLAKE:-.#schan}"
+# Default to the flake output matching the current user (schan, stachan, ...),
+# so each machine switches its own config. Override with HOME_MANAGER_FLAKE.
+HOME_MANAGER_FLAKE="${HOME_MANAGER_FLAKE:-.#$(whoami)}"
 
 RIME_PACKAGES=(
     plum
@@ -161,7 +163,7 @@ Environment:
       Rime frontend passed to rime-install. Default: fcitx5-rime
 
   HOME_MANAGER_FLAKE=...
-      Flake target for home-manager. Default: .#schan
+      Flake target for home-manager. Default: .#<current user> (e.g. .#schan, .#stachan)
 EOF
 }
 

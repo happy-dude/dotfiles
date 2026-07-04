@@ -12,7 +12,7 @@ A separate `macos` branch exists for macOS-specific settings; this repository ch
 
 ### Home Manager flake
 
-- `flake.nix` declares one Home Manager output: `homeConfigurations."schan"`, built for `x86_64-linux`.
+- `flake.nix` declares per-user Home Manager outputs via a `mkHome <username>` helper — `homeConfigurations."schan"` (personal box, `/home/schan`) and `homeConfigurations."stachan"` (work box, `/home/stachan`), both `x86_64-linux`, sharing all modules. Only the `username` differs; `home.nix` receives it as an arg and derives `homeDirectory = "/home/${username}"`. Each machine switches its own output (`.#schan` / `.#stachan`); `scripts/update.sh` defaults to `.#$(whoami)`.
 - Flake inputs: `nixpkgs` (nixos-unstable), `home-manager`, `nixgl`, `neovim-nightly-overlay`, and the `ghostty` flake. `nixGL` is wired up via `targets.genericLinux.nixGL` in `home.nix` so OpenGL apps (Ghostty, mesa-demos, solaar) can be wrapped with `config.lib.nixGL.wrap`.
 - A small inline overlay in `flake.nix` pins `roswell` to a specific GitHub revision/hash (workaround for upstream packaging breakage); update it via `scripts/update-nix-hashes.sh` when bumping.
 - `home.nix` is the entry module: it lists every top-level package and sets up a handful of plain-file symlinks (`.clang-format`, `.editorconfig`, `.gdbinit`, `.gitignore_global`, `.golangci.yml`, `.stylua.toml`, `ros_swank`, `.roswell/helper.el`).
@@ -50,7 +50,7 @@ Plugin trees are **not** managed by Nix:
 ### Apply changes (Home Manager)
 
 ```bash
-home-manager switch --flake .#schan --show-trace
+home-manager switch --flake .#schan --show-trace     # or .#stachan on the work box; .#$(whoami) picks by user
 nix fmt .                                # format all .nix files with nixfmt-tree
 ```
 
@@ -69,7 +69,7 @@ Both are Home-Manager-managed (see "Legacy Stow package directories" above) and 
 VERBOSE=1 ./scripts/update.sh
 ```
 
-Step order (and the flag that skips it): Rime/plum (`--skip-rime`), `git pull --rebase --autostash` (`--skip-pull`), submodule sync/init/update (`--skip-submodules`), submodule status (`--skip-status`), vim-plug + Treesitter + coc.nvim (`--skip-nvim`), vim-go binaries (`--skip-go`), `nix fmt .` (`--skip-nix-fmt`), `nix-channel --update` (`--skip-nix-channel`), `nix flake update` (`--skip-nix-flake`), `home-manager switch` (`--skip-home-manager`). Env vars: `PLUM_DIR` (default `~/plum`), `RIME_FRONTEND` (default `fcitx5-rime`), `HOME_MANAGER_FLAKE` (default `.#schan`).
+Step order (and the flag that skips it): Rime/plum (`--skip-rime`), `git pull --rebase --autostash` (`--skip-pull`), submodule sync/init/update (`--skip-submodules`), submodule status (`--skip-status`), vim-plug + Treesitter + coc.nvim (`--skip-nvim`), vim-go binaries (`--skip-go`), `nix fmt .` (`--skip-nix-fmt`), `nix-channel --update` (`--skip-nix-channel`), `nix flake update` (`--skip-nix-flake`), `home-manager switch` (`--skip-home-manager`). Env vars: `PLUM_DIR` (default `~/plum`), `RIME_FRONTEND` (default `fcitx5-rime`), `HOME_MANAGER_FLAKE` (default `.#$(whoami)`).
 
 The script refuses to update dirty submodules unless `--autostash-submodules` is passed, and it does **not** auto-pop stashes afterward.
 
