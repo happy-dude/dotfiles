@@ -278,6 +278,11 @@
 	url = https://gitlab.com/HiPhish/rainbow-delimiters.nvim.git
 	branch = master
 	ignore = dirty
+[submodule "rime/.local/share/fcitx5/themes/catppuccin-fcitx5"]
+	path = rime/.local/share/fcitx5/themes/catppuccin-fcitx5
+	url = https://github.com/catppuccin/fcitx5.git
+	branch = main
+	ignore = dirty
 [submodule "rust.vim"]
 	path = vim/.vim/pack/plugged/opt/rust.vim
 	url = https://github.com/rust-lang/rust.vim.git
@@ -498,6 +503,22 @@
 	url = https://github.com/tpope/vim-unimpaired
 	branch = master
 	ignore = dirty
+[submodule "vim/.vim/pack/plugged/opt/codecompanion-history.nvim"]
+	path = vim/.vim/pack/plugged/opt/codecompanion-history.nvim
+	url = https://github.com/ravitemer/codecompanion-history.nvim.git
+	ignore = dirty
+[submodule "vim/.vim/pack/plugged/opt/codecompanion.nvim"]
+	path = vim/.vim/pack/plugged/opt/codecompanion.nvim
+	url = https://github.com/olimorris/codecompanion.nvim.git
+	ignore = dirty
+[submodule "vim/.vim/pack/plugged/opt/img-clip.nvim"]
+	path = vim/.vim/pack/plugged/opt/img-clip.nvim
+	url = https://github.com/hakonharnes/img-clip.nvim.git
+	ignore = dirty
+[submodule "vim/.vim/pack/plugged/opt/render-markdown.nvim"]
+	path = vim/.vim/pack/plugged/opt/render-markdown.nvim
+	url = https://github.com/MeanderingProgrammer/render-markdown.nvim.git
+	ignore = dirty
 [submodule "vim/.vim/pack/plugged/opt/rustowl"]
 	path = vim/.vim/pack/plugged/opt/rustowl
 	url = https://github.com/cordx56/rustowl.git
@@ -510,10 +531,5 @@
 [submodule "with-editor"]
 	path = emacs/.config/emacs/plugins/with-editor
 	url = https://github.com/magit/with-editor.git
-	branch = main
-	ignore = dirty
-[submodule "rime/.local/share/fcitx5/themes/catppuccin-fcitx5"]
-	path = rime/.local/share/fcitx5/themes/catppuccin-fcitx5
-	url = https://github.com/catppuccin/fcitx5.git
 	branch = main
 	ignore = dirty
