@@ -146,6 +146,9 @@ alias ef='emacsclient -nc'
 ## virtme
 alias vmeamd="~/sources/virtme-ng/virtme-run --show-boot-console --show-command --memory 8G --rw --rwdir=$HOME/cf/bpf-lsm --kdir . --mods=auto --net user -a nokaslr"
 
+# Ubuntu/Fedora system libs (for Nix gcc/ld to find distro-installed libraries)
+set -gx LIBRARY_PATH "/usr/lib/x86_64-linux-gnu:/usr/lib64"
+
 # LLVM, Xcode SDK
 #set -gx LDFLAGS "-L$(brew --prefix)/opt/llvm/lib -Wl,-rpath,$(brew --prefix)/opt/llvm/lib"
 #set -gx CPPFLAGS "-I$(brew --prefix)/opt/llvm/include"
