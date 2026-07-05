@@ -106,9 +106,10 @@ if [ $ZSH_IS_AVAILABLE -eq 0 ]; then
 
     echo "Linking Sorin's zsh-prezto"
     ln -s ~/dotfiles/zsh/prezto-sorin ~/.zprezto;
-    setopt EXTENDED_GLOB
-    for rcfile in "${ZDOTDIR:-$HOME}"/.zprezto/runcoms/^README.md(.N); do
-        ln -s "$rcfile" "${ZDOTDIR:-$HOME}/.${rcfile:t}"
+    for rcfile in "${ZDOTDIR:-$HOME}"/.zprezto/runcoms/*; do
+        base="$(basename "$rcfile")"
+        [ "$base" = "README.md" ] && continue
+        ln -s "$rcfile" "${ZDOTDIR:-$HOME}/.${base}"
     done
 
     echo "Changing default shell to zsh"
@@ -156,7 +157,7 @@ if [ $SLIM_IS_AVAILABLE -eq 0 ]; then
     echo "slim found"
 
     if [ -f "/etc/slim.conf" ]; then
-        echo Backing up existing slim configuration"
+        echo "Backing up existing slim configuration"
         mv /etc/slim.conf /etc/slim.conf.bak
     fi
 

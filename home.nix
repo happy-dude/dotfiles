@@ -178,23 +178,17 @@
     ];
 
     file = {
-      # simple conf files
+      ".clang-format".source = ./.clang-format;
+      ".editorconfig".source = ./.editorconfig;
       ".gdbinit".source = ./gdb/.gdbinit;
-
-      # code
-      ".clang-format".source = ./editorconfig/.clang-format;
-      ".editorconfig".source = ./editorconfig/.editorconfig;
-      ".golangci.yml".source = ./go/.golangci.yml;
-      "ros_swank".source = ./roswell/ros_swank;
+      ".golangci.yml".source = ./.golangci.yml;
       ".roswell/helper.el".source = ./roswell/.roswell/helper.el;
-      ".stylua.toml".source = ./editorconfig/.stylua.toml;
+      ".stylua.toml".source = ./.stylua.toml;
+      "ros_swank".source = ./roswell/ros_swank;
 
-      # Claude Code agent prompts: Nix-managed symlink, but kept live-editable
-      # via mkOutOfStoreSymlink (points at the repo working tree, not the
-      # read-only Nix store) so prompt iteration lands directly in the repo.
-      # Replaces `stow claude`. NOTE: run `stow -D claude` before the first
-      # `home-manager switch`, else HM refuses to overwrite the existing stow
-      # symlink at ~/.claude/agents.
+      # Agent prompts kept live-editable via mkOutOfStoreSymlink — it targets the
+      # repo working tree, not the read-only Nix store (a plain `.source` would
+      # copy them in read-only).
       ".claude/agents".source =
         config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/claude/.claude/agents";
     };
