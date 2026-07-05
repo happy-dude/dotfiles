@@ -174,3 +174,17 @@ rime/.local/share/fcitx5/rime/trash/
 
 # Theme git repos (if cloned)
 rime/.local/share/fcitx5/themes/*/.git/
+
+# Nix build outputs
+result
+result-*
+
+# direnv
+.direnv/
+
+# Claude Code project session state written into a repo when run there
+# (root-anchored so it does NOT match the tracked claude/.claude/agents/)
+/.claude/
+
+# Per-machine git identity/signing — real file lives at ~/.config/git/local.config
+local.config

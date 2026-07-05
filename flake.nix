@@ -79,6 +79,7 @@
             ./fish
             ./fonts
             ./ghostty
+            ./git
             ./nix
             ./xdg
             ./tldr

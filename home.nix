@@ -180,7 +180,6 @@
     file = {
       # simple conf files
       ".gdbinit".source = ./gdb/.gdbinit;
-      ".gitignore_global".source = ./git/.gitignore_global;
 
       # code
       ".clang-format".source = ./editorconfig/.clang-format;
