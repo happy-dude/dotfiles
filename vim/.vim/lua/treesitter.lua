@@ -10,7 +10,7 @@ require('nvim-treesitter.install').compilers = { 'gcc' }
 --    `stable`, `unstable`, or `all` (not recommended)
 
 -- nvim-treesitter-textobjects
-require('nvim-treesitter-textobjects').setup {
+require('nvim-treesitter-textobjects').setup({
   select = {
     enable = true,
     lookahead = true,
@@ -21,7 +21,7 @@ require('nvim-treesitter-textobjects').setup {
       ['ci'] = '@class.inner',
     },
   },
-}
+})
 
 -- LSP rename replacement for refactor.smart_rename
 vim.keymap.set('n', 'gs', function()
@@ -34,20 +34,20 @@ vim.keymap.set('n', 'gs', function()
 end, { desc = 'Smart rename (LSP)' })
 
 -- rainbow_delimiters settings
-local rainbow_delimiters = require 'rainbow-delimiters'
+local rainbow_delimiters = require('rainbow-delimiters')
 
-api.nvim_set_hl(0, 'RainbowDelimiterRed'     , {default = true, fg = '#FE2712', ctermfg= 'Red'        })
-api.nvim_set_hl(0, 'RainbowDelimiterWhite'   , {default = true, fg = '#d3d7cf', ctermfg= 'White'      })
-api.nvim_set_hl(0, 'RainbowDelimiterYellow'  , {default = true, fg = '#FCE94F', ctermfg= 'Yellow'     })
-api.nvim_set_hl(0, 'RainbowDelimiterGreen'   , {default = true, fg = '#66B032', ctermfg= 'Green'      })
-api.nvim_set_hl(0, 'RainbowDelimiterBlue'    , {default = true, fg = '#0392CE', ctermfg= 'Blue'       })
-api.nvim_set_hl(0, 'RainbowDelimiterViolet'  , {default = true, fg = '#75507b', ctermfg= 'DarkMagenta'})
-api.nvim_set_hl(0, 'RainbowDelimiterDarkRed' , {default = true, fg = '#FD5308', ctermfg= 'DarkRed'    })
-api.nvim_set_hl(0, 'RainbowDelimiterSilver'  , {default = true, fg = '#FFFFFF', ctermfg= 'White'      })
-api.nvim_set_hl(0, 'RainbowDelimiterOrange'  , {default = true, fg = '#FB9902', ctermfg= 'DarkYellow' })
-api.nvim_set_hl(0, 'RainbowDelimiterDarkBlue', {default = true, fg = '#0247FE', ctermfg= 'DarkBlue'   })
-api.nvim_set_hl(0, 'RainbowDelimiterSeaGreen', {default = true, fg = '#D0EA2B', ctermfg= 'LightGreen' })
-api.nvim_set_hl(0, 'RainbowDelimiterMagenta' , {default = true, fg = '#A7194B', ctermfg= 'Magenta'    })
+api.nvim_set_hl(0, 'RainbowDelimiterRed', { default = true, fg = '#FE2712', ctermfg = 'Red' })
+api.nvim_set_hl(0, 'RainbowDelimiterWhite', { default = true, fg = '#d3d7cf', ctermfg = 'White' })
+api.nvim_set_hl(0, 'RainbowDelimiterYellow', { default = true, fg = '#FCE94F', ctermfg = 'Yellow' })
+api.nvim_set_hl(0, 'RainbowDelimiterGreen', { default = true, fg = '#66B032', ctermfg = 'Green' })
+api.nvim_set_hl(0, 'RainbowDelimiterBlue', { default = true, fg = '#0392CE', ctermfg = 'Blue' })
+api.nvim_set_hl(0, 'RainbowDelimiterViolet', { default = true, fg = '#75507b', ctermfg = 'DarkMagenta' })
+api.nvim_set_hl(0, 'RainbowDelimiterDarkRed', { default = true, fg = '#FD5308', ctermfg = 'DarkRed' })
+api.nvim_set_hl(0, 'RainbowDelimiterSilver', { default = true, fg = '#FFFFFF', ctermfg = 'White' })
+api.nvim_set_hl(0, 'RainbowDelimiterOrange', { default = true, fg = '#FB9902', ctermfg = 'DarkYellow' })
+api.nvim_set_hl(0, 'RainbowDelimiterDarkBlue', { default = true, fg = '#0247FE', ctermfg = 'DarkBlue' })
+api.nvim_set_hl(0, 'RainbowDelimiterSeaGreen', { default = true, fg = '#D0EA2B', ctermfg = 'LightGreen' })
+api.nvim_set_hl(0, 'RainbowDelimiterMagenta', { default = true, fg = '#A7194B', ctermfg = 'Magenta' })
 
 --default values from plugin
 --api.nvim_set_hl(0, 'RainbowDelimiterRed'   , {default = true, fg = '#cc241d', ctermfg= 'Red'    })
@@ -89,27 +89,26 @@ api.nvim_set_hl(0, 'RainbowDelimiterMagenta' , {default = true, fg = '#A7194B', 
 --  },
 
 vim.g.rainbow_delimiters = {
-    strategy = {
-        [''] = rainbow_delimiters.strategy['global'],
-        vim = rainbow_delimiters.strategy['local'],
-    },
-    query = {
-        [''] = 'rainbow-delimiters',
-        lua = 'rainbow-blocks',
-    },
-    highlight = {
-      'RainbowDelimiterRed'     ,
-      'RainbowDelimiterWhite'   ,
-      'RainbowDelimiterYellow'  ,
-      'RainbowDelimiterGreen'   ,
-      'RainbowDelimiterBlue'    ,
-      'RainbowDelimiterViolet'  ,
-      'RainbowDelimiterDarkRed' ,
-      'RainbowDelimiterSilver'  ,
-      'RainbowDelimiterOrange'  ,
-      'RainbowDelimiterDarkBlue',
-      'RainbowDelimiterSeaGreen',
-      'RainbowDelimiterMagenta' ,
-    },
-  }
-
+  strategy = {
+    [''] = rainbow_delimiters.strategy['global'],
+    vim = rainbow_delimiters.strategy['local'],
+  },
+  query = {
+    [''] = 'rainbow-delimiters',
+    lua = 'rainbow-blocks',
+  },
+  highlight = {
+    'RainbowDelimiterRed',
+    'RainbowDelimiterWhite',
+    'RainbowDelimiterYellow',
+    'RainbowDelimiterGreen',
+    'RainbowDelimiterBlue',
+    'RainbowDelimiterViolet',
+    'RainbowDelimiterDarkRed',
+    'RainbowDelimiterSilver',
+    'RainbowDelimiterOrange',
+    'RainbowDelimiterDarkBlue',
+    'RainbowDelimiterSeaGreen',
+    'RainbowDelimiterMagenta',
+  },
+}

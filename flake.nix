@@ -27,6 +27,12 @@
     # https://github.com/ghostty-org/ghostty/blob/main/flake.nix
     ghostty.url = "github:ghostty-org/ghostty";
 
+    # treefmt-nix — one `nix fmt` that formats every language in the repo
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
   outputs =
@@ -35,6 +41,7 @@
       home-manager,
       nixgl,
       ghostty,
+      treefmt-nix,
       self,
       ...
     }@inputs:
@@ -74,28 +81,51 @@
           modules = [
             ./home.nix
             ./aerc
+            ./bat
             ./emacs
             ./fish
             ./fonts
             ./ghostty
+            ./git
             ./nix
-            ./xdg
             ./tldr
             ./tmux
             ./wezterm
+            ./xdg
+            ./yt-dlp
             ./zed
             ./zsh
-            ./yt-dlp
-
           ];
         };
+
+      # One `nix fmt` for the whole repo: nixfmt (.nix), shfmt (shell), stylua
+      # (lua), prettier (json/md/yaml), taplo (toml). shfmt/prettier honor the
+      # root .editorconfig; stylua honors .stylua.toml. Submodule *contents*
+      # aren't tracked by this repo so treefmt's git walk skips them; the
+      # excludes below cover tracked-but-vendored/generated trees.
+      treefmtEval = treefmt-nix.lib.evalModule pkgs {
+        projectRootFile = "flake.nix";
+        programs = {
+          nixfmt.enable = true;
+          shfmt.enable = true;
+          stylua.enable = true;
+          prettier.enable = true;
+          taplo.enable = true;
+        };
+        settings.global.excludes = [
+          "other/**" # non-managed reference configs
+          "karabiner/**" # macOS + generated backups
+          "rime/**" # input-method dictionaries (data, not code)
+          "*.lock"
+          "LICENSE"
+        ];
+      };
     in
     {
       homeConfigurations = {
         "schan" = mkHome "schan"; # personal computer
         "stachan" = mkHome "stachan"; # work computer
       };
-      #formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-rfc-style;
-      formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-tree;
+      formatter.${system} = treefmtEval.config.build.wrapper;
     };
 }

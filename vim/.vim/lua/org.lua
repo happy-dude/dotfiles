@@ -17,17 +17,17 @@
 -- require('orgmode').setup_ts_grammar()
 
 require('orgmode').setup({
-  org_agenda_files = {'~/org/*', '~/org/roam/**'},
+  org_agenda_files = { '~/org/*', '~/org/roam/**' },
   org_default_notes_file = '~/org/notes.org',
 
   -- https://github.com/nvim-orgmode/orgmode/issues/250
-  org_todo_keywords = {'TODO', 'PROCESS', 'ORGANIZE', 'REVIEW', 'DO', '|', 'DONE'},               -- GTD
-  org_todo_keyword_faces = {                      -- Xterm256 cterm codes
-    TODO      = ':foreground 131 :weight bold',   -- IndianRed
-    PROCESS   = ':foreground 63  :weight bold',   -- RoyalBlue1
-    ORGANIZE  = ':foreground 172 :weight bold',   -- Orange3
-    REVIEW    = ':foreground 171 :weight bold',   -- MediumOrchid1
-    DO        = ':foreground 203 :weight bold',   -- IndianRed1
-    DONE      = ':foreground 107 :weight bold'    -- DarkOliveGreen3
-  }
+  org_todo_keywords = { 'TODO', 'PROCESS', 'ORGANIZE', 'REVIEW', 'DO', '|', 'DONE' }, -- GTD
+  org_todo_keyword_faces = { -- Xterm256 cterm codes
+    TODO = ':foreground 131 :weight bold', -- IndianRed
+    PROCESS = ':foreground 63  :weight bold', -- RoyalBlue1
+    ORGANIZE = ':foreground 172 :weight bold', -- Orange3
+    REVIEW = ':foreground 171 :weight bold', -- MediumOrchid1
+    DO = ':foreground 203 :weight bold', -- IndianRed1
+    DONE = ':foreground 107 :weight bold', -- DarkOliveGreen3
+  },
 })

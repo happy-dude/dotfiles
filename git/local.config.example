@@ -1,0 +1,24 @@
+# Template for per-machine git identity + signing. Copy to
+# ~/.config/git/local.config and fill in real values — that path is outside the
+# repo on purpose (SSH/GPG keys and email differ per machine and must not be
+# committed). programs.git includes it automatically; git skips it if absent.
+#
+#   cp git/local.config.example ~/.config/git/local.config
+#   $EDITOR ~/.config/git/local.config
+#
+# signingkey is a GPG key id (openpgp, the default) or an SSH pubkey path /
+# "key::ssh-ed25519 AAAA..." if you set gpg.format = ssh. Omit the signing lines
+# entirely on a machine without a key (e.g. the work box).
+
+[user]
+	email = you@example.com
+	# signingkey = <GPG key id>                  # or ~/.ssh/key.pub for SSH signing
+
+# Signing (only on a box that has the key). gpg.format defaults to openpgp (GPG);
+# set it to "ssh" only for SSH-key signing.
+# [commit]
+# 	gpgsign = true
+# [tag]
+# 	gpgSign = true
+# [gpg]
+# 	format = ssh
