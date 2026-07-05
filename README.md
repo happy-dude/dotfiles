@@ -57,9 +57,9 @@ and remix, transform, and adapt accordingly.
 
 ### Requirements
 
-* [git](https://github.com/git/git)
-* [gnu stow](https://github.com/aspiers/stow/)
-* [bash](https://www.gnu.org/software/bash/) (for scripts)
+- [git](https://github.com/git/git)
+- [gnu stow](https://github.com/aspiers/stow/)
+- [bash](https://www.gnu.org/software/bash/) (for scripts)
 
 1. Clone the repository and submodules
 
@@ -262,10 +262,10 @@ the `other/iptables` directory.
 
 Inside this directory are
 
-* iptables, the executable script
-* iptables.complete, the full list of iptable rules I have made and exported
-* iptables.current, the list of iptable rules after importing iptables.complete
-* iptables.conf, a configuration file used by the executable script
+- iptables, the executable script
+- iptables.complete, the full list of iptable rules I have made and exported
+- iptables.current, the list of iptable rules after importing iptables.complete
+- iptables.conf, a configuration file used by the executable script
 
 In Ubuntu, the entire iptables directory should be symlinked into /etc/iptables
 and the `iptables` script should be symlinked to `/etc/init.d/iptables`. Once
@@ -280,8 +280,8 @@ about the [boot process](https://wiki.archlinux.org/index.php/Arch_Boot_Process)
 
 ## Meta
 
-* Last change: Fri Sep 11 01:22:59 CDT 2020
-* Maintainer: Stanley Chan, a.k.a. [Happy-Dude](https://github.com/happy-dude)
+- Last change: Fri Sep 11 01:22:59 CDT 2020
+- Maintainer: Stanley Chan, a.k.a. [Happy-Dude](https://github.com/happy-dude)
 
 ## License
 

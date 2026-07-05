@@ -37,7 +37,7 @@ Both agent files also know their in-prompt package lists are a cache, not the so
 Plugin trees are **not** managed by Nix:
 
 - Vim plugins live under `vim/.vim/pack/plugged/opt/*` (each a git submodule); `vim/.vim/pack/bundle/opt/` holds `vim-pathogen` and `vim-plug`. The Vim config itself is in `vim/.vim/vimrc` with Lua/init.vim helpers alongside.
-- Emacs plugins live under `emacs/.config/emacs/plugins/*` as git submodules. `emacs/default.nix` *also* installs many of the same packages via `programs.emacs.extraPackages` — both mechanisms are used in parallel (submodules for source-of-truth and pinning, `extraPackages` for Nix-built dependencies).
+- Emacs plugins live under `emacs/.config/emacs/plugins/*` as git submodules. `emacs/default.nix` _also_ installs many of the same packages via `programs.emacs.extraPackages` — both mechanisms are used in parallel (submodules for source-of-truth and pinning, `extraPackages` for Nix-built dependencies).
 - The Emacs init entry point is `emacs/.config/emacs/init.el`, which loads small per-feature files from `conf/` and `conf/packages/`.
 - `.gitmodules` has ~150 entries and is kept alphabetically sorted — see "Common commands" below.
 

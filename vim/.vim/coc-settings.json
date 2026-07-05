@@ -40,21 +40,15 @@
     "languageserver": {
         "digestif": {
             "command": "digestif",
-            "filetypes": [
-                "tex",
-                "plaintex",
-                "context"
-            ]
-        },
+            "filetypes": ["tex", "plaintex", "context"]
+        }
     },
     "markdownlint.onChange": false,
     "markdownlint.onOpen": false,
     "markdownlint.onSave": true,
     "lua.enable": false,
     "Lua.telemetry.enable": false,
-    "Lua.workspace.library": [
-        "${3rd}/luv/library"
-    ],
+    "Lua.workspace.library": ["${3rd}/luv/library"],
     "sumneko-lua.enableNvimLuaDev": true,
     "workspace.ignoredFolders": [
         "$HOME",
@@ -62,13 +56,7 @@
         "$HOME/.rustup/**"
     ],
     "suggest.autoTrigger": "always",
-    "coc.source.around.filetypes": [
-        "codecompanion"
-    ],
-    "coc.source.buffer.filetypes": [
-        "codecompanion"
-    ],
-    "coc.source.file.filetypes": [
-        "codecompanion"
-    ]
+    "coc.source.around.filetypes": ["codecompanion"],
+    "coc.source.buffer.filetypes": ["codecompanion"],
+    "coc.source.file.filetypes": ["codecompanion"]
 }

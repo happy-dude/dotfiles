@@ -48,7 +48,7 @@ config.color_scheme = 'Gruvbox Material (Gogh)'
 config.font = wezterm.font('FiraCode Nerd Font Mono')
 config.font_size = 14.0
 config.custom_block_glyphs = true
-config.harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' }   -- disable ligatures
+config.harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' } -- disable ligatures
 
 wezterm.on('open-uri', function(window, pane, uri)
   wezterm.open_with(uri, 'firefox-trunk')

@@ -21,38 +21,38 @@ AGGRESSIVE=false
 SEARCH_DIR="."
 
 while [[ $# -gt 0 ]]; do
-    case "$1" in
-        --aggressive)
-            AGGRESSIVE=true
-            shift
-            ;;
-        -*)
-            echo "Unknown option: $1" >&2
-            exit 1
-            ;;
-        *)
-            SEARCH_DIR="$1"
-            shift
-            ;;
-    esac
+  case "$1" in
+  --aggressive)
+    AGGRESSIVE=true
+    shift
+    ;;
+  -*)
+    echo "Unknown option: $1" >&2
+    exit 1
+    ;;
+  *)
+    SEARCH_DIR="$1"
+    shift
+    ;;
+  esac
 done
 
 cd "$SEARCH_DIR"
 
 if ! command -v git &>/dev/null; then
-    echo "Error: git not found in PATH" >&2
-    exit 1
+  echo "Error: git not found in PATH" >&2
+  exit 1
 fi
 
 if ! git rev-parse --git-dir &>/dev/null; then
-    echo "Error: not a git repository" >&2
-    exit 1
+  echo "Error: not a git repository" >&2
+  exit 1
 fi
 
 gc_opts="--prune=now"
 if $AGGRESSIVE; then
-    gc_opts="--aggressive --prune=now"
-    echo "Running aggressive gc (this may take a while)..."
+  gc_opts="--aggressive --prune=now"
+  echo "Running aggressive gc (this may take a while)..."
 fi
 
 echo "=== Pruning stale remote-tracking branches ==="
