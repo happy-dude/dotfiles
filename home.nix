@@ -179,7 +179,6 @@
 
     file = {
       # simple conf files
-      ".config/bat/config".source = ./bat/.config/bat/config;
       ".gdbinit".source = ./gdb/.gdbinit;
       ".gitignore_global".source = ./git/.gitignore_global;
 

@@ -74,6 +74,7 @@
           modules = [
             ./home.nix
             ./aerc
+            ./bat
             ./emacs
             ./fish
             ./fonts
