@@ -120,6 +120,7 @@
         ps: with ps; [
           jieba
           pypinyin
+          requests
         ]
       ))
       sdcv # StarDict console dictionary client (needs a dictionary file, see note below)
