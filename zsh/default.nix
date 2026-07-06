@@ -16,7 +16,7 @@
 
   xdg.configFile."zsh/.zprezto".source = builtins.fetchGit {
     url = "https://github.com/sorin-ionescu/prezto/";
-    rev = "7b3b798eb5038eb05938399f245fa643c630a7f1";
+    rev = "cff2d01871425b1b80710f8ec6a475c5a53145b4";
     submodules = true;
   };
 
