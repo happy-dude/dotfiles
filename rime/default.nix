@@ -171,7 +171,8 @@ assert duplicateRimeDataTargetNames == [ ];
 
           ${pkgs.coreutils}/bin/rm -rf "$rime_data_dir/build"
           ${pkgs.coreutils}/bin/mkdir -p "$rime_state_dir"
-          ${pkgs.coreutils}/bin/cp "${rimeDataStamp}" "$rime_stamp"
+          ${pkgs.coreutils}/bin/rm -f "$rime_stamp"
+          ${pkgs.coreutils}/bin/install -m 0644 "${rimeDataStamp}" "$rime_stamp"
 
           if ! ${pkgs.systemd}/bin/busctl --user call org.fcitx.Fcitx5 /controller \
             org.fcitx.Fcitx.Controller1 ReloadAddonConfig s rime; then
