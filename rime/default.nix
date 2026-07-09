@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   inputs,
@@ -110,7 +111,8 @@ assert duplicateRimeDataTargetNames == [ ];
         # Link static files individually so Rime can create its writable build and
         # user-data directories beside them.
         dataFile = {
-          "fcitx5/themes".source = ./.local/share/fcitx5/themes;
+          "fcitx5/themes".source =
+            config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/rime/.local/share/fcitx5/themes";
         }
         // lib.listToAttrs (
           map (
