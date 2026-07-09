@@ -88,6 +88,22 @@ let
   duplicateRimeDataTargetNames = lib.filter (
     target: builtins.length (lib.filter (name: name == target) rimeDataTargetNames) > 1
   ) (lib.unique rimeDataTargetNames);
+
+  localRimeDataStamp = map (
+    entry: {
+      inherit (entry) relative;
+      hash = builtins.hashFile "sha256" entry.path;
+    }
+  ) localRimeDataEntries;
+
+  # Rime tracks generated schemas by source paths and timestamps. Record the
+  # Nix sources separately so a Home Manager update can invalidate only its
+  # generated build cache when the static data changes.
+  rimeDataStamp = pkgs.writeText "rime-data-stamp" (builtins.toJSON {
+    local = localRimeDataStamp;
+    schemaSources = map toString schemaSources;
+    zhwiki = toString pkgs.rime-zhwiki;
+  });
 in
 assert duplicateRimeDataTargetNames == [ ];
 {
@@ -123,6 +139,23 @@ assert duplicateRimeDataTargetNames == [ ];
           ) rimeDataEntries
         );
       };
+
+      home.activation.rimeSchemaBuild = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+        rime_state_dir="''${XDG_STATE_HOME:-$HOME/.local/state}/rime"
+        rime_stamp="$rime_state_dir/home-manager-source-stamp"
+
+        if ! ${pkgs.diffutils}/bin/cmp -s "${rimeDataStamp}" "$rime_stamp"; then
+          echo -e "\e[32mRefreshing generated Rime schemas...\e[0m"
+          ${pkgs.coreutils}/bin/rm -rf "$HOME/.local/share/fcitx5/rime/build"
+          ${pkgs.coreutils}/bin/mkdir -p "$rime_state_dir"
+          ${pkgs.coreutils}/bin/cp "${rimeDataStamp}" "$rime_stamp"
+
+          if ! ${pkgs.systemd}/bin/busctl --user call org.fcitx.Fcitx5 /controller \
+            org.fcitx.Fcitx.Controller1 ReloadAddonConfig s rime; then
+            echo -e "\e[33mRime will rebuild generated schemas when Fcitx starts.\e[0m"
+          fi
+        fi
+      '';
     })
   ];
 }
