@@ -9,10 +9,10 @@
 ### Version: Fri Mar 07 2026
 ###
 ### Workflow:
-###     1. Update Rime schemas via plum
+###     1. Optionally update Rime schemas via Plum (Nix sources update in step 8)
 ###     2. Update the main dotfiles repository
 ###     3. Sync / init / update git submodules
-###     4. Update Neovim plugins, Treesitter parsers, and coc.nvim extensions
+###     4. Update Neovim plugins and coc.nvim extensions
 ###     5. Update Go editor binaries
 ###     6. Run `nix fmt .`
 ###     7. Run `nix-channel --update`
@@ -43,7 +43,7 @@ set -euo pipefail
 #--------------------------------------------------------------------------------------------------
 
 AUTO_STASH_SUBMODULES=0
-SKIP_RIME=0
+RIME_SOURCE=nix
 SKIP_PULL=0
 SKIP_SUBMODULES=0
 SKIP_STATUS=0
@@ -71,6 +71,7 @@ SECTION_TIMES=()
 
 PLUM_DIR="${PLUM_DIR:-$HOME/plum}"
 RIME_FRONTEND="${RIME_FRONTEND:-fcitx5-rime}"
+EDITOR_DEPLOYMENT="${EDITOR_DEPLOYMENT:-nix}"
 # Default to the flake output matching the current user (schan, stachan, ...),
 # so each machine switches its own config. Override with HOME_MANAGER_FLAKE.
 HOME_MANAGER_FLAKE="${HOME_MANAGER_FLAKE:-.#$(whoami)}"
@@ -112,8 +113,11 @@ Options:
         Show this help.
 
   Rime:
-    --skip-rime
-        Skip Rime schema installation/update via plum.
+    --rime-source <nix|plum>
+        Select the schema source. Default: nix, whose locked Rime inputs
+        update during the nix flake update step. plum uses the legacy
+        installer and requires a Stow-deployed Rime tree plus
+        --skip-home-manager.
 
   Git / dotfiles:
     --skip-pull
@@ -130,8 +134,12 @@ Options:
         Stashes are NOT automatically popped afterward.
 
   Neovim / Go:
+    --editor-deployment <nix|stow>
+        Select declarative Nix-managed Tree-sitter/RustOwl artifacts
+        (default) or the legacy mutable Stow workflow.
+
     --skip-nvim
-        Skip vim-plug, Treesitter, and coc.nvim updates.
+        Skip vim-plug, Tree-sitter, RustOwl, and coc.nvim updates.
 
     --skip-go
         Skip Go binary updates.
@@ -161,6 +169,10 @@ Environment:
 
   RIME_FRONTEND=...
       Rime frontend passed to rime-install. Default: fcitx5-rime
+
+  EDITOR_DEPLOYMENT=<nix|stow>
+      Select declarative Nix-managed Tree-sitter/RustOwl artifacts (default:
+      nix) or the legacy mutable Stow workflow.
 
   HOME_MANAGER_FLAKE=...
       Flake target for home-manager. Default: .#<current user> (e.g. .#schan, .#stachan)
@@ -390,7 +402,30 @@ run_nvim_cmd_if_exists() {
   fi
 }
 
+update_rustowl_stow() {
+  local rustowl_dir="vim/.vim/pack/plugged/opt/rustowl"
+
+  if [ ! -x "$rustowl_dir/scripts/toolchain" ]; then
+    return 3
+  fi
+
+  if ! have cargo; then
+    return 3
+  fi
+
+  (cd "$rustowl_dir" && ./scripts/toolchain cargo install --path . --locked)
+}
+
 #--------------------------------------------------------------------------------------------------
+rime_static_files_are_nix_managed() {
+  local source_file="$HOME/.local/share/fcitx5/rime/default.yaml"
+  local target
+
+  [ -L "$source_file" ] || return 1
+  target="$(readlink -f -- "$source_file" 2>/dev/null || true)"
+  [[ $target == /nix/store/* ]]
+}
+
 # Argument parsing
 #--------------------------------------------------------------------------------------------------
 
@@ -406,8 +441,15 @@ while [ $# -gt 0 ]; do
     usage
     exit 0
     ;;
-  --skip-rime)
-    SKIP_RIME=1
+  --rime-source)
+    [ "$#" -ge 2 ] || die "--rime-source requires nix or plum"
+    RIME_SOURCE="$2"
+    shift
+    ;;
+  --editor-deployment)
+    [ "$#" -ge 2 ] || die "--editor-deployment requires nix or stow"
+    EDITOR_DEPLOYMENT="$2"
+    shift
     ;;
   --skip-pull)
     SKIP_PULL=1
@@ -450,6 +492,26 @@ while [ $# -gt 0 ]; do
 done
 
 #--------------------------------------------------------------------------------------------------
+case "$RIME_SOURCE" in
+nix | plum)
+  ;;
+*)
+  die "invalid Rime source: $RIME_SOURCE (expected nix or plum)"
+  ;;
+esac
+
+case "$EDITOR_DEPLOYMENT" in
+nix | stow)
+  ;;
+*)
+  die "invalid editor deployment: $EDITOR_DEPLOYMENT (expected nix or stow)"
+  ;;
+esac
+
+if [ "$RIME_SOURCE" = "plum" ] && [ "$SKIP_HOME_MANAGER" -eq 0 ]; then
+  die "--rime-source plum requires --skip-home-manager; use it only after switching Rime to Stow"
+fi
+
 # Basic checks
 #--------------------------------------------------------------------------------------------------
 
@@ -467,17 +529,18 @@ msg "=== Updating dotfiles repository ==="
 msg "Started at: $SCRIPT_START_TS"
 
 #--------------------------------------------------------------------------------------------------
-# 1. Updating Rime schemas
+# 1. Updating Rime schemas with opt-in Plum fallback
 #--------------------------------------------------------------------------------------------------
 
-if [ "$SKIP_RIME" -eq 1 ]; then
-  section_start "Skipping Rime update (--skip-rime)"
-  section_end "skipped"
-else
-  section_start "Updating Rime schemas"
+if [ "$RIME_SOURCE" = "plum" ]; then
+  section_start "Updating Rime schemas with Plum"
   section_result="done"
 
-  if [ ! -d "$PLUM_DIR" ]; then
+  if rime_static_files_are_nix_managed; then
+    warn "Refusing Plum update: Rime schema files are linked from the Nix store"
+    warn "Switch Rime to its Stow deployment before selecting --rime-source plum"
+    section_result="failed"
+  elif [ ! -d "$PLUM_DIR" ]; then
     warn "Skipping Rime update ($PLUM_DIR not found)"
     section_result="skipped"
   elif [ ! -f "$PLUM_DIR/rime-install" ]; then
@@ -500,6 +563,10 @@ else
   fi
 
   section_end "$section_result"
+
+  if [ "$section_result" = "failed" ]; then
+    exit 1
+  fi
 fi
 
 #--------------------------------------------------------------------------------------------------
@@ -577,7 +644,7 @@ else
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 4. Updating Neovim plugins, Treesitter parsers, and coc.nvim extensions
+# 4. Updating Neovim plugins and coc.nvim extensions
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_NVIM" -eq 1 ]; then
@@ -606,28 +673,60 @@ elif have nvim; then
 
   section_end "$section_result"
 
-  section_start "Updating Treesitter parsers"
+  if [ "$EDITOR_DEPLOYMENT" = "nix" ]; then
+    section_start "Skipping Tree-sitter parser updates (Nix-managed)"
+    section_end "skipped"
+  else
+    section_start "Updating Tree-sitter parsers"
 
-  status=0
-  section_result="done"
-  run_nvim_cmd_if_exists "TSUpdate" "TSUpdate" || status=$?
+    status=0
+    section_result="done"
+    run_nvim_cmd_if_exists "TSUpdate" "TSUpdate" || status=$?
 
-  case "$status" in
-  0)
-    vmsg "Treesitter parsers updated"
-    ;;
-  3)
-    msg "Skipping Treesitter updates (TSUpdate not available in this headless nvim session)"
-    section_result="skipped"
-    ;;
-  *)
-    warn "Treesitter update encountered an error (exit code: $status)"
-    warn "nvim-treesitter may not be installed or configured"
-    section_result="failed"
-    ;;
-  esac
+    case "$status" in
+    0)
+      vmsg "Tree-sitter parsers updated"
+      ;;
+    3)
+      msg "Skipping Tree-sitter updates (TSUpdate not available in this headless nvim session)"
+      section_result="skipped"
+      ;;
+    *)
+      warn "Tree-sitter update encountered an error (exit code: $status)"
+      warn "nvim-treesitter may not be installed or configured"
+      section_result="failed"
+      ;;
+    esac
 
-  section_end "$section_result"
+    section_end "$section_result"
+  fi
+
+  if [ "$EDITOR_DEPLOYMENT" = "nix" ]; then
+    section_start "Skipping RustOwl source build (Nix-managed)"
+    section_end "skipped"
+  else
+    section_start "Building RustOwl from its Stow source"
+
+    status=0
+    section_result="done"
+    update_rustowl_stow || status=$?
+
+    case "$status" in
+    0)
+      vmsg "RustOwl installed from its Stow source"
+      ;;
+    3)
+      msg "Skipping RustOwl build (source or cargo not available)"
+      section_result="skipped"
+      ;;
+    *)
+      warn "RustOwl build encountered an error (exit code: $status)"
+      section_result="failed"
+      ;;
+    esac
+
+    section_end "$section_result"
+  fi
 
   section_start "Updating coc.nvim extensions"
 

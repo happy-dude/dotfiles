@@ -22,6 +22,27 @@
     # https://github.com/nix-community/neovim-nightly-overlay
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
 
+    # Rust toolchains with rustc-dev, used to build RustOwl.
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Rolling source inputs consumed by local Nix modules.
+    roswell_src = {
+      url = "github:roswell/roswell";
+      flake = false;
+    };
+    bgutil_ytdlp_pot_provider = {
+      url = "github:Brainicism/bgutil-ytdlp-pot-provider";
+      flake = false;
+    };
+
+    rustowl_src = {
+      url = "github:cordx56/rustowl";
+      flake = false;
+    };
+
     # ghostty
     # https://ghostty.org/docs/install/binary#nix-flake
     # https://github.com/ghostty-org/ghostty/blob/main/flake.nix
@@ -31,6 +52,86 @@
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Source-only Rime schema inputs. Nix flake updates advance their locked
+    # revisions; Home Manager links their data into the writable Rime tree.
+    rime_bopomofo = {
+      url = "github:rime/rime-bopomofo";
+      flake = false;
+    };
+    rime_cangjie = {
+      url = "github:rime/rime-cangjie";
+      flake = false;
+    };
+    rime_cantonese = {
+      url = "github:rime/rime-cantonese";
+      flake = false;
+    };
+    rime_essay = {
+      url = "github:rime/rime-essay";
+      flake = false;
+    };
+    rime_jyutping = {
+      url = "github:rime/rime-jyutping";
+      flake = false;
+    };
+    rime_luna_pinyin = {
+      url = "github:rime/rime-luna-pinyin";
+      flake = false;
+    };
+    rime_prelude = {
+      url = "github:rime/rime-prelude";
+      flake = false;
+    };
+    rime_stroke = {
+      url = "github:rime/rime-stroke";
+      flake = false;
+    };
+    rime_terra_pinyin = {
+      url = "github:rime/rime-terra-pinyin";
+      flake = false;
+    };
+    rime_loengfan = {
+      url = "github:CanCLID/rime-loengfan";
+      flake = false;
+    };
+
+    # Prezto includes Git submodules, which the flake lock records explicitly.
+    prezto = {
+      url = "git+https://github.com/sorin-ionescu/prezto?submodules=1";
+      flake = false;
+    };
+
+    # Rolling Fish plugin sources.
+    fish_autopair = {
+      url = "github:jorgebucaran/autopair.fish";
+      flake = false;
+    };
+    fish_nvm = {
+      url = "github:jorgebucaran/nvm.fish";
+      flake = false;
+    };
+    fish_puffer = {
+      url = "github:nickeb96/puffer-fish";
+      flake = false;
+    };
+    fish_spark = {
+      url = "github:jorgebucaran/spark.fish";
+      flake = false;
+    };
+    fish_tide = {
+      url = "github:IlanCosman/tide";
+      flake = false;
+    };
+    fish_z = {
+      url = "github:jethrokuan/z";
+      flake = false;
+    };
+    # Kept locked for optional activation in fish/default.nix.
+    fish_sponge = {
+      url = "github:meaningful-ooo/sponge";
+      flake = false;
     };
 
   };
@@ -53,29 +154,34 @@
         inherit system;
         overlays = [
           inputs.neovim-nightly-overlay.overlays.default
+          inputs.rust-overlay.overlays.default
           ghostty.overlays.default
           nixgl.overlay
           (final: prev: {
-            roswell = prev.roswell.overrideAttrs (oldAttrs: rec {
-              src = prev.fetchFromGitHub {
-                owner = "roswell";
-                repo = "roswell";
-                rev = "05a2c2fa3bf1f36dc7d10786edf918ef01fcd0a7";
-                hash = "sha256-ppgwclpEw17VBoVp2/o5OsX681k3uUBR912oXULz2Ow=";
-              };
+            roswell = prev.roswell.overrideAttrs (_: {
+              src = inputs.roswell_src;
             });
           })
         ];
       };
-      # Build a Home Manager config for a given username; home dir is
-      # /home/<username>. All machines share the same modules — only the
-      # username differs (e.g. schan on the personal box, stachan on work).
+      # Build a Home Manager config for a user, desktop, and Rime deployment.
+      # The username determines /home/<username>; desktop selects session
+      # integration; rimeDeployment selects Nix or legacy Stow file management.
       mkHome =
-        username:
+        {
+          username,
+          desktop,
+          rimeDeployment ? "nix",
+        }:
         home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           extraSpecialArgs = {
-            inherit inputs username;
+            inherit
+              inputs
+              username
+              desktop
+              rimeDeployment
+              ;
           };
 
           modules = [
@@ -88,9 +194,13 @@
             ./ghostty
             ./git
             ./nix
+            ./rime
+            ./rime/gnome.nix
+            ./rustowl
             ./tldr
             ./tmux
             ./wezterm
+            ./vim
             ./xdg
             ./yt-dlp
             ./zed
@@ -123,8 +233,16 @@
     in
     {
       homeConfigurations = {
-        "schan" = mkHome "schan"; # personal computer
-        "stachan" = mkHome "stachan"; # work computer
+        "schan" = mkHome {
+          username = "schan";
+          desktop = "plasma";
+          rimeDeployment = "nix";
+        };
+        "stachan" = mkHome {
+          username = "stachan";
+          desktop = "gnome";
+          rimeDeployment = "nix";
+        };
       };
       formatter.${system} = treefmtEval.config.build.wrapper;
     };

@@ -23,22 +23,14 @@ let g:coc_global_extensions = [
       \ 'coc-extension-codemod',
       \ 'coc-go',
       \ 'coc-highlight',
-      \ 'coc-jedi',
-      \ 'coc-json',
       \ 'coc-markdownlint',
-      \ 'coc-perl',
       \ 'coc-rust-analyzer',
-      \ 'coc-sh',
-      \ 'coc-sumneko-lua',
-      \ 'coc-tsserver',
-      \ 'coc-vimlsp',
       \ 'coc-vimtex'
       \]
       "\ 'coc-css',
       "\ 'coc-git',     " use vim-signify
       "\ 'coc-html',
-      "\ 'coc-lua',     " use coc-sumneko-lua
-      "\ 'coc-python',  " use coc-jedi
+      "\ 'coc-python',  " use Nix-managed jedi-language-server
       "\ 'coc-sql',
 
 " Don't pass messages to |ins-completion-menu|.

@@ -7,12 +7,13 @@ patch:
     - cangjie5
 
   engine/filters:
-    - lua_filter@jyutping_pinyin_filter
     - simplifier@emoji_cantonese_suggestion
     - simplifier@variants_hk
     - simplifier@trad_tw
     - simplifier@simplification
     - uniquifier
+    - reverse_lookup_filter@jyut6ping3_reverse_lookup
+    - lua_filter@jyutping_pinyin_filter
 
   # Override upstream's t2hkf.json (not installed) with t2hk.json
   variants_hk:

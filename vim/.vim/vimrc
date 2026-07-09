@@ -183,10 +183,8 @@ if &loadplugins
       Plug 'ravitemer/codecompanion-history.nvim'     , { 'branch' : 'main' }
     endif
 
-    " Enable rustowl if rust is installed
-    if executable('cargo')
-      Plug 'cordx56/rustowl', { 'branch': 'main', 'do': 'sh -c \"LD_LIBRARY_PATH=$HOME/.nix-profile/lib:$LD_LIBRARY_PATH ./scripts/build/toolchain cargo install --path . --locked\"' }
-    endif
+    " RustOwl client; Home Manager builds its server by default.
+    Plug 'cordx56/rustowl', { 'branch': 'main' }
 
   endif
   " }
@@ -335,10 +333,8 @@ lua <<EOF
    idle_time = 500, -- Time in milliseconds to hover with the cursor before triggering RustOwl
    client = {
      cmd = {
-       'env',
-       'LD_LIBRARY_PATH=' .. os.getenv('HOME') .. '/.nix-profile/lib',
        'rustowl', '--stdio',
-       },
+     },
    },  -- LSP client configuration that gets passed to `vim.lsp.start`
    highlight_style = 'undercurl', -- You can also use 'underline'
    colors = { -- Customize highlight colors (hex colors)

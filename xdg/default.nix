@@ -103,7 +103,7 @@
       src_file="$local_icon_src/$size/apps/com.mitchellh.ghostty.png"
       if [ -e "$src_file" ]; then
         mkdir -p "$host_icon_dest/$size/apps"
-        cp -L "$src_file" "$host_icon_dest/$size/apps/com.mitchellh.ghostty.png" && \
+        install -m 0644 "$src_file" "$host_icon_dest/$size/apps/com.mitchellh.ghostty.png" && \
           echo -e "\e[32mCopied icon $size\e[0m" || true
       fi
     done

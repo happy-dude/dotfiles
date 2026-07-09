@@ -6,8 +6,8 @@ patch:
     - stroke
 
   engine/filters:
-    - lua_filter@tonal_pinyin_filter
     - simplifier@zh_hans          # ← TAG WITH @zh_hans
     - simplifier@zh_hant_hk       # ← optional, for HK variant toggle
     - simplifier@zh_hant_tw       # ← optional, for TW variant toggle
     - uniquifier
+    - lua_filter@tonal_pinyin_filter
