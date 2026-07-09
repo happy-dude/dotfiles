@@ -45,7 +45,8 @@
         "lua-language-server": {
             "command": "lua-language-server",
             "filetypes": ["lua"],
-            "rootPatterns": [".luarc.json", ".luarc.jsonc", ".git"]
+            "rootPatterns": [".luarc.json", ".luarc.jsonc"],
+            "ignoredRootPaths": ["$HOME/dotfiles"]
         }
     },
     "markdownlint.onChange": false,
@@ -53,7 +54,6 @@
     "markdownlint.onSave": true,
     "sumneko-lua.enable": false,
     "Lua.telemetry.enable": false,
-    "Lua.workspace.library": ["${3rd}/luv/library"],
     "workspace.ignoredFolders": [
         "$HOME",
         "$HOME/.cargo/**",
