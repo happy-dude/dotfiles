@@ -33,6 +33,7 @@ The top-level dirs that are **not** Nix modules and **not** under `other/` — `
 - **`zed/`** is a Home Manager module (`zed/default.nix`, `programs.zed-editor`). Single source of truth: `zed/.config/zed/settings.json`, which Nix reads via `builtins.fromJSON (builtins.readFile ./.config/zed/settings.json)` and which stays directly `stow`-able on a non-Nix host (one file, matching the repo's "stow file is the source, Nix references it" convention). Edit the JSON directly. Do **not** split it into a `settings.nix` + generator script — the JSON is the sole representation; a second one only creates hand-sync drift. `package = null` because this machine runs **Zed Preview**, which nixpkgs does not package (only stable `zed-editor`); Nix manages the config, not the binary. `mutableUserSettings = true` lets Zed keep rewriting the deployed `~/.config/zed/settings.json` at runtime.
 - **`claude/`** is a `mkOutOfStoreSymlink` in `home.nix` (`home.file.".claude/agents".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/claude/.claude/agents"`). The symlink targets the repo working tree, not the read-only Nix store, so the agent prompts under `claude/.claude/agents/` (`kernel.md`, `language.md`) stay **live-editable** — edits land straight in the repo, no `home-manager switch` needed. Do **not** switch to the `programs.claude-code` module: it writes agents as read-only store copies (breaks live iteration) and the Claude binary is self-managed. `claude/.claude/` intentionally contains only `agents/` — the rest of `~/.claude` is session state/credentials and must never be committed.
 - **`rime/`** is a Home Manager module (`rime/default.nix`) over a retained Stow-compatible snapshot. Locked Git schema inputs replace matching snapshot files in Home Manager mode; `pkgs.rime-zhwiki` supplies the generated Zhwiki dictionary. Local schema overrides and Lua files remain in the snapshot, while the Rime user-data directory stays writable for generated build output and learned state.
+- `scripts/update.sh` selects the locked Nix schema sources by default. `--rime-source plum --skip-home-manager` is the guarded fallback after switching the Rime snapshot back to Stow.
 
 `kernel.md` and `language.md` are themselves written to be aware of this repo: both know this machine is Home Manager (not NixOS), know to verify a package via `nix search`/`nix build --no-link`/`nix-instantiate --eval` before recommending or claiming anything about it, and know the propose → confirm → edit `home.nix` → `nix fmt` → `home-manager switch --flake .#$(whoami)` path for persisting a change. `language.md` additionally names the exact `home.nix` comment blocks its tooling lives under ("Language agent" and "Aspell spellcheck-backed word validation for ...") and the static Rime source tree (`rime/.local/share/fcitx5/rime/`) and Zed config (`zed/.config/zed/settings.json`). If package names, comment-block titles, or these paths change, update the two agent files to match — they're prompts, not generated docs, so nothing else keeps them in sync automatically.
 
@@ -64,18 +65,21 @@ nix fmt                                  # format the whole repo (treefmt: nix, 
 
 Both are Home-Manager-managed (see "Legacy Stow package directories" above) and applied by `home-manager switch` — no separate `stow` step. Edit `zed/.config/zed/settings.json` (Zed) or `claude/.claude/agents/*.md` (Claude) directly.
 
-### Full sync (git -> submodules -> nvim -> nix -> home-manager)
+### Full sync (Rime -> git -> submodules -> nvim -> nix -> home-manager)
 
 `scripts/update.sh` is the one-shot orchestrator. Each step can be skipped individually:
 
 ```bash
-./scripts/update.sh                      # do everything
+./scripts/update.sh                      # update flake inputs, including Rime schemas
 ./scripts/update.sh --skip-nvim
 ./scripts/update.sh --autostash-submodules   # required if submodules are dirty
+./scripts/update.sh --rime-source plum --skip-home-manager --skip-nix-flake
 VERBOSE=1 ./scripts/update.sh
 ```
 
-Step order (and the flag that skips it): `git pull --rebase --autostash` (`--skip-pull`), submodule sync/init/update (`--skip-submodules`), submodule status (`--skip-status`), vim-plug + Treesitter + coc.nvim (`--skip-nvim`), vim-go binaries (`--skip-go`), `nix fmt .` (`--skip-nix-fmt`), `nix-channel --update` (`--skip-nix-channel`), `nix flake update` (`--skip-nix-flake`), `home-manager switch` (`--skip-home-manager`). Env var: `HOME_MANAGER_FLAKE` (default `.#$(whoami)`).
+Default Rime updates happen through `nix flake update`; `--rime-source nix` is implicit. `--rime-source plum` runs the legacy installer only with `--skip-home-manager` and refuses if the current Rime files resolve into the Nix store. Add `--skip-nix-flake` for a pure Stow/Plum update.
+
+Step order (and the flag that skips it): optional Plum fallback, `git pull --rebase --autostash` (`--skip-pull`), submodule sync/init/update (`--skip-submodules`), submodule status (`--skip-status`), vim-plug + Treesitter + coc.nvim (`--skip-nvim`), vim-go binaries (`--skip-go`), `nix fmt .` (`--skip-nix-fmt`), `nix-channel --update` (`--skip-nix-channel`), `nix flake update` (`--skip-nix-flake`), `home-manager switch` (`--skip-home-manager`). Env var: `HOME_MANAGER_FLAKE` (default `.#$(whoami)`).
 
 The script refuses to update dirty submodules unless `--autostash-submodules` is passed, and it does **not** auto-pop stashes afterward.
 
