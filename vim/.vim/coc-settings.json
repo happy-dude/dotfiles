@@ -41,15 +41,18 @@
         "digestif": {
             "command": "digestif",
             "filetypes": ["tex", "plaintex", "context"]
+        },
+        "lua-language-server": {
+            "command": "lua-language-server",
+            "filetypes": ["lua"],
+            "rootPatterns": [".luarc.json", ".luarc.jsonc", ".git"]
         }
     },
     "markdownlint.onChange": false,
     "markdownlint.onOpen": false,
     "markdownlint.onSave": true,
-    "lua.enable": false,
     "Lua.telemetry.enable": false,
     "Lua.workspace.library": ["${3rd}/luv/library"],
-    "sumneko-lua.enableNvimLuaDev": true,
     "workspace.ignoredFolders": [
         "$HOME",
         "$HOME/.cargo/**",

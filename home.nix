@@ -41,6 +41,7 @@
       img2pdf
       jq
       less
+      lua-language-server
       moreutils
       neovim
       nix-prefetch-github

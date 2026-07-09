@@ -29,7 +29,6 @@ let g:coc_global_extensions = [
       \ 'coc-perl',
       \ 'coc-rust-analyzer',
       \ 'coc-sh',
-      \ 'coc-sumneko-lua',
       \ 'coc-tsserver',
       \ 'coc-vimlsp',
       \ 'coc-vimtex'
@@ -37,7 +36,6 @@ let g:coc_global_extensions = [
       "\ 'coc-css',
       "\ 'coc-git',     " use vim-signify
       "\ 'coc-html',
-      "\ 'coc-lua',     " use coc-sumneko-lua
       "\ 'coc-python',  " use coc-jedi
       "\ 'coc-sql',
 
