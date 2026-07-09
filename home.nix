@@ -20,29 +20,75 @@
 
     packages = with pkgs; [
       asciinema
+      astyle
+      autoconf
+      automake
       babelfish
+      bash-language-server
       bat
       bear
+      bison
+      buildbot
+      cbmc
+      ccache
+      check
+      cmake
+      colordiff
+      cproto
+      cscope
+      ctags
       curl
+      cvs
+      cvsps
+      darcs
+      dejagnu
       desktop-file-utils
       dex
+      diffstat
+      doxygen
       dust
+      elfutils
       exiftool
+      expect
       eza
       fd
       ffmpeg
+      flex
       fzf
+      gdb
+      gettext
       ghostscript
+      git
+      git-annex
+      git-cola
+      git2cl
+      gitg
+      glibc
+      gnumake
       go
+      gopls
+      gtranslator
+      highlight
       hexyl
       htop
       hyperfine
       imagemagick
       img2pdf
+      indent
       jq
+      lcov
       less
+      libgcc
+      libtool
+      lldb
+      ltrace
       lua-language-server
+      meld
+      monotone
       moreutils
+      mr
+      nasm
+      nemiver
       neovim
       nix-prefetch-github
       nix-zsh-completions
@@ -50,61 +96,50 @@
       nodejs
       pandoc
       pass
+      patch
+      patchutils
+      perf
+      (perl.withPackages (ps: [ ps.PerlLanguageServer ]))
       pinentry-all
+      pkgconf
       prettier
       procs
       qemu
-      ripgrep
-      roswell
-      sbcl
-      shellcheck
-      stow
-      stylua
-      texliveFull
-      tokei
-      tree
-      tree-sitter
-      util-linux
-      vim
-      xclip
-      xdg-utils
-      xsel
-
-      # "Development Tools"
-      buildbot
-      colordiff
-      cvs
-      cvsps
-      darcs
-      dejagnu
-      diffstat
-      doxygen
-      expect
-      gettext
-      git
-      git-annex
-      git-cola
-      git2cl
-      gitg
-      gtranslator
-      highlight
-      lcov
-      meld
-      monotone
-      mr
-      nemiver
-      patch
-      patchutils
       qgit
       quilt
       rapidsvn
       rcs
+      ripgrep
       robodoc
+      roswell
+      rust-analyzer
+      sbcl
       scanmem
+      scons
+      shellcheck
+      stow
+      strace
+      stylua
       subunit
       subversion
+      texliveFull
       tig
+      tokei
       tortoisehg
+      tree
+      tree-sitter
+      typescript-language-server
+      util-linux
+      valgrind
+      vim
+      vim-language-server
+      vscode-langservers-extracted
+      xclip
+      xdg-utils
+      xsel
+      yasm
+      zlib
+      zzuf
 
       # Language agent: translation / dictionary / grammar / OCR / TTS tooling
       dict # DICT protocol client (needs a configured server/database, see note below)
@@ -112,13 +147,15 @@
       languagetool # multilingual grammar/style checker - covers eo/es/it/pl; complements aspell's spellcheck-only coverage
       ocrmypdf # OCR-to-searchable-PDF wrapper; needs tesseract5 below on PATH, does not bundle it itself
       opencc # Simplified <-> Traditional Chinese conversion (s2t/t2s/s2hk/hk2s/s2twp configs bundled)
-      # python3 carrying jieba (Mandarin word segmentation) + pypinyin (Pinyin
-      # generation). MUST be a withPackages wrapper, not bare python3Packages.*
-      # entries — those only drop the libs in the store and never become
+      # python3 carrying Jedi Language Server plus jieba (Mandarin word
+      # segmentation) + pypinyin (Pinyin generation). MUST be a withPackages
+      # wrapper, not bare python3Packages.* entries — those only drop the libs
+      # in the store and never become
       # importable by a python3 on PATH. This puts an `import jieba`-capable
       # python3 on PATH, which is what language.md's one-liners rely on.
       (python3.withPackages (
         ps: with ps; [
+          jedi-language-server
           jieba
           pypinyin
           requests
@@ -135,38 +172,6 @@
       aspellDicts.it
       aspellDicts.pl
       dictdDBs.epo2eng # only stock dictd DB found for these 4 languages; no es/it/pl dictd db in nixpkgs
-
-      # "C Development Tools and Libraries"
-      astyle
-      autoconf
-      automake
-      bison
-      cbmc
-      ccache
-      check
-      cmake
-      cproto
-      cscope
-      ctags
-      elfutils
-      flex
-      gdb
-      glibc
-      gnumake
-      indent
-      libgcc
-      libtool
-      lldb
-      ltrace
-      nasm
-      perf
-      pkgconf
-      scons
-      strace
-      valgrind
-      yasm
-      zlib
-      zzuf
 
       # graphical packages
       (config.lib.nixGL.wrap mesa-demos)
