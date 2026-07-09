@@ -89,6 +89,16 @@ let
     target: builtins.length (lib.filter (name: name == target) rimeDataTargetNames) > 1
   ) (lib.unique rimeDataTargetNames);
 
+  # The link farm declares every discovered source file as a Nix input. The
+  # activation below dereferences it while copying to the shared home directory,
+  # so host Fcitx never has to resolve a Toolbox-only /nix/store path.
+  rimeStaticData = pkgs.linkFarm "rime-static-data" (
+    map (entry: {
+      name = entry.relative;
+      path = entry.path;
+    }) rimeDataEntries
+  );
+
   localRimeDataStamp = map (
     entry: {
       inherit (entry) relative;
@@ -100,8 +110,10 @@ let
   # Nix sources separately so a Home Manager update can invalidate only its
   # generated build cache when the static data changes.
   rimeDataStamp = pkgs.writeText "rime-data-stamp" (builtins.toJSON {
+    deployment = "home-visible-static-v1";
     local = localRimeDataStamp;
     schemaSources = map toString schemaSources;
+    staticData = toString rimeStaticData;
     zhwiki = toString pkgs.rime-zhwiki;
   });
 in
@@ -119,34 +131,45 @@ assert duplicateRimeDataTargetNames == [ ];
     (lib.mkIf (rimeDeployment == "nix") {
       xdg = {
         configFile = {
-          "fcitx5/profile".source = ./.config/fcitx5/profile;
-          "fcitx5/conf/classicui.conf".source = ./.config/fcitx5/conf/classicui.conf;
-          "fcitx5/conf/rime.conf".source = ./.config/fcitx5/conf/rime.conf;
+          "fcitx5/profile".source =
+            config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/rime/.config/fcitx5/profile";
+          "fcitx5/conf/classicui.conf".source =
+            config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/rime/.config/fcitx5/conf/classicui.conf";
+          "fcitx5/conf/rime.conf".source =
+            config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/rime/.config/fcitx5/conf/rime.conf";
         };
 
-        # Link static files individually so Rime can create its writable build and
-        # user-data directories beside them.
         dataFile = {
           "fcitx5/themes".source =
             config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/rime/.local/share/fcitx5/themes";
-        }
-        // lib.listToAttrs (
-          map (
-            entry: {
-              name = "fcitx5/rime/" + entry.relative;
-              value.source = entry.path;
-            }
-          ) rimeDataEntries
-        );
+        };
       };
 
       home.activation.rimeSchemaBuild = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+        rime_data_dir="$HOME/.local/share/fcitx5/rime"
+        rime_static_dir="$rime_data_dir/.home-manager-static"
         rime_state_dir="''${XDG_STATE_HOME:-$HOME/.local/state}/rime"
         rime_stamp="$rime_state_dir/home-manager-source-stamp"
 
         if ! ${pkgs.diffutils}/bin/cmp -s "${rimeDataStamp}" "$rime_stamp"; then
           echo -e "\e[32mRefreshing generated Rime schemas...\e[0m"
-          ${pkgs.coreutils}/bin/rm -rf "$HOME/.local/share/fcitx5/rime/build"
+          ${pkgs.coreutils}/bin/mkdir -p "$rime_data_dir"
+          ${pkgs.findutils}/bin/find "$rime_data_dir" -type l -lname "$rime_static_dir/*" -delete
+          ${pkgs.coreutils}/bin/rm -rf "$rime_static_dir"
+          ${pkgs.coreutils}/bin/mkdir -p "$rime_static_dir"
+          ${pkgs.coreutils}/bin/cp -aL "${rimeStaticData}/." "$rime_static_dir/"
+          ${pkgs.coreutils}/bin/chmod -R u+w "$rime_static_dir"
+
+          ${lib.concatMapStringsSep "\n" (
+            entry: ''
+              target="$rime_data_dir/${entry.relative}"
+              ${pkgs.coreutils}/bin/mkdir -p "$( ${pkgs.coreutils}/bin/dirname "$target" )"
+              ${pkgs.coreutils}/bin/rm -f "$target"
+              ${pkgs.coreutils}/bin/ln -s "$rime_static_dir/${entry.relative}" "$target"
+            ''
+          ) rimeDataEntries}
+
+          ${pkgs.coreutils}/bin/rm -rf "$rime_data_dir/build"
           ${pkgs.coreutils}/bin/mkdir -p "$rime_state_dir"
           ${pkgs.coreutils}/bin/cp "${rimeDataStamp}" "$rime_stamp"
 
