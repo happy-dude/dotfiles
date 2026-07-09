@@ -7,6 +7,7 @@
 
 {
   #xdg.configFile."fish/config.fish".source = ./.config/fish/config.fish;
+  xdg.configFile."fish/tide.fish".source = ./.config/fish/tide.fish;
   xdg.configFile."fish/completions/nix.fish".source =
     "${pkgs.nix}/share/fish/vendor_completions.d/nix.fish";
 
