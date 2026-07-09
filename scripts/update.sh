@@ -9,15 +9,14 @@
 ### Version: Fri Mar 07 2026
 ###
 ### Workflow:
-###     1. Update Rime schemas via plum
-###     2. Update the main dotfiles repository
-###     3. Sync / init / update git submodules
-###     4. Update Neovim plugins, Treesitter parsers, and coc.nvim extensions
-###     5. Update Go editor binaries
-###     6. Run `nix fmt .`
-###     7. Run `nix-channel --update`
-###     8. Run `nix flake update`
-###     9. Run `home-manager switch`
+###     1. Update the main dotfiles repository
+###     2. Sync / init / update git submodules
+###     3. Update Neovim plugins, Treesitter parsers, and coc.nvim extensions
+###     4. Update Go editor binaries
+###     5. Run `nix fmt .`
+###     6. Run `nix-channel --update`
+###     7. Run `nix flake update`
+###     8. Run `home-manager switch`
 ###
 ### Usage:
 ###     ./scripts/update.sh [options] [directory]
@@ -43,7 +42,6 @@ set -euo pipefail
 #--------------------------------------------------------------------------------------------------
 
 AUTO_STASH_SUBMODULES=0
-SKIP_RIME=0
 SKIP_PULL=0
 SKIP_SUBMODULES=0
 SKIP_STATUS=0
@@ -69,26 +67,9 @@ SECTION_LABELS=()
 SECTION_RESULTS=()
 SECTION_TIMES=()
 
-PLUM_DIR="${PLUM_DIR:-$HOME/plum}"
-RIME_FRONTEND="${RIME_FRONTEND:-fcitx5-rime}"
 # Default to the flake output matching the current user (schan, stachan, ...),
 # so each machine switches its own config. Override with HOME_MANAGER_FLAKE.
 HOME_MANAGER_FLAKE="${HOME_MANAGER_FLAKE:-.#$(whoami)}"
-
-RIME_PACKAGES=(
-  plum
-  bopomofo
-  cangjie
-  essay
-  luna-pinyin
-  prelude
-  stroke
-  terra-pinyin
-  cantonese
-  jyutping
-  CanCLID/rime-loengfan
-  felixonmars/fcitx5-pinyin-zhwiki
-)
 
 #--------------------------------------------------------------------------------------------------
 # Usage
@@ -110,10 +91,6 @@ Options:
 
     -h, --help
         Show this help.
-
-  Rime:
-    --skip-rime
-        Skip Rime schema installation/update via plum.
 
   Git / dotfiles:
     --skip-pull
@@ -155,12 +132,6 @@ Environment:
 
   VERBOSE=0
       Quiet output (default).
-
-  PLUM_DIR=...
-      Path to plum checkout. Default: ~/plum
-
-  RIME_FRONTEND=...
-      Rime frontend passed to rime-install. Default: fcitx5-rime
 
   HOME_MANAGER_FLAKE=...
       Flake target for home-manager. Default: .#<current user> (e.g. .#schan, .#stachan)
@@ -304,39 +275,7 @@ create_temp_go_file() {
 }
 
 #--------------------------------------------------------------------------------------------------
-# 1. Rime / plum helpers
-#--------------------------------------------------------------------------------------------------
-
-run_rime_install() {
-  (
-    cd "$PLUM_DIR"
-    env rime_frontend="$RIME_FRONTEND" bash ./rime-install "${RIME_PACKAGES[@]}"
-  )
-}
-
-force_refresh_git_tags_in_dir() {
-  local dir="$1"
-  local gitmeta repo
-
-  [ -d "$dir" ] || return 0
-
-  while IFS= read -r -d '' gitmeta; do
-    repo="${gitmeta%/.git}"
-    [ -n "$repo" ] || continue
-
-    vmsg "Force-refreshing tags in: $repo"
-    git -C "$repo" fetch --tags --force || true
-    git -C "$repo" fetch --force origin || true
-  done < <(find "$dir" \( -type d -name .git -o -type f -name .git \) -print0)
-}
-
-recover_rime_git_state() {
-  msg "Rime update failed; trying forced Git tag refresh and one retry..."
-  force_refresh_git_tags_in_dir "$PLUM_DIR"
-}
-
-#--------------------------------------------------------------------------------------------------
-# 2. Git / submodule helpers
+# 1. Git / submodule helpers
 #--------------------------------------------------------------------------------------------------
 
 is_submodule_dirty() {
@@ -367,7 +306,7 @@ stash_dirty_submodules() {
 }
 
 #--------------------------------------------------------------------------------------------------
-# 3. Neovim helpers
+# 2. Neovim helpers
 #--------------------------------------------------------------------------------------------------
 
 run_nvim_cmd_if_exists() {
@@ -405,9 +344,6 @@ while [ $# -gt 0 ]; do
   -h | --help)
     usage
     exit 0
-    ;;
-  --skip-rime)
-    SKIP_RIME=1
     ;;
   --skip-pull)
     SKIP_PULL=1
@@ -467,43 +403,7 @@ msg "=== Updating dotfiles repository ==="
 msg "Started at: $SCRIPT_START_TS"
 
 #--------------------------------------------------------------------------------------------------
-# 1. Updating Rime schemas
-#--------------------------------------------------------------------------------------------------
-
-if [ "$SKIP_RIME" -eq 1 ]; then
-  section_start "Skipping Rime update (--skip-rime)"
-  section_end "skipped"
-else
-  section_start "Updating Rime schemas"
-  section_result="done"
-
-  if [ ! -d "$PLUM_DIR" ]; then
-    warn "Skipping Rime update ($PLUM_DIR not found)"
-    section_result="skipped"
-  elif [ ! -f "$PLUM_DIR/rime-install" ]; then
-    warn "Skipping Rime update ($PLUM_DIR/rime-install not found)"
-    section_result="skipped"
-  else
-    rime_status=0
-    run_rime_install || rime_status=$?
-
-    if [ "$rime_status" -ne 0 ]; then
-      recover_rime_git_state
-      rime_status=0
-      run_rime_install || rime_status=$?
-    fi
-
-    if [ "$rime_status" -ne 0 ]; then
-      warn "Rime update still failed after forced tag refresh (exit code: $rime_status)"
-      section_result="failed"
-    fi
-  fi
-
-  section_end "$section_result"
-fi
-
-#--------------------------------------------------------------------------------------------------
-# 2. Updating the main dotfiles repository
+# 1. Updating the main dotfiles repository
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_PULL" -eq 0 ]; then
@@ -522,7 +422,7 @@ else
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 3. Sync / init / update git submodules
+# 2. Sync / init / update git submodules
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_SUBMODULES" -eq 0 ]; then
@@ -577,7 +477,7 @@ else
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 4. Updating Neovim plugins, Treesitter parsers, and coc.nvim extensions
+# 3. Updating Neovim plugins, Treesitter parsers, and coc.nvim extensions
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_NVIM" -eq 1 ]; then
@@ -657,7 +557,7 @@ else
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 5. Updating Go editor binaries
+# 4. Updating Go editor binaries
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_GO" -eq 1 ]; then
@@ -709,7 +609,7 @@ else
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 6. Run `nix fmt .`
+# 5. Run `nix fmt .`
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_NIX_FMT" -eq 1 ]; then
@@ -735,7 +635,7 @@ else
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 7. Run `nix-channel --update`
+# 6. Run `nix-channel --update`
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_NIX_CHANNEL" -eq 1 ]; then
@@ -761,7 +661,7 @@ else
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 8. Run `nix flake update`
+# 7. Run `nix flake update`
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_NIX_FLAKE" -eq 1 ]; then
@@ -787,7 +687,7 @@ else
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 9. Run `home-manager switch`
+# 8. Run `home-manager switch`
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_HOME_MANAGER" -eq 1 ]; then
@@ -813,7 +713,7 @@ else
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 10. Final summary
+# 9. Final summary
 #--------------------------------------------------------------------------------------------------
 
 SCRIPT_END_TS="$(date '+%Y-%m-%d %I:%M:%S %p %Z')"
