@@ -22,6 +22,13 @@
         "typescriptreact",
         "yaml"
     ],
+    "clangd.checkUpdates": false,
+    "clangd.path": "clangd",
+    "go.checkForUpdates": "disabled",
+    "go.goplsPath": "gopls",
+    "rust-analyzer.server.path": "rust-analyzer",
+    "rust-analyzer.updates.checkOnStartup": false,
+    "rust-analyzer.updates.prompt": false,
     "diagnostic.checkCurrentLine": true,
     "diagnostic.errorSign": ">>",
     "diagnostic.refreshAfterSave": true,
@@ -38,15 +45,67 @@
     "git.topRemovedSign.text": "\u203e\u203e",
     "git.untrackedDecorator": "\u2026\u2026",
     "languageserver": {
+        "bash-language-server": {
+            "command": "bash-language-server",
+            "args": ["start"],
+            "filetypes": ["sh"]
+        },
         "digestif": {
             "command": "digestif",
             "filetypes": ["tex", "plaintex", "context"]
+        },
+        "jedi-language-server": {
+            "command": "jedi-language-server",
+            "filetypes": ["python"],
+            "rootPatterns": [
+                "pyproject.toml",
+                "setup.cfg",
+                "setup.py",
+                "requirements.txt",
+                ".git"
+            ]
+        },
+        "json-language-server": {
+            "command": "vscode-json-language-server",
+            "args": ["--stdio"],
+            "filetypes": ["json", "jsonc"]
         },
         "lua-language-server": {
             "command": "lua-language-server",
             "filetypes": ["lua"],
             "rootPatterns": [".luarc.json", ".luarc.jsonc"],
             "ignoredRootPaths": ["$HOME/dotfiles"]
+        },
+        "perl-language-server": {
+            "command": "perl",
+            "args": [
+                "-MPerl::LanguageServer",
+                "-e",
+                "Perl::LanguageServer::run"
+            ],
+            "filetypes": ["perl"]
+        },
+        "typescript-language-server": {
+            "command": "typescript-language-server",
+            "args": ["--stdio"],
+            "filetypes": [
+                "javascript",
+                "javascriptreact",
+                "typescript",
+                "typescript.tsx",
+                "typescriptreact"
+            ],
+            "rootPatterns": [
+                "package.json",
+                "tsconfig.json",
+                "jsconfig.json",
+                ".git"
+            ]
+        },
+        "vim-language-server": {
+            "command": "vim-language-server",
+            "args": ["--stdio"],
+            "filetypes": ["vim"]
         }
     },
     "markdownlint.onChange": false,
