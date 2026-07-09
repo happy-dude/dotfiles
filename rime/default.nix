@@ -2,6 +2,7 @@
   lib,
   pkgs,
   inputs,
+  rimeDeployment,
   ...
 }:
 
@@ -89,25 +90,37 @@ let
 in
 assert duplicateRimeDataTargetNames == [ ];
 {
-  xdg = {
-    configFile = {
-      "fcitx5/profile".source = ./.config/fcitx5/profile;
-      "fcitx5/conf/classicui.conf".source = ./.config/fcitx5/conf/classicui.conf;
-      "fcitx5/conf/rime.conf".source = ./.config/fcitx5/conf/rime.conf;
-    };
-
-    # Link static files individually so Rime can create its writable build and
-    # user-data directories beside them.
-    dataFile = {
-      "fcitx5/themes".source = ./.local/share/fcitx5/themes;
-    }
-    // lib.listToAttrs (
-      map (
-        entry: {
-          name = "fcitx5/rime/" + entry.relative;
-          value.source = entry.path;
+  config = lib.mkMerge [
+    {
+      assertions = [
+        {
+          assertion = builtins.elem rimeDeployment [ "nix" "stow" ];
+          message = "rimeDeployment must be either `nix` or `stow`";
         }
-      ) rimeDataEntries
-    );
-  };
+      ];
+    }
+    (lib.mkIf (rimeDeployment == "nix") {
+      xdg = {
+        configFile = {
+          "fcitx5/profile".source = ./.config/fcitx5/profile;
+          "fcitx5/conf/classicui.conf".source = ./.config/fcitx5/conf/classicui.conf;
+          "fcitx5/conf/rime.conf".source = ./.config/fcitx5/conf/rime.conf;
+        };
+
+        # Link static files individually so Rime can create its writable build and
+        # user-data directories beside them.
+        dataFile = {
+          "fcitx5/themes".source = ./.local/share/fcitx5/themes;
+        }
+        // lib.listToAttrs (
+          map (
+            entry: {
+              name = "fcitx5/rime/" + entry.relative;
+              value.source = entry.path;
+            }
+          ) rimeDataEntries
+        );
+      };
+    })
+  ];
 }

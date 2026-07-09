@@ -147,14 +147,24 @@
           })
         ];
       };
-      # Build a Home Manager config for a user and desktop. The username
-      # determines /home/<username>; desktop selects session integration.
+      # Build a Home Manager config for a user, desktop, and Rime deployment.
+      # The username determines /home/<username>; desktop selects session
+      # integration; rimeDeployment selects Nix or legacy Stow file management.
       mkHome =
-        { username, desktop }:
+        {
+          username,
+          desktop,
+          rimeDeployment ? "nix",
+        }:
         home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           extraSpecialArgs = {
-            inherit inputs username desktop;
+            inherit
+              inputs
+              username
+              desktop
+              rimeDeployment
+              ;
           };
 
           modules = [
@@ -207,10 +217,12 @@
         "schan" = mkHome {
           username = "schan";
           desktop = "plasma";
+          rimeDeployment = "nix";
         };
         "stachan" = mkHome {
           username = "stachan";
           desktop = "gnome";
+          rimeDeployment = "nix";
         };
       };
       formatter.${system} = treefmtEval.config.build.wrapper;
