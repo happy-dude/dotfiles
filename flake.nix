@@ -88,6 +88,7 @@
             ./ghostty
             ./git
             ./nix
+            ./rime
             ./tldr
             ./tmux
             ./wezterm
