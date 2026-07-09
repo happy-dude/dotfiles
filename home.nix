@@ -20,36 +20,30 @@
 
     packages = with pkgs; [
       asciinema
-      astyle
       autoconf
       automake
       babelfish
       bash-language-server
       bat
       bear
+      bc
+      binutils
       bison
-      buildbot
-      cbmc
+      bpftools
+      bpftrace
       ccache
-      check
       cmake
-      colordiff
-      cproto
+      coccinelle
+      cpio
       cscope
       ctags
       curl
-      cvs
-      cvsps
-      darcs
-      dejagnu
       desktop-file-utils
       dex
-      diffstat
-      doxygen
+      dtc
       dust
       elfutils
       exiftool
-      expect
       eza
       fd
       ffmpeg
@@ -59,45 +53,36 @@
       gettext
       ghostscript
       git
-      git-annex
-      git-cola
-      git2cl
-      gitg
       glibc
       gnumake
       go
       gopls
-      gtranslator
-      highlight
       hexyl
       htop
       hyperfine
       imagemagick
       img2pdf
-      indent
       jq
-      lcov
       less
       libgcc
       libtool
       lldb
       ltrace
       lua-language-server
-      meld
-      monotone
+      meson
       moreutils
-      mr
-      nasm
-      nemiver
+      ncurses.dev
       neovim
+      ninja
       nix-prefetch-github
       nix-zsh-completions
       nixfmt
       nodejs
+      openssl
+      pahole
       pandoc
       pass
       patch
-      patchutils
       perf
       (perl.withPackages (ps: [ ps.PerlLanguageServer ]))
       pinentry-all
@@ -105,27 +90,18 @@
       prettier
       procs
       qemu
-      qgit
-      quilt
-      rapidsvn
-      rcs
       ripgrep
-      robodoc
       roswell
+      rsync
       rust-analyzer
       sbcl
-      scanmem
-      scons
       shellcheck
+      sparse
       stow
       strace
       stylua
-      subunit
-      subversion
       texliveFull
-      tig
       tokei
-      tortoisehg
       tree
       tree-sitter
       typescript-language-server
@@ -137,9 +113,6 @@
       xclip
       xdg-utils
       xsel
-      yasm
-      zlib
-      zzuf
 
       # Language agent: translation / dictionary / grammar / OCR / TTS tooling
       dict # DICT protocol client (needs a configured server/database, see note below)
