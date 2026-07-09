@@ -51,6 +51,7 @@
     "markdownlint.onChange": false,
     "markdownlint.onOpen": false,
     "markdownlint.onSave": true,
+    "sumneko-lua.enable": false,
     "Lua.telemetry.enable": false,
     "Lua.workspace.library": ["${3rd}/luv/library"],
     "workspace.ignoredFolders": [
