@@ -147,15 +147,14 @@
           })
         ];
       };
-      # Build a Home Manager config for a given username; home dir is
-      # /home/<username>. All machines share the same modules — only the
-      # username differs (e.g. schan on the personal box, stachan on work).
+      # Build a Home Manager config for a user and desktop. The username
+      # determines /home/<username>; desktop selects session integration.
       mkHome =
-        username:
+        { username, desktop }:
         home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           extraSpecialArgs = {
-            inherit inputs username;
+            inherit inputs username desktop;
           };
 
           modules = [
@@ -169,6 +168,7 @@
             ./git
             ./nix
             ./rime
+            ./rime/gnome.nix
             ./tldr
             ./tmux
             ./wezterm
@@ -204,8 +204,14 @@
     in
     {
       homeConfigurations = {
-        "schan" = mkHome "schan"; # personal computer
-        "stachan" = mkHome "stachan"; # work computer
+        "schan" = mkHome {
+          username = "schan";
+          desktop = "plasma";
+        };
+        "stachan" = mkHome {
+          username = "stachan";
+          desktop = "gnome";
+        };
       };
       formatter.${system} = treefmtEval.config.build.wrapper;
     };
