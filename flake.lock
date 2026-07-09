@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "bgutil_ytdlp_pot_provider": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1773346709,
+        "narHash": "sha256-w9QRqc1Ewp75b7OTkD/nRu+gUAIP7Hx6XKc6G7f9eCs=",
+        "owner": "Brainicism",
+        "repo": "bgutil-ytdlp-pot-provider",
+        "rev": "6b497de5a6cbaf106bd94a934c5d2794c3fdf8bb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Brainicism",
+        "repo": "bgutil-ytdlp-pot-provider",
+        "type": "github"
+      }
+    },
     "fish_autopair": {
       "flake": false,
       "locked": {
@@ -513,6 +529,7 @@
     },
     "root": {
       "inputs": {
+        "bgutil_ytdlp_pot_provider": "bgutil_ytdlp_pot_provider",
         "fish_autopair": "fish_autopair",
         "fish_nvm": "fish_nvm",
         "fish_puffer": "fish_puffer",
@@ -536,7 +553,62 @@
         "rime_prelude": "rime_prelude",
         "rime_stroke": "rime_stroke",
         "rime_terra_pinyin": "rime_terra_pinyin",
+        "roswell_src": "roswell_src",
+        "rust-overlay": "rust-overlay",
+        "rustowl_src": "rustowl_src",
         "treefmt-nix": "treefmt-nix"
+      }
+    },
+    "roswell_src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1778045070,
+        "narHash": "sha256-ppgwclpEw17VBoVp2/o5OsX681k3uUBR912oXULz2Ow=",
+        "owner": "roswell",
+        "repo": "roswell",
+        "rev": "05a2c2fa3bf1f36dc7d10786edf918ef01fcd0a7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "roswell",
+        "repo": "roswell",
+        "type": "github"
+      }
+    },
+    "rust-overlay": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1783614422,
+        "narHash": "sha256-zSX553aXiIKJHWzUF6nrDKgeNRlfNK/SdyNYSbs2nkM=",
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "rev": "e8e9d70b96113fd49ccde6c3e08fb260b6ef5dd6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "rustowl_src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1783329970,
+        "narHash": "sha256-mmdy6uGxbKevikzA1VXxm4QNq8BsQFqaU2HcQqz8Prw=",
+        "owner": "cordx56",
+        "repo": "rustowl",
+        "rev": "c879c40c08d5ef3a559b95d22bb75b15bbe88eed",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cordx56",
+        "repo": "rustowl",
+        "type": "github"
       }
     },
     "systems": {

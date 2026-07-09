@@ -1,20 +1,14 @@
 {
   config,
+  inputs,
   pkgs,
   lib,
   ...
 }:
 
 let
-  version = "1.3.1";
-  installStamp = "${version}-node";
-
-  bgutilProvider = pkgs.fetchFromGitHub {
-    owner = "Brainicism";
-    repo = "bgutil-ytdlp-pot-provider";
-    rev = version;
-    hash = "sha256-dhpataQ1HSCRPnm4k3K/NMaQPQdNrx8C4q855l7kbbQ=";
-  };
+  bgutilProvider = inputs.bgutil_ytdlp_pot_provider;
+  installStamp = toString bgutilProvider;
 
   providerHome = "${config.home.homeDirectory}/.local/share/bgutil-ytdlp-pot-provider";
   serverHome = "${providerHome}/server";
@@ -38,7 +32,7 @@ in
 
     if [ ! -f "${providerHome}/.installed-state" ] || \
        [ "$(${pkgs.coreutils}/bin/cat "${providerHome}/.installed-state" 2>/dev/null)" != "${installStamp}" ]; then
-      echo -e "\e[33mInstalling bgutil-ytdlp-pot-provider ${version} for Node.js\e[0m"
+      echo -e "\e[33mInstalling locked bgutil-ytdlp-pot-provider for Node.js\e[0m"
 
       rm -rf "${providerHome}"
       mkdir -p "${providerHome}"
@@ -59,9 +53,9 @@ in
       )
 
       echo "${installStamp}" > "${providerHome}/.installed-state"
-      echo -e "\e[32mInstalled bgutil-ytdlp-pot-provider ${version} for Node.js\e[0m"
+      echo -e "\e[32mInstalled locked bgutil-ytdlp-pot-provider for Node.js\e[0m"
     else
-      echo -e "\e[32mbgutil-ytdlp-pot-provider ${version} for Node.js already installed\e[0m"
+      echo -e "\e[32mLocked bgutil-ytdlp-pot-provider already installed\e[0m"
     fi
   '';
 

@@ -22,6 +22,27 @@
     # https://github.com/nix-community/neovim-nightly-overlay
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
 
+    # Rust toolchains with rustc-dev, used to build RustOwl.
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Rolling source inputs consumed by local Nix modules.
+    roswell_src = {
+      url = "github:roswell/roswell";
+      flake = false;
+    };
+    bgutil_ytdlp_pot_provider = {
+      url = "github:Brainicism/bgutil-ytdlp-pot-provider";
+      flake = false;
+    };
+
+    rustowl_src = {
+      url = "github:cordx56/rustowl";
+      flake = false;
+    };
+
     # ghostty
     # https://ghostty.org/docs/install/binary#nix-flake
     # https://github.com/ghostty-org/ghostty/blob/main/flake.nix
@@ -133,16 +154,12 @@
         inherit system;
         overlays = [
           inputs.neovim-nightly-overlay.overlays.default
+          inputs.rust-overlay.overlays.default
           ghostty.overlays.default
           nixgl.overlay
           (final: prev: {
-            roswell = prev.roswell.overrideAttrs (oldAttrs: rec {
-              src = prev.fetchFromGitHub {
-                owner = "roswell";
-                repo = "roswell";
-                rev = "05a2c2fa3bf1f36dc7d10786edf918ef01fcd0a7";
-                hash = "sha256-ppgwclpEw17VBoVp2/o5OsX681k3uUBR912oXULz2Ow=";
-              };
+            roswell = prev.roswell.overrideAttrs (_: {
+              src = inputs.roswell_src;
             });
           })
         ];
@@ -179,9 +196,11 @@
             ./nix
             ./rime
             ./rime/gnome.nix
+            ./rustowl
             ./tldr
             ./tmux
             ./wezterm
+            ./vim
             ./xdg
             ./yt-dlp
             ./zed

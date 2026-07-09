@@ -2,12 +2,8 @@
 
 local api = vim.api
 
-require('nvim-treesitter.install').compilers = { 'gcc' }
-
--- Parsers must be installed manually:
---  :TSInstall lua python rust bash c cpp etc
---    can be one or multiple parsers or tiers
---    `stable`, `unstable`, or `all` (not recommended)
+-- Nix deployments link parsers and queries through Home Manager. Stow
+-- deployments retain the nvim-treesitter :TSInstall/:TSUpdate workflow.
 
 -- nvim-treesitter-textobjects
 require('nvim-treesitter-textobjects').setup({

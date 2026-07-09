@@ -13,12 +13,12 @@ A separate `macos` branch exists for macOS-specific settings; this repository ch
 ### Home Manager flake
 
 - `flake.nix` declares per-user Home Manager outputs via a `mkHome { username, desktop, rimeDeployment }` helper: `homeConfigurations."schan"` (personal Plasma box, `/home/schan`) and `homeConfigurations."stachan"` (work GNOME box, `/home/stachan`), both `x86_64-linux`, sharing the base modules. `username` derives `homeDirectory = "/home/${username}"`; `desktop` selects session integration; `rimeDeployment` selects `nix` (default) or `stow` file management. Each machine switches its own output (`.#schan` / `.#stachan`); `scripts/update.sh` defaults to `.#$(whoami)`.
-- Flake inputs: `nixpkgs` (nixos-unstable), `home-manager`, `nixgl`, `neovim-nightly-overlay`, `treefmt-nix`, the `ghostty` flake, and source-only Rime schema repositories. The Rime sources are locked in `flake.lock` and advance with `nix flake update`; `rime/default.nix` consumes them. `nixGL` is wired up via `targets.genericLinux.nixGL` in `home.nix` so OpenGL apps (Ghostty, mesa-demos, solaar) can be wrapped with `config.lib.nixGL.wrap`.
-- Source-only inputs also lock Prezto (with submodules) and the six active Fish plugins and disabled Sponge source. `nix flake update` advances those sources together with the Rime schema inputs.
+- Flake inputs: `nixpkgs` (nixos-unstable), `home-manager`, `nixgl`, `neovim-nightly-overlay`, `rust-overlay`, `treefmt-nix`, the `ghostty` flake, and source-only Rime schema repositories. The Rime sources are locked in `flake.lock` and advance with `nix flake update`; `rime/default.nix` consumes them. `nixGL` is wired up via `targets.genericLinux.nixGL` in `home.nix` so OpenGL apps (Ghostty, mesa-demos, solaar) can be wrapped with `config.lib.nixGL.wrap`.
+- Source-only inputs also lock Prezto (with submodules), the six active Fish plugins and disabled Sponge source, Roswell, and bgutil-ytdlp-pot-provider. `nix flake update` advances those sources together with the Rime schema inputs.
 - `fish/.config/fish/tide.fish` is the declarative Tide profile, linked by Home Manager and sourced by the Stow-compatible `config.fish`. It overrides machine-local `fish_variables` so fresh profiles have a complete prompt.
-- A small inline overlay in `flake.nix` pins `roswell` to a specific GitHub revision/hash (workaround for upstream packaging breakage); update it via `scripts/update-nix-hashes.sh` when bumping.
+- A small inline overlay in `flake.nix` builds Roswell from the locked `roswell_src` input (a workaround for the upstream package); advance it with `nix flake update`.
 - `home.nix` is the entry module: it lists every top-level package and sets up plain-file symlinks — `.clang-format`, `.editorconfig`, `.golangci.yml`, `.stylua.toml` (all from the **repo root**), plus `.gdbinit`, `ros_swank`, `.roswell/helper.el`. (The global gitignore is handled in the git module via `programs.git.ignores`, not a `home.file`.)
-- Per-app modules live in their own subdirectories, each as a `default.nix` imported from `flake.nix`'s `modules` list: `aerc/`, `bat/`, `emacs/`, `fish/`, `fonts/`, `ghostty/`, `git/`, `nix/`, `rime/`, `tldr/`, `tmux/`, `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`, `zsh/`. Adding a new app means creating `<app>/default.nix` and adding it to the `modules` list in `flake.nix`.
+- Per-app modules live in their own subdirectories, each as a `default.nix` imported from `flake.nix`'s `modules` list: `aerc/`, `bat/`, `emacs/`, `fish/`, `fonts/`, `ghostty/`, `git/`, `nix/`, `rime/`, `rustowl/`, `tldr/`, `tmux/`, `vim/`, `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`, `zsh/`. Adding a new app means creating `<app>/default.nix` and adding it to the `modules` list in `flake.nix`.
 - The formatter is **treefmt** (`treefmt-nix`, run via `nix fmt`): nixfmt for `.nix` plus shfmt, stylua, prettier, taplo — one command formats every language, honoring the root `.editorconfig`/`.stylua.toml`. Submodule contents are skipped (git walk); `other/`, `karabiner/`, `rime/` are excluded.
 
 ### Legacy Stow package directories double as symlink sources
@@ -39,11 +39,11 @@ The top-level dirs that are **not** Nix modules and **not** under `other/` — `
 
 Both agent files also know their in-prompt package lists are a cache, not the source of truth: each tells the agent to `grep` `home.nix` directly before assuming a tool is or isn't installed, and to trust the live file over its own stale enumeration if the two ever disagree. This doesn't remove the need to update the two files when `home.nix` changes (search.nixos.org-style docs, tool-usage examples, and the specific packages referenced by name still drift) — it just means a missed update degrades to "slightly outdated advice, self-correctable by a grep" instead of "confidently wrong."
 
-### Vim / Emacs plugins are git submodules
+### Vim / Emacs plugin sources and runtime artifacts
 
-Plugin trees are **not** managed by Nix:
+Vim and Emacs plugin source trees remain git submodules. Home Manager builds the Tree-sitter parser/query runtime and the RustOwl server by default:
 
-- Vim plugins live under `vim/.vim/pack/plugged/opt/*` (each a git submodule); `vim/.vim/pack/bundle/opt/` holds `vim-pathogen` and `vim-plug`. The Vim config itself is in `vim/.vim/vimrc` with Lua/init.vim helpers alongside.
+- Vim plugins live under `vim/.vim/pack/plugged/opt/*` (each a git submodule); `vim/.vim/pack/bundle/opt/` holds `vim-pathogen` and `vim-plug`. `vim/default.nix` links the Nix-built Tree-sitter parsers and queries, while `rustowl/default.nix` builds the RustOwl server with its required pinned Rust toolchain. The Vim config itself is in `vim/.vim/vimrc` with Lua/init.vim helpers alongside.
 - Emacs plugins live under `emacs/.config/emacs/plugins/*` as git submodules. `emacs/default.nix` _also_ installs many of the same packages via `programs.emacs.extraPackages` — both mechanisms are used in parallel (submodules for source-of-truth and pinning, `extraPackages` for Nix-built dependencies).
 - The Emacs init entry point is `emacs/.config/emacs/init.el`, which loads small per-feature files from `conf/` and `conf/packages/`.
 - `.gitmodules` has ~150 entries and is kept alphabetically sorted — see "Common commands" below.
@@ -80,7 +80,7 @@ VERBOSE=1 ./scripts/update.sh
 Default Rime updates happen through `nix flake update`; `--rime-source nix` is implicit. `--rime-source plum` runs the legacy installer only with `--skip-home-manager` and refuses if the current Rime files resolve into the Nix store. Add `--skip-nix-flake` for a pure Stow/Plum update.
 To return to Stow, set the host's `rimeDeployment = "stow"`, run Home Manager once to remove its Rime links, then `stow -R rime` before using the Plum mode.
 
-Step order (and the flag that skips it): optional Plum fallback, `git pull --rebase --autostash` (`--skip-pull`), submodule sync/init/update (`--skip-submodules`), submodule status (`--skip-status`), vim-plug + Treesitter + coc.nvim (`--skip-nvim`), vim-go binaries (`--skip-go`), `nix fmt .` (`--skip-nix-fmt`), `nix-channel --update` (`--skip-nix-channel`), `nix flake update` (`--skip-nix-flake`), `home-manager switch` (`--skip-home-manager`). Env var: `HOME_MANAGER_FLAKE` (default `.#$(whoami)`).
+Step order (and the flag that skips it): optional Plum fallback, `git pull --rebase --autostash` (`--skip-pull`), submodule sync/init/update (`--skip-submodules`), submodule status (`--skip-status`), vim-plug + coc.nvim (`--skip-nvim`), Nix-managed Tree-sitter/RustOwl artifacts (or the Stow update path with `--editor-deployment stow`), vim-go binaries (`--skip-go`), `nix fmt .` (`--skip-nix-fmt`), `nix-channel --update` (`--skip-nix-channel`), `nix flake update` (`--skip-nix-flake`), `home-manager switch` (`--skip-home-manager`). Env vars: `EDITOR_DEPLOYMENT` (default `nix`) and `HOME_MANAGER_FLAKE` (default `.#$(whoami)`).
 
 The script refuses to update dirty submodules unless `--autostash-submodules` is passed, and it does **not** auto-pop stashes afterward.
 
@@ -94,10 +94,6 @@ git submodule update --init --recursive --remote     # add/refresh all submodule
 
 When adding a new Vim or Emacs plugin, add a `[submodule …]` block to `.gitmodules`, run `sort_gitmodules.sh`, then `git submodule update --init`. Branches per-submodule are settable via `git submodule set-branch --branch <branch> <path>` (most use `master` or `main` with `ignore = dirty`).
 
-### Refresh pinned Nix sources
-
-`scripts/update-nix-hashes.sh [dir]` scans all `.nix` files for `fetchFromGitHub` / `fetchGit` blocks and rewrites `rev`/`hash` in place — uses `nix-prefetch-github` for `fetchFromGitHub` and `git ls-remote` for `fetchGit`. Run this after the inline `roswell` override in `flake.nix` falls behind, or whenever a pinned source needs bumping.
-
 ## Working conventions
 
 - Prefer adding packages to `home.nix`'s `home.packages` list (or to a module's `default.nix`) over installing system-wide. Resolve binary collisions explicitly with `lib.hiPrio` / `lib.lowPrio` as already done for `gcc` / `clang` / `clang-tools` / `llvm` in `home.nix`.
@@ -108,3 +104,4 @@ When adding a new Vim or Emacs plugin, add a `[submodule …]` block to `.gitmod
 - The README's GNU Stow instructions and `scripts/install.sh` are kept for historical reference as the old whole-repo bootstrap flow — don't extend that flow. New per-app config still defaults to a Home Manager module. When a file must stay writable in place, prefer a Nix-managed symlink into the repo working tree — `home.file."<target>".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/<path>"` (how `claude/.claude/agents` is handled) — rather than adding a new Stow package.
 - **`rime/`** links locked Git schema inputs, the packaged Zhwiki dictionary, and local overrides individually when `rimeDeployment = "nix"` so Rime can write generated state under `~/.local/share/fcitx5/rime`. The `stow` mode releases those paths to the retained snapshot, whose local ignore file excludes Home Manager modules. Keep generated state out of Git; `rime/.gitignore` covers the installation metadata and build directory.
 - **`rime/gnome.nix`** enables Fcitx 5 through Home Manager only for `desktop = "gnome"`, using its Wayland frontend with the Rime and GTK addons. It also sets `QT_IM_MODULE=fcitx`, which Home Manager otherwise omits for that frontend. Plasma uses the shared Rime files but retains host-managed Fcitx integration through KWin's Virtual Keyboard setting.
+- **Vim runtime artifacts** are declarative by default: Home Manager links Tree-sitter parsers and queries under `~/.local/share/nvim/site` and places the Nix-built `rustowl` on `PATH`. Do not run `:TSUpdate` in this mode. Retain `--editor-deployment stow` only for a deliberately Stow-managed Vim deployment, where `:TSUpdate` and the RustOwl source build remain mutable.
