@@ -334,6 +334,7 @@ lua <<EOF
    client = {
      cmd = {
        'rustowl', '--stdio',
+     },
    },  -- LSP client configuration that gets passed to `vim.lsp.start`
    highlight_style = 'undercurl', -- You can also use 'underline'
    colors = { -- Customize highlight colors (hex colors)
