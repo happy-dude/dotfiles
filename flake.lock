@@ -1,5 +1,117 @@
 {
   "nodes": {
+    "fish_autopair": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1656950411,
+        "narHash": "sha256-qt3t1iKRRNuiLWiVoiAYOu+9E7jsyECyIqZJ/oRIT1A=",
+        "owner": "jorgebucaran",
+        "repo": "autopair.fish",
+        "rev": "4d1752ff5b39819ab58d7337c69220342e9de0e2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jorgebucaran",
+        "repo": "autopair.fish",
+        "type": "github"
+      }
+    },
+    "fish_nvm": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1782130753,
+        "narHash": "sha256-SI30Md3OKCN5qZ3pT/ZcweB8njGZ9okJFnCLqmfmL44=",
+        "owner": "jorgebucaran",
+        "repo": "nvm.fish",
+        "rev": "85cadd56f71b11574566dbd6c32e0027e361d085",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jorgebucaran",
+        "repo": "nvm.fish",
+        "type": "github"
+      }
+    },
+    "fish_puffer": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1763062131,
+        "narHash": "sha256-Dhx5+XRxJvlhdnFyimNxFyFiASrGU4ZwyefsDwtKnSg=",
+        "owner": "nickeb96",
+        "repo": "puffer-fish",
+        "rev": "83174b07de60078be79985ef6123d903329622b8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nickeb96",
+        "repo": "puffer-fish",
+        "type": "github"
+      }
+    },
+    "fish_spark": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1610775582,
+        "narHash": "sha256-cRSZeqtXSaEKuHeTSk3Kpmwf98mKJ986x1KSxa/HggU=",
+        "owner": "jorgebucaran",
+        "repo": "spark.fish",
+        "rev": "90a60573ec8a8ecb741a861e0bfca2362f297e5f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jorgebucaran",
+        "repo": "spark.fish",
+        "type": "github"
+      }
+    },
+    "fish_sponge": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1664918422,
+        "narHash": "sha256-MdcZUDRtNJdiyo2l9o5ma7nAX84xEJbGFhAVhK+Zm1w=",
+        "owner": "meaningful-ooo",
+        "repo": "sponge",
+        "rev": "384299545104d5256648cee9d8b117aaa9a6d7be",
+        "type": "github"
+      },
+      "original": {
+        "owner": "meaningful-ooo",
+        "repo": "sponge",
+        "type": "github"
+      }
+    },
+    "fish_tide": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1764056486,
+        "narHash": "sha256-dzYEYC1bYP0rWpmz0fmBFwskxWYuKBMTssMELXXz5H0=",
+        "owner": "IlanCosman",
+        "repo": "tide",
+        "rev": "fcda500d2c2996e25456fb46cd1a5532b3157b16",
+        "type": "github"
+      },
+      "original": {
+        "owner": "IlanCosman",
+        "repo": "tide",
+        "type": "github"
+      }
+    },
+    "fish_z": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1776339590,
+        "narHash": "sha256-4+58sbZf852HImPqWmlJUtuZI0464nx+SyvZbrtsG+E=",
+        "owner": "jethrokuan",
+        "repo": "z",
+        "rev": "26a50962bc68f5cb60fc488ee008b3d4d5be75f4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jethrokuan",
+        "repo": "z",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -401,6 +513,13 @@
     },
     "root": {
       "inputs": {
+        "fish_autopair": "fish_autopair",
+        "fish_nvm": "fish_nvm",
+        "fish_puffer": "fish_puffer",
+        "fish_spark": "fish_spark",
+        "fish_sponge": "fish_sponge",
+        "fish_tide": "fish_tide",
+        "fish_z": "fish_z",
         "ghostty": "ghostty",
         "home-manager": "home-manager_2",
         "neovim-nightly-overlay": "neovim-nightly-overlay",

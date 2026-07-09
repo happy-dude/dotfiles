@@ -82,6 +82,37 @@
       flake = false;
     };
 
+    # Rolling Fish plugin sources.
+    fish_autopair = {
+      url = "github:jorgebucaran/autopair.fish";
+      flake = false;
+    };
+    fish_nvm = {
+      url = "github:jorgebucaran/nvm.fish";
+      flake = false;
+    };
+    fish_puffer = {
+      url = "github:nickeb96/puffer-fish";
+      flake = false;
+    };
+    fish_spark = {
+      url = "github:jorgebucaran/spark.fish";
+      flake = false;
+    };
+    fish_tide = {
+      url = "github:IlanCosman/tide";
+      flake = false;
+    };
+    fish_z = {
+      url = "github:jethrokuan/z";
+      flake = false;
+    };
+    # Kept locked for optional activation in fish/default.nix.
+    fish_sponge = {
+      url = "github:meaningful-ooo/sponge";
+      flake = false;
+    };
+
   };
 
   outputs =
