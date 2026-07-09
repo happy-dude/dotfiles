@@ -1,5 +1,4 @@
 {
-  config,
   lib,
   pkgs,
   inputs,
@@ -129,23 +128,36 @@ assert duplicateRimeDataTargetNames == [ ];
       ];
     }
     (lib.mkIf (rimeDeployment == "nix") {
-      xdg = {
-        configFile = {
-          "fcitx5/profile".source =
-            config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/rime/.config/fcitx5/profile";
-          "fcitx5/conf/classicui.conf".source =
-            config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/rime/.config/fcitx5/conf/classicui.conf";
-          "fcitx5/conf/rime.conf".source =
-            config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/rime/.config/fcitx5/conf/rime.conf";
-        };
 
-        dataFile = {
-          "fcitx5/themes".source =
-            config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/rime/.local/share/fcitx5/themes";
-        };
-      };
+      home.activation.rimeHostFiles = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+        link_rime_path() {
+          source="$1"
+          target="$2"
 
-      home.activation.rimeSchemaBuild = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+          if [ ! -e "$source" ]; then
+            echo "Rime source does not exist: $source" >&2
+            exit 1
+          fi
+
+          ${pkgs.coreutils}/bin/mkdir -p "$( ${pkgs.coreutils}/bin/dirname "$target" )"
+
+          if [ -L "$target" ]; then
+            ${pkgs.coreutils}/bin/rm -f "$target"
+          elif [ -e "$target" ]; then
+            echo "Refusing to replace unmanaged Rime path: $target" >&2
+            exit 1
+          fi
+
+          ${pkgs.coreutils}/bin/ln -s "$source" "$target"
+        }
+
+        rime_dotfiles="$HOME/dotfiles/rime"
+        link_rime_path "$rime_dotfiles/.config/fcitx5/profile" "$HOME/.config/fcitx5/profile"
+        link_rime_path "$rime_dotfiles/.config/fcitx5/conf/classicui.conf" "$HOME/.config/fcitx5/conf/classicui.conf"
+        link_rime_path "$rime_dotfiles/.config/fcitx5/conf/rime.conf" "$HOME/.config/fcitx5/conf/rime.conf"
+        link_rime_path "$rime_dotfiles/.local/share/fcitx5/themes" "$HOME/.local/share/fcitx5/themes"
+      '';
+      home.activation.rimeSchemaBuild = lib.hm.dag.entryAfter [ "rimeHostFiles" ] ''
         rime_data_dir="$HOME/.local/share/fcitx5/rime"
         rime_static_dir="$rime_data_dir/.home-manager-static"
         rime_state_dir="''${XDG_STATE_HOME:-$HOME/.local/state}/rime"
