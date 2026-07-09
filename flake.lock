@@ -221,6 +221,24 @@
         "type": "github"
       }
     },
+    "prezto": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1777062554,
+        "narHash": "sha256-TgdyG1XiQh61F2JPUChXe2srUxnJYOa5K1wLaRnmTlA=",
+        "ref": "refs/heads/master",
+        "rev": "cff2d01871425b1b80710f8ec6a475c5a53145b4",
+        "revCount": 2071,
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/sorin-ionescu/prezto"
+      },
+      "original": {
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/sorin-ionescu/prezto"
+      }
+    },
     "rime_bopomofo": {
       "flake": false,
       "locked": {
@@ -388,6 +406,7 @@
         "neovim-nightly-overlay": "neovim-nightly-overlay",
         "nixgl": "nixgl",
         "nixpkgs": "nixpkgs_3",
+        "prezto": "prezto",
         "rime_bopomofo": "rime_bopomofo",
         "rime_cangjie": "rime_cangjie",
         "rime_cantonese": "rime_cantonese",

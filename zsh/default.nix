@@ -1,4 +1,9 @@
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  ...
+}:
 
 {
   xdg.configFile."zsh/.p10k.zsh".source = ./.config/zsh/.p10k.zsh;
@@ -14,11 +19,7 @@
   # error: path '/nix/store/...-source/zsh/.zprezto' does not exist
   #home.file.".zprezto".source = ./.zprezto;
 
-  xdg.configFile."zsh/.zprezto".source = builtins.fetchGit {
-    url = "https://github.com/sorin-ionescu/prezto/";
-    rev = "cff2d01871425b1b80710f8ec6a475c5a53145b4";
-    submodules = true;
-  };
+  xdg.configFile."zsh/.zprezto".source = inputs.prezto;
 
   programs.zsh = {
     dotDir = config.home.homeDirectory;

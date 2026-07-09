@@ -76,6 +76,12 @@
       flake = false;
     };
 
+    # Prezto includes Git submodules, which the flake lock records explicitly.
+    prezto = {
+      url = "git+https://github.com/sorin-ionescu/prezto?submodules=1";
+      flake = false;
+    };
+
   };
 
   outputs =
