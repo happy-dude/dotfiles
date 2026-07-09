@@ -33,6 +33,49 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Source-only Rime schema inputs. Nix flake updates advance their locked
+    # revisions; Home Manager links their data into the writable Rime tree.
+    rime_bopomofo = {
+      url = "github:rime/rime-bopomofo";
+      flake = false;
+    };
+    rime_cangjie = {
+      url = "github:rime/rime-cangjie";
+      flake = false;
+    };
+    rime_cantonese = {
+      url = "github:rime/rime-cantonese";
+      flake = false;
+    };
+    rime_essay = {
+      url = "github:rime/rime-essay";
+      flake = false;
+    };
+    rime_jyutping = {
+      url = "github:rime/rime-jyutping";
+      flake = false;
+    };
+    rime_luna_pinyin = {
+      url = "github:rime/rime-luna-pinyin";
+      flake = false;
+    };
+    rime_prelude = {
+      url = "github:rime/rime-prelude";
+      flake = false;
+    };
+    rime_stroke = {
+      url = "github:rime/rime-stroke";
+      flake = false;
+    };
+    rime_terra_pinyin = {
+      url = "github:rime/rime-terra-pinyin";
+      flake = false;
+    };
+    rime_loengfan = {
+      url = "github:CanCLID/rime-loengfan";
+      flake = false;
+    };
+
   };
 
   outputs =

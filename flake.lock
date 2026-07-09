@@ -221,6 +221,166 @@
         "type": "github"
       }
     },
+    "rime_bopomofo": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1778322733,
+        "narHash": "sha256-aY+ZgSi3RRzPLdZaut72PKu96gOF0/PL308Qb1+y1d0=",
+        "owner": "rime",
+        "repo": "rime-bopomofo",
+        "rev": "6085c9a38a4a728047862b33d67eee18aa86f3b9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rime",
+        "repo": "rime-bopomofo",
+        "type": "github"
+      }
+    },
+    "rime_cangjie": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1780317667,
+        "narHash": "sha256-dOwHk+nykmHCcwXZLgph7ucLmSwK3CUoBLg3zmdrqtY=",
+        "owner": "rime",
+        "repo": "rime-cangjie",
+        "rev": "52d90a1b1312e74042b38c1cbc8142defbc53171",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rime",
+        "repo": "rime-cangjie",
+        "type": "github"
+      }
+    },
+    "rime_cantonese": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1782990350,
+        "narHash": "sha256-M2zFuhKAmSJ3X7zP0+itakhmuHqwtxZVOHS/fn+NSZo=",
+        "owner": "rime",
+        "repo": "rime-cantonese",
+        "rev": "c99b16e44d2df77a5cb8fb0867dd2bab7a112cb0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rime",
+        "repo": "rime-cantonese",
+        "type": "github"
+      }
+    },
+    "rime_essay": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1783059875,
+        "narHash": "sha256-nJ9DYXO+J4eiuwp/paUDviC9TBkt07NgWbxO319YA1M=",
+        "owner": "rime",
+        "repo": "rime-essay",
+        "rev": "0debef3f5ae37f081758dd8bbd1fe79719410f7c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rime",
+        "repo": "rime-essay",
+        "type": "github"
+      }
+    },
+    "rime_jyutping": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1767059421,
+        "narHash": "sha256-/9Xlto2aFihpmj6urAyqbqsC2I1Ucu5oSynNpjl99zE=",
+        "owner": "rime",
+        "repo": "rime-jyutping",
+        "rev": "ee5e72b2b50a6708162a0402b91f257323bf852b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rime",
+        "repo": "rime-jyutping",
+        "type": "github"
+      }
+    },
+    "rime_loengfan": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1646317486,
+        "narHash": "sha256-vOqVSwKZ+p5Wc03pRUWxCdWBdxuTe8n4xu2BTbj9/b4=",
+        "owner": "CanCLID",
+        "repo": "rime-loengfan",
+        "rev": "987ac95b02f957e8764a2f45222a4006c188ed50",
+        "type": "github"
+      },
+      "original": {
+        "owner": "CanCLID",
+        "repo": "rime-loengfan",
+        "type": "github"
+      }
+    },
+    "rime_luna_pinyin": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1783071318,
+        "narHash": "sha256-sThCYmOwY9Ml+/+lwKZOmCPvdXCPfcHttTNUp0DzIrw=",
+        "owner": "rime",
+        "repo": "rime-luna-pinyin",
+        "rev": "32f4a2cf3a3ab82d2a8a306eb843233de579b5c7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rime",
+        "repo": "rime-luna-pinyin",
+        "type": "github"
+      }
+    },
+    "rime_prelude": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1778321827,
+        "narHash": "sha256-roHPpaAbsnQgnz6kupMz/kHFQWwshRYojNsdS5iFApI=",
+        "owner": "rime",
+        "repo": "rime-prelude",
+        "rev": "082425ea0684bca36474415d4a0e8db9b016487e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rime",
+        "repo": "rime-prelude",
+        "type": "github"
+      }
+    },
+    "rime_stroke": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1758594582,
+        "narHash": "sha256-l2YRET+aywThX+iBTYKqtBESs6ozJn5Du5IewwMhhmM=",
+        "owner": "rime",
+        "repo": "rime-stroke",
+        "rev": "3a4b0f4013e2b4c14b1e80c92b1d4723eb65f39c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rime",
+        "repo": "rime-stroke",
+        "type": "github"
+      }
+    },
+    "rime_terra_pinyin": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1780317746,
+        "narHash": "sha256-wR2FZRNdxqV8YnsrQ/jWah9WhYFp1pe1cipyYe97NC4=",
+        "owner": "rime",
+        "repo": "rime-terra-pinyin",
+        "rev": "8ddd679e4485e1d2f411e90f104244eddf580382",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rime",
+        "repo": "rime-terra-pinyin",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "ghostty": "ghostty",
@@ -228,6 +388,16 @@
         "neovim-nightly-overlay": "neovim-nightly-overlay",
         "nixgl": "nixgl",
         "nixpkgs": "nixpkgs_3",
+        "rime_bopomofo": "rime_bopomofo",
+        "rime_cangjie": "rime_cangjie",
+        "rime_cantonese": "rime_cantonese",
+        "rime_essay": "rime_essay",
+        "rime_jyutping": "rime_jyutping",
+        "rime_loengfan": "rime_loengfan",
+        "rime_luna_pinyin": "rime_luna_pinyin",
+        "rime_prelude": "rime_prelude",
+        "rime_stroke": "rime_stroke",
+        "rime_terra_pinyin": "rime_terra_pinyin",
         "treefmt-nix": "treefmt-nix"
       }
     },

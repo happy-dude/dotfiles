@@ -1,7 +1,32 @@
-{ lib, ... }:
+{
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
 
 let
-  rimeDataDir = ./.local/share/fcitx5/rime;
+  localRimeDataDir = ./.local/share/fcitx5/rime;
+
+  # These are the Rime schema repositories previously installed by Plum.
+  # Their locked flake revisions take precedence over the retained Stow
+  # snapshot when Home Manager deploys this module.
+  schemaSources = [
+    inputs.rime_bopomofo
+    inputs.rime_cangjie
+    inputs.rime_cantonese
+    inputs.rime_essay
+    inputs.rime_jyutping
+    inputs.rime_luna_pinyin
+    inputs.rime_prelude
+    inputs.rime_stroke
+    inputs.rime_terra_pinyin
+    inputs.rime_loengfan
+  ];
+
+  isRimeDataFile = name:
+    (lib.hasSuffix ".yaml" name || lib.hasSuffix ".txt" name || lib.hasSuffix ".lua" name)
+    && !(builtins.elem name [ "installation.yaml" "recipe.yaml" ]);
 
   filesRecursively = dir:
     let
@@ -10,14 +35,59 @@ let
     lib.concatMap (
       name:
       let
-        path = dir + "/${name}";
+        path = dir + ("/" + name);
       in
-      if entries.${name} == "directory" then filesRecursively path else [ path ]
+      if entries.${name} == "directory" then
+        filesRecursively path
+      else
+        lib.optional (isRimeDataFile name) path
     ) (builtins.attrNames entries);
 
-  rimeDataFiles = filesRecursively rimeDataDir;
-  relativeToRimeData = path: lib.removePrefix "${toString rimeDataDir}/" (toString path);
+  relativeTo = source: path:
+    builtins.unsafeDiscardStringContext (lib.removePrefix ((toString source) + "/") (toString path));
+
+  sourceEntries = source:
+    map (
+      path: {
+        inherit path;
+        relative = relativeTo source path;
+      }
+    ) (filesRecursively source);
+
+  externalRimeDataEntries = lib.concatMap sourceEntries schemaSources;
+  externalRimeDataPaths = map (entry: entry.relative) externalRimeDataEntries;
+
+  localRimeDataEntries = map (
+    path: {
+      inherit path;
+      relative = relativeTo localRimeDataDir path;
+    }
+  ) (
+    lib.filter (
+      path:
+      let
+        relative = relativeTo localRimeDataDir path;
+      in
+      relative != "zhwiki.dict.yaml" && !(builtins.elem relative externalRimeDataPaths)
+    ) (filesRecursively localRimeDataDir)
+  );
+
+  rimeDataEntries =
+    localRimeDataEntries
+    ++ externalRimeDataEntries
+    ++ [
+      {
+        relative = "zhwiki.dict.yaml";
+        path = (toString pkgs.rime-zhwiki) + "/share/rime-data/zhwiki.dict.yaml";
+      }
+    ];
+
+  rimeDataTargetNames = map (entry: "fcitx5/rime/" + entry.relative) rimeDataEntries;
+  duplicateRimeDataTargetNames = lib.filter (
+    target: builtins.length (lib.filter (name: name == target) rimeDataTargetNames) > 1
+  ) (lib.unique rimeDataTargetNames);
 in
+assert duplicateRimeDataTargetNames == [ ];
 {
   xdg = {
     configFile = {
@@ -33,11 +103,11 @@ in
     }
     // lib.listToAttrs (
       map (
-        path: {
-          name = "fcitx5/rime/${relativeToRimeData path}";
-          value.source = path;
+        entry: {
+          name = "fcitx5/rime/" + entry.relative;
+          value.source = entry.path;
         }
-      ) rimeDataFiles
+      ) rimeDataEntries
     );
   };
 }
