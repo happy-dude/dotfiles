@@ -75,7 +75,13 @@ local function filter(input, env)
       end
 
       if #comment_parts > 0 then
-        cand.comment = table.concat(comment_parts, " ")
+        local annotation = table.concat(comment_parts, " ")
+        local existing = cand.comment or ""
+        if existing ~= "" then
+          cand.comment = existing .. " " .. annotation
+        else
+          cand.comment = annotation
+        end
       end
     end
 

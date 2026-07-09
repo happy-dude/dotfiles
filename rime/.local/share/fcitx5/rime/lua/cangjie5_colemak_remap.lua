@@ -37,16 +37,16 @@ local function func(key_event, env)
     return 2  -- kNoop
   end
 
-  -- Get the character representation
-  local ch = string.char(key)
+  -- Key events also include non-byte special keys such as Return and arrows.
+  -- Avoid converting those with string.char before checking the range.
+  if (key < string.byte("a") or key > string.byte("z")) and key ~= string.byte(";") then
+    return 2  -- kNoop
+  end
 
-  -- Only process lowercase letters and semicolon
-  if ch and ch:match("^[a-z;]$") then
-    local remapped = colemak_to_qwerty[ch]
-    if remapped then
-      context:push_input(remapped)
-      return 1  -- kAccepted
-    end
+  local remapped = colemak_to_qwerty[string.char(key)]
+  if remapped then
+    context:push_input(remapped)
+    return 1  -- kAccepted
   end
 
   return 2  -- kNoop
