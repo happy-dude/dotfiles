@@ -664,6 +664,11 @@ Flatpak and Plasma portals. Before adopting a third-party declarative module,
 record user and system remotes, applications, overrides, and application data.
 Start with existing user Flatpaks and preserve unmanaged/system applications.
 
+Keep `dev.edfloreshz.CosmicTweaks` unmanaged during the native migration. Remove
+this user-scoped Flatpak explicitly only after application migration is complete
+and the later host/Toolbox cleanup begins; verify its data and overrides before
+uninstalling it.
+
 Keep nixGL on generic Linux even though Nix is native; it still bridges Nix-built
 GUI applications to the host graphics stack. Solaar also continues to depend on
 host udev permissions.

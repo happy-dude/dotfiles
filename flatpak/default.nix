@@ -6,7 +6,6 @@
       "com.sleepfiles.OSCAR"
       "com.transmissionbt.Transmission"
       "com.valvesoftware.Steam"
-      "dev.edfloreshz.CosmicTweaks"
       "dev.zed.Zed-Preview"
       "org.audacityteam.Audacity"
       "org.kde.okular"
