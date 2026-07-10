@@ -5,7 +5,9 @@
   inputs,
   username,
   ...
-}: {
+}: let
+  solaarWrapped = config.lib.nixGL.wrap pkgs.solaar;
+in {
   targets.genericLinux.nixGL.packages = inputs.nixgl.packages;
   targets.genericLinux.nixGL.defaultWrapper = "mesa";
   targets.genericLinux.nixGL.installScripts = ["mesa"];
@@ -147,7 +149,7 @@
 
       # graphical packages
       (config.lib.nixGL.wrap mesa-demos)
-      (config.lib.nixGL.wrap solaar)
+      solaarWrapped
 
       # resolve collisions for generic binaries (cc, c++, ld, etc.)
       (lib.hiPrio gcc) # gcc, g++
@@ -174,6 +176,20 @@
 
     sessionVariables = {
     };
+  };
+
+  xdg.configFile."autostart/solaar.desktop" = lib.mkIf (username == "schan") {
+    text = ''
+      [Desktop Entry]
+      Type=Application
+      Name=Solaar
+      Comment=Logitech Unifying Receiver peripherals manager
+      Exec=${solaarWrapped}/bin/solaar --window=hide
+      Icon=solaar
+      Terminal=false
+      StartupNotify=false
+      X-GNOME-UsesNotifications=true
+    '';
   };
 
   programs.home-manager.enable = true;

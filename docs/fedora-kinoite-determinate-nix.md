@@ -738,8 +738,10 @@ uninstalling it.
 
 Keep the nixGL package input and per-application wrappers on generic Linux even
 though Nix is native; they bridge Nix-built GUI applications to the host
-graphics stack without altering the package set through a nixGL overlay. Solaar
-also continues to depend on host udev permissions.
+graphics stack without altering the package set through a nixGL overlay. On
+worldmind, Home Manager owns the wrapped Solaar executable and user autostart
+entry. The host retains only an explicit `solaar-udev` RPM overlay because
+generic-Linux Home Manager cannot activate udev rules from the Nix store.
 
 ## Existing Toolbox migration record
 
