@@ -20,6 +20,7 @@ in {
       "$HOME/.nix-profile/bin"
       "$HOME/.cargo/bin"
       "$HOME/go/bin"
+      "/nix/var/nix/profiles/default/bin"
     ];
 
     # Change this compatibility floor only after reviewing and applying every

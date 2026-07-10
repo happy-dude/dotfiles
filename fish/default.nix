@@ -17,6 +17,10 @@
 
     shellInit = ''
       ${builtins.readFile .config/fish/config.fish}
+      ${lib.optionalString (username != "schan") ''
+        fish_add_path -p "$(go env GOPATH)/bin"
+        fish_add_path -p "$HOME/.cargo/bin"
+      ''}
     '';
 
     plugins = [
