@@ -16,6 +16,12 @@ in {
     inherit username;
     homeDirectory = "/home/${username}";
 
+    sessionPath = lib.optionals (username == "schan") [
+      "$HOME/.nix-profile/bin"
+      "$HOME/.cargo/bin"
+      "$HOME/go/bin"
+    ];
+
     # Change this compatibility floor only after reviewing and applying every
     # intervening Home Manager migration.
     stateVersion = "26.11";
