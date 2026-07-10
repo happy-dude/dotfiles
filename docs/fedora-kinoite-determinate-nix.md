@@ -97,9 +97,10 @@ planner plus the local mountpoint helper. Community posts and gists are useful
 leads, but they are not the authority for a future Fedora release.
 
 The NixOS `services.flatpak` module is also not applicable: this is standalone
-Home Manager on Kinoite. Optional declarative Flatpak management would require a
-separately pinned Home Manager module such as `nix-flatpak` or
-`declarative-flatpak`, while Fedora continues to provide Flatpak and its portals.
+Home Manager on Kinoite. The separately pinned `nix-flatpak` Home Manager module
+converges the declared user installation, while Fedora continues to provide the
+Flatpak executable and portals. Its Home Manager service cannot manage or
+remove system-scoped refs.
 
 ## 1. Preflight a fresh or migrating host
 
@@ -660,9 +661,38 @@ optional HTTP service: the locked upstream can listen on non-loopback addresses.
 ### Flatpak and other host integration
 
 Native `/nix` does not bypass Flatpak sandboxing. Fedora remains responsible for
-Flatpak and Plasma portals. Before adopting a third-party declarative module,
-record user and system remotes, applications, overrides, and application data.
-Start with existing user Flatpaks and preserve unmanaged/system applications.
+Flatpak and Plasma portals. The pinned `nix-flatpak` v0.7.0 Home Manager module
+declares user applications in `flatpak/default.nix`. It leaves unmanaged apps,
+unused runtimes, existing overrides, and updates untouched. A Home Manager
+activation installs missing declarations but never changes the system Flatpak
+installation.
+
+qView is declared from Flathub. Firefox Nightly is declared through the
+commit-pinned upstream `firefox-nightly.flatpakref`, which records its `master`
+branch, `firefoxnightly-origin` remote, repository URL, and signing key. Do not
+replace that descriptor with a raw remote URL or a nonexistent nix-flatpak
+`branch` option. Stable Firefox uses the different `org.mozilla.firefox` ID and
+is not a substitute for `org.mozilla.FirefoxNightly`.
+
+The qView and Firefox Nightly system-to-user migration is deliberately staged:
+
+1. Close both applications and back up their existing `~/.var/app` directories.
+2. Record system and user refs, remotes, overrides, permissions, and commits.
+3. Activate Home Manager while retaining the system refs.
+4. Test the new copies explicitly with
+   `flatpak run --user com.interversehq.qView` and
+   `flatpak run --user org.mozilla.FirefoxNightly`. Do not run both Firefox
+   Nightly scopes simultaneously against the shared profile.
+5. Confirm qView preferences and Firefox bookmarks, extensions, and
+   `about:profiles` state. Both scopes use the same application-ID-keyed paths
+   below `~/.var/app`; no profile copy is expected when the ID is unchanged.
+6. Only after validation, explicitly uninstall each system ref without
+   `--delete-data`. Keep remote and unused-runtime cleanup as a separate audit.
+
+While both scopes exist, unqualified `flatpak run` selects the user ref first.
+Always pass `--user` or `--system` during migration, and never use
+`--delete-data`: it would remove the application-ID-keyed user state and
+permission-store entries shared by the migration.
 
 Keep `dev.edfloreshz.CosmicTweaks` unmanaged during the native migration. Remove
 this user-scoped Flatpak explicitly only after application migration is complete
