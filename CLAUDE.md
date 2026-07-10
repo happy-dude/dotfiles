@@ -122,6 +122,13 @@ When adding a new Vim or Emacs plugin, add a `[submodule …]` block to `.gitmod
 
 ## Working conventions
 
+- When asking the user to run and return commands from a host, session,
+  container, VM, Toolbox, or other environment the agent cannot access, collect
+  all presently knowable safe read-only checks for that context into one
+  wholesale, clipboard-ready block. Avoid drip-feeding commands that force
+  repeated context switches; return to that context only when prior output
+  genuinely determines the next check or a state-changing step requires
+  separate confirmation.
 - Prefer adding packages to `home.nix`'s `home.packages` list (or to a module's `default.nix`) over installing system-wide. Resolve binary collisions explicitly with `lib.hiPrio` / `lib.lowPrio` as already done for `gcc` / `clang` / `clang-tools` / `llvm` in `home.nix`.
 - Python libraries must go through the existing `python3.withPackages (ps: [ ... ])` entry in `home.packages`, never as bare `python3Packages.*` items. Bare entries only place the library in the Nix store; the wrapper is what makes it importable by the `python3` on `PATH`. After changing it, verify with a fresh shell: `python3 -c "import <module>"`.
 - Package ownership follows four tiers: retain the tested base image; use rpm-ostree only for host integration such as input methods and udev rules; use user Flatpak for ordinary desktop applications; use Nix/Home Manager for the remaining user tools and packages. Do not enable `nix-flatpak` on `stachan` unless its host Flatpak/AppArmor boundary is deliberately redesigned.
