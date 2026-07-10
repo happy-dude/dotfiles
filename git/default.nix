@@ -2,9 +2,7 @@
   config,
   lib,
   ...
-}:
-
-{
+}: {
   # Per-machine identity + signing (user.email, user.signingkey, commit/tag
   # gpgsign) live in an untracked ~/.config/git/local.config, included below —
   # keys and email differ per box (git/local.config.example is the template).
@@ -19,7 +17,7 @@
     ignores = lib.splitString "\n" (builtins.readFile ./.gitignore_global);
 
     includes = [
-      { path = "${config.home.homeDirectory}/.config/git/local.config"; }
+      {path = "${config.home.homeDirectory}/.config/git/local.config";}
     ];
 
     settings = {

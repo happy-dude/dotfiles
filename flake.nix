@@ -134,117 +134,240 @@
       url = "github:jethrokuan/z";
       flake = false;
     };
-
   };
 
-  outputs =
-    {
-      nixpkgs,
-      home-manager,
-      nixgl,
-      ghostty,
-      treefmt-nix,
-      self,
-      ...
-    }@inputs:
-    let
-      lib = nixpkgs.lib;
-      system = "x86_64-linux";
-      #system = "aarch64-linux";
-      pkgs = import nixpkgs {
-        inherit system;
-        overlays = [
-          inputs.neovim-nightly-overlay.overlays.default
-          inputs.rust-overlay.overlays.default
-          ghostty.overlays.default
-          nixgl.overlay
-          (final: prev: {
-            roswell = prev.roswell.overrideAttrs (_: {
-              src = inputs.roswell_src;
-            });
-          })
+  outputs = {
+    nixpkgs,
+    home-manager,
+    nixgl,
+    ghostty,
+    treefmt-nix,
+    self,
+    ...
+  } @ inputs: let
+    lib = nixpkgs.lib;
+    system = "x86_64-linux";
+    #system = "aarch64-linux";
+    pkgs = import nixpkgs {
+      inherit system;
+      overlays = [
+        inputs.neovim-nightly-overlay.overlays.default
+        inputs.rust-overlay.overlays.default
+        ghostty.overlays.default
+        nixgl.overlay
+        (final: prev: {
+          roswell = prev.roswell.overrideAttrs (_: {
+            src = inputs.roswell_src;
+          });
+        })
+      ];
+    };
+    # Build a Home Manager config for a user, desktop, and Rime deployment.
+    # The username determines /home/<username>; desktop selects session
+    # integration; rimeDeployment selects Nix or legacy Stow file management.
+    mkHome = {
+      username,
+      desktop,
+      rimeDeployment ? "nix",
+    }:
+      home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        extraSpecialArgs = {
+          inherit
+            inputs
+            username
+            desktop
+            rimeDeployment
+            ;
+        };
+
+        modules = [
+          ./home.nix
+          ./aerc
+          ./bat
+          ./emacs
+          ./fish
+          ./fonts
+          ./ghostty
+          ./git
+          ./nix
+          ./rime
+          ./rime/gnome.nix
+          ./rustowl
+          ./tldr
+          ./tmux
+          ./wezterm
+          ./vim
+          ./xdg
+          ./yt-dlp
+          ./zed
+          ./zsh
         ];
       };
-      # Build a Home Manager config for a user, desktop, and Rime deployment.
-      # The username determines /home/<username>; desktop selects session
-      # integration; rimeDeployment selects Nix or legacy Stow file management.
-      mkHome =
-        {
-          username,
-          desktop,
-          rimeDeployment ? "nix",
-        }:
-        home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-          extraSpecialArgs = {
-            inherit
-              inputs
-              username
-              desktop
-              rimeDeployment
-              ;
-          };
 
-          modules = [
-            ./home.nix
-            ./aerc
-            ./bat
-            ./emacs
-            ./fish
-            ./fonts
-            ./ghostty
-            ./git
-            ./nix
-            ./rime
-            ./rime/gnome.nix
-            ./rustowl
-            ./tldr
-            ./tmux
-            ./wezterm
-            ./vim
-            ./xdg
-            ./yt-dlp
-            ./zed
-            ./zsh
+    # One `nix fmt` for the whole repo: clang-format (C/C++), Alejandra (Nix),
+    # fish_indent, shfmt, StyLua, Prettier, and Taplo.
+    # shfmt/prettier honor the root .editorconfig; stylua honors
+    # .stylua.toml. Submodule *contents* aren't tracked by this repo, so
+    # treefmt's Git walk skips them.
+    treefmtEval = treefmt-nix.lib.evalModule pkgs {
+      projectRootFile = "flake.nix";
+      programs = {
+        clang-format = {
+          enable = true;
+          includes = [
+            "*.c"
+            "*.cc"
+            "*.cpp"
+            "*.cxx"
+            "*.h"
+            "*.hh"
+            "*.hpp"
+            "*.hxx"
           ];
         };
-
-      # One `nix fmt` for the whole repo: nixfmt (.nix), shfmt (shell), stylua
-      # (lua), prettier (json/md/yaml), taplo (toml). shfmt/prettier honor the
-      # root .editorconfig; stylua honors .stylua.toml. Submodule *contents*
-      # aren't tracked by this repo so treefmt's git walk skips them; the
-      # excludes below cover tracked-but-vendored/generated trees.
-      treefmtEval = treefmt-nix.lib.evalModule pkgs {
-        projectRootFile = "flake.nix";
-        programs = {
-          nixfmt.enable = true;
-          shfmt.enable = true;
-          stylua.enable = true;
-          prettier.enable = true;
-          taplo.enable = true;
+        alejandra.enable = true;
+        fish_indent = {
+          enable = true;
+          includes = [
+            "*.fish"
+          ];
         };
-        settings.global.excludes = [
-          "other/**" # non-managed reference configs
-          "karabiner/**" # macOS + generated backups
-          "rime/**/*.yaml" # input-method schemas and dictionaries (data, not code)
-          "*.lock"
-          "LICENSE"
-        ];
+        shfmt = {
+          enable = true;
+          useEditorConfig = true;
+        };
+        stylua.enable = true;
+        prettier.enable = true;
+        taplo.enable = true;
       };
-    in
-    {
-      homeConfigurations = {
-        "schan" = mkHome {
-          username = "schan";
-          desktop = "plasma";
-          rimeDeployment = "nix";
-        };
-        "stachan" = mkHome {
-          username = "stachan";
-          desktop = "gnome";
-          rimeDeployment = "nix";
-        };
-      };
-      formatter.${system} = treefmtEval.config.build.wrapper;
+      settings.global.excludes = [
+        "other/**" # non-managed reference configs
+        "karabiner/**" # macOS + generated backups
+        "rime/**/*.yaml" # input-method schemas and dictionaries (data, not code)
+        "*.lock"
+        "LICENSE"
+      ];
     };
+  in {
+    homeConfigurations = {
+      "schan" = mkHome {
+        username = "schan";
+        desktop = "plasma";
+        rimeDeployment = "nix";
+      };
+      "stachan" = mkHome {
+        username = "stachan";
+        desktop = "gnome";
+        rimeDeployment = "nix";
+      };
+    };
+    formatter.${system} = treefmtEval.config.build.wrapper;
+
+    checks.${system} = {
+      formatting = treefmtEval.config.build.check self;
+
+      scripts =
+        pkgs.runCommand "dotfiles-script-checks"
+        {
+          nativeBuildInputs = [
+            pkgs.bash
+            pkgs.fish
+            pkgs.shellcheck
+            pkgs.zsh
+          ];
+        }
+        ''
+          for script in ${self}/scripts/*.sh; do
+            bash -n "$script"
+            shellcheck -x -a "$script"
+          done
+
+          for script in ${self}/fish/.config/fish/*.fish; do
+            fish --no-execute "$script"
+          done
+
+          for script in ${self}/zsh/.zshenv ${self}/zsh/.config/zsh/.z*; do
+            if [ -f "$script" ]; then
+              zsh -n "$script"
+            fi
+          done
+
+          cp ${self}/.gitmodules .gitmodules
+          bash ${self}/scripts/sort_gitmodules.sh --check
+
+          touch "$out"
+        '';
+
+      emacs =
+        pkgs.runCommand "dotfiles-emacs-checks"
+        {
+          nativeBuildInputs = [
+            pkgs.emacs-nox
+            pkgs.findutils
+          ];
+        }
+        ''
+          while IFS= read -r -d ''' file; do
+            emacs --batch --quick "$file" --eval '(check-parens)'
+          done < <(find ${self} -type f -name '*.el' -print0)
+
+          while IFS= read -r -d ''' file; do
+            emacs --batch --quick "$file" \
+              --eval "(require 'org-lint)" \
+              --eval '(let ((reports (org-lint))) (when reports (error "%s: %S" buffer-file-name reports)))'
+          done < <(find ${self} -type f -name '*.org' -print0)
+
+          touch "$out"
+        '';
+
+      workflow =
+        pkgs.runCommand "dotfiles-workflow-check"
+        {
+          nativeBuildInputs = [
+            pkgs.actionlint
+            pkgs.findutils
+            pkgs.pinact
+          ];
+        }
+        ''
+          find ${self}/.github/workflows -type f \
+            \( -name '*.yml' -o -name '*.yaml' \) \
+            -exec actionlint {} +
+
+          cd ${self}
+          pinact run --check
+
+          touch "$out"
+        '';
+
+      rime-lua =
+        pkgs.runCommand "dotfiles-rime-lua-tests"
+        {
+          nativeBuildInputs = [
+            pkgs.findutils
+            pkgs.lua
+          ];
+        }
+        ''
+          find ${self}/rime -type f -name '*.lua' -exec luac -p {} +
+
+          cd ${self}
+          lua rime/tests/cangjie5_colemak_remap.lua
+          lua rime/tests/romanization.lua
+
+          touch "$out"
+        '';
+
+      secrets =
+        pkgs.runCommand "dotfiles-secret-scan"
+        {
+          nativeBuildInputs = [pkgs.gitleaks];
+        }
+        ''
+          gitleaks dir --no-banner --no-color --redact ${self}
+          touch "$out"
+        '';
+    };
+  };
 }

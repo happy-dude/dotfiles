@@ -12,99 +12,84 @@
 ###################################################################################################
 
 # Check if Git is installed and clone the repository and all submodules
-$(which git) --version 2>&1 >/dev/null # improvement by tripleee
-GIT_IS_AVAILABLE=$?
-
-if [ $GIT_IS_AVAILABLE -eq 0 ]; then
-  GIT_PATH=$(which git)
-  GIT_OPTS="clone --recursive https://github.com/Happy-Dude/dotfiles.git $HOME/dotfiles"
-  GIT_UPDATE_OPTS="submodule update --init --recursive"
-  GIT_SUB_CHECKOUT="submodule foreach $GIT_PATH checkout master"
-
+if GIT_PATH="$(command -v git 2>/dev/null)"; then
   echo "Git found: cloning dotfiles repository into $HOME/dotfiles"
-  $GIT_PATH $GIT_OPTS
-  $GIT_PATH $GIT_SUB_OPTS
-  $GIT_PATH $GIT_UPDATE_OPTS
-  $GIT_PATH $GIT_SUB_CHECKOUT
-
+  "$GIT_PATH" clone --recursive \
+    https://github.com/Happy-Dude/dotfiles.git \
+    "$HOME/dotfiles"
+  "$GIT_PATH" -C "$HOME/dotfiles" submodule update --init --recursive
+  "$GIT_PATH" -C "$HOME/dotfiles" submodule foreach 'git checkout master'
 else
   echo "Git not found; please install git or download the zip archive of repo"
 fi
 
-$(which vim) --version 2>&1 >/dev/null
-VIM_IS_AVAILABLE=$?
-
-if [ $VIM_IS_AVAILABLE -eq 0 ]; then
+if command -v vim >/dev/null 2>&1; then
   echo "vim found"
 
-  if [ -f $HOME/.vimrc ]; then
+  if [ -f "$HOME/.vimrc" ]; then
     echo "Backing up existing .vimrc file to .vimrc.bak"
-    mv $HOME/.vimrc $HOME/.vimrc.bak
+    mv "$HOME/.vimrc" "$HOME/.vimrc.bak"
   fi
 
-  if [ -d $HOME/.cache ]; then
-    if [ -d $HOME/.cache/vim ]; then
+  if [ -d "$HOME/.cache" ]; then
+    if [ -d "$HOME/.cache/vim" ]; then
       echo "Backing up existing vim cache directory in .cache"
-      mv $HOME/.cache/vim $HOME/.cache/vim.bak
+      mv "$HOME/.cache/vim" "$HOME/.cache/vim.bak"
     fi
   fi
 
   echo "Creating vim backup, cache, undo, and view directories in $HOME/.cache/vim"
-  mkdir -p $HOME/.cache/vim $HOME/.cache/vim/backup $HOME/.cache/vim/swap $HOME/.cache/vim/undo $HOME/.cache/vim/view
+  mkdir -p \
+    "$HOME/.cache/vim" \
+    "$HOME/.cache/vim/backup" \
+    "$HOME/.cache/vim/swap" \
+    "$HOME/.cache/vim/undo" \
+    "$HOME/.cache/vim/view"
 
   echo "Linking $HOME/dotfiles/vim to $HOME/.vim"
-  ln -s $HOME/dotfiles/vim $HOME/.vim
+  ln -s "$HOME/dotfiles/vim" "$HOME/.vim"
 
   echo "Linking $HOME/dotfiles/vim/vimrc to $HOME/.vimrc"
-  ln -s $HOME/dotfiles/vim/vimrc $HOME/.vimrc
+  ln -s "$HOME/dotfiles/vim/vimrc" "$HOME/.vimrc"
 fi
 
-$(which nvim) --version 2>&1 >/dev/null
-NVIM_IS_AVAILABLE=$?
-
-if [ $NVIM_IS_AVAILABLE -eq 0 ]; then
+if command -v nvim >/dev/null 2>&1; then
   echo "nvim found"
 
-  if [ -f $HOME/.nvimrc ]; then
+  if [ -f "$HOME/.nvimrc" ]; then
     echo "Backing up existing .nvimrc file to .nvimrc.bak"
-    mv $HOME/.nvimrc $HOME/.nvimrc.bak
+    mv "$HOME/.nvimrc" "$HOME/.nvimrc.bak"
   fi
 
   echo "Linking $HOME/dotfiles/vim to $HOME/.nvim"
-  ln -s $HOME/dotfiles/vim $HOME/.nvim
+  ln -s "$HOME/dotfiles/vim" "$HOME/.nvim"
 
   echo "Linking $HOME/dotfiles/vim/vimrc to $HOME/.nvimrc"
-  ln -s $HOME/dotfiles/vim/vimrc $HOME/.nvimrc
+  ln -s "$HOME/dotfiles/vim/vimrc" "$HOME/.nvimrc"
 fi
 
-$(which tmux) -V 2>&1 >/dev/null
-TMUX_IS_AVAILABLE=$?
-
-if [ $TMUX_IS_AVAILABLE -eq 0 ]; then
+if command -v tmux >/dev/null 2>&1; then
   echo "tmux found"
 
-  if [ -f $HOME/.tmux.conf ]; then
+  if [ -f "$HOME/.tmux.conf" ]; then
     echo "Backing up existing .tmux.conf file to .tmux.conf.bak"
-    mv $HOME/.tmux.conf $HOME/.tmux.conf.bak
+    mv "$HOME/.tmux.conf" "$HOME/.tmux.conf.bak"
   fi
 
   echo "Linking $HOME/dotfiles/tmux/tmux.conf to $HOME/.tmux.conf"
-  ln -s $HOME/dotfiles/tmux/tmux.conf $HOME/.tmux.conf
+  ln -s "$HOME/dotfiles/tmux/tmux.conf" "$HOME/.tmux.conf"
 fi
 
-$(which zsh) --version 2>&1 >/dev/null
-ZSH_IS_AVAILABLE=$?
-
-if [ $ZSH_IS_AVAILABLE -eq 0 ]; then
+if command -v zsh >/dev/null 2>&1; then
   echo "zsh found"
 
-  if [ -f $HOME/.zshrc ]; then
+  if [ -f "$HOME/.zshrc" ]; then
     echo "Backing up existing .zshrc file to .zshrc.bak"
-    mv $HOME/.zshrc $HOME/.zshrc.bak
+    mv "$HOME/.zshrc" "$HOME/.zshrc.bak"
   fi
 
   echo "Linking Sorin's zsh-prezto"
-  ln -s ~/dotfiles/zsh/prezto-sorin ~/.zprezto
+  ln -s "$HOME/dotfiles/zsh/prezto-sorin" "$HOME/.zprezto"
   for rcfile in "${ZDOTDIR:-$HOME}"/.zprezto/runcoms/*; do
     base="$(basename "$rcfile")"
     [ "$base" = "README.md" ] && continue
@@ -112,12 +97,10 @@ if [ $ZSH_IS_AVAILABLE -eq 0 ]; then
   done
 
   echo "Changing default shell to zsh"
-  chsh -s $(which zsh)
+  chsh -s "$(command -v zsh)"
 fi
 
-$(which iptables) -V 2>&1 >/dev/null
-IPTABLES_IS_AVAILABLE=$?
-if [ $IPTABLES_IS_AVAILABLE -eq 0 ]; then
+if command -v iptables >/dev/null 2>&1; then
   echo "iptables found"
 
   if [ -f "/etc/iptables/iptables.rules" ]; then
@@ -126,15 +109,13 @@ if [ $IPTABLES_IS_AVAILABLE -eq 0 ]; then
   fi
 
   echo "Linking $HOME/dotfiles/iptables/iptables.rules to /etc/iptables/iptables.rules"
-  ln -s $HOME/dotfiles/iptables/iptables.rules /etc/iptables/iptables.rules
+  ln -s "$HOME/dotfiles/iptables/iptables.rules" /etc/iptables/iptables.rules
 
   echo "Enabling iptables systemd unit"
   systemctl enable iptables.service
 fi
 
-$(which ip6tables) -V 2>&1 >/dev/null
-IP6TABLES_IS_AVAILABLE=$?
-if [ $IP6TABLES_IS_AVAILABLE -eq 0 ]; then
+if command -v ip6tables >/dev/null 2>&1; then
   echo "IP6Tables found"
 
   if [ -f "/etc/iptables/ip6tables.rules" ]; then
@@ -143,15 +124,13 @@ if [ $IP6TABLES_IS_AVAILABLE -eq 0 ]; then
   fi
 
   echo "Linking $HOME/dotfiles/iptables/ip6tables.rules to /etc/ip6tables/iptables.rules"
-  ln -s $HOME/dotfiles/iptables/ip6tables.rules /etc/ip6tables/iptables.rules
+  ln -s "$HOME/dotfiles/iptables/ip6tables.rules" /etc/ip6tables/iptables.rules
 
   echo "Enabling ip6tables systemd unit"
   systemctl enable ip6tables.service
 fi
 
-$(which slim) -v 2>&1 >/dev/null
-SLIM_IS_AVAILABLE=$?
-if [ $SLIM_IS_AVAILABLE -eq 0 ]; then
+if command -v slim >/dev/null 2>&1; then
   echo "slim found"
 
   if [ -f "/etc/slim.conf" ]; then
@@ -160,7 +139,7 @@ if [ $SLIM_IS_AVAILABLE -eq 0 ]; then
   fi
 
   echo "Linking $HOME/dotfiles/slim/slim.conf to /etc/slim/slim.conf"
-  ln -s $HOME/dotfiles/slim/slim.conf /etc/slim/slim.conf
+  ln -s "$HOME/dotfiles/slim/slim.conf" /etc/slim/slim.conf
 
   echo "Enabling slim systemd unit"
   systemctl enable slim.service

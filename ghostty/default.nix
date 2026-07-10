@@ -1,9 +1,11 @@
-{ config, pkgs, ... }:
-
 {
+  config,
+  pkgs,
+  ...
+}: {
   programs.ghostty = {
     enable = true;
-    package = (config.lib.nixGL.wrap pkgs.ghostty);
+    package = config.lib.nixGL.wrap pkgs.ghostty;
 
     enableBashIntegration = true;
     enableFishIntegration = true;

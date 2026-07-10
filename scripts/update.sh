@@ -344,7 +344,7 @@ run_flake_validation() {
     return 127
   fi
 
-  nix flake check --show-trace --no-write-lock-file || status=$?
+  nix flake check --show-trace --no-update-lock-file || status=$?
 
   if [ "$status" -ne 0 ]; then
     warn "nix flake check failed (exit code: $status)"
@@ -370,7 +370,7 @@ run_home_manager_build() {
     --flake "$HOME_MANAGER_FLAKE" \
     --show-trace \
     --no-out-link \
-    --no-write-lock-file || status=$?
+    --no-update-lock-file || status=$?
 
   if [ "$status" -ne 0 ]; then
     warn "home-manager build failed (exit code: $status)"
@@ -400,7 +400,7 @@ run_home_manager_switch() {
   home-manager switch \
     --flake "$HOME_MANAGER_FLAKE" \
     --show-trace \
-    --no-write-lock-file || status=$?
+    --no-update-lock-file || status=$?
 
   if [ "$status" -ne 0 ]; then
     warn "home-manager switch failed (exit code: $status)"

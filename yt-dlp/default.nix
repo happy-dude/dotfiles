@@ -3,9 +3,7 @@
   pkgs,
   lib,
   ...
-}:
-
-let
+}: let
   bgutilProvider = inputs.bgutil_ytdlp_pot_provider;
   bgutilPackageJson = builtins.fromJSON (builtins.readFile "${bgutilProvider}/server/package.json");
   bgutilPackage = pkgs.buildNpmPackage {
@@ -15,7 +13,7 @@ let
     src = "${bgutilProvider}/server";
     npmDepsHash = "sha256-Qwwi6W+Oeu6ZeLmZP5vEfAKOJyivbULR5mlk7tcVIE8=";
 
-    nativeBuildInputs = [ pkgs.pkg-config ];
+    nativeBuildInputs = [pkgs.pkg-config];
     buildInputs = with pkgs; [
       cairo
       giflib
@@ -28,8 +26,8 @@ let
 
     # canvas' prebuilt binary is not part of package-lock.json. Build it from
     # source so this derivation never downloads artifacts during npm rebuild.
-    npmRebuildFlags = [ "--build-from-source" ];
-    npmPruneFlags = [ "--ignore-scripts" ];
+    npmRebuildFlags = ["--build-from-source"];
+    npmPruneFlags = ["--ignore-scripts"];
 
     # Upstream documents `npx tsc` but has no package.json build script.
     buildPhase = ''
@@ -62,15 +60,16 @@ let
   };
 
   serverHome = "${bgutilPackage}/lib/node_modules/bgutil-ytdlp-pot-provider";
-in
-{
+in {
   programs.yt-dlp.enable = true;
 
   xdg.configFile."yt-dlp/plugins/bgutil".source = "${bgutilPackage}/share/yt-dlp/plugins/bgutil";
 
-  xdg.configFile."yt-dlp/config".text = builtins.readFile ./.config/yt-dlp/config + ''
-    --no-js-runtimes
-    --js-runtimes "node:${pkgs.nodejs}/bin/node"
-    --extractor-args "youtubepot-bgutilscript:server_home=${serverHome}"
-  '';
+  xdg.configFile."yt-dlp/config".text =
+    builtins.readFile ./.config/yt-dlp/config
+    + ''
+      --no-js-runtimes
+      --js-runtimes "node:${pkgs.nodejs}/bin/node"
+      --extractor-args "youtubepot-bgutilscript:server_home=${serverHome}"
+    '';
 }

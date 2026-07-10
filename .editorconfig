@@ -14,8 +14,16 @@ indent_size = 4
 indent_style = space
 tab_width = 8
 
+# Man pages
+# Project policy: follow Linux kernel formatting.
+# ref:  https://lkml.org/lkml/2020/7/3/163
+#       https://github.com/vivien/vim-linux-coding-style/blob/master/plugin/linuxsty.vim
+[*.{1,2,3,4,5,6,7,8}]
+indent_style = space
+indent_size = 2
+
 # Assembly
-[*.{s,S,ASM,INC,LST,MAC,NASM,asm,inc,lst,mac,nasm,d80,ASM.txt,INC.txt,LST.txt,MAC.txt,NASM.txt}]
+[*.{asm,ASM,ASM.txt,d80,inc,INC,INC.txt,lst,LST,LST.txt,mac,MAC,MAC.txt,nasm,NASM,NASM.txt,s,S}]
 indent_style = tab
 indent_size = 8
 trim_trailing_whitespace = true
@@ -31,9 +39,19 @@ indent_size = 4
 indent_style = space
 max_line_length = 79
 
+# Linux kernel 2-space files
+# Project policy: follow Linux kernel formatting.
+# ref:  https://lkml.org/lkml/2020/7/3/163
+#       https://github.com/vivien/vim-linux-coding-style/blob/master/plugin/linuxsty.vim
+[*.{bconf,clang-format,cocci,svg,xsl}]
+indent_style = space
+indent_size = 2
+
 # C
 # ref:  https://www.kernel.org/doc/html/v4.10/process/coding-style.html
 #       https://lkml.org/lkml/2020/7/3/163
+#       https://github.com/torvalds/linux/blob/master/.clang-format
+# Project policy: follow Linux kernel formatting.
 #       Not used: https://www.gnu.org/prep/standards/standards.html
 [*.{c,h}]
 charset = utf-8
@@ -46,42 +64,52 @@ tab_width = 8
 trim_trailing_whitespace = true
 
 # C++
-# ref:  https://clang.llvm.org/docs/ClangFormatStyleOptions.html
-#       Mozilla: https://firefox-source-docs.mozilla.org/code-quality/coding-style/coding_style_cpp.html
-#       Google: https://google.github.io/styleguide/cppguide.html#Formatting
-[*.{cpp,cc,cxx,hpp,hxx}]
+# General refs: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+#               https://firefox-source-docs.mozilla.org/code-quality/coding-style/coding_style_cpp.html
+#               https://google.github.io/styleguide/cppguide.html#Formatting
+# Project policy: follow Linux kernel formatting instead.
+# ref:  https://github.com/torvalds/linux/blob/master/.clang-format
+[*.{cpp,cc,cxx,hh,hpp,hxx}]
 charset = utf-8
 end_of_line = lf
-indent_size = 2
-indent_style = space
+indent_size = 8
+indent_style = tab
 max_line_length = 80
+tab_width = 8
 trim_trailing_whitespace = true
 
-# Common Lisp, Clojure, and Emacs Lisp
-# ref:  https://google.github.io/styleguide/lispguide.xml#Formatting
-#       https://github.com/bbatsov/clojure-style-guide
-#       https://github.com/bbatsov/emacs-lisp-style-guide#source-code-layout--organization
-#       https://www.gnu.org/software/emacs/manual/html_node/elisp/Tips.html#Tips
-[*.{lisp,lsp,l,cl,fasl,clj,cljs,edn,el}]
+# Kernel configs and device tree files
+# Project policy: follow Linux kernel formatting.
+# ref:  https://lkml.org/lkml/2020/7/3/163
+#       https://github.com/vivien/vim-linux-coding-style/blob/master/plugin/linuxsty.vim
+[{*.dts,*.dtsi,Kconfig}]
+indent_style = tab
+indent_size = 8
+tab_width = 8
+
+# Emacs Lisp
+# General refs: https://github.com/bbatsov/emacs-lisp-style-guide#source-code-layout--organization
+#               https://www.gnu.org/software/emacs/manual/html_node/elisp/Tips.html#Tips
+# Project policy: combine Org mode's GNU conventions with Magit's native,
+# form-aware Lisp indentation.
+# ref:  https://orgmode.org/worg/org-contribute.html#coding-conventions
+#       https://cgit.git.savannah.nongnu.org/cgit/org-mode.git/tree/.dir-locals.el
+#       https://github.com/magit/magit/blob/main/.dir-locals.el
+[*.el]
 charset = utf-8
 end_of_line = lf
 indent_size = 2
 indent_style = space
 insert_final_newline = true
-max_line_length = 80
+max_line_length = 70
 trim_trailing_whitespace = true
 
-# HTML, CSS, XML
-# ref:  https://google.github.io/styleguide/htmlcssguide.html
-#       https://cssguidelin.es/#syntax-and-formatting
-#       https://jonasbn.github.io/til/editorconfig/xml.html
-[*.{html,htm,css,xml,xsd}]
-charset = utf-8
-indent_size = 2
+# Fish
+# Project policy: follow Fish's fish_indent formatter.
+# ref:  https://fishshell.com/docs/current/cmds/fish_indent.html
+[*.fish]
+indent_size = 4
 indent_style = space
-insert_final_newline = true
-max_line_length = 80
-trim_trailing_whitespace = true
 
 # Go
 # ref:  https://golang.org/doc/effective_go.html#formatting
@@ -96,6 +124,18 @@ tab_width = 4
 indent_size = 2
 indent_style = space
 
+# HTML, CSS, XML
+# ref:  https://google.github.io/styleguide/htmlcssguide.html
+#       https://cssguidelin.es/#syntax-and-formatting
+#       https://jonasbn.github.io/til/editorconfig/xml.html
+[*.{html,css,htm,xml,xsd}]
+charset = utf-8
+indent_size = 2
+indent_style = space
+insert_final_newline = true
+max_line_length = 80
+trim_trailing_whitespace = true
+
 # Java
 # ref:  https://google.github.io/styleguide/javaguide.html#s4-formatting
 [*.java]
@@ -107,10 +147,11 @@ max_line_length = 100
 # ref:  https://firefox-source-docs.mozilla.org/code-quality/coding-style/coding_style_js.html
 #       https://github.com/feross/standard
 #       python -m json.tool uses 4 spaces
-[*.{cjs,js,json,jsx,mjs,ts,tsx}]
+# Project policy: follow Ghostty's default Prettier formatting instead.
+[*.{js,cjs,json,jsx,mjs,ts,tsx}]
 charset = utf-8
 end_of_line = lf
-indent_size = 4
+indent_size = 2
 indent_style = space
 insert_final_newline = true
 trim_trailing_whitespace = true
@@ -129,44 +170,63 @@ max_line_length = 100
 indent_size = 2
 indent_style = space
 
+# Common Lisp and Clojure
+# ref:  https://google.github.io/styleguide/lispguide.xml#Formatting
+#       https://github.com/bbatsov/clojure-style-guide
+[*.{lisp,cl,clj,cljs,edn,fasl,l,lsp}]
+charset = utf-8
+end_of_line = lf
+indent_size = 2
+indent_style = space
+insert_final_newline = true
+max_line_length = 80
+trim_trailing_whitespace = true
+
 # Lua
 # ref:  http://lua-users.org/wiki/LuaStyleGuide
 #       https://github.com/johnnymorganz/stylua
 #       https://github.com/neovim/neovim/pull/14987
+#       https://github.com/neovim/neovim/blob/master/.stylua.toml
+# Project policy: follow Neovim's StyLua configuration.
 [*.lua]
 charset = utf-8
 end_of_line = lf
 indent_size = 2
 indent_style = space
-max_line_length = 120
+max_line_length = 100
 
-# Makefiles
-# ref:  https://www.gnu.org/prep/standards/html_node/Makefile-Basics.html#Makefile-Basics
-[{[Mm]akefile,*.mak,*.mk,depend}]
-indent_style = tab
+# Objective-C
+# ref:  https://google.github.io/styleguide/objcguide.html
+[*.{m,mm}]
+indent_size = 2
+indent_style = space
+max_line_length = 100
 
 # Markdown
 # ref:  https://github.com/github/markup/blob/master/lib/github/markup/markdown.rb#L32
 #       https://spec.commonmark.org/0.28/#tabs
-[*.{md,mkd,mkdn,mdwn,mdown,markdown,litcoffee}]
-indent_size = 4
+# Project policy: follow Ghostty's default Prettier formatting.
+[*.{md,litcoffee,markdown,mdown,mkd,mkdn,mdwn}]
+indent_size = 2
 indent_style = space
 insert_final_newline = true
 max_line_length = 80
 trim_trailing_whitespace = true
 
-# Perl
-# ref:  https://jonasbn.github.io/til/editorconfig/perl.html
-#       https://perldoc.perl.org/perlstyle.html
-#       http://perltidy.sourceforge.net/stylekey.html
-[*.{pl,pm,t,PL}]
-charset = utf-8
-end_of_line = lf
-indent_size = 4
+# Makefiles
+# ref:  https://www.gnu.org/prep/standards/html_node/Makefile-Basics.html#Makefile-Basics
+[{*.mk,*.mak,[Mm]akefile,depend}]
+indent_style = tab
+indent_size = 8
+
+# Org
+# Project policy: combine Org mode's no-tabs, 70-column editing settings with
+# Magit's source-block indentation policy.
+# ref:  https://cgit.git.savannah.nongnu.org/cgit/org-mode.git/tree/.dir-locals.el
+#       https://github.com/magit/magit/blob/main/docs/Makefile
+[*.org]
 indent_style = space
-insert_final_newline = true
-max_line_length = 80
-trim_trailing_whitespace = true
+max_line_length = 70
 
 # PHP
 # ref:  https://www.php-fig.org/psr/psr-2/
@@ -175,12 +235,25 @@ indent_size = 4
 indent_style = space
 max_line_length = 80
 
+# Perl
+# ref:  https://jonasbn.github.io/til/editorconfig/perl.html
+#       https://perldoc.perl.org/perlstyle.html
+#       http://perltidy.sourceforge.net/stylekey.html
+[*.{pl,PL,pm,t}]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+max_line_length = 80
+trim_trailing_whitespace = true
+
 # Python
 # ref:  https://www.python.org/dev/peps/pep-0008/
 [*.py]
 indent_style = space
 indent_size = 4
-trim_trailing_spaces = true
+trim_trailing_whitespace = true
 max_line_length = 79
 
 # R
@@ -191,20 +264,10 @@ indent_style = space
 indent_size = 2
 max_line_length = 80
 
-# reStructuredText
-# https://docutils.sourceforge.io/rst.html
-# ref:  https://docs.typo3.org/m/typo3/docs-how-to-document/master/en-us/GeneralConventions/CodingGuidelines.html
-[{*.rst,*.rst.txt}]
-indent_size = 3
-indent_style = space
-insert_final_newline = true
-max_line_length = 80
-trim_trailing_whitespace = true
-
 # Ruby
 # ref:  https://github.com/ruby/ruby/blob/master/.editorconfig
 #       http://www.caliban.org/ruby/rubyguide.shtml#indentation
-[{*.rb,*.gemspec,Podfile,Fastfile,Matchfile}]
+[{*.rb,*.gemspec,Fastfile,Matchfile,Podfile}]
 end_of_line = lf
 indent_size = 2
 indent_style = space
@@ -220,6 +283,16 @@ insert_final_newline = true
 max_line_length = 100
 trim_trailing_whitespace = true
 
+# reStructuredText
+# https://docutils.sourceforge.io/rst.html
+# ref:  https://docs.typo3.org/m/typo3/docs-how-to-document/master/en-us/GeneralConventions/CodingGuidelines.html
+[{*.rst,*.rst.txt}]
+indent_size = 3
+indent_style = space
+insert_final_newline = true
+max_line_length = 80
+trim_trailing_whitespace = true
+
 # SASS
 # ref:  https://sass-guidelin.es/#syntax--formatting
 [*.{sass,scss}]
@@ -230,7 +303,8 @@ trim_trailing_whitespace = true
 
 # Shell
 # ref:  https://google.github.io/styleguide/shellguide.html#s5-formatting
-[*.{bash,sh,zsh}]
+# Project policy: follow Ghostty's two-space shell override.
+[*.{sh,bash,zsh}]
 indent_size = 2
 indent_style = space
 max_line_length = 80
@@ -246,13 +320,23 @@ indent_style = tab
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-# Swift and Objective-C
-# ref:  https://google.github.io/swift/
-#       https://google.github.io/styleguide/objcguide.html
-[*.{swift,m,mm}]
-indent_size = 2
+# Swift
+# General ref: https://google.github.io/swift/
+# Project policy: follow Ghostty's four-space Swift override instead.
+# ref:  https://github.com/ghostty-org/ghostty/blob/main/.editorconfig
+[*.swift]
+indent_size = 4
 indent_style = space
 max_line_length = 100
+trim_trailing_whitespace = true
+
+# Linux kernel 4-space files
+# Project policy: follow Linux kernel formatting.
+# ref:  https://lkml.org/lkml/2020/7/3/163
+#       https://github.com/vivien/vim-linux-coding-style/blob/master/plugin/linuxsty.vim
+[*.{tc}]
+indent_style = space
+indent_size = 4
 
 # TOML
 # ref:  https://toml.io/en/v1.0.0-rc.2
@@ -261,255 +345,43 @@ charset = utf-8
 indent_size = 2
 indent_style = space
 
-# YAML
-# ref:  https://yaml.org/spec/1.2/spec.html#Syntax
-[*.{yml,yaml}]
-charset = utf-8
-indent_size = 2
-indent_style = space
-
 # Vimscript
-# ref:  https://google.github.io/styleguide/vimscriptguide.xml#Style
-[*{.vim,.vimrc}]
+# General ref: https://google.github.io/styleguide/vimscriptguide.xml#Style
+# Project policy: follow Neovim's two-space Vimscript defaults instead.
+# ref:  https://github.com/neovim/neovim/blob/master/.editorconfig
+[*.vim]
 charset = utf-8
 indent_size = 2
 indent_style = space
-max_line_length = 80
 trim_trailing_whitespace = false
 
-
-# Linux Kernel styles
-# ref:  https://lkml.org/lkml/2020/7/3/163
-#       https://github.com/vivien/vim-linux-coding-style/blob/master/plugin/linuxsty.vim
-
-# Kernel configs and device tree files
-[{Kconfig,*.dts,*.dtsi}]
-indent_style = tab
-indent_size = 8
-tab_width = 8
-
-# General 4-space files
-[*.{tc}]
-indent_style = space
-indent_size = 4
-
-# General 2-space files
-[*.{rb,cocci,xsl,svg,bconf,clang-format}]
-indent_style = space
+# YAML
+# ref:  https://yaml.org/spec/1.2/spec.html#Syntax
+[*.{yaml,yml}]
+charset = utf-8
 indent_size = 2
+indent_style = space
+
+# Zig
+# ref:  https://github.com/neovim/neovim/blob/master/.editorconfig
+[*.zig]
+indent_size = 4
+indent_style = space
+
+# Vim configuration filenames
+# General ref: https://google.github.io/styleguide/vimscriptguide.xml#Style
+# Project policy: follow Neovim's two-space Vimscript defaults instead.
+# ref:  https://github.com/neovim/neovim/blob/master/.editorconfig
+[{.vimrc,vimrc,vimrc.*}]
+charset = utf-8
+indent_size = 2
+indent_style = space
+trim_trailing_whitespace = false
 
 # Perf script wrappers
+# Project policy: follow Linux kernel formatting.
+# ref:  https://lkml.org/lkml/2020/7/3/163
+#       https://github.com/vivien/vim-linux-coding-style/blob/master/plugin/linuxsty.vim
 [tools/perf/scripts/*/bin/*]
 indent_style = space
 indent_size = 4
-
-# Man pages
-[*.{1,2,3,4,5,6,7,8}]
-indent_style = space
-indent_size = 2
-
-
-# C#
-# ref:  https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference?view=vs-2019
-[*.cs]
-
-#### Core EditorConfig Options ####
-
-# Indentation and spacing
-indent_size = 4
-indent_style = space
-tab_width = 4
-
-# New line preferences
-end_of_line = crlf
-insert_final_newline = false
-
-#### .NET Coding Conventions ####
-
-# Organize usings
-dotnet_separate_import_directive_groups = false
-dotnet_sort_system_directives_first = false
-file_header_template = unset
-
-# this. and Me. preferences
-dotnet_style_qualification_for_event = false:silent
-dotnet_style_qualification_for_field = false:silent
-dotnet_style_qualification_for_method = false:silent
-dotnet_style_qualification_for_property = false:silent
-
-# Language keywords vs BCL types preferences
-dotnet_style_predefined_type_for_locals_parameters_members = true:silent
-dotnet_style_predefined_type_for_member_access = true:silent
-
-# Parentheses preferences
-dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity:silent
-dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:silent
-dotnet_style_parentheses_in_other_operators = never_if_unnecessary:silent
-dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity:silent
-
-# Modifier preferences
-dotnet_style_require_accessibility_modifiers = for_non_interface_members:silent
-
-# Expression-level preferences
-dotnet_style_coalesce_expression = true:suggestion
-dotnet_style_collection_initializer = true:suggestion
-dotnet_style_explicit_tuple_names = true:suggestion
-dotnet_style_null_propagation = true:suggestion
-dotnet_style_object_initializer = true:suggestion
-dotnet_style_operator_placement_when_wrapping = beginning_of_line
-dotnet_style_prefer_auto_properties = true:silent
-dotnet_style_prefer_compound_assignment = true:suggestion
-dotnet_style_prefer_conditional_expression_over_assignment = true:silent
-dotnet_style_prefer_conditional_expression_over_return = true:silent
-dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
-dotnet_style_prefer_inferred_tuple_names = true:suggestion
-dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
-dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
-dotnet_style_prefer_simplified_interpolation = true:suggestion
-
-# Field preferences
-dotnet_style_readonly_field = true:suggestion
-
-# Parameter preferences
-dotnet_code_quality_unused_parameters = all:suggestion
-
-# Suppression preferences
-dotnet_remove_unnecessary_suppression_exclusions = none
-
-#### C# Coding Conventions ####
-
-# var preferences
-csharp_style_var_elsewhere = false:silent
-csharp_style_var_for_built_in_types = false:silent
-csharp_style_var_when_type_is_apparent = false:silent
-
-# Expression-bodied members
-csharp_style_expression_bodied_accessors = true:silent
-csharp_style_expression_bodied_constructors = false:silent
-csharp_style_expression_bodied_indexers = true:silent
-csharp_style_expression_bodied_lambdas = true:silent
-csharp_style_expression_bodied_local_functions = false:silent
-csharp_style_expression_bodied_methods = false:silent
-csharp_style_expression_bodied_operators = false:silent
-csharp_style_expression_bodied_properties = true:silent
-
-# Pattern matching preferences
-csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
-csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
-csharp_style_prefer_not_pattern = true:suggestion
-csharp_style_prefer_pattern_matching = true:silent
-csharp_style_prefer_switch_expression = true:suggestion
-
-# Null-checking preferences
-csharp_style_conditional_delegate_call = true:suggestion
-
-# Modifier preferences
-csharp_prefer_static_local_function = true:suggestion
-csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:silent
-
-# Code-block preferences
-csharp_prefer_braces = true:silent
-csharp_prefer_simple_using_statement = true:suggestion
-
-# Expression-level preferences
-csharp_prefer_simple_default_expression = true:suggestion
-csharp_style_deconstructed_variable_declaration = true:suggestion
-csharp_style_inlined_variable_declaration = true:suggestion
-csharp_style_pattern_local_over_anonymous_function = true:suggestion
-csharp_style_prefer_index_operator = true:suggestion
-csharp_style_prefer_range_operator = true:suggestion
-csharp_style_throw_expression = true:suggestion
-csharp_style_unused_value_assignment_preference = discard_variable:suggestion
-csharp_style_unused_value_expression_statement_preference = discard_variable:silent
-
-# 'using' directive preferences
-csharp_using_directive_placement = inside_namespace:silent
-
-#### C# Formatting Rules ####
-
-# New line preferences
-csharp_new_line_before_catch = true
-csharp_new_line_before_else = true
-csharp_new_line_before_finally = true
-csharp_new_line_before_members_in_anonymous_types = true
-csharp_new_line_before_members_in_object_initializers = true
-csharp_new_line_before_open_brace = all
-csharp_new_line_between_query_expression_clauses = true
-
-# Indentation preferences
-csharp_indent_block_contents = true
-csharp_indent_braces = false
-csharp_indent_case_contents = true
-csharp_indent_case_contents_when_block = true
-csharp_indent_labels = one_less_than_current
-csharp_indent_switch_labels = true
-
-# Space preferences
-csharp_space_after_cast = false
-csharp_space_after_colon_in_inheritance_clause = true
-csharp_space_after_comma = true
-csharp_space_after_dot = false
-csharp_space_after_keywords_in_control_flow_statements = true
-csharp_space_after_semicolon_in_for_statement = true
-csharp_space_around_binary_operators = before_and_after
-csharp_space_around_declaration_statements = false
-csharp_space_before_colon_in_inheritance_clause = true
-csharp_space_before_comma = false
-csharp_space_before_dot = false
-csharp_space_before_open_square_brackets = false
-csharp_space_before_semicolon_in_for_statement = false
-csharp_space_between_empty_square_brackets = false
-csharp_space_between_method_call_empty_parameter_list_parentheses = false
-csharp_space_between_method_call_name_and_opening_parenthesis = false
-csharp_space_between_method_call_parameter_list_parentheses = false
-csharp_space_between_method_declaration_empty_parameter_list_parentheses = false
-csharp_space_between_method_declaration_name_and_open_parenthesis = false
-csharp_space_between_method_declaration_parameter_list_parentheses = false
-csharp_space_between_parentheses = false
-csharp_space_between_square_brackets = false
-
-# Wrapping preferences
-csharp_preserve_single_line_blocks = true
-csharp_preserve_single_line_statements = true
-
-#### Naming styles ####
-
-# Naming rules
-
-dotnet_naming_rule.interface_should_be_begins_with_i.severity = suggestion
-dotnet_naming_rule.interface_should_be_begins_with_i.symbols = interface
-dotnet_naming_rule.interface_should_be_begins_with_i.style = begins_with_i
-
-dotnet_naming_rule.types_should_be_pascal_case.severity = suggestion
-dotnet_naming_rule.types_should_be_pascal_case.symbols = types
-dotnet_naming_rule.types_should_be_pascal_case.style = pascal_case
-
-dotnet_naming_rule.non_field_members_should_be_pascal_case.severity = suggestion
-dotnet_naming_rule.non_field_members_should_be_pascal_case.symbols = non_field_members
-dotnet_naming_rule.non_field_members_should_be_pascal_case.style = pascal_case
-
-# Symbol specifications
-
-dotnet_naming_symbols.interface.applicable_kinds = interface
-dotnet_naming_symbols.interface.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-#dotnet_naming_symbols.interface.required_modifiers =
-
-dotnet_naming_symbols.types.applicable_kinds = class, struct, interface, enum
-dotnet_naming_symbols.types.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-#dotnet_naming_symbols.types.required_modifiers =
-
-dotnet_naming_symbols.non_field_members.applicable_kinds = property, event, method
-dotnet_naming_symbols.non_field_members.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-#dotnet_naming_symbols.non_field_members.required_modifiers =
-
-# Naming styles
-
-#dotnet_naming_style.pascal_case.required_prefix =
-#dotnet_naming_style.pascal_case.required_suffix =
-#dotnet_naming_style.pascal_case.word_separator =
-dotnet_naming_style.pascal_case.capitalization = pascal_case
-
-dotnet_naming_style.begins_with_i.required_prefix = I
-#dotnet_naming_style.begins_with_i.required_suffix =
-#dotnet_naming_style.begins_with_i.word_separator =
-dotnet_naming_style.begins_with_i.capitalization = pascal_case

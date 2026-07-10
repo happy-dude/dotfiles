@@ -1,5 +1,15 @@
-; Make org-mode, iOS beorg, emacs, and (Drop)Box sync play well with each other
-; See https://christiantietze.de/posts/2019/03/sync-emacs-org-files/ and https://www.nicklanasa.com/posts/emacs-syncing
+;;; Directory Local Variables            -*- no-byte-compile: t -*-
 
-; Enable auto-revert-mode for buffers from files from this directory:
-((nil . ((eval . (auto-revert-mode 1)))))
+;; Keep Org, beorg, Emacs, and Dropbox synchronization coherent.
+;; See https://christiantietze.de/posts/2019/03/sync-emacs-org-files/
+;; and https://www.nicklanasa.com/posts/emacs-syncing.
+((nil . ((eval . (auto-revert-mode 1))))
+ (org-mode . ((indent-tabs-mode . nil)
+              (tab-width . 8)
+              (fill-column . 70)
+              (sentence-end-double-space . t)
+              (org-adapt-indentation . nil)
+              (org-src-content-indentation . 0)
+              (org-src-preserve-indentation . nil))))
+
+;;; .dir-locals.el ends here

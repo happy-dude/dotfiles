@@ -5,12 +5,10 @@
   inputs,
   username,
   ...
-}:
-
-{
+}: {
   targets.genericLinux.nixGL.packages = inputs.nixgl.packages;
   targets.genericLinux.nixGL.defaultWrapper = "mesa";
-  targets.genericLinux.nixGL.installScripts = [ "mesa" ];
+  targets.genericLinux.nixGL.installScripts = ["mesa"];
 
   home = {
     inherit username;
@@ -84,7 +82,7 @@
       pass
       patch
       perf
-      (perl.withPackages (ps: [ ps.PerlLanguageServer ]))
+      (perl.withPackages (ps: [ps.PerlLanguageServer]))
       pinentry-all
       pkgconf
       prettier
@@ -127,12 +125,13 @@
       # importable by a python3 on PATH. This puts an `import jieba`-capable
       # python3 on PATH, which is what language.md's one-liners rely on.
       (python3.withPackages (
-        ps: with ps; [
-          jedi-language-server
-          jieba
-          pypinyin
-          requests
-        ]
+        ps:
+          with ps; [
+            jedi-language-server
+            jieba
+            pypinyin
+            requests
+          ]
       ))
       sdcv # StarDict console dictionary client (needs a dictionary file, see note below)
       tesseract5 # OCR engine - already bundles chi_sim/chi_tra/eng/epo/ita/pol/spa/vie traineddata, no extra config needed

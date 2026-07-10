@@ -1,13 +1,15 @@
 -- tonal_pinyin.lua (WITH JYUTPING)
 
-local romanization = require("romanization")
+local romanization = require('romanization')
 
 local function get_pinyin(env, char)
   -- Try terra_pinyin first (has tones)
   if env.terra then
-    local ok, code = pcall(function() return env.terra:lookup(char) end)
-    if ok and code and code ~= "" then
-      local first = code:match("^([^\t ]+)")
+    local ok, code = pcall(function()
+      return env.terra:lookup(char)
+    end)
+    if ok and code and code ~= '' then
+      local first = code:match('^([^\t ]+)')
       if first then
         return romanization.convert_tones(first)
       end
@@ -16,9 +18,11 @@ local function get_pinyin(env, char)
 
   -- Fallback to luna_pinyin (no tones)
   if env.luna then
-    local ok, code = pcall(function() return env.luna:lookup(char) end)
-    if ok and code and code ~= "" then
-      local first = code:match("^([^\t ]+)")
+    local ok, code = pcall(function()
+      return env.luna:lookup(char)
+    end)
+    if ok and code and code ~= '' then
+      local first = code:match('^([^\t ]+)')
       if first then
         return first
       end
@@ -30,9 +34,11 @@ end
 
 local function get_jyutping(env, char)
   if env.jyut then
-    local ok, code = pcall(function() return env.jyut:lookup(char) end)
-    if ok and code and code ~= "" then
-      local first = code:match("^([^\t ]+)")
+    local ok, code = pcall(function()
+      return env.jyut:lookup(char)
+    end)
+    if ok and code and code ~= '' then
+      local first = code:match('^([^\t ]+)')
       if first then
         return first
       end
@@ -45,7 +51,7 @@ local function filter(input, env)
   for cand in input:iter() do
     local text = cand.text
 
-    if text and text ~= "" then
+    if text and text ~= '' then
       local pinyin_parts = {}
       local jyutping_parts = {}
 
@@ -67,18 +73,18 @@ local function filter(input, env)
       local comment_parts = {}
 
       if #pinyin_parts > 0 then
-        table.insert(comment_parts, table.concat(pinyin_parts, " "))
+        table.insert(comment_parts, table.concat(pinyin_parts, ' '))
       end
 
       if #jyutping_parts > 0 then
-        table.insert(comment_parts, "[" .. table.concat(jyutping_parts, " ") .. "]")
+        table.insert(comment_parts, '[' .. table.concat(jyutping_parts, ' ') .. ']')
       end
 
       if #comment_parts > 0 then
-        local annotation = table.concat(comment_parts, " ")
-        local existing = cand.comment or ""
-        if existing ~= "" then
-          cand.comment = existing .. " " .. annotation
+        local annotation = table.concat(comment_parts, ' ')
+        local existing = cand.comment or ''
+        if existing ~= '' then
+          cand.comment = existing .. ' ' .. annotation
         else
           cand.comment = annotation
         end
@@ -94,14 +100,20 @@ local function init(env)
   env.luna = nil
   env.jyut = nil
 
-  local ok1, rev1 = pcall(ReverseLookup, "terra_pinyin")
-  if ok1 and rev1 then env.terra = rev1 end
+  local ok1, rev1 = pcall(ReverseLookup, 'terra_pinyin')
+  if ok1 and rev1 then
+    env.terra = rev1
+  end
 
-  local ok2, rev2 = pcall(ReverseLookup, "luna_pinyin")
-  if ok2 and rev2 then env.luna = rev2 end
+  local ok2, rev2 = pcall(ReverseLookup, 'luna_pinyin')
+  if ok2 and rev2 then
+    env.luna = rev2
+  end
 
-  local ok3, rev3 = pcall(ReverseLookup, "jyut6ping3")
-  if ok3 and rev3 then env.jyut = rev3 end
+  local ok3, rev3 = pcall(ReverseLookup, 'jyut6ping3')
+  if ok3 and rev3 then
+    env.jyut = rev3
+  end
 end
 
 return { init = init, func = filter }

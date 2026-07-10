@@ -1,4 +1,4 @@
 {
-    "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
-    "workspace.library": ["${env:VIMRUNTIME}/lua", "${3rd}/luv/library"]
+  "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+  "workspace.library": ["${env:VIMRUNTIME}/lua", "${3rd}/luv/library"]
 }

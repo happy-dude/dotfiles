@@ -3,9 +3,7 @@
   pkgs,
   inputs,
   ...
-}:
-
-{
+}: {
   xdg.configFile."zsh/.p10k.zsh".source = ./.config/zsh/.p10k.zsh;
   xdg.configFile."zsh/.zlogin".source = ./.config/zsh/.zlogin;
   xdg.configFile."zsh/.zlogout".source = ./.config/zsh/.zlogout;
@@ -32,5 +30,4 @@
       ${builtins.readFile ./.zshenv}
     '';
   };
-
 }

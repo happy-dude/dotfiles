@@ -105,6 +105,8 @@
 (load-theme 'solarized-gruvbox-dark t)
 
 ; editorconfig settings
+;; Preserve Emacs' form-aware indentation at the conventional Lisp width.
+(setq editorconfig-lisp-use-default-indent 2)
 (editorconfig-mode 1)
 
 ;; macOS globalcapture support
@@ -148,7 +150,7 @@
 (global-set-key (kbd "C-c c") 'org-capture)
 (setq
   org-src-fontify-natively t
-  org-src-preserve-indentation t
+  org-src-preserve-indentation nil
   org-src-tab-acts-natively t
   ;org-startup-folded nil
   org-startup-indented t

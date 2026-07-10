@@ -12,13 +12,38 @@
 --  符 難 金 女 月 弓 一
 --
 local cangjie_radicals = {
-  q = "手", w = "田", e = "水", r = "口", t = "廿", y = "卜", u = "山", i = "戈", o = "人", p = "心",
-  a = "日", s = "尸", d = "木", f = "火", g = "土", h = "竹", j = "十", k = "大", l = "中",
-  z = "符", x = "難", c = "金", v = "女", b = "月", n = "弓", m = "一"
+  q = '手',
+  w = '田',
+  e = '水',
+  r = '口',
+  t = '廿',
+  y = '卜',
+  u = '山',
+  i = '戈',
+  o = '人',
+  p = '心',
+  a = '日',
+  s = '尸',
+  d = '木',
+  f = '火',
+  g = '土',
+  h = '竹',
+  j = '十',
+  k = '大',
+  l = '中',
+  z = '符',
+  x = '難',
+  c = '金',
+  v = '女',
+  b = '月',
+  n = '弓',
+  m = '一',
 }
 
 local function code_to_radicals(code)
-  if not code or code == "" then return nil end
+  if not code or code == '' then
+    return nil
+  end
   local radicals = {}
   for i = 1, #code do
     local letter = code:sub(i, i):lower()
@@ -28,16 +53,18 @@ local function code_to_radicals(code)
     end
   end
   if #radicals > 0 then
-    return table.concat(radicals, "")
+    return table.concat(radicals, '')
   end
   return nil
 end
 
 local function get_cangjie(env, char)
   if env.cangjie then
-    local ok, code = pcall(function() return env.cangjie:lookup(char) end)
-    if ok and code and code ~= "" then
-      local first = code:match("^([^\t ]+)")
+    local ok, code = pcall(function()
+      return env.cangjie:lookup(char)
+    end)
+    if ok and code and code ~= '' then
+      local first = code:match('^([^\t ]+)')
       if first then
         return first
       end
@@ -50,7 +77,7 @@ local function filter(input, env)
   for cand in input:iter() do
     local text = cand.text
 
-    if text and text ~= "" then
+    if text and text ~= '' then
       local parts = {}
 
       for p, c in utf8.codes(text) do
@@ -62,15 +89,15 @@ local function filter(input, env)
           local radicals = code_to_radicals(code)
 
           if radicals then
-            table.insert(parts, upper_code .. " " .. char .. " " .. radicals)
+            table.insert(parts, upper_code .. ' ' .. char .. ' ' .. radicals)
           else
-            table.insert(parts, upper_code .. " " .. char)
+            table.insert(parts, upper_code .. ' ' .. char)
           end
         end
       end
 
       if #parts > 0 then
-        cand.comment = "| " .. table.concat(parts, " | ") .. " |"
+        cand.comment = '| ' .. table.concat(parts, ' | ') .. ' |'
       end
     end
 
@@ -81,8 +108,10 @@ end
 local function init(env)
   env.cangjie = nil
 
-  local ok, rev = pcall(ReverseLookup, "cangjie5")
-  if ok and rev then env.cangjie = rev end
+  local ok, rev = pcall(ReverseLookup, 'cangjie5')
+  if ok and rev then
+    env.cangjie = rev
+  end
 end
 
 return { init = init, func = filter }

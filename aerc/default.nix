@@ -1,6 +1,8 @@
-{ config, pkgs, ... }:
-
 {
+  config,
+  pkgs,
+  ...
+}: {
   #home.file.".mbsyncrc".source = ./.mbsyncrc;
   #xdg.configFile."notmuch/default/config".source = ./.notmuch-config;
 

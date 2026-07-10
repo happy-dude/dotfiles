@@ -8,7 +8,7 @@
 (global-set-key (kbd "C-c c") 'org-capture)
 (setq
   org-src-fontify-natively t
-  org-src-preserve-indentation t
+  org-src-preserve-indentation nil
   org-src-tab-acts-natively t
   ;org-startup-folded nil
   org-startup-indented t

@@ -1,13 +1,15 @@
-{ config, pkgs, ... }:
-
 {
+  config,
+  pkgs,
+  ...
+}: {
   fonts.fontconfig = {
     enable = true;
     defaultFonts = {
-      serif = [ "Noto Serif" ];
-      sansSerif = [ "Noto Sans" ];
-      monospace = [ "FantasqueSansM Nerd Font Mono" ];
-      emoji = [ "Noto Color Emoji" ];
+      serif = ["Noto Serif"];
+      sansSerif = ["Noto Sans"];
+      monospace = ["FantasqueSansM Nerd Font Mono"];
+      emoji = ["Noto Color Emoji"];
     };
   };
 

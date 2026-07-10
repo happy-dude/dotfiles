@@ -3,9 +3,7 @@
   lib,
   pkgs,
   ...
-}:
-
-let
+}: let
   src = inputs.rustowl_src;
   cargoManifest = builtins.fromTOML (builtins.readFile "${src}/Cargo.toml");
   toolchainConfig = builtins.fromTOML (builtins.readFile "${src}/rust-toolchain.toml");
@@ -24,8 +22,8 @@ let
     inherit src;
 
     cargoLock.lockFile = "${src}/Cargo.lock";
-    nativeBuildInputs = [ pkgs.pkg-config ];
-    buildInputs = [ pkgs.openssl ];
+    nativeBuildInputs = [pkgs.pkg-config];
+    buildInputs = [pkgs.openssl];
     doCheck = false;
 
     RUSTOWL_TOOLCHAIN = rustowlToolchain;
@@ -38,7 +36,6 @@ let
       ln -s ${rustToolchain} "$out/bin/sysroot/${rustowlToolchain}"
     '';
   };
-in
-{
-  home.packages = [ rustowl ];
+in {
+  home.packages = [rustowl];
 }
