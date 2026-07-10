@@ -144,7 +144,6 @@
   outputs = {
     nixpkgs,
     home-manager,
-    nixgl,
     ghostty,
     treefmt-nix,
     self,
@@ -159,7 +158,6 @@
         inputs.neovim-nightly-overlay.overlays.default
         inputs.rust-overlay.overlays.default
         ghostty.overlays.default
-        nixgl.overlay
         (final: prev: {
           roswell = prev.roswell.overrideAttrs (_: {
             src = inputs.roswell_src;

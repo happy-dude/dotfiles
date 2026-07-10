@@ -659,9 +659,12 @@ client, run Codex, type one line, press Shift+Enter, and type a second line. The
 unsent prompt must retain both lines. Existing clients may predate the feature
 negotiation and are not a valid test.
 
-The custom `Ghostty (nix)` desktop entry still forces software rendering. Test
-the upstream packaged desktop entry or `env -u LIBGL_ALWAYS_SOFTWARE ghostty`
-separately before removing that workaround.
+The profile-provided desktop entry and user service start nixGL-wrapped Ghostty
+without forcing software rendering. Before launching Fish, its configured
+command removes graphics override variables so terminal children use their
+own host, Nix, or Flatpak graphics integration. The Mesa wrapper is the correct
+primary-GPU path for worldmind's integrated Intel graphics; Ghostty does not
+need PRIME offload or a Vulkan wrapper.
 
 ### Rime
 
@@ -727,9 +730,10 @@ this user-scoped Flatpak explicitly only after application migration is complete
 and the later host/Toolbox cleanup begins; verify its data and overrides before
 uninstalling it.
 
-Keep nixGL on generic Linux even though Nix is native; it still bridges Nix-built
-GUI applications to the host graphics stack. Solaar also continues to depend on
-host udev permissions.
+Keep the nixGL package input and per-application wrappers on generic Linux even
+though Nix is native; they bridge Nix-built GUI applications to the host
+graphics stack without altering the package set through a nixGL overlay. Solaar
+also continues to depend on host udev permissions.
 
 ## Existing Toolbox migration record
 

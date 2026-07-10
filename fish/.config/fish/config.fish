@@ -13,18 +13,6 @@ set -gx GPG_TTY (tty) # GPG pinentry needs the active terminal.
 # Homebrew curl
 #fish_add_path -p "/opt/homebrew/opt/curl/bin"
 
-# ghostty
-# ghostty requires OpenGL 3.3, which UTM 4.x unfortunately does not support (yet?)
-# workaround: use `LIBGL_ALWAYS_SOFTWARE=true ghostty` alias
-# refs:
-#   https://github.com/ghostty-org/ghostty/discussions/2602
-#   https://github.com/utmapp/UTM/issues/4285
-#   https://docs.mesa3d.org/envvars.html#envvar-LIBGL_ALWAYS_SOFTWARE
-#function ghostty
-#    set -lx LIBGL_ALWAYS_SOFTWARE true
-#    command ghostty $argv
-#end
-
 # Turn off terminal flow control (ctrl-q and ctrl-s)
 # already default by off in fish
 #stty -F/dev/tty -ixon -ixoff   Linux
