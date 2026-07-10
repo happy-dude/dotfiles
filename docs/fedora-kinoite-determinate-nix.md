@@ -698,6 +698,12 @@ unused runtimes, existing overrides, and updates untouched. A Home Manager
 activation installs missing declarations but never changes the system Flatpak
 installation.
 
+Keep `services.flatpak.overrides` empty while using nix-flatpak v0.7.0: its
+merge serializer can introduce leading empty permissions into externally managed
+list entries, which Flatpak 1.18 cannot parse safely. Keep global Fcitx,
+filesystem, and session-bus overrides host-managed, and isolate wrapped
+application graphics state at the launcher boundary instead.
+
 qView is declared from Flathub. Firefox Nightly is declared through the
 commit-pinned upstream `firefox-nightly.flatpakref`, which records its `master`
 branch, `firefoxnightly-origin` remote, repository URL, and signing key. Do not
