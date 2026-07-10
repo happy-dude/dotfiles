@@ -168,6 +168,7 @@
     mkHome = {
       username,
       desktop,
+      nixPackage ? pkgs.nixVersions.latest,
       rimeDeployment ? "nix",
     }:
       home-manager.lib.homeManagerConfiguration {
@@ -177,6 +178,7 @@
             inputs
             username
             desktop
+            nixPackage
             rimeDeployment
             ;
         };
@@ -255,6 +257,7 @@
       "schan" = mkHome {
         username = "schan";
         desktop = "plasma";
+        nixPackage = null;
         rimeDeployment = "nix";
       };
       "stachan" = mkHome {
@@ -263,6 +266,7 @@
         rimeDeployment = "nix";
       };
     };
+    packages.${system}.home-manager = home-manager.packages.${system}.home-manager;
     formatter.${system} = treefmtEval.config.build.wrapper;
 
     checks.${system} = {
