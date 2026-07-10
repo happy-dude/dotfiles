@@ -66,6 +66,8 @@ REPO_DIR="."
 REPO_DIR_SET=0
 TMPGO=""
 STASHED_SUBMODULES=()
+CLEAN_VIM_HELP_TAGS=()
+RESTORED_VIM_HELP_TAGS=()
 
 SECTION_NAME=""
 SECTION_START=0
@@ -308,6 +310,13 @@ print_final_summary() {
     done
     printf '  %-14s %s\n' "Stash review:" "git -C <submodule-path> stash list"
   fi
+
+  if [ "${#RESTORED_VIM_HELP_TAGS[@]}" -gt 0 ]; then
+    printf '  %-14s %s\n' "Help tags:" "restored generated changes in ${#RESTORED_VIM_HELP_TAGS[@]} submodule(s)"
+    for i in "${!RESTORED_VIM_HELP_TAGS[@]}"; do
+      printf '  %-14s %s\n' "" "${RESTORED_VIM_HELP_TAGS[$i]}/doc/tags"
+    done
+  fi
 }
 
 finish_successfully() {
@@ -484,14 +493,94 @@ collect_dirty_submodules() {
   done < <(git submodule foreach --quiet --recursive 'printf "%s\n" "$displaypath"')
 }
 
+find_untracked_embedded_repositories() {
+  local path="$1"
+  local repo_root
+  local record
+  local candidate
+  local candidate_root
+
+  repo_root="$(git -C "$path" rev-parse --show-toplevel)"
+
+  while IFS= read -r -d '' record; do
+    [[ $record == "?? "* ]] || continue
+    candidate=${record:3}
+    candidate=${candidate%/}
+    [ -d "$path/$candidate" ] || continue
+
+    candidate_root="$(git -C "$path/$candidate" rev-parse --show-toplevel 2>/dev/null || true)"
+    if [ -n "$candidate_root" ] && [ "$candidate_root" != "$repo_root" ]; then
+      printf '%s\0' "$candidate"
+    fi
+  done < <(git -C "$path" status --porcelain=v1 -z --untracked-files=normal)
+}
+
+stash_contains_changes() {
+  local path="$1"
+  local stash="$2"
+  local untracked_parent
+
+  if ! git -C "$path" diff --quiet "${stash}^1" "$stash" --; then
+    return 0
+  fi
+
+  untracked_parent="$(git -C "$path" rev-parse --verify -q "${stash}^3" || true)"
+  if [ -n "$untracked_parent" ] &&
+    [ -n "$(git -C "$path" ls-tree -r --name-only "$untracked_parent")" ]; then
+    return 0
+  fi
+
+  return 1
+}
+
 stash_dirty_submodules() {
   local path
+  local stash_before
+  local stash_after
+  local candidate
+  local -a embedded_repositories
+
   # shellcheck disable=SC2016 # Expanded by git submodule foreach's shell.
   while IFS= read -r path; do
     [ -n "$path" ] || continue
     if is_submodule_dirty "$path"; then
+      embedded_repositories=()
+      mapfile -d '' -t embedded_repositories < <(find_untracked_embedded_repositories "$path")
+
+      if [ "${#embedded_repositories[@]}" -gt 0 ]; then
+        warn "cannot auto-stash untracked embedded Git repositories in: $path"
+        for candidate in "${embedded_repositories[@]}"; do
+          printf '  - %s/%s\n' "$path" "$candidate" >&2
+        done
+        die "move, remove, ignore, or register the embedded repositories before updating"
+      fi
+
       msg "Stashing dirty submodule: $path"
+      stash_before="$(git -C "$path" rev-parse --verify -q refs/stash || true)"
       git -C "$path" stash push -u -m "update.sh auto-stash"
+      stash_after="$(git -C "$path" rev-parse --verify -q refs/stash || true)"
+
+      if [ -z "$stash_after" ] || [ "$stash_after" = "$stash_before" ]; then
+        die "Git reported success but did not create a stash for: $path"
+      fi
+
+      if ! stash_contains_changes "$path" "$stash_after"; then
+        if [ "$(git -C "$path" rev-parse --verify 'stash@{0}')" != "$stash_after" ]; then
+          die "the new empty stash moved unexpectedly; refusing to discard it: $path"
+        fi
+
+        git -C "$path" stash drop -q 'stash@{0}'
+        warn "discarded an empty auto-stash for: $path"
+        git -C "$path" --no-pager status --short --untracked-files=all >&2
+        die "Git did not capture the dirty state; resolve it before updating"
+      fi
+
+      if is_submodule_dirty "$path"; then
+        warn "auto-stash did not leave the submodule clean: $path"
+        git -C "$path" --no-pager status --short --untracked-files=all >&2
+        die "resolve the remaining submodule state before updating"
+      fi
+
       STASHED_SUBMODULES+=("$path")
     fi
   done < <(git submodule foreach --quiet --recursive 'printf "%s\n" "$displaypath"')
@@ -500,6 +589,40 @@ stash_dirty_submodules() {
 #--------------------------------------------------------------------------------------------------
 # 3. Neovim helpers
 #--------------------------------------------------------------------------------------------------
+
+capture_clean_vim_help_tags() {
+  local path
+
+  CLEAN_VIM_HELP_TAGS=()
+
+  # shellcheck disable=SC2016 # Expanded by git submodule foreach's shell.
+  while IFS= read -r path; do
+    [ -n "$path" ] || continue
+    [[ $path == vim/.vim/pack/* ]] || continue
+
+    if git -C "$path" ls-files --error-unmatch -- doc/tags >/dev/null 2>&1 &&
+      git -C "$path" diff --quiet -- doc/tags &&
+      git -C "$path" diff --cached --quiet -- doc/tags; then
+      CLEAN_VIM_HELP_TAGS+=("$path")
+    fi
+  done < <(git submodule foreach --quiet --recursive 'printf "%s\n" "$displaypath"')
+}
+
+restore_generated_vim_help_tags() {
+  local path
+
+  for path in "${CLEAN_VIM_HELP_TAGS[@]}"; do
+    if ! git -C "$path" diff --cached --quiet -- doc/tags; then
+      warn "refusing to restore a newly staged help-tag change: $path/doc/tags"
+      return 1
+    fi
+
+    if ! git -C "$path" diff --quiet -- doc/tags; then
+      git -C "$path" restore --worktree -- doc/tags
+      RESTORED_VIM_HELP_TAGS+=("$path")
+    fi
+  done
+}
 
 run_nvim_cmd_if_exists() {
   local cmd_name="$1"
@@ -572,6 +695,13 @@ rime_static_files_are_nix_managed() {
 
   return 1
 }
+
+if [ "${DOTFILES_UPDATE_SOURCE_ONLY:-0}" -eq 1 ]; then
+  if [ "${BASH_SOURCE[0]}" != "$0" ]; then
+    return 0
+  fi
+  exit 0
+fi
 
 # Argument parsing
 #--------------------------------------------------------------------------------------------------
@@ -834,8 +964,11 @@ elif have nvim; then
   section_start "Updating vim-plug plugins"
 
   status=0
+  help_tags_status=0
   section_result="done"
+  capture_clean_vim_help_tags
   run_nvim_cmd_if_exists "PlugUpdate" "silent! PlugUpgrade | PlugUpdate --sync" || status=$?
+  restore_generated_vim_help_tags || help_tags_status=$?
 
   case "$status" in
   0)
@@ -850,6 +983,11 @@ elif have nvim; then
     section_result="failed"
     ;;
   esac
+
+  if [ "$help_tags_status" -ne 0 ]; then
+    warn "could not safely restore generated vim help tags"
+    section_result="failed"
+  fi
 
   section_end "$section_result"
   abort_failed_section "$section_result"

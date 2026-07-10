@@ -101,6 +101,8 @@ To return to Stow, set the selected output's `rimeDeployment = "stow"` in `flake
 Update-mode step order (and the flag that skips it): optional Plum fallback, `git pull --rebase --autostash` (`--skip-pull`), submodule sync/init/update (`--skip-submodules`), submodule status (`--skip-status`), vim-plug and coc.nvim updates (`--skip-nvim`; mutable Tree-sitter and RustOwl work runs only with `--editor-deployment stow`), vim-go binaries (`--skip-go`), `nix fmt .` (`--skip-nix-fmt`), `nix flake update` (`--skip-nix-flake`), locked flake validation and a Home Manager build, and optional `home-manager switch` (`--skip-home-manager`). There is no `nix-channel` step. Environment variables: `EDITOR_DEPLOYMENT` (default `nix`) and `HOME_MANAGER_FLAKE` (default `.#$(whoami)`).
 
 The script refuses to update dirty submodules unless `--autostash-submodules` is passed, and it does **not** auto-pop stashes afterward.
+Auto-stashing rejects untracked embedded Git repositories, discards and aborts on a newly created empty stash, and verifies that every auto-stashed submodule is clean before continuing. Valid non-empty stashes remain for explicit review.
+Clean tracked Vim `doc/tags` files are restored to their updated commit after vim-plug regenerates them, preventing generated tag churn without discarding pre-existing edits.
 
 ### Submodule helpers
 

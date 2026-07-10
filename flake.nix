@@ -278,6 +278,7 @@
           nativeBuildInputs = [
             pkgs.bash
             pkgs.fish
+            pkgs.git
             pkgs.shellcheck
             pkgs.zsh
           ];
@@ -300,6 +301,7 @@
 
           cp ${self}/.gitmodules .gitmodules
           bash ${self}/scripts/sort_gitmodules.sh --check
+          bash ${self}/scripts/test_update_submodules.sh
 
           touch "$out"
         '';
