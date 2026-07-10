@@ -1,10 +1,4 @@
-# Nix home-manager
-# done automatically in fish config
-#set -q __fish_home_manager_config_sourced; and exit
-#set -g __fish_home_manager_config_sourced 1
-set -gx GPG_TTY (tty) #nix gpg pinentry workaround
-
-fish_add_path -p /nix/var/nix/profiles/default/bin
+set -gx GPG_TTY (tty) # GPG pinentry needs the active terminal.
 
 # homebrew
 #eval "$(/opt/homebrew/bin/brew shellenv)"
