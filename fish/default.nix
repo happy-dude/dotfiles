@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   inputs,
   ...
@@ -35,10 +34,6 @@
         name = "spark.fish";
         src = inputs.fish_spark;
       }
-      #{
-      #  name = "sponge";
-      #  src = inputs.fish_sponge;
-      #}
       {
         name = "tide";
         src = inputs.fish_tide;
@@ -48,15 +43,5 @@
         src = inputs.fish_z;
       }
     ];
-
   };
-
-  #home.packages = with pkgs; [
-  #  fishPlugins.autopair
-  #  fishPlugins.puffer
-  #  fishPlugins.sponge
-  #  fishPlugins.z
-  #  fishPlugins.spark
-  #  fishPlugins.tide
-  #];
 }

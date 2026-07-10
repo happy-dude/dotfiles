@@ -16,6 +16,8 @@
     inherit username;
     homeDirectory = "/home/${username}";
 
+    # Change this compatibility floor only after reviewing and applying every
+    # intervening Home Manager migration.
     stateVersion = "26.11";
 
     packages = with pkgs; [
@@ -24,7 +26,6 @@
       automake
       babelfish
       bash-language-server
-      bat
       bear
       bc
       binutils
@@ -52,7 +53,6 @@
       gdb
       gettext
       ghostscript
-      git
       glibc
       gnumake
       go

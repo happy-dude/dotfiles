@@ -20,7 +20,10 @@
 
     # neovim nightly overlay
     # https://github.com/nix-community/neovim-nightly-overlay
-    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
+    neovim-nightly-overlay = {
+      url = "github:nix-community/neovim-nightly-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Rust toolchains with rustc-dev, used to build RustOwl.
     rust-overlay = {
@@ -46,7 +49,10 @@
     # ghostty
     # https://ghostty.org/docs/install/binary#nix-flake
     # https://github.com/ghostty-org/ghostty/blob/main/flake.nix
-    ghostty.url = "github:ghostty-org/ghostty";
+    ghostty = {
+      url = "github:ghostty-org/ghostty";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # treefmt-nix — one `nix fmt` that formats every language in the repo
     treefmt-nix = {
@@ -126,11 +132,6 @@
     };
     fish_z = {
       url = "github:jethrokuan/z";
-      flake = false;
-    };
-    # Kept locked for optional activation in fish/default.nix.
-    fish_sponge = {
-      url = "github:meaningful-ooo/sponge";
       flake = false;
     };
 
@@ -225,7 +226,7 @@
         settings.global.excludes = [
           "other/**" # non-managed reference configs
           "karabiner/**" # macOS + generated backups
-          "rime/**" # input-method dictionaries (data, not code)
+          "rime/**/*.yaml" # input-method schemas and dictionaries (data, not code)
           "*.lock"
           "LICENSE"
         ];
