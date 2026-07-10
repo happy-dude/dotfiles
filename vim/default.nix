@@ -1,8 +1,11 @@
 {pkgs, ...}: let
   nvimTreesitter = pkgs.vimPlugins.nvim-treesitter;
+
   treesitterRuntime = pkgs.symlinkJoin {
     name = "nvim-treesitter-runtime";
-    paths = nvimTreesitter.withAllGrammars.passthru.dependencies;
+    # Query-only languages have no grammar derivation, so include the plugin
+    # runtime alongside withAllGrammars dependencies.
+    paths = nvimTreesitter.withAllGrammars.passthru.dependencies ++ ["${nvimTreesitter}/runtime"];
   };
 in {
   home.file = {

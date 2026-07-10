@@ -5,6 +5,37 @@ local api = vim.api
 -- Nix deployments link parsers and queries through Home Manager. Stow
 -- deployments retain the nvim-treesitter :TSInstall/:TSUpdate workflow.
 
+-- nvim-treesitter ships features disabled; start highlighting when a parser is
+-- available from either deployment.
+local treesitter_start_group = api.nvim_create_augroup('TreesitterStart', { clear = true })
+api.nvim_create_autocmd('FileType', {
+  group = treesitter_start_group,
+  callback = function(args)
+    local bufnr = args.buf
+    local filetype = args.match
+
+    -- Let every FileType consumer attach before the initial parser run.
+    vim.schedule(function()
+      if not api.nvim_buf_is_valid(bufnr) then
+        return
+      end
+
+      local lang = vim.treesitter.language.get_lang(filetype)
+      if not lang then
+        return
+      end
+
+      if vim.treesitter.highlighter.active[bufnr] then
+        return
+      end
+
+      -- Unsupported filetypes are expected to have no parser.
+      pcall(vim.treesitter.start, bufnr, lang)
+    end)
+  end,
+  desc = 'Start Tree-sitter highlighting when a parser is available',
+})
+
 -- nvim-treesitter-textobjects
 require('nvim-treesitter-textobjects').setup({
   select = {
