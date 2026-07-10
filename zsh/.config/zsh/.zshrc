@@ -10,6 +10,10 @@ if [[ -d "$HOME/.nix-profile/share/zsh/site-functions" ]]; then
   fpath=("$HOME/.nix-profile/share/zsh/site-functions" $fpath)
 fi
 
+if [[ -d "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/completions" ]]; then
+  fpath=("${XDG_CONFIG_HOME:-$HOME/.config}/zsh/completions" $fpath)
+fi
+
 # Source Prezto.
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"

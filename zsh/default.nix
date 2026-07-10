@@ -1,7 +1,9 @@
 {
   config,
+  lib,
   pkgs,
   inputs,
+  username,
   ...
 }: {
   xdg.configFile."zsh/.p10k.zsh".source = ./.config/zsh/.p10k.zsh;
@@ -11,6 +13,9 @@
   xdg.configFile."zsh/.zprofile".source = ./.config/zsh/.zprofile;
   xdg.configFile."zsh/.zshenv".source = ./.config/zsh/.zshenv;
   xdg.configFile."zsh/.zshrc".source = ./.config/zsh/.zshrc;
+  xdg.configFile."zsh/completions/_rustup" = lib.mkIf (username == "schan") {
+    source = "${pkgs.rustup}/share/zsh/site-functions/_rustup";
+  };
 
   # for some reason, home-manager errors
   #… while adding path '/nix/store/...-source/zsh/.zprezto'
