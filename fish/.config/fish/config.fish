@@ -17,7 +17,7 @@ if test -d (brew --prefix)"/share/fish/vendor_completions.d"
 end
 
 # Homebrew curl
-fish_add_path -p "/opt/homebrew/opt/curl/bin"
+fish_add_path -p /opt/homebrew/opt/curl/bin
 
 # ghostty
 # ghostty requires OpenGL 3.3, which UTM 4.x unfortunately does not support (yet?)
