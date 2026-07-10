@@ -1,0 +1,11 @@
+# Repository-local working state
+/.claude/
+/.direnv/
+/.worktrees/
+
+# Nix build outputs
+/result
+/result-*
+
+# Machine-local secrets
+secrets.fish

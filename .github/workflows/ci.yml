@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      build_homes:
+        description: Build both Home Manager configurations
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name != 'main' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31.10.6
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run flake checks
+        run: nix flake check --show-trace --no-update-lock-file
+
+      - name: Evaluate Home Manager configurations
+        run: |
+          nix eval --no-update-lock-file --raw .#homeConfigurations.schan.activationPackage.drvPath
+          printf '\n'
+          nix eval --no-update-lock-file --raw .#homeConfigurations.stachan.activationPackage.drvPath
+          printf '\n'
+
+      - name: Build Home Manager configurations
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_homes }}
+        run: |
+          nix build --no-link --print-build-logs \
+            --no-update-lock-file \
+            .#homeConfigurations.schan.activationPackage \
+            .#homeConfigurations.stachan.activationPackage

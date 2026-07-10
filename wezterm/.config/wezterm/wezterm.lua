@@ -20,7 +20,8 @@ config.set_environment_variables = {
 config.term = 'wezterm'
 config.automatically_reload_config = true
 
-config.default_prog = { '/usr/bin/zsh', '--login', '-c', 'tmux attach -t "mux" || tmux new -s "mux"' }
+config.default_prog =
+  { '/usr/bin/zsh', '--login', '-c', 'tmux attach -t "mux" || tmux new -s "mux"' }
 -- config.default_prog = { '/usr/bin/zsh', '--login' }
 wezterm.action.SpawnCommandInNewWindow({
   args = { 'zsh' },

@@ -3,8 +3,7 @@
   pkgs,
   desktop,
   ...
-}:
-{
+}: {
   config = lib.mkIf (desktop == "gnome") {
     i18n.inputMethod = {
       enable = true;

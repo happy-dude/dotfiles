@@ -7,10 +7,12 @@
       "file": "HKVariantsFull.txt"
     }
   },
-  "conversion_chain": [{
-    "dict": {
-      "type": "text",
-      "file": "HKVariantsFull.txt"
+  "conversion_chain": [
+    {
+      "dict": {
+        "type": "text",
+        "file": "HKVariantsFull.txt"
+      }
     }
-  }]
+  ]
 }

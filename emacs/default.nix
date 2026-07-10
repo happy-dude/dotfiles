@@ -1,12 +1,14 @@
-{ config, pkgs, ... }:
-
 {
+  config,
+  pkgs,
+  ...
+}: {
   home.file.".emacs".source = ./init.el;
   programs.emacs = {
     enable = true;
     package = pkgs.emacs-pgtk;
-    extraPackages =
-      epkgs: with epkgs; [
+    extraPackages = epkgs:
+      with epkgs; [
         annalist
         compat
         dash

@@ -8,16 +8,21 @@
 ### Github: https://github.com/Happy-Dude/dotfiles.git
 ### Version: Fri Mar 07 2026
 ###
-### Workflow:
-###     1. Optionally update Rime schemas via Plum (Nix sources update in step 8)
+### Modes:
+###     check   Validate the flake and build the selected Home Manager configuration without applying it
+###     apply   Validate, build, and activate the existing lock file
+###     update  Run the update workflow below, validate it, and optionally activate it (default)
+###
+### Update workflow:
+###     1. Optionally update Rime schemas via Plum (Nix sources update in step 7)
 ###     2. Update the main dotfiles repository
 ###     3. Sync / init / update git submodules
 ###     4. Update Neovim plugins and coc.nvim extensions
 ###     5. Update Go editor binaries
 ###     6. Run `nix fmt .`
-###     7. Run `nix-channel --update`
-###     8. Run `nix flake update`
-###     9. Run `home-manager switch`
+###     7. Run `nix flake update`
+###     8. Validate the flake and build the Home Manager configuration
+###     9. Optionally run `home-manager switch`
 ###
 ### Usage:
 ###     ./scripts/update.sh [options] [directory]
@@ -44,19 +49,21 @@ set -euo pipefail
 
 AUTO_STASH_SUBMODULES=0
 RIME_SOURCE=nix
+MODE=update
+MODE_SET=0
 SKIP_PULL=0
 SKIP_SUBMODULES=0
 SKIP_STATUS=0
 SKIP_NVIM=0
 SKIP_GO=0
 SKIP_NIX_FMT=0
-SKIP_NIX_CHANNEL=0
 SKIP_NIX_FLAKE=0
 SKIP_HOME_MANAGER=0
 
 VERBOSE="${VERBOSE:-0}"
 
 REPO_DIR="."
+REPO_DIR_SET=0
 TMPGO=""
 STASHED_SUBMODULES=()
 
@@ -98,7 +105,20 @@ RIME_PACKAGES=(
 usage() {
   cat <<'EOF'
 Usage:
-  ./scripts/update.sh [options] [directory]
+  ./scripts/update.sh [update|check|apply] [options] [directory]
+
+Modes:
+  update
+      Run the full update workflow, validate it, then activate it unless
+      --skip-home-manager is set. This is the default for compatibility.
+
+  check
+      Run non-mutating flake validation and build the selected Home Manager
+      configuration without changing the active profile or lock file.
+
+  apply
+      Run the same validation/build as check, then activate the selected
+      Home Manager configuration without updating the lock file.
 
 Options:
 
@@ -148,14 +168,11 @@ Options:
     --skip-nix-fmt
         Skip `nix fmt .`.
 
-    --skip-nix-channel
-        Skip `nix-channel --update`.
-
     --skip-nix-flake
         Skip `nix flake update`.
 
     --skip-home-manager
-        Skip `home-manager switch`.
+        Skip Home Manager activation after a successful validation/build.
 
 Environment:
   VERBOSE=1
@@ -282,8 +299,7 @@ print_final_summary() {
   printf '  %-14s %ss\n' "Elapsed:" "$total_elapsed"
   printf '  %-14s %s\n' "Repository:" "$(pwd)"
   printf '  %-14s %s\n' "Sections:" "done=$done_count skipped=$skipped_count failed=$failed_count"
-  printf '  %-14s %s\n' "Review:" "git diff"
-  printf '  %-14s %s\n' "Commit:" "git add -A && git commit -m 'Update submodules'"
+  printf '  %-14s %s\n' "Review:" "git status --short; git diff"
 
   if [ "${#STASHED_SUBMODULES[@]}" -gt 0 ]; then
     printf '  %-14s %s\n' "Auto-stashed:" "${#STASHED_SUBMODULES[@]} submodule(s)"
@@ -292,6 +308,107 @@ print_final_summary() {
     done
     printf '  %-14s %s\n' "Stash review:" "git -C <submodule-path> stash list"
   fi
+}
+
+finish_successfully() {
+  local end_ts
+  local total_elapsed
+
+  end_ts="$(date '+%Y-%m-%d %I:%M:%S %p %Z')"
+  total_elapsed=$((SECONDS - SCRIPT_START_SECS))
+
+  msg
+  msg "=== Done! ==="
+
+  print_final_summary "$end_ts" "$total_elapsed"
+  print_timing_summary
+}
+
+abort_failed_section() {
+  local result="$1"
+
+  if [ "$result" = "failed" ]; then
+    warn "Aborting before validation or activation because a required update step failed"
+    exit 1
+  fi
+}
+
+run_flake_validation() {
+  local status=0
+
+  section_start "Validating flake checks"
+
+  if ! have nix; then
+    warn "Cannot validate the flake (nix not found)"
+    section_end "failed"
+    return 127
+  fi
+
+  nix flake check --show-trace --no-update-lock-file || status=$?
+
+  if [ "$status" -ne 0 ]; then
+    warn "nix flake check failed (exit code: $status)"
+    section_end "failed"
+    return "$status"
+  fi
+
+  section_end "done"
+}
+
+run_home_manager_build() {
+  local status=0
+
+  section_start "Building Home Manager configuration without activation"
+
+  if ! have home-manager; then
+    warn "Cannot build the Home Manager configuration (home-manager not found)"
+    section_end "failed"
+    return 127
+  fi
+
+  home-manager build \
+    --flake "$HOME_MANAGER_FLAKE" \
+    --show-trace \
+    --no-out-link \
+    --no-update-lock-file || status=$?
+
+  if [ "$status" -ne 0 ]; then
+    warn "home-manager build failed (exit code: $status)"
+    section_end "failed"
+    return "$status"
+  fi
+
+  section_end "done"
+}
+
+run_validation() {
+  run_flake_validation || return
+  run_home_manager_build || return
+}
+
+run_home_manager_switch() {
+  local status=0
+
+  section_start "Running home-manager switch"
+
+  if ! have home-manager; then
+    warn "Cannot activate the Home Manager configuration (home-manager not found)"
+    section_end "failed"
+    return 127
+  fi
+
+  home-manager switch \
+    --flake "$HOME_MANAGER_FLAKE" \
+    --show-trace \
+    --no-update-lock-file || status=$?
+
+  if [ "$status" -ne 0 ]; then
+    warn "home-manager switch failed (exit code: $status)"
+    section_end "failed"
+    return "$status"
+  fi
+
+  section_end "done"
 }
 
 create_temp_go_file() {
@@ -358,6 +475,7 @@ is_submodule_dirty() {
 
 collect_dirty_submodules() {
   local path
+  # shellcheck disable=SC2016 # Expanded by git submodule foreach's shell.
   while IFS= read -r path; do
     [ -n "$path" ] || continue
     if is_submodule_dirty "$path"; then
@@ -368,6 +486,7 @@ collect_dirty_submodules() {
 
 stash_dirty_submodules() {
   local path
+  # shellcheck disable=SC2016 # Expanded by git submodule foreach's shell.
   while IFS= read -r path; do
     [ -n "$path" ] || continue
     if is_submodule_dirty "$path"; then
@@ -418,12 +537,40 @@ update_rustowl_stow() {
 
 #--------------------------------------------------------------------------------------------------
 rime_static_files_are_nix_managed() {
-  local source_file="$HOME/.local/share/fcitx5/rime/default.yaml"
+  local data_dir="${XDG_DATA_HOME:-$HOME/.local/share}/fcitx5/rime"
+  local state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/rime"
+  local marker="$state_dir/home-manager-ownership-v1"
+  local source_stamp="$state_dir/home-manager-source-stamp"
+  local static_dir="$data_dir/.home-manager-static"
+  local link
+  local static_root
   local target
 
-  [ -L "$source_file" ] || return 1
-  target="$(readlink -f -- "$source_file" 2>/dev/null || true)"
-  [[ $target == /nix/store/* ]]
+  if [ -e "$marker" ] || [ -L "$marker" ]; then
+    return 0
+  fi
+
+  if [ -e "$source_stamp" ] || [ -L "$source_stamp" ]; then
+    return 0
+  fi
+
+  if [ -e "$static_dir" ] || [ -L "$static_dir" ]; then
+    return 0
+  fi
+
+  [ -d "$data_dir" ] || return 1
+
+  static_root="$(readlink -m -- "$static_dir" 2>/dev/null || true)"
+  [ -n "$static_root" ] || return 0
+
+  while IFS= read -r -d '' link; do
+    target="$(readlink -m -- "$link" 2>/dev/null || true)"
+    if [[ $target == "$static_root"/* ]]; then
+      return 0
+    fi
+  done < <(find "$data_dir" -type l -print0)
+
+  return 1
 }
 
 # Argument parsing
@@ -431,6 +578,13 @@ rime_static_files_are_nix_managed() {
 
 while [ $# -gt 0 ]; do
   case "$1" in
+  check | apply | update)
+    if [ "$MODE_SET" -eq 1 ]; then
+      die "multiple modes specified: $MODE and $1"
+    fi
+    MODE="$1"
+    MODE_SET=1
+    ;;
   --verbose)
     VERBOSE=1
     ;;
@@ -472,9 +626,6 @@ while [ $# -gt 0 ]; do
   --skip-nix-fmt)
     SKIP_NIX_FMT=1
     ;;
-  --skip-nix-channel)
-    SKIP_NIX_CHANNEL=1
-    ;;
   --skip-nix-flake)
     SKIP_NIX_FLAKE=1
     ;;
@@ -485,7 +636,11 @@ while [ $# -gt 0 ]; do
     die "unknown option: $1"
     ;;
   *)
+    if [ "$REPO_DIR_SET" -eq 1 ]; then
+      die "multiple repository directories specified: $REPO_DIR and $1"
+    fi
     REPO_DIR="$1"
+    REPO_DIR_SET=1
     ;;
   esac
   shift
@@ -512,6 +667,14 @@ if [ "$RIME_SOURCE" = "plum" ] && [ "$SKIP_HOME_MANAGER" -eq 0 ]; then
   die "--rime-source plum requires --skip-home-manager; use it only after switching Rime to Stow"
 fi
 
+if [ "$RIME_SOURCE" = "plum" ] && [ "$MODE" != "update" ]; then
+  die "--rime-source plum is only valid in update mode"
+fi
+
+if [ "$MODE" = "apply" ] && [ "$SKIP_HOME_MANAGER" -eq 1 ]; then
+  die "apply mode cannot be combined with --skip-home-manager; use check mode instead"
+fi
+
 # Basic checks
 #--------------------------------------------------------------------------------------------------
 
@@ -525,8 +688,27 @@ if ! git rev-parse --git-dir >/dev/null 2>&1; then
   die "not a git repository"
 fi
 
-msg "=== Updating dotfiles repository ==="
+msg "=== Dotfiles $MODE ==="
 msg "Started at: $SCRIPT_START_TS"
+
+case "$MODE" in
+check)
+  run_validation || exit $?
+  finish_successfully
+  exit 0
+  ;;
+apply)
+  run_validation || exit $?
+  run_home_manager_switch || exit $?
+  finish_successfully
+  exit 0
+  ;;
+update)
+  ;;
+*)
+  die "internal error: unsupported mode $MODE"
+  ;;
+esac
 
 #--------------------------------------------------------------------------------------------------
 # 1. Updating Rime schemas with opt-in Plum fallback
@@ -537,15 +719,15 @@ if [ "$RIME_SOURCE" = "plum" ]; then
   section_result="done"
 
   if rime_static_files_are_nix_managed; then
-    warn "Refusing Plum update: Rime schema files are linked from the Nix store"
+    warn "Refusing Plum update: Rime schema files are managed by Home Manager"
     warn "Switch Rime to its Stow deployment before selecting --rime-source plum"
     section_result="failed"
   elif [ ! -d "$PLUM_DIR" ]; then
-    warn "Skipping Rime update ($PLUM_DIR not found)"
-    section_result="skipped"
+    warn "Cannot run the requested Plum update ($PLUM_DIR not found)"
+    section_result="failed"
   elif [ ! -f "$PLUM_DIR/rime-install" ]; then
-    warn "Skipping Rime update ($PLUM_DIR/rime-install not found)"
-    section_result="skipped"
+    warn "Cannot run the requested Plum update ($PLUM_DIR/rime-install not found)"
+    section_result="failed"
   else
     rime_status=0
     run_rime_install || rime_status=$?
@@ -564,9 +746,7 @@ if [ "$RIME_SOURCE" = "plum" ]; then
 
   section_end "$section_result"
 
-  if [ "$section_result" = "failed" ]; then
-    exit 1
-  fi
+  abort_failed_section "$section_result"
 fi
 
 #--------------------------------------------------------------------------------------------------
@@ -672,6 +852,7 @@ elif have nvim; then
   esac
 
   section_end "$section_result"
+  abort_failed_section "$section_result"
 
   if [ "$EDITOR_DEPLOYMENT" = "nix" ]; then
     section_start "Skipping Tree-sitter parser updates (Nix-managed)"
@@ -699,6 +880,7 @@ elif have nvim; then
     esac
 
     section_end "$section_result"
+    abort_failed_section "$section_result"
   fi
 
   if [ "$EDITOR_DEPLOYMENT" = "nix" ]; then
@@ -726,6 +908,7 @@ elif have nvim; then
     esac
 
     section_end "$section_result"
+    abort_failed_section "$section_result"
   fi
 
   section_start "Updating coc.nvim extensions"
@@ -750,6 +933,7 @@ elif have nvim; then
   esac
 
   section_end "$section_result"
+  abort_failed_section "$section_result"
 else
   section_start "Skipping Neovim/Vim updates (nvim not found)"
   section_end "skipped"
@@ -802,6 +986,7 @@ elif have nvim && have go; then
   fi
 
   section_end "$section_result"
+  abort_failed_section "$section_result"
 else
   section_start "Skipping Go binary updates (nvim or go not found)"
   section_end "skipped"
@@ -817,50 +1002,26 @@ if [ "$SKIP_NIX_FMT" -eq 1 ]; then
 else
   section_start "Formatting flake with nix fmt"
 
+  section_result="done"
   if have nix; then
     status=0
     nix fmt . || status=$?
 
-    if [ "$status" -eq 0 ]; then
-      section_end "done"
-    else
+    if [ "$status" -ne 0 ]; then
       warn "nix fmt failed (exit code: $status)"
-      section_end "failed"
+      section_result="failed"
     fi
   else
-    warn "Skipping nix fmt (nix not found)"
-    section_end "skipped"
+    warn "Cannot format the flake (nix not found)"
+    section_result="failed"
   fi
+
+  section_end "$section_result"
+  abort_failed_section "$section_result"
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 7. Run `nix-channel --update`
-#--------------------------------------------------------------------------------------------------
-
-if [ "$SKIP_NIX_CHANNEL" -eq 1 ]; then
-  section_start "Skipping nix-channel update (--skip-nix-channel)"
-  section_end "skipped"
-else
-  section_start "Updating nix channels"
-
-  if have nix-channel; then
-    status=0
-    nix-channel --update || status=$?
-
-    if [ "$status" -eq 0 ]; then
-      section_end "done"
-    else
-      warn "nix-channel --update failed (exit code: $status)"
-      section_end "failed"
-    fi
-  else
-    warn "Skipping nix-channel update (nix-channel not found)"
-    section_end "skipped"
-  fi
-fi
-
-#--------------------------------------------------------------------------------------------------
-# 8. Run `nix flake update`
+# 7. Run `nix flake update`
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_NIX_FLAKE" -eq 1 ]; then
@@ -869,57 +1030,43 @@ if [ "$SKIP_NIX_FLAKE" -eq 1 ]; then
 else
   section_start "Updating flake inputs"
 
+  section_result="done"
   if have nix; then
     status=0
     nix flake update || status=$?
 
-    if [ "$status" -eq 0 ]; then
-      section_end "done"
-    else
+    if [ "$status" -ne 0 ]; then
       warn "nix flake update failed (exit code: $status)"
-      section_end "failed"
+      section_result="failed"
     fi
   else
-    warn "Skipping nix flake update (nix not found)"
-    section_end "skipped"
+    warn "Cannot update flake inputs (nix not found)"
+    section_result="failed"
   fi
+
+  section_end "$section_result"
+  abort_failed_section "$section_result"
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 9. Run `home-manager switch`
+# 8. Validate the result without changing the active profile
+#--------------------------------------------------------------------------------------------------
+
+run_validation || exit $?
+
+#--------------------------------------------------------------------------------------------------
+# 9. Optionally activate the validated configuration
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_HOME_MANAGER" -eq 1 ]; then
   section_start "Skipping home-manager switch (--skip-home-manager)"
   section_end "skipped"
 else
-  section_start "Running home-manager switch"
-
-  if have home-manager; then
-    status=0
-    home-manager switch --flake "$HOME_MANAGER_FLAKE" --show-trace || status=$?
-
-    if [ "$status" -eq 0 ]; then
-      section_end "done"
-    else
-      warn "home-manager switch failed (exit code: $status)"
-      section_end "failed"
-    fi
-  else
-    warn "Skipping home-manager switch (home-manager not found)"
-    section_end "skipped"
-  fi
+  run_home_manager_switch || exit $?
 fi
 
 #--------------------------------------------------------------------------------------------------
 # 10. Final summary
 #--------------------------------------------------------------------------------------------------
 
-SCRIPT_END_TS="$(date '+%Y-%m-%d %I:%M:%S %p %Z')"
-TOTAL_ELAPSED=$((SECONDS - SCRIPT_START_SECS))
-
-msg
-msg "=== Done! ==="
-
-print_final_summary "$SCRIPT_END_TS" "$TOTAL_ELAPSED"
-print_timing_summary
+finish_successfully

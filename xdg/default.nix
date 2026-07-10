@@ -4,9 +4,7 @@
   pkgs,
   inputs,
   ...
-}:
-
-{
+}: {
   xdg.enable = true;
   xdg.mime.enable = true;
   targets.genericLinux.enable = true;
@@ -72,7 +70,7 @@
   };
 
   # For host configuration we need to create copy of the files, so the host system can see them
-  home.activation.createHostConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+  home.activation.createHostConfig = lib.hm.dag.entryAfter ["linkGeneration"] ''
     desktop_entries="
       ghostty-toolbox
     "

@@ -63,25 +63,25 @@ and remix, transform, and adapt accordingly.
 
 1. Clone the repository and submodules
 
-    ```bash
-    git clone --recursive https://github.com/Happy-Dude/dotfiles.git $HOME/dotfiles
-    cd $HOME/dotfiles
-    git submodule update --init --recursive --remote
-    ```
+   ```bash
+   git clone --recursive https://github.com/Happy-Dude/dotfiles.git $HOME/dotfiles
+   cd $HOME/dotfiles
+   git submodule update --init --recursive --remote
+   ```
 
 2. Use GNU Stow to symlink configs
 
-    NOTE: stow will not symlink over an existing file or symlink. Check out the
-    [manual](https://www.gnu.org/software/stow/manual/stow.html#Conflicts) for more
-    details.
+   NOTE: stow will not symlink over an existing file or symlink. Check out the
+   [manual](https://www.gnu.org/software/stow/manual/stow.html#Conflicts) for more
+   details.
 
-    ```bash
-    cd $HOME/dotfiles
-    stow vim
-    stow tmux
-    stow zsh
-    ... etc ...
-    ```
+   ```bash
+   cd $HOME/dotfiles
+   stow vim
+   stow tmux
+   stow zsh
+   ... etc ...
+   ```
 
 ### Neovim
 
@@ -122,26 +122,26 @@ and [ncurses-snapshots](https://github.com/ThomasDickey/ncurses-snapshots) repo!
 
 1. Download latest terminfo sources
 
-    ```bash
-    curl -LO https://raw.githubusercontent.com/ThomasDickey/ncurses-snapshots/master/misc/terminfo.src
-    ```
+   ```bash
+   curl -LO https://raw.githubusercontent.com/ThomasDickey/ncurses-snapshots/master/misc/terminfo.src
+   ```
 
 2. Extract terminfo from source to their compiled formats
 
-    The compiled sources will be outputted to your `$HOME/.terminfo` directory
+   The compiled sources will be outputted to your `$HOME/.terminfo` directory
 
-    ```bash
-    tic -xe tmux,tmux-256color terminfo.src
+   ```bash
+   tic -xe tmux,tmux-256color terminfo.src
 
-    # Feel free to extra other terminfo sources
-    tic -xe screen,screen-256color,xterm,xterm-256color,alacritty,alacritty-direct,kitty terminfo.src
-    ```
+   # Feel free to extra other terminfo sources
+   tic -xe screen,screen-256color,xterm,xterm-256color,alacritty,alacritty-direct,kitty terminfo.src
+   ```
 
 3. Validate the terminfo sources have been "installed"
 
-    ```bash
-    infocmp -x tmux-256color
-    ```
+   ```bash
+   infocmp -x tmux-256color
+   ```
 
 #### Tmux
 

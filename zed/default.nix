@@ -1,6 +1,8 @@
-{ config, pkgs, ... }:
-
 {
+  config,
+  pkgs,
+  ...
+}: {
   # Zed editor. Migrated from the former `zed/` GNU Stow package.
   #
   # SINGLE SOURCE OF TRUTH: zed/.config/zed/settings.json. Nix reads it via

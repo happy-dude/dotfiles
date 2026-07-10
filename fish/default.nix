@@ -1,15 +1,11 @@
 {
-  config,
   pkgs,
   inputs,
   ...
-}:
-
-{
+}: {
   #xdg.configFile."fish/config.fish".source = ./.config/fish/config.fish;
   xdg.configFile."fish/tide.fish".source = ./.config/fish/tide.fish;
-  xdg.configFile."fish/completions/nix.fish".source =
-    "${pkgs.nix}/share/fish/vendor_completions.d/nix.fish";
+  xdg.configFile."fish/completions/nix.fish".source = "${pkgs.nix}/share/fish/vendor_completions.d/nix.fish";
 
   programs.fish = {
     enable = true;
@@ -35,10 +31,6 @@
         name = "spark.fish";
         src = inputs.fish_spark;
       }
-      #{
-      #  name = "sponge";
-      #  src = inputs.fish_sponge;
-      #}
       {
         name = "tide";
         src = inputs.fish_tide;
@@ -48,15 +40,5 @@
         src = inputs.fish_z;
       }
     ];
-
   };
-
-  #home.packages = with pkgs; [
-  #  fishPlugins.autopair
-  #  fishPlugins.puffer
-  #  fishPlugins.sponge
-  #  fishPlugins.z
-  #  fishPlugins.spark
-  #  fishPlugins.tide
-  #];
 }

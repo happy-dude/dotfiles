@@ -37,8 +37,8 @@ fish_add_path -p "/opt/homebrew/opt/curl/bin"
 #stty -ixon -ixoff              macOS
 
 # nvim default editor
-set -gx EDITOR 'nvim'
-set -gx VISUAL 'nvim'
+set -gx EDITOR nvim
+set -gx VISUAL nvim
 
 # ctrl-x ctrl-e to open $EDITOR, like in zsh
 bind \cx\ce edit_command_buffer
@@ -83,7 +83,7 @@ set -gx PAGER 'less --mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-se
 ## https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
 ## https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html
 ## https://songdongsheng.github.io/2021/03/21/statically-linked-executable-hardening-with-pie/
-if command -v clang &> /dev/null
+if command -v clang &>/dev/null
     alias cc='clang \
         -g3 -ggdb3 -glldb \
         -Weverything -pedantic \
@@ -101,7 +101,7 @@ if command -v clang &> /dev/null
         -D_FORTIFY_SOURCE=3 \
         -D_GLIBCXX_ASSERTIONS \
         -Wl,-z,defs,-z,relro,-z,now,-z,noexecstack,-z,noexecheap,-pie'
-else if command -v gcc &> /dev/null
+else if command -v gcc &>/dev/null
     alias cc='gcc \
         -g3 -ggdb3 \
         -Wall -Wextra -pedantic \
@@ -132,7 +132,7 @@ alias gits="git --no-pager show --no-patch --format='commit %h (\"%s\")%n'"
 #[ -d $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/ ] && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/completion.zsh && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/key-bindings.zsh
 if test -d $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell
     fzf --fish | source
-    if command -v rg &> /dev/null
+    if command -v rg &>/dev/null
         set -gx FZF_DEFAULT_COMMAND "$(which rg) --files --hidden --follow --glob '!.git'"
     end
 end
@@ -157,11 +157,11 @@ set -gx SDKROOT $(xcrun --sdk macosx --show-sdk-path)
 
 # docker
 set -gx DOCKER_BUILDKIT 1
-set -gx BUILDKIT_PROGRESS plain                  # building the VM may output auth URLs the user needs to click
+set -gx BUILDKIT_PROGRESS plain # building the VM may output auth URLs the user needs to click
 #set -gx DOCKER_DEFAULT_PLATFORM linux/amd64     # for Apple Silicon: building the VM only works in a amd64 environment at the moment
 #set -gx DOCKER_HOST unix://$HOME/.docker/desktop/docker.sock          # linux docker-desktop host -- comment if using baseline docker-ce
 # go
-fish_add_path -p "/usr/local/go/bin"
+fish_add_path -p /usr/local/go/bin
 fish_add_path -p "$(go env GOPATH)/bin"
 # lua
 fish_add_path "$HOME/.luarocks/bin"
@@ -178,20 +178,25 @@ fish_add_path -p "$HOME/.cargo/bin"
 fish_add_path -p "$HOME/.rustowl"
 
 # eza
-if command -v eza &> /dev/null
-    alias ls='eza'                                                          # ls
-    alias l='eza -lbF --git'                                                # list, size, type, git
-    alias ll='eza -lbGF --git'                                              # long list
-    alias llm='eza -lbGd --git --sort=modified'                             # long list, modified date sort
-    alias la='eza -lbhHigUmuSa --time-style=long-iso --git --color-scale'   # all list
-    alias lx='eza -lbhHigUmuSa@ --time-style=long-iso --git --color-scale'  # all + extended list
+if command -v eza &>/dev/null
+    alias ls='eza' # ls
+    alias l='eza -lbF --git' # list, size, type, git
+    alias ll='eza -lbGF --git' # long list
+    alias llm='eza -lbGd --git --sort=modified' # long list, modified date sort
+    alias la='eza -lbhHigUmuSa --time-style=long-iso --git --color-scale' # all list
+    alias lx='eza -lbhHigUmuSa@ --time-style=long-iso --git --color-scale' # all + extended list
 
     # specialty views
-    alias lS='eza -1'                                                       # one column, just names
-    alias lt='eza -lbGF --tree --level=2'                                   # tree
-    alias lg='eza -lbGd --git --sort=modified --tree --level=2'             # tree w/ git
+    alias lS='eza -1' # one column, just names
+    alias lt='eza -lbGF --tree --level=2' # tree
+    alias lg='eza -lbGd --git --sort=modified --tree --level=2' # tree w/ git
 else
     echo "eza could not be found"
 end
 
 fish_add_path -a "$HOME/.local/bin"
+
+# Machine-local secrets stay outside Git and the Nix store.
+if test -r "$HOME/.config/fish/secrets.fish"
+    source "$HOME/.config/fish/secrets.fish"
+end
