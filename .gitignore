@@ -6,3 +6,6 @@
 # Nix build outputs
 /result
 /result-*
+
+# Machine-local secrets
+secrets.fish

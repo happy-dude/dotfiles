@@ -231,6 +231,7 @@
           enable = true;
           includes = [
             "*.fish"
+            "*.fish.example"
           ];
         };
         shfmt = {
@@ -283,7 +284,7 @@
             shellcheck -x -a "$script"
           done
 
-          for script in ${self}/fish/.config/fish/*.fish; do
+          for script in ${self}/fish/.config/fish/*.fish ${self}/fish/.config/fish/*.fish.example; do
             fish --no-execute "$script"
           done
 

@@ -195,3 +195,8 @@ else
 end
 
 fish_add_path -a "$HOME/.local/bin"
+
+# Machine-local secrets stay outside Git and the Nix store.
+if test -r "$HOME/.config/fish/secrets.fish"
+    source "$HOME/.config/fish/secrets.fish"
+end
