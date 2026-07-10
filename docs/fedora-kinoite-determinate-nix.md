@@ -596,6 +596,34 @@ cd "$HOME/dotfiles"
 `update.sh check` is the final locked repository validation. It does not update
 `flake.lock` or activate a new profile.
 
+### Git filesystem monitoring and inotify
+
+Home Manager explicitly disables Git's built-in fsmonitor while retaining the
+untracked cache. With fsmonitor enabled globally, a recursive traversal of this
+submodule-heavy checkout starts a detached `git fsmonitor--daemon` for each
+initialized repository. Multiplying that daemon across hundreds of submodules
+can consume the per-user inotify capacity shared with desktop applications.
+Disabling fsmonitor addresses the repository shape without increasing a host
+sysctl.
+
+After migrating from a profile that enabled fsmonitor, stop its daemons once:
+
+```fish
+cd "$HOME/dotfiles"
+
+git -c core.fsmonitor=true fsmonitor--daemon stop; or true
+git submodule foreach --quiet --recursive \
+    'git -c core.fsmonitor=true fsmonitor--daemon stop >/dev/null 2>&1 || :'
+
+kde-inotify-survey | jq '.totals'
+```
+
+The survey is user-scoped and does not need `sudo`. Do not accept KDE's
+persistent sysctl increase merely to accommodate per-submodule Git daemons. If
+instance use remains near the warning threshold after the daemons stop and a
+fresh login, inspect the survey's per-process instance and watch counts before
+changing `fs.inotify.max_user_instances` or `fs.inotify.max_user_watches`.
+
 ### Ghostty and tmux
 
 The Toolbox launcher and copied icons are obsolete after native activation. The

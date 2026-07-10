@@ -105,6 +105,7 @@ Update-mode step order (and the flag that skips it): optional Plum fallback, `gi
 The script refuses to update dirty submodules unless `--autostash-submodules` is passed, and it does **not** auto-pop stashes afterward.
 Auto-stashing rejects untracked embedded Git repositories, discards and aborts on a newly created empty stash, and verifies that every auto-stashed submodule is clean before continuing. Valid non-empty stashes remain for explicit review.
 Clean tracked Vim `doc/tags` files are restored to their updated commit after vim-plug regenerates them, preventing generated tag churn without discarding pre-existing edits.
+Git fsmonitor is intentionally disabled while `core.untrackedCache` remains enabled. Recursive traversal otherwise starts a detached `git fsmonitor--daemon` for each initialized submodule and exhausts the per-user inotify instance limit. Do not re-enable it globally for this checkout; diagnose capacity with `kde-inotify-survey` before changing host sysctls.
 
 ### Submodule helpers
 
