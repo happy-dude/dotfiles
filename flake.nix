@@ -47,7 +47,7 @@
     };
 
     rustowl_src = {
-      url = "github:cordx56/rustowl";
+      url = "github:cordx56/rustowl?ref=v0.4.0";
       flake = false;
     };
 

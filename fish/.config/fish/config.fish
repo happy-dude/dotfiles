@@ -157,7 +157,6 @@ set --universal nvm_default_version system
 #source ~/perl5/perlbrew/etc/bashrc
 # rust
 fish_add_path -p "$HOME/.cargo/bin"
-fish_add_path -p "$HOME/.rustowl"
 
 # eza
 if command -v eza &>/dev/null
