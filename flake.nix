@@ -10,6 +10,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # User-scoped declarative Flatpak management on worldmind.
+    nix-flatpak = {
+      url = "github:gmodena/nix-flatpak?ref=v0.7.0";
+    };
+
     # nixGL
     # https://nix-community.github.io/home-manager/index.xhtml#sec-usage-gpu-non-nixos
     # https://github.com/nix-community/nixGL
@@ -183,28 +188,33 @@
             ;
         };
 
-        modules = [
-          ./home.nix
-          ./aerc
-          ./bat
-          ./emacs
-          ./fish
-          ./fonts
-          ./ghostty
-          ./git
-          ./nix
-          ./rime
-          ./rime/gnome.nix
-          ./rustowl
-          ./tldr
-          ./tmux
-          ./wezterm
-          ./vim
-          ./xdg
-          ./yt-dlp
-          ./zed
-          ./zsh
-        ];
+        modules =
+          [
+            ./home.nix
+            ./aerc
+            ./bat
+            ./emacs
+            ./fish
+            ./fonts
+            ./ghostty
+            ./git
+            ./nix
+            ./rime
+            ./rime/gnome.nix
+            ./rustowl
+            ./tldr
+            ./tmux
+            ./wezterm
+            ./vim
+            ./xdg
+            ./yt-dlp
+            ./zed
+            ./zsh
+          ]
+          ++ lib.optionals (username == "schan") [
+            inputs.nix-flatpak.homeManagerModules.nix-flatpak
+            ./flatpak
+          ];
       };
 
     # One `nix fmt` for the whole repo: clang-format (C/C++), Alejandra (Nix),
