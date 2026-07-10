@@ -131,9 +131,14 @@ When adding a new Vim or Emacs plugin, add a `[submodule …]` block to `.gitmod
   separate confirmation.
 - Agent-assisted commits must include an `Assisted-by:` trailer recording the
   actual product, model/version, agent, and reasoning level for that session,
-  for example `Assisted-by: ChatGPT (gpt-5.6-sol, medium, Codex)`. Never copy stale
+  for example
+  `Assisted-by: ChatGPT (gpt-5.6-sol, medium, Codex)`. Never copy stale
   attribution metadata; if any field is unavailable, ask before committing
   rather than guessing.
+- Keep commit and patch subjects at 72 characters or fewer. Wrap message prose
+  at 72 columns where practical and never exceed 80 columns; trailers, URLs,
+  code, paths, and other unbreakable text are exempt. Markdown prose follows
+  the existing `.editorconfig` 80-column ceiling.
 - Prefer adding packages to `home.nix`'s `home.packages` list (or to a module's `default.nix`) over installing system-wide. Resolve binary collisions explicitly with `lib.hiPrio` / `lib.lowPrio` as already done for `gcc` / `clang` / `clang-tools` / `llvm` in `home.nix`.
 - Python libraries must go through the existing `python3.withPackages (ps: [ ... ])` entry in `home.packages`, never as bare `python3Packages.*` items. Bare entries only place the library in the Nix store; the wrapper is what makes it importable by the `python3` on `PATH`. After changing it, verify with a fresh shell: `python3 -c "import <module>"`.
 - Package ownership follows four tiers: retain the tested base image; use rpm-ostree only for host integration such as input methods and udev rules; use user Flatpak for ordinary desktop applications; use Nix/Home Manager for the remaining user tools and packages. Do not enable `nix-flatpak` on `stachan` unless its host Flatpak/AppArmor boundary is deliberately redesigned.
