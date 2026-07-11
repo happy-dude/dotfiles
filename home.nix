@@ -120,6 +120,7 @@ in {
       xclip
       xdg-utils
       xsel
+      zuban
 
       # Language agent: translation / dictionary / grammar / OCR / TTS tooling
       dict # DICT protocol client (needs a configured server/database, see note below)
@@ -127,16 +128,15 @@ in {
       languagetool # multilingual grammar/style checker - covers eo/es/it/pl; complements aspell's spellcheck-only coverage
       ocrmypdf # OCR-to-searchable-PDF wrapper; needs tesseract5 below on PATH, does not bundle it itself
       opencc # Simplified <-> Traditional Chinese conversion (s2t/t2s/s2hk/hk2s/s2twp configs bundled)
-      # python3 carrying Jedi Language Server plus jieba (Mandarin word
-      # segmentation) + pypinyin (Pinyin generation). MUST be a withPackages
-      # wrapper, not bare python3Packages.* entries — those only drop the libs
-      # in the store and never become
-      # importable by a python3 on PATH. This puts an `import jieba`-capable
-      # python3 on PATH, which is what language.md's one-liners rely on.
+      # python3 carrying jieba (Mandarin word segmentation) and pypinyin
+      # (Pinyin generation). MUST be a withPackages wrapper, not bare
+      # python3Packages.* entries — those only drop the libs in the store and
+      # never become importable by a python3 on PATH. This puts an
+      # `import jieba`-capable python3 on PATH, which is what language.md's
+      # one-liners rely on.
       (python3.withPackages (
         ps:
           with ps; [
-            jedi-language-server
             jieba
             pypinyin
             requests

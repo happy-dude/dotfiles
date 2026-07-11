@@ -44,6 +44,7 @@
   "git.stagedDecorator": "\u25cf\u25cf",
   "git.topRemovedSign.text": "\u203e\u203e",
   "git.untrackedDecorator": "\u2026\u2026",
+  "zuban.path": "zuban",
   "languageserver": {
     "bash-language-server": {
       "command": "bash-language-server",
@@ -53,17 +54,6 @@
     "digestif": {
       "command": "digestif",
       "filetypes": ["tex", "plaintex", "context"]
-    },
-    "jedi-language-server": {
-      "command": "jedi-language-server",
-      "filetypes": ["python"],
-      "rootPatterns": [
-        "pyproject.toml",
-        "setup.cfg",
-        "setup.py",
-        "requirements.txt",
-        ".git"
-      ]
     },
     "lua-language-server": {
       "command": "lua-language-server",

@@ -18,6 +18,7 @@ endif
 
 " CoC extensions
 let g:coc_global_extensions = [
+      \ '@yaegassy/coc-zuban',
       \ 'coc-actions',
       \ 'coc-clangd',
       \ 'coc-extension-codemod',
@@ -29,11 +30,6 @@ let g:coc_global_extensions = [
       \ 'coc-tsserver',
       \ 'coc-vimtex'
       \]
-      "\ 'coc-css',
-      "\ 'coc-git',     " use vim-signify
-      "\ 'coc-html',
-      "\ 'coc-python',  " use Nix-managed jedi-language-server
-      "\ 'coc-sql',
 
 " Don't pass messages to |ins-completion-menu|.
 set shortmess+=c
