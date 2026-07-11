@@ -23,7 +23,6 @@
         magit
         markdown-mode
         nix-mode
-        noflet
         notmuch
         org
         org-journal

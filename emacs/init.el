@@ -102,10 +102,15 @@
       ;; solarized-height-plus-4 1.0)
       )
 ;(load-theme 'solarized-dark t)
+(let ((theme-file (locate-library "solarized-gruvbox-dark-theme")))
+  (unless theme-file
+    (error "Unable to locate solarized-gruvbox-dark-theme"))
+  (add-to-list 'custom-theme-load-path (file-name-directory theme-file)))
 (load-theme 'solarized-gruvbox-dark t)
 
 ; editorconfig settings
 ;; Preserve Emacs' form-aware indentation at the conventional Lisp width.
+(require 'editorconfig)
 (setq editorconfig-lisp-use-default-indent 2)
 (editorconfig-mode 1)
 
@@ -134,17 +139,19 @@
            (if (equal "capture" (frame-parameter nil 'name))
                (delete-frame)))
 
-;; noflet
+(require 'cl-lib)
 (defun make-capture-frame ()
   "Create a new frame and run org-capture."
   (interactive)
   (make-frame '((name . "capture")))
   (select-frame-by-name "capture")
   (delete-other-windows)
-  (noflet ((switch-to-buffer-other-window (buf) (switch-to-buffer buf)))
-          (org-capture)))
+  (cl-letf (((symbol-function 'switch-to-buffer-other-window)
+             (lambda (buf) (switch-to-buffer buf))))
+    (org-capture)))
 
 ;; org-mode
+(require 'org)
 (define-key global-map (kbd "C-c l") 'org-store-link)
 (define-key global-map (kbd "C-c a") 'org-agenda)
 (global-set-key (kbd "C-c c") 'org-capture)
@@ -261,6 +268,7 @@
 (setq-default major-mode 'org-mode)
 
 ;; org-roam settings
+(require 'org-roam)
 ;; config
 ;; acknowledge v2 migration
 (setq org-roam-v2-ack t)
@@ -449,6 +457,7 @@
     ))
 
 ;; org-journal
+(require 'org-journal)
 ;; config
 ;; ref: https://github.com/bastibe/org-journal
 (setq org-journal-file-type 'weekly)
@@ -479,12 +488,15 @@
 ;; evil-mode
 (setq evil-want-C-u-scroll t)
 (setq evil-want-C-i-jump nil)
+(require 'evil)
 (evil-mode 1)
 
 ;; evil-collection
+(require 'evil-collection)
 (evil-collection-init)
 
 ;; evil-surround
+(require 'evil-surround)
 (global-evil-surround-mode 1)
 
 (require 'evil-org)
@@ -494,9 +506,11 @@
 (evil-org-agenda-set-keys)
 
 ;; evil-rsi
+(require 'evil-rsi)
 (evil-rsi-mode)
 
 ;; use undo-tree for evil-mode
+(require 'undo-tree)
 (evil-set-undo-system 'undo-tree)
 ;; undo-tree
 
@@ -512,9 +526,10 @@
 (slime-setup '(slime-fancy slime-asdf))
 
 ;; which-key settings
+(require 'which-key)
 (which-key-mode t)
 
 ;; rainbow-delimiters
+(require 'rainbow-delimiters)
 (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
 (add-hook 'org-mode-hook #'rainbow-delimiters-mode)
-
