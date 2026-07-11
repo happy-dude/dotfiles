@@ -33,9 +33,13 @@
     envExtra = ''
       # Put the content of your .zshenv file here
       ${builtins.readFile ./.zshenv}
-      ${lib.optionalString (username == "schan") ''
-        typeset -gU path PATH
-      ''}
+      # Keep mutable source-install fallbacks behind Home Manager packages.
+      typeset -gU path PATH
+      for fallback_path in "$HOME/go/bin" "$HOME/.cargo/bin"; do
+        path=(''${path:#$fallback_path})
+        [[ -d "$fallback_path" ]] && path+=("$fallback_path")
+      done
+      unset fallback_path
     '';
   };
 }

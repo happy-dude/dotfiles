@@ -8,6 +8,7 @@ let g:go_code_completion_enabled = 0        " Disable vim-go LSP autocomplete
 let g:go_def_mapping_enabled = 0            "  goto-definition
 let g:go_doc_keywordprg_enabled = 0         "  godoc window
 let g:go_fmt_autosave = 0                   "  fmt on autosave
+let g:go_gopls_enabled = 0                  " CoC owns the gopls process
 let g:go_mod_fmt_autosave = 0
 
 " Disable linting when EasyMotion is modifying buffer
@@ -24,7 +25,6 @@ let g:coc_global_extensions = [
       \ 'coc-extension-codemod',
       \ 'coc-go',
       \ 'coc-highlight',
-      \ 'coc-json',
       \ 'coc-markdownlint',
       \ 'coc-rust-analyzer',
       \ 'coc-tsserver',
@@ -159,7 +159,7 @@ command! -nargs=0 Format :call CocActionAsync('format')
 " Add `:Fold` command to fold current buffer
 command! -nargs=? Fold :call     CocAction('fold', <f-args>)
 
-" Add `:OR` command for organize imports of the current buffer
+" Add `:OR` for coc-tsserver to organize JavaScript/TypeScript imports
 command! -nargs=0 OR   :call     CocActionAsync('runCommand', 'editor.action.organizeImport')
 
 " Add (Neo)Vim's native statusline support

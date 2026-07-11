@@ -208,7 +208,16 @@ Tree-sitter parser/query runtime and the RustOwl server by default:
   `vim/default.nix` links the Nix-built Tree-sitter parsers and queries, while
   `rustowl/default.nix` builds the RustOwl server with its required pinned Rust
   toolchain. The Vim config itself is in `vim/.vim/vimrc` with Lua/init.vim
-  helpers alongside.
+  helpers alongside. Home Manager owns the external editor binaries, including
+  vim-go's helper suite, PerlTidy, Ruff, and the language servers selected by
+  CoC. The CoC adapter settings resolve those commands from `PATH`; Fish and Zsh
+  keep mutable `~/go/bin` and `~/.cargo/bin` fallbacks behind the Home Manager
+  profile so they cannot shadow the Nix packages. `coc-settings.json` pins
+  clangd, gopls, rust-analyzer, and Zuban to those profile commands; its generic
+  JSON and Ruff clients use the Nix-managed JSON server and Ruff executable.
+  coc-json is no longer declared. Home Manager links the Nix TypeScript SDK at
+  `~/.local/share/nix-typescript/lib` for coc-tsserver, with mutable automatic
+  type acquisition disabled.
 - Emacs plugins live under `emacs/.config/emacs/plugins/*` as git submodules.
   `emacs/default.nix` _also_ installs many of the same packages via
   `programs.emacs.extraPackages` — both mechanisms are used in parallel
@@ -297,10 +306,10 @@ before using the Plum mode.
 Update-mode step order (and the flag that skips it): optional Plum fallback,
 `git pull --rebase --autostash` (`--skip-pull`), submodule sync/init/update
 (`--skip-submodules`), submodule status (`--skip-status`), vim-plug and coc.nvim
-updates (`--skip-nvim`; mutable Tree-sitter and RustOwl work runs only with
-`--editor-deployment stow`), vim-go binaries (`--skip-go`), `nix fmt .`
-(`--skip-nix-fmt`), `nix flake update` (`--skip-nix-flake`), locked flake
-validation and a Home Manager build, and optional `home-manager switch`
+updates (`--skip-nvim`); mutable Tree-sitter, RustOwl, and vim-go helper updates
+run only with `--editor-deployment stow` (`--skip-go` also skips the latter);
+`nix fmt .` (`--skip-nix-fmt`), `nix flake update` (`--skip-nix-flake`), locked
+flake validation and a Home Manager build, and optional `home-manager switch`
 (`--skip-home-manager`). There is no `nix-channel` step. Environment variables:
 `EDITOR_DEPLOYMENT` (default `nix`) and `HOME_MANAGER_FLAKE` (default
 `.#$(whoami)`).
@@ -421,6 +430,8 @@ with `ignore = dirty`).
   integration through KWin's Virtual Keyboard setting.
 - **Vim runtime artifacts** are declarative by default: Home Manager links
   Tree-sitter parsers and queries under `~/.local/share/nvim/site` and places
-  the Nix-built `rustowl` on `PATH`. Do not run `:TSUpdate` in this mode. Retain
-  `--editor-deployment stow` only for a deliberately Stow-managed Vim
-  deployment, where `:TSUpdate` and the RustOwl source build remain mutable.
+  the Nix-built `rustowl`, vim-go helpers, PerlTidy, Ruff, and CoC language
+  servers on `PATH`. Do not run `:TSUpdate`, `:GoUpdateBinaries`, or
+  `:GoInstallBinaries` in this mode. Retain `--editor-deployment stow` only for
+  a deliberately Stow-managed Vim deployment, where parser, RustOwl, and Go
+  helper updates remain mutable.

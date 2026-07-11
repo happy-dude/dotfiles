@@ -378,11 +378,6 @@
 	url = https://github.com/easymotion/vim-easymotion.git
 	branch = master
 	ignore = dirty
-[submodule "vim-flake8"]
-	path = vim/.vim/pack/plugged/opt/vim-flake8
-	url = https://github.com/nvie/vim-flake8.git
-	branch = master
-	ignore = dirty
 [submodule "vim-fugitive"]
 	path = vim/.vim/pack/plugged/opt/vim-fugitive
 	url = https://github.com/tpope/vim-fugitive.git

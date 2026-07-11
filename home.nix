@@ -28,6 +28,7 @@ in {
     stateVersion = "26.11";
 
     packages = with pkgs; [
+      asmfmt
       asciinema
       autoconf
       automake
@@ -48,11 +49,13 @@ in {
       curl
       desktop-file-utils
       dex
+      delve
       dtc
       dust
       elfutils
       exiftool
       eza
+      errcheck
       fd
       ffmpeg
       flex
@@ -63,12 +66,19 @@ in {
       glibc
       gnumake
       go
+      godef
+      golangci-lint
+      gomodifytags
       gopls
+      gotags
+      gotools
       hexyl
       htop
       hyperfine
+      iferr
       imagemagick
       img2pdf
+      impl
       jq
       less
       libgcc
@@ -77,6 +87,7 @@ in {
       ltrace
       lua-language-server
       meson
+      motion
       moreutils
       ncurses.dev
       neovim
@@ -91,15 +102,21 @@ in {
       pass
       patch
       perf
-      (perl.withPackages (ps: [ps.PerlLanguageServer]))
+      (perl.withPackages (ps: [
+        ps.PerlLanguageServer
+        ps.PerlTidy
+      ]))
       pinentry-all
       pkgconf
       prettier
       procs
       qemu
+      reftools
+      revive
       ripgrep
       roswell
       rsync
+      ruff
       rust-analyzer
       sbcl
       shellcheck
@@ -172,6 +189,7 @@ in {
       ".golangci.yml".source = ./.golangci.yml;
       ".roswell/helper.el".source = ./roswell/.roswell/helper.el;
       ".stylua.toml".source = ./.stylua.toml;
+      ".local/share/nix-typescript".source = "${pkgs.typescript}/lib/node_modules/typescript";
       "ros_swank".source = ./roswell/ros_swank;
     };
 

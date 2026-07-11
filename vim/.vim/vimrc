@@ -90,7 +90,6 @@ if &loadplugins
   Plug 'mhinz/vim-signify'                            ,   { 'branch' : 'master' }
   Plug 'mileszs/ack.vim'                              ,   { 'branch' : 'master' }
   Plug 'nathanaelkane/vim-indent-guides'              ,   { 'branch' : 'master' }
-  Plug 'nvie/vim-flake8'                              ,   { 'branch' : 'master', 'for' : [ 'python' ] }
   Plug 'othree/html5.vim'                             ,   { 'branch' : 'master', 'for' : [ 'html', 'javascript', 'php', 'xhtml', 'xml' ] }
   Plug 'preservim/nerdcommenter'                      ,   { 'branch' : 'master' }
   Plug 'rust-lang/rust.vim'                           ,   { 'branch' : 'master', 'for' : [ 'rust' ] }
@@ -114,7 +113,7 @@ if &loadplugins
   " if fzf is available, use fzf.vim
   " otherwise, use ctrlp which is pure vimscript
   if executable('fzf')
-    Plug 'junegunn/fzf'                               ,   { 'branch' : 'master', 'do': { -> fzf#install() } }
+    Plug 'junegunn/fzf'                               ,   { 'branch' : 'master' }
     Plug 'junegunn/fzf.vim'                           ,   { 'branch' : 'master' }
 
     let s:fzf_settings    = s:vimpack_settings_dir . 'fzf.vim'

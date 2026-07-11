@@ -29,6 +29,10 @@
   "rust-analyzer.server.path": "rust-analyzer",
   "rust-analyzer.updates.checkOnStartup": false,
   "rust-analyzer.updates.prompt": false,
+  "tsserver.disableAutomaticTypeAcquisition": true,
+  "tsserver.tsdk": "~/.local/share/nix-typescript/lib",
+  "tsserver.useLocalTsdk": false,
+  "typescript.check.npmIsInstalled": false,
   "diagnostic.checkCurrentLine": true,
   "diagnostic.errorSign": ">>",
   "diagnostic.refreshAfterSave": true,
@@ -54,6 +58,17 @@
     "digestif": {
       "command": "digestif",
       "filetypes": ["tex", "plaintex", "context"]
+    },
+    "json-language-server": {
+      "command": "vscode-json-language-server",
+      "args": ["--stdio"],
+      "filetypes": ["json", "jsonc"]
+    },
+    "ruff": {
+      "command": "ruff",
+      "args": ["server"],
+      "filetypes": ["python"],
+      "rootPatterns": ["pyproject.toml", "ruff.toml", ".ruff.toml", ".git"]
     },
     "lua-language-server": {
       "command": "lua-language-server",
