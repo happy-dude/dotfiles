@@ -19,7 +19,7 @@ endfunction
 " Supports ranges
 " ref:  https://vim.fandom.com/wiki/Perl_compatible_regular_expressions
 "       https://blog.ostermiller.org/perl-wide-character-in-print/
-if executable('perl') && has('nvim')
+if executable('perl')
   function s:PerlSubstitute(line1, line2, sstring)
     let l:lines = getline(a:line1, a:line2)
 
@@ -33,7 +33,7 @@ if executable('perl') && has('nvim')
       return
     endif
 
-    call nvim_buf_set_lines(0, a:line1 - 1, a:line2, v:false, l:sysresult)
+    call setline(a:line1, l:sysresult)
   endfunction
 
   command! -range -nargs=1 S call s:PerlSubstitute(<line1>, <line2>, <q-args>)
