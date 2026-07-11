@@ -9,11 +9,6 @@ function! StripTrailingWhitespace()
   endif
 endfunction
 
-" Disable autoindent on write for contributing to open source projects with own style guidelines
-function! AutoindentFile ()
-  autocmd BufWrite * if ! &bin && &filetype != "" && &filetype !~ '\(asm\|conf\|haskell\|html\|js\|markdown\|make\|perl\|python\|sh\|text\)' | :exe ":normal! gg=G" | :exe ":normal! 'azz" | endif
-endfunction
-
 " Use Perl regex for search-and-replace
 " Usage :S/pattern/replace/flags
 " Supports ranges
