@@ -53,6 +53,18 @@ checkout is the Linux branch.
   coexist during a migration, but Home Manager never removes it; validate the
   user copy before explicitly uninstalling the system ref without
   `--delete-data`.
+- Linux security-policy constraint: before relying on Bubblewrap-backed file
+  tools, inspect whether AppArmor or SELinux is enforcing restrictions, whether
+  a tool-specific policy is loaded, and whether a safe unprivileged
+  user/network-namespace probe can configure its namespace. If the active
+  security policy prevents Bubblewrap from configuring the namespace, treat the
+  patch helper as unavailable for that session: use the narrowly scoped approved
+  elevated mode and, for file edits, a deterministic file-scoped Perl change.
+  Inspect the resulting diff immediately and run the normal formatter and tests.
+  State when this fallback is used. Do not weaken AppArmor or SELinux policy,
+  disable namespace restrictions, make Bubblewrap setuid, or disable sandboxing
+  without explicit user authorization. Do not generalize this workaround to
+  unrelated failures.
 - Flake inputs: `nixpkgs` (nixos-unstable), `home-manager`, `nix-flatpak`,
   `nixgl`, `neovim-nightly-overlay`, `rust-overlay`, `treefmt-nix`, the
   `ghostty` flake, and source-only Rime schema repositories. Home Manager,

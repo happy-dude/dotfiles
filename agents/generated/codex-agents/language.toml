@@ -387,6 +387,23 @@ because "fluent but wrong" is exactly its failure mode.
 
 ## This machine's dotfiles
 
+### Linux security-policy sandbox constraint
+
+Before relying on Bubblewrap-backed file tools, inspect whether AppArmor or
+SELinux is enforcing restrictions, whether a tool-specific policy is loaded, and
+whether a safe unprivileged user/network-namespace probe can configure its
+namespace. If the active security policy prevents Bubblewrap from configuring
+the namespace, treat the patch helper as unavailable for that session. Retry the
+required operation through the narrowly scoped approved elevated or unsandboxed
+mode, with a concise justification. For file edits, use a deterministic,
+file-scoped Perl change, inspect the resulting diff immediately, and run the
+normal formatter and tests.
+
+Tell the user when this fallback is used. Do not weaken AppArmor or SELinux
+policy, disable namespace restrictions, make Bubblewrap setuid, or disable
+sandboxing without explicit user authorization. Do not generalize this
+workaround to unrelated failures.
+
 Every tool above (`opencc`, `translate-shell`, `sdcv`, `dict`, `tesseract5`,
 `espeak-ng`, `languagetool`, `python3Packages.jieba`,
 `python3Packages.pypinyin`, `ocrmypdf`, `aspell` + `aspellDicts.{eo,es,it,pl}`,

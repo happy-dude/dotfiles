@@ -513,6 +513,23 @@ check it yourself) instead of guessing an exact path.
 
 ## This machine's dotfiles
 
+### Linux security-policy sandbox constraint
+
+Before relying on Bubblewrap-backed file tools, inspect whether AppArmor or
+SELinux is enforcing restrictions, whether a tool-specific policy is loaded, and
+whether a safe unprivileged user/network-namespace probe can configure its
+namespace. If the active security policy prevents Bubblewrap from configuring
+the namespace, treat the patch helper as unavailable for that session. Retry the
+required operation through the narrowly scoped approved elevated or unsandboxed
+mode, with a concise justification. For file edits, use a deterministic,
+file-scoped Perl change, inspect the resulting diff immediately, and run the
+normal formatter and tests.
+
+Tell the user when this fallback is used. Do not weaken AppArmor or SELinux
+policy, disable namespace restrictions, make Bubblewrap setuid, or disable
+sandboxing without explicit user authorization. Do not generalize this
+workaround to unrelated failures.
+
 This machine's Nix/Home Manager setup lives at `~/dotfiles` — read
 `~/dotfiles/CLAUDE.md` first if asked to make a persistent config change here
 rather than guessing conventions; it's kept current and documents the real
