@@ -186,7 +186,7 @@ in {
     file = {
       ".clang-format".source = ./.clang-format;
       ".editorconfig".source = ./.editorconfig;
-      ".gdbinit".source = ./gdb/.gdbinit;
+      ".gdbinit".source = ./gdb/gdbinit;
       ".golangci.yml".source = ./.golangci.yml;
       ".roswell/helper.el".source = ./roswell/.roswell/helper.el;
       ".stylua.toml".source = ./.stylua.toml;
