@@ -19,21 +19,17 @@ if !has('nvim')
   set esckeys           " Function keys that start with <Esc> are recognized in insert mode
 endif
 
-" vimconf directories for vimrc and plugin settings
-if has('nvim')
-  let s:vim_dir = '~/.config/nvim/'
-  let s:vimrc_dir = '~/.config/nvim/vimrc_dir/'
-  let s:vimpack_settings_dir = '~/.config/nvim/vimrc_dir/packages/'
+" Resolve shared configuration and plugin paths from this vimrc.
+let s:vim_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/'
+let s:vimrc_dir = s:vim_dir . 'vimrc_dir/'
+let s:vimpack_settings_dir = s:vimrc_dir . 'packages/'
 
+if has('nvim')
   " Disable unused providers and silence checkhealth warnings
   let g:loaded_node_provider = 0
   let g:loaded_perl_provider = 0
   let g:loaded_python3_provider = 0
   let g:loaded_ruby_provider = 0
-else
-  let s:vim_dir = '~/.vim/'
-  let s:vimrc_dir = '~/.vim/vimrc_dir/'
-  let s:vimpack_settings_dir = '~/.vim/vimrc_dir/packages/'
 endif
 " }
 
