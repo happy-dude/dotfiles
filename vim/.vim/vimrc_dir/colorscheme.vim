@@ -1,11 +1,7 @@
 " colorscheme settings
 
-" vimconf directories for vimrc and plugin settings
-if has('nvim')
-  let s:vim_plugged_dir = '~/.config/nvim/pack/plugged/opt/'
-else
-  let s:vim_plugged_dir = '~/.vim/pack/plugged/opt/'
-endif
+" Resolve plugin paths from this settings file.
+let s:vim_plugged_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h:h') . '/pack/plugged/opt/'
 
 if (&t_Co >= 16) && (($TERM =~# "color") || ($TERM =~# "alacritty") || ($TERM =~# "wezterm") || ($TERM =~# "ghostty")) && (has("termguicolors")) && (!has("gui_running"))
 
