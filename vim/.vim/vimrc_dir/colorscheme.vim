@@ -10,7 +10,7 @@ if (&t_Co >= 16) && (($TERM =~# "color") || ($TERM =~# "alacritty") || ($TERM =~
 
   " Colorscheme preferences:
   "   gruvbox-material, solarized8_flat, gruvbox8_hard
-  "   otherwise, prefer solarized w/ 256 color setting, jellybeans, Tomorrow-Night, seoul256, lucius, tango2, desert, torte, murphy
+  "   otherwise, prefer solarized w/ 256 color setting, jellybeans, Tomorrow-Night, seoul256, tango2, desert, torte, murphy
 
   if filereadable(expand(s:vim_plugged_dir . "/gruvbox-material/colors/gruvbox-material.vim"))
     set background=dark

@@ -62,7 +62,6 @@ if &loadplugins
   Plug 'guns/vim-sexp'                                ,   { 'branch' : 'master' }
   Plug 'justinmk/vim-dirvish'                         ,   { 'branch' : 'master' }
   Plug 'keith/swift.vim'                              ,   { 'branch' : 'master', 'for' : [ 'swift' ] }
-  Plug 'kovisoft/slimv'                               ,   { 'branch' : 'master' }
   Plug 'lervag/vimtex'                                ,   { 'branch' : 'master', 'for' : [ 'tex' ] }
   Plug 'luochen1990/rainbow'                          ,   !has('nvim') ? { 'branch' : 'master' } : { 'branch' : 'master', 'on': [] }
   Plug 'machakann/vim-sandwich'                       ,   { 'branch' : 'master' }
@@ -74,7 +73,6 @@ if &loadplugins
   Plug 'preservim/nerdcommenter'                      ,   { 'branch' : 'master' }
   Plug 'rust-lang/rust.vim'                           ,   { 'branch' : 'master', 'for' : [ 'rust' ] }
   Plug 'vmware-archive/salt-vim'                      ,   { 'branch' : 'master' }
-  Plug 'sjl/clam.vim'                                 ,   { 'branch' : 'master' }
   Plug 'tpope/vim-fugitive'                           ,   { 'branch' : 'master' }
   Plug 'tpope/vim-markdown'                           ,   { 'branch' : 'master', 'for' : [ 'markdown' ] }
   Plug 'tpope/vim-repeat'                             ,   { 'branch' : 'master' }
@@ -86,7 +84,6 @@ if &loadplugins
   Plug 'vim-airline/vim-airline-themes'               ,   { 'branch' : 'master' }
   Plug 'vim-pandoc/vim-pandoc'                        ,   { 'branch' : 'master', 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
   Plug 'vim-pandoc/vim-pandoc-syntax'                 ,   { 'branch' : 'master', 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
-  Plug 'vim-perl/vim-perl'                            ,   { 'branch' : 'dev', 'for' : [ 'perl', 'perl6', 'mason' ], 'do': 'make clean carp dancer highlight-all-pragmas moose test-more try-tiny' }
   Plug 'wlangstroth/vim-racket'                       ,   { 'branch' : 'master', 'for' : [ 'racket' ] }
 
   " if fzf is available, use fzf.vim
@@ -108,7 +105,6 @@ if &loadplugins
   " { Colorschemes
   Plug 'altercation/vim-colors-solarized'             , { 'branch' : 'master' }
   Plug 'chriskempson/base16-vim'                      , { 'branch' : 'master' }
-  Plug 'jonathanfilip/vim-lucius'                     , { 'branch' : 'master' }
   Plug 'junegunn/seoul256.vim'                        , { 'branch' : 'master' }
   Plug 'lifepillar/vim-gruvbox8'                      , { 'branch' : 'master' }
   Plug 'lifepillar/vim-solarized8'                    , { 'branch' : 'master' }
@@ -193,9 +189,6 @@ if &loadplugins
     execute                     'source' s:rainbow_settings
   endif
 
-
-  let s:slimv_settings          = s:vimpack_settings_dir . 'slimv.vim'
-  execute                       'source' s:slimv_settings
 
   let s:solarized_settings      = s:vimpack_settings_dir . 'solarized.vim'
   execute                       'source' s:solarized_settings

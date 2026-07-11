@@ -13,11 +13,6 @@
 	url = https://github.com/chriskempson/base16-vim
 	branch = master
 	ignore = dirty
-[submodule "clam.vim"]
-	path = vim/.vim/pack/plugged/opt/clam.vim
-	url = https://github.com/sjl/clam.vim.git
-	branch = master
-	ignore = dirty
 [submodule "coc.nvim"]
 	path = vim/.vim/pack/plugged/opt/coc.nvim
 	url = https://github.com/neoclide/coc.nvim.git
@@ -293,11 +288,6 @@
 	url = https://github.com/slime/slime.git
 	branch = master
 	ignore = dirty
-[submodule "slimv"]
-	path = vim/.vim/pack/plugged/opt/slimv
-	url = https://github.com/kovisoft/slimv.git
-	branch = master
-	ignore = dirty
 [submodule "solarized"]
 	path = other/themes/solarized_theme-altercation
 	url = https://github.com/altercation/solarized.git
@@ -383,11 +373,6 @@
 	url = https://github.com/nathanaelkane/vim-indent-guides.git
 	branch = master
 	ignore = dirty
-[submodule "vim-lucius"]
-	path = vim/.vim/pack/plugged/opt/vim-lucius
-	url = https://github.com/jonathanfilip/vim-lucius.git
-	branch = master
-	ignore = dirty
 [submodule "vim-markdown"]
 	path = vim/.vim/pack/plugged/opt/vim-markdown
 	url = https://github.com/tpope/vim-markdown.git
@@ -402,11 +387,6 @@
 	path = vim/.vim/pack/plugged/opt/vim-pandoc-syntax
 	url = https://github.com/vim-pandoc/vim-pandoc-syntax.git
 	branch = master
-	ignore = dirty
-[submodule "vim-perl"]
-	path = vim/.vim/pack/plugged/opt/vim-perl
-	url = https://github.com/vim-perl/vim-perl.git
-	branch = dev
 	ignore = dirty
 [submodule "vim-plug"]
 	path = vim/.vim/pack/bundle/opt/vim-plug/autoload
