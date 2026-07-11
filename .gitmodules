@@ -53,11 +53,6 @@
 	url = https://github.com/editorconfig/editorconfig-emacs.git
 	branch = master
 	ignore = dirty
-[submodule "editorconfig-vim"]
-	path = vim/.vim/pack/plugged/opt/editorconfig-vim
-	url = https://github.com/editorconfig/editorconfig-vim.git
-	branch = master
-	ignore = dirty
 [submodule "elisp-tree-sitter"]
 	path = emacs/.config/emacs/plugins/elisp-tree-sitter
 	url = https://github.com/emacs-tree-sitter/elisp-tree-sitter.git

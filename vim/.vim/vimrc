@@ -43,6 +43,12 @@ if &loadplugins
   filetype off                " Turn filetype plugin off until after plugins are loaded
 
   if has('packages')
+    if !has('nvim')
+      let s:editorconfig_settings = s:vimpack_settings_dir . 'editorconfig.vim'
+      execute 'source' s:editorconfig_settings
+      packadd! editorconfig
+    endif
+
     " { vim-plug
     packadd! vim-plug
     " }
@@ -71,7 +77,6 @@ if &loadplugins
   Plug 'cespare/vim-toml'                             ,   { 'branch' : 'main', 'for' : [ 'toml' ] }
   Plug 'chrisbra/csv.vim'                             ,   { 'branch' : 'master', 'for' : [ 'csv' ] }
   Plug 'easymotion/vim-easymotion'                    ,   !has('nvim') ? { 'branch' : 'master' } : { 'branch' : 'master', 'on': [] }
-  Plug 'editorconfig/editorconfig-vim'                ,   { 'branch' : 'master' }
   Plug 'fatih/vim-go'                                 ,   { 'for' : [ 'go', 'gomod', 'gohtmltmpl' ] }
   Plug 'gregsexton/MatchTag'                          ,   { 'for' : [ 'html', 'xml' ] }
   Plug 'guns/vim-sexp'                                ,   { 'branch' : 'master' }
@@ -196,9 +201,6 @@ if &loadplugins
 
   let s:dirvish_settings        = s:vimpack_settings_dir . 'dirvish.vim'
   execute                       'source' s:dirvish_settings
-
-  let s:editorconfig_settings   = s:vimpack_settings_dir . 'editorconfig.vim'
-  execute                       'source' s:editorconfig_settings
 
   let s:go_settings             = s:vimpack_settings_dir . 'go.vim'
   execute                       'source' s:go_settings
