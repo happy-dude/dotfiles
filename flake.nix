@@ -250,10 +250,14 @@
           useEditorConfig = true;
         };
         stylua.enable = true;
-        prettier.enable = true;
+        prettier = {
+          enable = true;
+          settings.proseWrap = "always";
+        };
         taplo.enable = true;
       };
       settings.global.excludes = [
+        "agents/prompts/kagi-*.md" # fixed instruction budget; preserve whitespace
         "other/**" # non-managed reference configs
         "karabiner/**" # macOS + generated backups
         "rime/**/*.yaml" # input-method schemas and dictionaries (data, not code)
