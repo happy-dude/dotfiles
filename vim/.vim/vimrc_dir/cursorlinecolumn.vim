@@ -15,7 +15,7 @@ else
 endif
 
 " Always show signcolumn gutter for plugin diagnostics, warnings, and errors
-if has("patch-8.1.1564") || has('nvim')
+if has("patch-8.1.1564")
   " Merge signcolumn and number column into one
   set signcolumn=number
 else
