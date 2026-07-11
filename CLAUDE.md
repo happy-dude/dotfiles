@@ -110,7 +110,9 @@ Git fsmonitor is intentionally disabled while `core.untrackedCache` remains enab
 ### Submodule helpers
 
 ```bash
-git submodule update --init --recursive --remote     # add/refresh all submodules
+git submodule update --remote
+git submodule sync --recursive
+git submodule foreach --quiet 'git submodule update --init --recursive'
 ./scripts/sort_gitmodules.sh                         # atomically sort .gitmodules
 ./scripts/sort_gitmodules.sh --check                 # report drift without writing
 ./scripts/gitgc.sh [--aggressive] [dir]              # gc main repo and initialized submodules

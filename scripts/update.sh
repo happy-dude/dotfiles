@@ -493,6 +493,24 @@ collect_dirty_submodules() {
   done < <(git submodule foreach --quiet --recursive 'printf "%s\n" "$displaypath"')
 }
 
+update_submodule_graph() {
+  # Advance only submodules recorded by the root repository. Applying
+  # --remote recursively would also move descendants away from the gitlinks
+  # recorded by their direct parents.
+  git submodule update --remote
+
+  # A direct update may replace a parent's .gitmodules. Refresh nested URLs
+  # before initializing and aligning the resulting descendant graph.
+  git submodule sync --recursive
+
+  # Intentionally top-level-only foreach. The inner update aligns every
+  # descendant to its direct parent's gitlink and honors update=none. Do not
+  # add --remote or --checkout here.
+  git submodule foreach --quiet '
+    git submodule update --init --recursive
+  '
+}
+
 find_untracked_embedded_repositories() {
   local path="$1"
   local repo_root
@@ -936,8 +954,8 @@ if [ "$SKIP_SUBMODULES" -eq 0 ]; then
 
   section_end "done"
 
-  section_start "Updating submodules to latest remote commits"
-  git submodule update --remote --recursive
+  section_start "Updating direct submodules and pinning descendants"
+  update_submodule_graph
   section_end "done"
 else
   section_start "Skipping submodule operations (--skip-submodules)"

@@ -115,4 +115,82 @@ git -C "$help_repo" diff --quiet -- doc/tags ||
 [ "${#RESTORED_VIM_HELP_TAGS[@]}" -eq 1 ] ||
   fail 'restored help tags were not reported'
 
+topology_root="$TMPDIR_TEST/topology-root"
+direct_remote="$TMPDIR_TEST/direct-remote"
+leaf_remote="$TMPDIR_TEST/leaf-remote"
+skipped_remote="$TMPDIR_TEST/skipped-remote"
+new_remote="$TMPDIR_TEST/new-remote"
+
+create_repo "$leaf_remote"
+create_repo "$skipped_remote"
+create_repo "$new_remote"
+create_repo "$direct_remote"
+
+git -C "$direct_remote" -c protocol.file.allow=always submodule add -q \
+  "$leaf_remote" deps/leaf
+git -C "$direct_remote" -c protocol.file.allow=always submodule add -q \
+  "$skipped_remote" deps/skipped
+git -C "$direct_remote" config -f .gitmodules \
+  submodule.deps/skipped.update none
+commit_all "$direct_remote" direct-one
+
+direct_one="$(git -C "$direct_remote" rev-parse HEAD)"
+leaf_one="$(git -C "$leaf_remote" rev-parse HEAD)"
+
+create_repo "$topology_root"
+git -C "$topology_root" -c protocol.file.allow=always submodule add -q \
+  "$direct_remote" modules/direct
+commit_all "$topology_root" root-one
+git -C "$topology_root" -c protocol.file.allow=always \
+  submodule update --init --recursive -q
+
+[ "$(git -C "$topology_root/modules/direct" rev-parse HEAD)" = "$direct_one" ] ||
+  fail 'direct submodule did not start at its recorded gitlink'
+[ "$(git -C "$topology_root/modules/direct/deps/leaf" rev-parse HEAD)" = "$leaf_one" ] ||
+  fail 'nested submodule did not start at its recorded gitlink'
+[ ! -e "$topology_root/modules/direct/deps/skipped/.git" ] ||
+  fail 'update=none submodule was initialized'
+
+printf 'leaf two\n' >>"$leaf_remote/tracked"
+commit_all "$leaf_remote" leaf-two
+leaf_two="$(git -C "$leaf_remote" rev-parse HEAD)"
+
+git -C "$direct_remote/deps/leaf" -c protocol.file.allow=always fetch -q origin
+git -C "$direct_remote/deps/leaf" checkout -q --detach "$leaf_two"
+git -C "$direct_remote" -c protocol.file.allow=always submodule add -q \
+  "$new_remote" deps/new
+commit_all "$direct_remote" direct-two
+
+direct_two="$(git -C "$direct_remote" rev-parse HEAD)"
+new_one="$(git -C "$new_remote" rev-parse HEAD)"
+
+printf 'leaf three\n' >>"$leaf_remote/tracked"
+commit_all "$leaf_remote" leaf-three
+leaf_three="$(git -C "$leaf_remote" rev-parse HEAD)"
+
+(
+  cd "$topology_root"
+  export GIT_ALLOW_PROTOCOL=file
+  update_submodule_graph >/dev/null
+)
+
+[ "$(git -C "$topology_root/modules/direct" rev-parse HEAD)" = "$direct_two" ] ||
+  fail 'direct submodule did not advance to its remote tip'
+[ "$(git -C "$topology_root/modules/direct/deps/leaf" rev-parse HEAD)" = "$leaf_two" ] ||
+  fail 'nested submodule did not follow its direct parent gitlink'
+[ "$(git -C "$topology_root/modules/direct/deps/leaf" rev-parse HEAD)" != "$leaf_three" ] ||
+  fail 'nested submodule incorrectly advanced to its own remote tip'
+[ "$(git -C "$topology_root/modules/direct/deps/new" rev-parse HEAD)" = "$new_one" ] ||
+  fail 'new nested submodule was not initialized'
+[ ! -e "$topology_root/modules/direct/deps/skipped/.git" ] ||
+  fail 'update=none submodule was initialized during reconciliation'
+[[ "$(git -C "$topology_root/modules/direct" \
+  submodule status -- deps/skipped)" == -* ]] ||
+  fail 'update=none submodule was not reported as uninitialized'
+[ -z "$(git -C "$topology_root/modules/direct" \
+  status --porcelain --untracked-files=all)" ] ||
+  fail 'direct submodule remained internally dirty after reconciliation'
+[ "$(git -C "$topology_root" status --porcelain)" = ' M modules/direct' ] ||
+  fail 'root did not retain exactly the direct submodule update'
+
 printf 'Updater submodule safety tests passed.\n'
