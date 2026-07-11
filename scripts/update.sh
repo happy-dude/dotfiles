@@ -54,8 +54,6 @@ MODE_SET=0
 SKIP_PULL=0
 SKIP_SUBMODULES=0
 SKIP_STATUS=0
-SKIP_NVIM=0
-SKIP_GO=0
 SKIP_NIX_FMT=0
 SKIP_NIX_FLAKE=0
 SKIP_HOME_MANAGER=0
@@ -64,11 +62,8 @@ VERBOSE="${VERBOSE:-0}"
 
 REPO_DIR="."
 REPO_DIR_SET=0
-TMPGO=""
 DIRTY_SUBMODULES=()
 STASHED_SUBMODULES=()
-CLEAN_VIM_HELP_TAGS=()
-RESTORED_VIM_HELP_TAGS=()
 
 SECTION_NAME=""
 SECTION_START=0
@@ -81,7 +76,6 @@ SECTION_TIMES=()
 
 PLUM_DIR="${PLUM_DIR:-$HOME/plum}"
 RIME_FRONTEND="${RIME_FRONTEND:-fcitx5-rime}"
-EDITOR_DEPLOYMENT="${EDITOR_DEPLOYMENT:-nix}"
 # Default to the flake output matching the current user (schan, stachan, ...),
 # so each machine switches its own config. Override with HOME_MANAGER_FLAKE.
 HOME_MANAGER_FLAKE="${HOME_MANAGER_FLAKE:-.#$(whoami)}"
@@ -156,17 +150,6 @@ Options:
         Automatically stash dirty submodules before updating them.
         Stashes are NOT automatically popped afterward.
 
-  Neovim / Go:
-    --editor-deployment <nix|stow>
-        Select declarative Nix-managed Tree-sitter/vim-go artifacts
-        (default) or the legacy mutable Stow workflow.
-
-    --skip-nvim
-        Skip vim-plug, Tree-sitter, and coc.nvim updates.
-
-    --skip-go
-        Skip mutable Go binary updates in Stow deployment mode.
-
   Nix / Home Manager:
     --skip-nix-fmt
         Skip `nix fmt .`.
@@ -189,10 +172,6 @@ Environment:
 
   RIME_FRONTEND=...
       Rime frontend passed to rime-install. Default: fcitx5-rime
-
-  EDITOR_DEPLOYMENT=<nix|stow>
-      Select declarative Nix-managed Tree-sitter/vim-go artifacts (default:
-      nix) or the legacy mutable Stow workflow.
 
   HOME_MANAGER_FLAKE=...
       Flake target for home-manager. Default: .#<current user> (e.g. .#schan, .#stachan)
@@ -225,14 +204,6 @@ die() {
   printf 'Error: %s\n' "$*" >&2
   exit 1
 }
-
-cleanup() {
-  if [ -n "${TMPGO:-}" ]; then
-    rm -f -- "$TMPGO"
-  fi
-}
-
-trap cleanup EXIT
 
 section_start() {
   SECTION_NAME="$1"
@@ -310,13 +281,6 @@ print_final_summary() {
       printf '  %-14s %s\n' "" "${STASHED_SUBMODULES[$i]}"
     done
     printf '  %-14s %s\n' "Stash review:" "git -C <submodule-path> stash list"
-  fi
-
-  if [ "${#RESTORED_VIM_HELP_TAGS[@]}" -gt 0 ]; then
-    printf '  %-14s %s\n' "Help tags:" "restored generated changes in ${#RESTORED_VIM_HELP_TAGS[@]} submodule(s)"
-    for i in "${!RESTORED_VIM_HELP_TAGS[@]}"; do
-      printf '  %-14s %s\n' "" "${RESTORED_VIM_HELP_TAGS[$i]}/doc/tags"
-    done
   fi
 }
 
@@ -419,27 +383,6 @@ run_home_manager_switch() {
   fi
 
   section_end "done"
-}
-
-create_temp_go_file() {
-  local tmpbase
-
-  if tmpbase="$(mktemp "${TMPDIR:-/tmp}/update-go.XXXXXX" 2>/dev/null)"; then
-    :
-  else
-    tmpbase="$(TMPDIR="${TMPDIR:-/tmp}" mktemp -t update-go 2>/dev/null)" || return 1
-  fi
-
-  TMPGO="${tmpbase}.go"
-
-  if mv -- "$tmpbase" "$TMPGO" 2>/dev/null; then
-    :
-  else
-    cp -- "$tmpbase" "$TMPGO"
-    rm -f -- "$tmpbase"
-  fi
-
-  printf 'package main\n\nfunc main() {}\n' >"$TMPGO"
 }
 
 #--------------------------------------------------------------------------------------------------
@@ -767,64 +710,6 @@ stash_dirty_submodules() {
 }
 
 #--------------------------------------------------------------------------------------------------
-# 3. Neovim helpers
-#--------------------------------------------------------------------------------------------------
-
-capture_clean_vim_help_tags() {
-  local path
-
-  CLEAN_VIM_HELP_TAGS=()
-
-  # shellcheck disable=SC2016 # Expanded by git submodule foreach's shell.
-  while IFS= read -r path; do
-    [ -n "$path" ] || continue
-    [[ $path == vim/.vim/pack/* ]] || continue
-
-    if git -C "$path" ls-files --error-unmatch -- doc/tags >/dev/null 2>&1 &&
-      git -C "$path" diff --quiet -- doc/tags &&
-      git -C "$path" diff --cached --quiet -- doc/tags; then
-      CLEAN_VIM_HELP_TAGS+=("$path")
-    fi
-  done < <(git submodule foreach --quiet --recursive 'printf "%s\n" "$displaypath"')
-}
-
-restore_generated_vim_help_tags() {
-  local path
-
-  for path in "${CLEAN_VIM_HELP_TAGS[@]}"; do
-    if ! git -C "$path" diff --cached --quiet -- doc/tags; then
-      warn "refusing to restore a newly staged help-tag change: $path/doc/tags"
-      return 1
-    fi
-
-    if ! git -C "$path" diff --quiet -- doc/tags; then
-      git -C "$path" restore --worktree -- doc/tags
-      RESTORED_VIM_HELP_TAGS+=("$path")
-    fi
-  done
-}
-
-run_nvim_cmd_if_exists() {
-  local cmd_name="$1"
-  local ex_cmd="$2"
-  shift 2
-
-  local escaped
-  escaped=${ex_cmd//\'/\'\'}
-
-  if [ "${VERBOSE:-0}" -eq 1 ]; then
-    nvim -V1 --headless "$@" \
-      -c "if exists(':${cmd_name}') | execute '${escaped}' | else | cquit 3 | endif" \
-      -c "messages" \
-      -c "qall" 2>&1
-  else
-    nvim --headless "$@" \
-      -c "if exists(':${cmd_name}') | execute '${escaped}' | else | cquit 3 | endif" \
-      -c "qall" >/dev/null 2>&1
-  fi
-}
-
-#--------------------------------------------------------------------------------------------------
 rime_static_files_are_nix_managed() {
   local data_dir="${XDG_DATA_HOME:-$HOME/.local/share}/fcitx5/rime"
   local state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/rime"
@@ -896,11 +781,6 @@ while [ $# -gt 0 ]; do
     RIME_SOURCE="$2"
     shift
     ;;
-  --editor-deployment)
-    [ "$#" -ge 2 ] || die "--editor-deployment requires nix or stow"
-    EDITOR_DEPLOYMENT="$2"
-    shift
-    ;;
   --skip-pull)
     SKIP_PULL=1
     ;;
@@ -912,12 +792,6 @@ while [ $# -gt 0 ]; do
     ;;
   --autostash-submodules)
     AUTO_STASH_SUBMODULES=1
-    ;;
-  --skip-nvim)
-    SKIP_NVIM=1
-    ;;
-  --skip-go)
-    SKIP_GO=1
     ;;
   --skip-nix-fmt)
     SKIP_NIX_FMT=1
@@ -948,14 +822,6 @@ nix | plum)
   ;;
 *)
   die "invalid Rime source: $RIME_SOURCE (expected nix or plum)"
-  ;;
-esac
-
-case "$EDITOR_DEPLOYMENT" in
-nix | stow)
-  ;;
-*)
-  die "invalid editor deployment: $EDITOR_DEPLOYMENT (expected nix or stow)"
   ;;
 esac
 
@@ -1122,159 +988,7 @@ else
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 4. Updating Neovim plugins and coc.nvim extensions
-#--------------------------------------------------------------------------------------------------
-
-if [ "$SKIP_NVIM" -eq 1 ]; then
-  section_start "Skipping Neovim/Vim updates (--skip-nvim)"
-  section_end "skipped"
-elif have nvim; then
-  section_start "Updating vim-plug plugins"
-
-  status=0
-  help_tags_status=0
-  section_result="done"
-  capture_clean_vim_help_tags
-  run_nvim_cmd_if_exists "PlugUpdate" "silent! PlugUpgrade | PlugUpdate --sync" || status=$?
-  restore_generated_vim_help_tags || help_tags_status=$?
-
-  case "$status" in
-  0)
-    vmsg "vim-plug update completed"
-    ;;
-  3)
-    msg "Skipping vim-plug updates (PlugUpdate not available in this headless nvim session)"
-    section_result="skipped"
-    ;;
-  *)
-    warn "vim-plug update encountered an error (exit code: $status)"
-    section_result="failed"
-    ;;
-  esac
-
-  if [ "$help_tags_status" -ne 0 ]; then
-    warn "could not safely restore generated vim help tags"
-    section_result="failed"
-  fi
-
-  section_end "$section_result"
-  abort_failed_section "$section_result"
-
-  if [ "$EDITOR_DEPLOYMENT" = "nix" ]; then
-    section_start "Skipping Tree-sitter parser updates (Nix-managed)"
-    section_end "skipped"
-  else
-    section_start "Updating Tree-sitter parsers"
-
-    status=0
-    section_result="done"
-    run_nvim_cmd_if_exists "TSUpdate" "TSUpdate" || status=$?
-
-    case "$status" in
-    0)
-      vmsg "Tree-sitter parsers updated"
-      ;;
-    3)
-      msg "Skipping Tree-sitter updates (TSUpdate not available in this headless nvim session)"
-      section_result="skipped"
-      ;;
-    *)
-      warn "Tree-sitter update encountered an error (exit code: $status)"
-      warn "nvim-treesitter may not be installed or configured"
-      section_result="failed"
-      ;;
-    esac
-
-    section_end "$section_result"
-    abort_failed_section "$section_result"
-  fi
-
-  section_start "Updating coc.nvim extensions"
-
-  status=0
-  section_result="done"
-  run_nvim_cmd_if_exists "CocUpdateSync" "CocUpdateSync" || status=$?
-
-  case "$status" in
-  0)
-    vmsg "coc.nvim extensions updated"
-    ;;
-  3)
-    msg "Skipping coc.nvim updates (CocUpdateSync not available in this headless nvim session)"
-    section_result="skipped"
-    ;;
-  *)
-    warn "CocUpdateSync encountered an error (exit code: $status)"
-    warn "coc.nvim may not be installed"
-    section_result="failed"
-    ;;
-  esac
-
-  section_end "$section_result"
-  abort_failed_section "$section_result"
-else
-  section_start "Skipping Neovim/Vim updates (nvim not found)"
-  section_end "skipped"
-fi
-
-#--------------------------------------------------------------------------------------------------
-# 5. Updating Go editor binaries
-#--------------------------------------------------------------------------------------------------
-
-if [ "$SKIP_GO" -eq 1 ]; then
-  section_start "Skipping Go binary updates (--skip-go)"
-  section_end "skipped"
-elif [ "$SKIP_NVIM" -eq 1 ]; then
-  section_start "Skipping Go binary updates (--skip-nvim)"
-  section_end "skipped"
-elif [ "$EDITOR_DEPLOYMENT" = "nix" ]; then
-  section_start "Skipping Go binary updates (Nix-managed)"
-  section_end "skipped"
-elif have nvim && have go; then
-  section_start "Updating Go binaries"
-
-  section_result="done"
-
-  if ! create_temp_go_file; then
-    warn "Unable to create temporary Go file"
-    section_result="failed"
-  else
-    status=0
-    run_nvim_cmd_if_exists "GoUpdateBinaries" "GoUpdateBinaries" "$TMPGO" || status=$?
-
-    if [ "$status" -eq 0 ]; then
-      vmsg "vim-go binaries updated"
-    else
-      vmsg "GoUpdateBinaries not available or failed, trying GoInstallBinaries..."
-      status=0
-      run_nvim_cmd_if_exists "GoInstallBinaries" "GoInstallBinaries" "$TMPGO" || status=$?
-
-      case "$status" in
-      0)
-        vmsg "Go binaries updated with GoInstallBinaries"
-        ;;
-      3)
-        msg "Skipping Go binary updates (no supported Go update command found in this headless nvim session)"
-        section_result="skipped"
-        ;;
-      *)
-        warn "Go binary update encountered an error (exit code: $status)"
-        warn "vim-go or go.nvim may not be installed"
-        section_result="failed"
-        ;;
-      esac
-    fi
-  fi
-
-  section_end "$section_result"
-  abort_failed_section "$section_result"
-else
-  section_start "Skipping Go binary updates (nvim or go not found)"
-  section_end "skipped"
-fi
-
-#--------------------------------------------------------------------------------------------------
-# 6. Run `nix fmt .`
+# 4. Run `nix fmt .`
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_NIX_FMT" -eq 1 ]; then

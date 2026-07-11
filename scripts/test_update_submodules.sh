@@ -248,22 +248,6 @@ if (
   fail 'submodule enumeration failure was ignored'
 fi
 
-help_repo="$TMPDIR_TEST/help"
-create_repo "$help_repo"
-mkdir -p -- "$help_repo/doc"
-printf 'original\n' >"$help_repo/doc/tags"
-commit_all "$help_repo" help-tags
-printf 'generated\n' >>"$help_repo/doc/tags"
-
-# shellcheck disable=SC2034 # Read by the sourced restore helper.
-CLEAN_VIM_HELP_TAGS=("$help_repo")
-RESTORED_VIM_HELP_TAGS=()
-restore_generated_vim_help_tags
-git -C "$help_repo" diff --quiet -- doc/tags ||
-  fail 'generated help tags were not restored'
-[ "${#RESTORED_VIM_HELP_TAGS[@]}" -eq 1 ] ||
-  fail 'restored help tags were not reported'
-
 topology_root="$TMPDIR_TEST/topology-root"
 direct_remote="$TMPDIR_TEST/direct-remote"
 leaf_remote="$TMPDIR_TEST/leaf-remote"

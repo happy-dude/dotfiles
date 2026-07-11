@@ -179,6 +179,22 @@
                     ! -name lua ! -name ftplugin -exec rm -rf {} +
                 '';
               };
+              vim-sandwich = prev.vimPlugins.vim-sandwich.overrideAttrs (old: {
+                meta =
+                  old.meta
+                  // {
+                    license = {
+                      free = true;
+                      fullName = "NYSL 0.9982";
+                      redistributable = true;
+                      shortName = "NYSL";
+                      url = "https://www.kmonos.net/nysl/index.en.html";
+                    };
+                  };
+              });
+              vim-solarized8 = prev.vimPlugins.vim-solarized8.overrideAttrs (old: {
+                meta = old.meta // {license = final.lib.licenses.mit;};
+              });
             };
         })
       ];

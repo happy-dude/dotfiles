@@ -90,7 +90,6 @@ in {
       motion
       moreutils
       ncurses.dev
-      neovim
       ninja
       nix-prefetch-github
       nix-zsh-completions
@@ -132,7 +131,6 @@ in {
       typescript-language-server
       util-linux
       valgrind
-      vim
       vim-language-server
       vscode-langservers-extracted
       xclip

@@ -38,6 +38,4 @@
   };
 in {
   home.packages = [rustowl];
-  home.file.".local/share/nvim/site/pack/rustowl/opt/rustowl".source =
-    pkgs.vimPlugins.rustowl;
 }
