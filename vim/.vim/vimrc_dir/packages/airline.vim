@@ -97,4 +97,7 @@ function! AirlineCustomize()
 endfunction
 
 " Initialize custom airline
-autocmd User AirlineAfterInit call AirlineCustomize()
+augroup airline_customize
+  autocmd!
+  autocmd User AirlineAfterInit call AirlineCustomize()
+augroup END

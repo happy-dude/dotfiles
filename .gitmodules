@@ -3,11 +3,6 @@
 	url = https://github.com/mileszs/ack.vim.git
 	branch = master
 	ignore = dirty
-[submodule "ale"]
-	path = vim/.vim/pack/plugged/opt/ale
-	url = https://github.com/dense-analysis/ale
-	branch = master
-	ignore = dirty
 [submodule "annalist.el"]
 	path = emacs/.config/emacs/plugins/annalist.el
 	url = https://github.com/noctuid/annalist.el.git
@@ -36,7 +31,7 @@
 [submodule "conjure"]
 	path = vim/.vim/pack/plugged/opt/conjure
 	url = https://github.com/Olical/conjure.git
-	branch = master
+	branch = main
 	ignore = dirty
 [submodule "csv.vim"]
 	path = vim/.vim/pack/plugged/opt/csv.vim
@@ -56,11 +51,6 @@
 [submodule "editorconfig-emacs"]
 	path = emacs/.config/emacs/plugins/editorconfig-emacs
 	url = https://github.com/editorconfig/editorconfig-emacs.git
-	branch = master
-	ignore = dirty
-[submodule "editorconfig-vim"]
-	path = vim/.vim/pack/plugged/opt/editorconfig-vim
-	url = https://github.com/editorconfig/editorconfig-vim.git
 	branch = master
 	ignore = dirty
 [submodule "elisp-tree-sitter"]
@@ -206,11 +196,6 @@
 [submodule "nvim-nio"]
 	path = vim/.vim/pack/plugged/opt/nvim-nio
 	url = https://github.com/nvim-neotest/nvim-nio.git
-	branch = master
-	ignore = dirty
-[submodule "nvim-parinfer"]
-	path = vim/.vim/pack/plugged/opt/nvim-parinfer
-	url = https://github.com/gpanders/nvim-parinfer.git
 	branch = master
 	ignore = dirty
 [submodule "nvim-treesitter"]
@@ -378,11 +363,6 @@
 	url = https://github.com/easymotion/vim-easymotion.git
 	branch = master
 	ignore = dirty
-[submodule "vim-flake8"]
-	path = vim/.vim/pack/plugged/opt/vim-flake8
-	url = https://github.com/nvie/vim-flake8.git
-	branch = master
-	ignore = dirty
 [submodule "vim-fugitive"]
 	path = vim/.vim/pack/plugged/opt/vim-fugitive
 	url = https://github.com/tpope/vim-fugitive.git
@@ -423,11 +403,6 @@
 	url = https://github.com/vim-pandoc/vim-pandoc-syntax.git
 	branch = master
 	ignore = dirty
-[submodule "vim-pathogen"]
-	path = vim/.vim/pack/bundle/opt/vim-pathogen
-	url = https://github.com/tpope/vim-pathogen.git
-	branch = master
-	ignore = dirty
 [submodule "vim-perl"]
 	path = vim/.vim/pack/plugged/opt/vim-perl
 	url = https://github.com/vim-perl/vim-perl.git
@@ -456,11 +431,6 @@
 [submodule "vim-sandwich"]
 	path = vim/.vim/pack/plugged/opt/vim-sandwich
 	url = https://github.com/machakann/vim-sandwich
-	branch = master
-	ignore = dirty
-[submodule "vim-schelepp"]
-	path = vim/.vim/pack/plugged/opt/vim-schlepp
-	url = https://github.com/zirrostig/vim-schlepp.git
 	branch = master
 	ignore = dirty
 [submodule "vim-sexp"]

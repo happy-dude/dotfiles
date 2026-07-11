@@ -1,23 +1,12 @@
 " custom functions
 
-" Remove any trailing whitespace that is in the file and indent entire file and return to position
+" Remove trailing whitespace without changing the current view or search
 function! StripTrailingWhitespace()
-  if !&binary && &filetype != 'diff'
-    " Preparation: save last search, and cursor position.
-    let _s=@/
-    let l = line(".")
-    let c = col(".")
-    " do the business:
-    %s/\s\+$//e
-    " clean up: restore previous search history, and cursor position
-    let @/=_s
-    call cursor(l, c)
+  if !&binary && &filetype !=# 'diff'
+    let l:view = winsaveview()
+    keepjumps keeppatterns %s/\s\+$//e
+    call winrestview(l:view)
   endif
-endfunction
-
-" Disable autoindent on write for contributing to open source projects with own style guidelines
-function! AutoindentFile ()
-  autocmd BufWrite * if ! &bin && &filetype != "" && &filetype !~ '\(asm\|conf\|haskell\|html\|js\|markdown\|make\|perl\|python\|sh\|text\)' | :exe ":normal! gg=G" | :exe ":normal! 'azz" | endif
 endfunction
 
 " Use Perl regex for search-and-replace
@@ -25,7 +14,7 @@ endfunction
 " Supports ranges
 " ref:  https://vim.fandom.com/wiki/Perl_compatible_regular_expressions
 "       https://blog.ostermiller.org/perl-wide-character-in-print/
-if executable('perl') && has('nvim')
+if executable('perl')
   function s:PerlSubstitute(line1, line2, sstring)
     let l:lines = getline(a:line1, a:line2)
 
@@ -39,7 +28,7 @@ if executable('perl') && has('nvim')
       return
     endif
 
-    call nvim_buf_set_lines(0, a:line1 - 1, a:line2, v:false, l:sysresult)
+    call setline(a:line1, l:sysresult)
   endfunction
 
   command! -range -nargs=1 S call s:PerlSubstitute(<line1>, <line2>, <q-args>)

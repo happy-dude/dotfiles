@@ -17,10 +17,9 @@
 
     shellInit = ''
       ${builtins.readFile .config/fish/config.fish}
-      ${lib.optionalString (username != "schan") ''
-        fish_add_path -p "$(go env GOPATH)/bin"
-        fish_add_path -p "$HOME/.cargo/bin"
-      ''}
+      # Keep mutable source-install fallbacks behind Home Manager packages.
+      fish_add_path --append --path --move "$(go env GOPATH)/bin"
+      fish_add_path --append --path --move "$HOME/.cargo/bin"
       ${lib.optionalString (username == "schan") ''
         set -l normalized_path
 

@@ -158,14 +158,14 @@ Options:
 
   Neovim / Go:
     --editor-deployment <nix|stow>
-        Select declarative Nix-managed Tree-sitter/RustOwl artifacts
+        Select declarative Nix-managed Tree-sitter/RustOwl/vim-go artifacts
         (default) or the legacy mutable Stow workflow.
 
     --skip-nvim
         Skip vim-plug, Tree-sitter, RustOwl, and coc.nvim updates.
 
     --skip-go
-        Skip Go binary updates.
+        Skip mutable Go binary updates in Stow deployment mode.
 
   Nix / Home Manager:
     --skip-nix-fmt
@@ -191,7 +191,7 @@ Environment:
       Rime frontend passed to rime-install. Default: fcitx5-rime
 
   EDITOR_DEPLOYMENT=<nix|stow>
-      Select declarative Nix-managed Tree-sitter/RustOwl artifacts (default:
+      Select declarative Nix-managed Tree-sitter/RustOwl/vim-go artifacts (default:
       nix) or the legacy mutable Stow workflow.
 
   HOME_MANAGER_FLAKE=...
@@ -1268,6 +1268,9 @@ if [ "$SKIP_GO" -eq 1 ]; then
   section_end "skipped"
 elif [ "$SKIP_NVIM" -eq 1 ]; then
   section_start "Skipping Go binary updates (--skip-nvim)"
+  section_end "skipped"
+elif [ "$EDITOR_DEPLOYMENT" = "nix" ]; then
+  section_start "Skipping Go binary updates (Nix-managed)"
   section_end "skipped"
 elif have nvim && have go; then
   section_start "Updating Go binaries"

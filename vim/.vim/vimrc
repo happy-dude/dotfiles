@@ -19,21 +19,17 @@ if !has('nvim')
   set esckeys           " Function keys that start with <Esc> are recognized in insert mode
 endif
 
-" vimconf directories for vimrc and plugin settings
-if has('nvim')
-  let s:vim_dir = '~/.config/nvim/'
-  let s:vimrc_dir = '~/.config/nvim/vimrc_dir/'
-  let s:vimpack_settings_dir = '~/.config/nvim/vimrc_dir/packages/'
+" Resolve shared configuration and plugin paths from this vimrc.
+let s:vim_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/'
+let s:vimrc_dir = s:vim_dir . 'vimrc_dir/'
+let s:vimpack_settings_dir = s:vimrc_dir . 'packages/'
 
+if has('nvim')
   " Disable unused providers and silence checkhealth warnings
   let g:loaded_node_provider = 0
   let g:loaded_perl_provider = 0
   let g:loaded_python3_provider = 0
   let g:loaded_ruby_provider = 0
-else
-  let s:vim_dir = '~/.vim/'
-  let s:vimrc_dir = '~/.vim/vimrc_dir/'
-  let s:vimpack_settings_dir = '~/.vim/vimrc_dir/packages/'
 endif
 " }
 
@@ -46,27 +42,13 @@ if &loadplugins
 
   filetype off                " Turn filetype plugin off until after plugins are loaded
 
-  if has('packages')
-    " { vim-plug
-    packadd! vim-plug
-    " }
-
-  else
-    " { pathogen fallback
-    " Unconventional path to plugin (inside submodule)
-    runtime pack/bundle/opt/vim-pathogen/autoload/pathogen.vim
-
-
-    " pathogen: Activate vim-plug
-    execute pathogen#infect('pack/bundle/opt/vim-plug/')
-
-    " pathogen: Activate plugin
-    "execute pathogen#infect('pack/{}/opt/{}')
-    "execute pathogen#helptags()
-
-    " }
-
+  if !has('nvim')
+    let s:editorconfig_settings = s:vimpack_settings_dir . 'editorconfig.vim'
+    execute 'source' s:editorconfig_settings
+    packadd! editorconfig
   endif
+
+  packadd! vim-plug
 
   " { Load plugin packages
   call plug#begin(s:vim_dir . 'pack/plugged/opt/')
@@ -74,9 +56,7 @@ if &loadplugins
   Plug 'Happy-Dude/hlnext.vim'                        ,   { 'branch' : 'master' }
   Plug 'cespare/vim-toml'                             ,   { 'branch' : 'main', 'for' : [ 'toml' ] }
   Plug 'chrisbra/csv.vim'                             ,   { 'branch' : 'master', 'for' : [ 'csv' ] }
-  Plug 'dense-analysis/ale'                           ,   { 'branch' : 'master' }
   Plug 'easymotion/vim-easymotion'                    ,   !has('nvim') ? { 'branch' : 'master' } : { 'branch' : 'master', 'on': [] }
-  Plug 'editorconfig/editorconfig-vim'                ,   { 'branch' : 'master' }
   Plug 'fatih/vim-go'                                 ,   { 'for' : [ 'go', 'gomod', 'gohtmltmpl' ] }
   Plug 'gregsexton/MatchTag'                          ,   { 'for' : [ 'html', 'xml' ] }
   Plug 'guns/vim-sexp'                                ,   { 'branch' : 'master' }
@@ -90,7 +70,6 @@ if &loadplugins
   Plug 'mhinz/vim-signify'                            ,   { 'branch' : 'master' }
   Plug 'mileszs/ack.vim'                              ,   { 'branch' : 'master' }
   Plug 'nathanaelkane/vim-indent-guides'              ,   { 'branch' : 'master' }
-  Plug 'nvie/vim-flake8'                              ,   { 'branch' : 'master', 'for' : [ 'python' ] }
   Plug 'othree/html5.vim'                             ,   { 'branch' : 'master', 'for' : [ 'html', 'javascript', 'php', 'xhtml', 'xml' ] }
   Plug 'preservim/nerdcommenter'                      ,   { 'branch' : 'master' }
   Plug 'rust-lang/rust.vim'                           ,   { 'branch' : 'master', 'for' : [ 'rust' ] }
@@ -109,12 +88,11 @@ if &loadplugins
   Plug 'vim-pandoc/vim-pandoc-syntax'                 ,   { 'branch' : 'master', 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
   Plug 'vim-perl/vim-perl'                            ,   { 'branch' : 'dev', 'for' : [ 'perl', 'perl6', 'mason' ], 'do': 'make clean carp dancer highlight-all-pragmas moose test-more try-tiny' }
   Plug 'wlangstroth/vim-racket'                       ,   { 'branch' : 'master', 'for' : [ 'racket' ] }
-  "Plug 'zirrostig/vim-schlepp'                        ,   { 'branch' : 'master' }
 
   " if fzf is available, use fzf.vim
   " otherwise, use ctrlp which is pure vimscript
   if executable('fzf')
-    Plug 'junegunn/fzf'                               ,   { 'branch' : 'master', 'do': { -> fzf#install() } }
+    Plug 'junegunn/fzf'                               ,   { 'branch' : 'master' }
     Plug 'junegunn/fzf.vim'                           ,   { 'branch' : 'master' }
 
     let s:fzf_settings    = s:vimpack_settings_dir . 'fzf.vim'
@@ -138,6 +116,14 @@ if &loadplugins
   Plug 'sainnhe/gruvbox-material'                     , { 'branch' : 'master' }
   " }
 
+  " Enable CoC in both Vim and Neovim when Node.js is available.
+  if executable('node')
+    Plug 'neoclide/coc.nvim'                        , { 'branch' : 'master', 'do': 'npm ci' }
+
+    let s:coc_settings = s:vimpack_settings_dir . 'coc.vim'
+    execute 'source' s:coc_settings
+  endif
+
   " { Neovim-only packages
   if has('nvim')
 
@@ -152,8 +138,7 @@ if &loadplugins
 
     " Lisp + neovim-lua-based REPL
     Plug 'Olical/nfnl'                                , { 'branch' : 'main' }
-    Plug 'Olical/conjure'                             , { 'branch' : 'master', 'for' : [ 'clojure', 'fennel', 'janet', 'hy', 'julia', 'racket', 'scheme', 'lua', 'lisp', 'python', 'sql' ] }
-    "Plug 'gpanders/nvim-parinfer'                     , { 'branch' : 'master' }
+    Plug 'Olical/conjure'                             , { 'branch' : 'main', 'for' : [ 'clojure', 'fennel', 'janet', 'hy', 'julia', 'racket', 'scheme', 'lua', 'lisp', 'python', 'sql' ] }
 
     " nvim-dap
     Plug 'mfussenegger/nvim-dap'                      , { 'branch' : 'master' }
@@ -170,13 +155,8 @@ if &loadplugins
     Plug 'nvim-lua/plenary.nvim'                      , { 'branch' : 'master' }
     Plug 'NeogitOrg/neogit'                           , { 'branch' : 'master' }
 
-    " Enable coc.nvim if node.js is installed
+    " Neovim AI plugins require Node.js.
     if executable('node')
-      Plug 'neoclide/coc.nvim'                        , { 'branch' : 'master', 'do': 'npm ci'}
-
-      let s:coc_settings = s:vimpack_settings_dir . 'coc.vim'
-      execute 'source' s:coc_settings
-
       Plug 'MeanderingProgrammer/render-markdown.nvim', { 'branch' : 'main' }
       Plug 'hakonharnes/img-clip.nvim'                , { 'branch' : 'main' }
       Plug 'olimorris/codecompanion.nvim'             , { 'branch' : 'main' }
@@ -199,14 +179,11 @@ if &loadplugins
   let s:airline_settings        = s:vimpack_settings_dir . 'airline.vim'
   execute                       'source' s:airline_settings
 
-  let s:ale_settings            = s:vimpack_settings_dir . 'ale.vim'
-  execute                       'source' s:ale_settings
-
   let s:dirvish_settings        = s:vimpack_settings_dir . 'dirvish.vim'
   execute                       'source' s:dirvish_settings
 
-  let s:editorconfig_settings   = s:vimpack_settings_dir . 'editorconfig.vim'
-  execute                       'source' s:editorconfig_settings
+  let s:go_settings             = s:vimpack_settings_dir . 'go.vim'
+  execute                       'source' s:go_settings
 
   let s:indent_guides_settings  = s:vimpack_settings_dir . 'indent_guides.vim'
   execute                       'source' s:indent_guides_settings
@@ -216,8 +193,6 @@ if &loadplugins
     execute                     'source' s:rainbow_settings
   endif
 
-  "let s:schlepp_settings        = s:vimpack_settings_dir . 'schlepp.vim'
-  "execute                       'source' s:schlepp_settings
 
   let s:slimv_settings          = s:vimpack_settings_dir . 'slimv.vim'
   execute                       'source' s:slimv_settings

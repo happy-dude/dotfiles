@@ -28,6 +28,7 @@ in {
     stateVersion = "26.11";
 
     packages = with pkgs; [
+      asmfmt
       asciinema
       autoconf
       automake
@@ -48,11 +49,13 @@ in {
       curl
       desktop-file-utils
       dex
+      delve
       dtc
       dust
       elfutils
       exiftool
       eza
+      errcheck
       fd
       ffmpeg
       flex
@@ -63,12 +66,19 @@ in {
       glibc
       gnumake
       go
+      godef
+      golangci-lint
+      gomodifytags
       gopls
+      gotags
+      gotools
       hexyl
       htop
       hyperfine
+      iferr
       imagemagick
       img2pdf
+      impl
       jq
       less
       libgcc
@@ -77,6 +87,7 @@ in {
       ltrace
       lua-language-server
       meson
+      motion
       moreutils
       ncurses.dev
       neovim
@@ -91,16 +102,23 @@ in {
       pass
       patch
       perf
-      (perl.withPackages (ps: [ps.PerlLanguageServer]))
+      (perl.withPackages (ps: [
+        ps.PerlLanguageServer
+        ps.PerlTidy
+      ]))
       pinentry-all
       pkgconf
       prettier
       procs
       qemu
+      reftools
+      revive
       ripgrep
       roswell
       rsync
+      ruff
       rust-analyzer
+      rustfmt
       sbcl
       shellcheck
       sparse
@@ -120,6 +138,9 @@ in {
       xclip
       xdg-utils
       xsel
+      zig
+      zls
+      zuban
 
       # Language agent: translation / dictionary / grammar / OCR / TTS tooling
       dict # DICT protocol client (needs a configured server/database, see note below)
@@ -127,16 +148,15 @@ in {
       languagetool # multilingual grammar/style checker - covers eo/es/it/pl; complements aspell's spellcheck-only coverage
       ocrmypdf # OCR-to-searchable-PDF wrapper; needs tesseract5 below on PATH, does not bundle it itself
       opencc # Simplified <-> Traditional Chinese conversion (s2t/t2s/s2hk/hk2s/s2twp configs bundled)
-      # python3 carrying Jedi Language Server plus jieba (Mandarin word
-      # segmentation) + pypinyin (Pinyin generation). MUST be a withPackages
-      # wrapper, not bare python3Packages.* entries — those only drop the libs
-      # in the store and never become
-      # importable by a python3 on PATH. This puts an `import jieba`-capable
-      # python3 on PATH, which is what language.md's one-liners rely on.
+      # python3 carrying jieba (Mandarin word segmentation) and pypinyin
+      # (Pinyin generation). MUST be a withPackages wrapper, not bare
+      # python3Packages.* entries — those only drop the libs in the store and
+      # never become importable by a python3 on PATH. This puts an
+      # `import jieba`-capable python3 on PATH, which is what language.md's
+      # one-liners rely on.
       (python3.withPackages (
         ps:
           with ps; [
-            jedi-language-server
             jieba
             pypinyin
             requests
@@ -172,13 +192,8 @@ in {
       ".golangci.yml".source = ./.golangci.yml;
       ".roswell/helper.el".source = ./roswell/.roswell/helper.el;
       ".stylua.toml".source = ./.stylua.toml;
+      ".local/share/nix-typescript".source = "${pkgs.typescript}/lib/node_modules/typescript";
       "ros_swank".source = ./roswell/ros_swank;
-
-      # Agent prompts kept live-editable via mkOutOfStoreSymlink — it targets the
-      # repo working tree, not the read-only Nix store (a plain `.source` would
-      # copy them in read-only).
-      ".claude/agents".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/claude/.claude/agents";
     };
 
     sessionVariables = {

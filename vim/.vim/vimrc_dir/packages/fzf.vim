@@ -2,11 +2,6 @@
 
 let g:airline#extensions#fzf#enabled = 1      " Enable airline fzf integration
 
-" Display fzf in a split when using an older version of neovim or vim
-if !has('nvim-0.4.0') || (!has("patch-8.2.0191") && !has('nvim'))
-  let g:fzf_layout = { "window": "silent botright 12split enew" }
-endif
-
 " Delegate search responsibliity to ripgrep by restarting ripgrep whenever
 " query string is updated. fzf becomes a simple selector interface
 function! RipgrepFzf(query, fullscreen)
@@ -41,6 +36,6 @@ nnoremap  <silent> <leader>g       :GFiles?<CR>
 nnoremap  <silent> <leader>b       :Buffers<CR>
 nnoremap  <silent> <leader>l       :Lines<CR>
 nnoremap  <silent> <leader>m       :Marks<CR>
-nnoremap  <silent> <leader>rg      :Rg<CR>
+nnoremap  <silent> <leader>rg      :RG<CR>
 nnoremap  <silent> <leader>ex      :History:<CR>
 nnoremap  <silent> <leader>s       :History/<CR>

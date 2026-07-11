@@ -6,5 +6,5 @@ if !has('nvim')
   set termencoding=utf-8
 endif
 
-set fileencoding=utf-8
+setglobal fileencoding=utf-8
 set fileformats=unix,dos,mac    " Default file formats

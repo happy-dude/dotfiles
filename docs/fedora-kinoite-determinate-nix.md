@@ -8,9 +8,9 @@ services.
 
 > **Validated:** 2026-07-10 on Fedora Kinoite 44.20260710.0, x86_64. The
 > commands and pinned installer below are an installation record, not a promise
-> that future Fedora, OSTree, systemd, util-linux, or Determinate releases retain
-> the same interfaces. Re-run the major-upgrade review before carrying this
-> setup into another Fedora release.
+> that future Fedora, OSTree, systemd, util-linux, or Determinate releases
+> retain the same interfaces. Re-run the major-upgrade review before carrying
+> this setup into another Fedora release.
 
 ## Command labels
 
@@ -21,8 +21,8 @@ services.
   paste the surrounding prose into the shell.
 
 Commands that stage an OSTree deployment, write `/etc`, enable system units,
-install Nix, switch Home Manager, reboot, or remove rollback state are explicitly
-marked as state-changing.
+install Nix, switch Home Manager, reboot, or remove rollback state are
+explicitly marked as state-changing.
 
 ## Validated architecture
 
@@ -98,8 +98,8 @@ leads, but they are not the authority for a future Fedora release.
 The NixOS `services.flatpak` module is also not applicable: this is standalone
 Home Manager on Kinoite. The separately pinned `nix-flatpak` Home Manager module
 converges the declared user installation, while Fedora continues to provide the
-Flatpak executable and portals. Its Home Manager service cannot manage or
-remove system-scoped refs.
+Flatpak executable and portals. Its Home Manager service cannot manage or remove
+system-scoped refs.
 
 ## 1. Preflight a fresh or migrating host
 
@@ -177,8 +177,8 @@ Expected properties, rather than exact output:
 - SELinux is enforcing and all required commands are present.
 
 If migrating from `nix-toolbox`, also inventory the container, its mounts, the
-old store, profile links, and dirty repository/Rime state before proceeding.
-Do not delete or reuse the old store.
+old store, profile links, and dirty repository/Rime state before proceeding. Do
+not delete or reuse the old store.
 
 ## 2. Enable OSTree `transient-ro`
 
@@ -281,13 +281,12 @@ namespace, remounts the deployment root writable only inside that namespace, and
 creates `/nix`. Determinate's later `nix.mount` supplies the persistent mount.
 
 `LIBMOUNT_FORCE_MOUNT2=always` is a compatibility shim for the tested util-linux
-release, not part of OSTree's general `transient-ro` contract. Re-test whether it
-is still needed after a util-linux or kernel change.
+release, not part of OSTree's general `transient-ro` contract. Re-test whether
+it is still needed after a util-linux or kernel change.
 
 ### 🟨 SAVE AS A SYSTEMD UNIT, THEN INSTALL ON THE KINOITE HOST
 
-Save this exact file as
-`~/Downloads/nix-ostree-mountpoint.service`:
+Save this exact file as `~/Downloads/nix-ostree-mountpoint.service`:
 
 ```systemd
 [Unit]
@@ -309,8 +308,8 @@ ExecStart=/usr/bin/unshare --mount --propagation private -- /bin/sh -eu -c '/usr
 RequiredBy=nix-directory.service nix.mount
 ```
 
-Install, verify, and enable it. This changes `/etc/systemd/system` and starts the
-helper:
+Install, verify, and enable it. This changes `/etc/systemd/system` and starts
+the helper:
 
 ### 🟦 RUN DIRECTLY ON THE KINOITE HOST — FISH-COMPATIBLE
 
@@ -467,8 +466,8 @@ Run the saved script:
 bash "$HOME/Downloads/install-determinate-nix-ostree.sh"
 ```
 
-The installer creates `/var/home/nix`, `nix.mount`, daemon and socket units,
-Nix build identities, the SELinux policy, `/nix/receipt.json`, and
+The installer creates `/var/home/nix`, `nix.mount`, daemon and socket units, Nix
+build identities, the SELinux policy, `/nix/receipt.json`, and
 `/usr/local/bin/determinate-nixd`. It does not need to replace an existing
 Toolbox `~/.nix-profile` during the system installation.
 
@@ -653,15 +652,15 @@ tmux -L "$tmux_socket" show-options -s terminal-features |
 tmux -L "$tmux_socket" kill-server
 ```
 
-For the end-to-end key test, open a new native Ghostty window, start a fresh tmux
-client, run Codex, type one line, press Shift+Enter, and type a second line. The
-unsent prompt must retain both lines. Existing clients may predate the feature
-negotiation and are not a valid test.
+For the end-to-end key test, open a new native Ghostty window, start a fresh
+tmux client, run Codex, type one line, press Shift+Enter, and type a second
+line. The unsent prompt must retain both lines. Existing clients may predate the
+feature negotiation and are not a valid test.
 
 The profile-provided desktop entry and user service start nixGL-wrapped Ghostty
 without forcing software rendering. Before launching Fish, its configured
-command removes graphics override variables so terminal children use their
-own host, Nix, or Flatpak graphics integration. The Mesa wrapper is the correct
+command removes graphics override variables so terminal children use their own
+host, Nix, or Flatpak graphics integration. The Mesa wrapper is the correct
 primary-GPU path for worldmind's integrated Intel graphics; Ghostty does not
 need PRIME offload or a Vulkan wrapper.
 
@@ -715,7 +714,8 @@ XDG config home, so `zed/default.nix` merges the repository settings into the
 mutable file at `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`. The
 host `~/.config/zed/settings.json` is not the active worldmind target.
 
-If duplicate system qView or Firefox Nightly refs exist, migrate them as follows:
+If duplicate system qView or Firefox Nightly refs exist, migrate them as
+follows:
 
 1. Close both applications and back up their existing `~/.var/app` directories.
 2. Record system and user refs, remotes, overrides, permissions, and commits.
@@ -751,8 +751,8 @@ generic-Linux Home Manager cannot activate udev rules from the Nix store.
 As of 2026-07-10, `worldmind` runs Determinate Nix directly on Fedora Kinoite.
 `/var/home/nix` is the persistent store behind the host-visible `/nix` mount,
 and Home Manager uses `nixPackage = null` so it does not install a competing Nix
-client. The former `nix-toolbox-42` container and
-`ghcr.io/thrix/nix-toolbox:42` image are retired; `toolbox list` is empty.
+client. The former `nix-toolbox-42` container and `ghcr.io/thrix/nix-toolbox:42`
+image are retired; `toolbox list` is empty.
 
 Any content remaining at `~/.local/share/nix` is inactive legacy data, not part
 of the active Nix or Home Manager profile and not a valid recovery source.
@@ -812,13 +812,14 @@ Use the narrowest rollback layer that addresses the failure:
    recorded tested backup procedure. Do not improvise a direct Btrfs subvolume
    snapshot or restore at `/var/home/nix`.
 4. **Daemon or SELinux failure:** capture `findmnt`, unit definitions and
-   ordering, boot journals, labels, and AVCs. Fix the specific ordering or policy
-   regression; do not disable SELinux.
-5. **Installer removal:** the installed interface is `nix-installer uninstall
-[OPTIONS] [RECEIPT]`, defaulting to `/nix/receipt.json`. Preserve the receipt
-   and review the current `--help` before use. The available `--no-confirm`
-   option is intentionally not part of this runbook. Uninstall and active-store
-   deletion require a separate destructive-operation plan.
+   ordering, boot journals, labels, and AVCs. Fix the specific ordering or
+   policy regression; do not disable SELinux.
+5. **Installer removal:** the installed interface is
+   `nix-installer uninstall [OPTIONS] [RECEIPT]`, defaulting to
+   `/nix/receipt.json`. Preserve the receipt and review the current `--help`
+   before use. The available `--no-confirm` option is intentionally not part of
+   this runbook. Uninstall and active-store deletion require a separate
+   destructive-operation plan.
 
 Never delete `/var/home/nix`, the pinned deployment, its tested backup, or
 cutover recovery artifacts merely to retry an installation.
@@ -842,8 +843,8 @@ independent destructive operations that each require explicit approval.
 
 ### Release-note gate
 
-Before every major Fedora upgrade, retrieve and review the current target-version
-material. Do not rely only on this Fedora 44 record.
+Before every major Fedora upgrade, retrieve and review the current
+target-version material. Do not rely only on this Fedora 44 record.
 
 Review, at minimum:
 
@@ -879,9 +880,9 @@ the live system.
    - Home Manager generation, a locked build, repository status, and disk space;
    - Flatpak user/system remotes, applications, and overrides.
 5. Stop or finish active Nix builds and garbage collection.
-6. Determine the actual Btrfs layout with `btrfs subvolume show
-/var/home/nix`. Select and test a backup or snapshot method appropriate to
-   that layout; do not invent a snapshot command before checking it.
+6. Determine the actual Btrfs layout with `btrfs subvolume show /var/home/nix`.
+   Select and test a backup or snapshot method appropriate to that layout; do
+   not invent a snapshot command before checking it.
 7. Verify the pinned deployment is available in the bootloader.
 
 ### Upgrade execution
