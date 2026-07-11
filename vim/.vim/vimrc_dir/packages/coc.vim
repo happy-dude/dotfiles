@@ -7,12 +7,6 @@ let g:go_fmt_autosave = 0                   "  fmt on autosave
 let g:go_gopls_enabled = 0                  " CoC owns the gopls process
 let g:go_mod_fmt_autosave = 0
 
-" Disable linting when EasyMotion is modifying buffer
-if get(g:, 'EasyMotion_loaded', 1)
-  autocmd User EasyMotionPromptBegin silent! CocDisable
-  autocmd User EasyMotionPromptEnd silent! CocEnable
-endif
-
 " CoC extensions
 let g:coc_global_extensions = [
       \ '@yaegassy/coc-zuban',
@@ -85,9 +79,6 @@ function! ShowDocumentation()
   endif
 endfunction
 
-" Highlight the symbol and its references when holding the cursor
-autocmd CursorHold * silent call CocActionAsync('highlight')
-
 " Symbol renaming
 nmap <leader>rn <Plug>(coc-rename)
 
@@ -95,13 +86,14 @@ nmap <leader>rn <Plug>(coc-rename)
 xmap <leader>f  <Plug>(coc-format-selected)
 nmap <leader>f  <Plug>(coc-format-selected)
 
-augroup mygroup
+augroup dotfiles_coc
   autocmd!
-  " Setup formatexpr specified filetype(s)
-  autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
-  " Update signature help on jump placeholder
+  autocmd User EasyMotionPromptBegin silent! CocDisable
+  autocmd User EasyMotionPromptEnd silent! CocEnable
+  autocmd CursorHold * silent call CocActionAsync('highlight')
+  autocmd FileType typescript,json setlocal formatexpr=CocAction('formatSelected')
   autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
-augroup end
+augroup END
 
 " Applying code actions to the selected code block
 " Example: `<leader>aap` for current paragraph
@@ -152,16 +144,11 @@ xmap <silent> <C-s> <Plug>(coc-range-select)
 " Add `:Format` command to format current buffer
 command! -nargs=0 Format :call CocActionAsync('format')
 
+" Add `:OR` for coc-tsserver to organize JavaScript/TypeScript imports
+command! -nargs=0 OR call CocActionAsync('runCommand', 'editor.action.organizeImport')
+
 " Add `:Fold` command to fold current buffer
 command! -nargs=? Fold :call     CocAction('fold', <f-args>)
-
-" Add `:OR` for coc-tsserver to organize JavaScript/TypeScript imports
-command! -nargs=0 OR   :call     CocActionAsync('runCommand', 'editor.action.organizeImport')
-
-" Add (Neo)Vim's native statusline support
-" NOTE: Please see `:h coc-status` for integrations with external plugins that
-" provide custom statusline: lightline.vim, vim-airline
-set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
 
 " Mappings for CoCList
 " Show all diagnostics
