@@ -88,8 +88,10 @@ nmap <leader>f  <Plug>(coc-format-selected)
 
 augroup dotfiles_coc
   autocmd!
-  autocmd User EasyMotionPromptBegin silent! CocDisable
-  autocmd User EasyMotionPromptEnd silent! CocEnable
+  if !has('nvim')
+    autocmd User EasyMotionPromptBegin silent! CocDisable
+    autocmd User EasyMotionPromptEnd silent! CocEnable
+  endif
   autocmd CursorHold * silent call CocActionAsync('highlight')
   autocmd FileType typescript,json setlocal formatexpr=CocAction('formatSelected')
   autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')

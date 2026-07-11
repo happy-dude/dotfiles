@@ -52,16 +52,24 @@ if &loadplugins
 
   " { Load plugin packages
   call plug#begin(s:vim_dir . 'pack/plugged/opt/')
+
+  " { Vim-only packages
+  if !has('nvim')
+    " EasyMotion provides the Vim fallback for Neovim's Hop motions.
+    Plug 'easymotion/vim-easymotion', { 'branch' : 'master' }
+
+    " rainbow provides the Vim fallback for rainbow-delimiters.nvim.
+    Plug 'luochen1990/rainbow', { 'branch' : 'master' }
+  endif
+  " }
   Plug 'AndrewRadev/splitjoin.vim'                    ,   { 'branch' : 'main' }
   Plug 'cespare/vim-toml'                             ,   { 'branch' : 'main', 'for' : [ 'toml' ] }
   Plug 'chrisbra/csv.vim'                             ,   { 'branch' : 'master', 'for' : [ 'csv' ] }
-  Plug 'easymotion/vim-easymotion'                    ,   !has('nvim') ? { 'branch' : 'master' } : { 'branch' : 'master', 'on': [] }
   Plug 'fatih/vim-go'                                 ,   { 'for' : [ 'go', 'gomod', 'gohtmltmpl' ] }
   Plug 'guns/vim-sexp'                                ,   { 'branch' : 'master' }
   Plug 'justinmk/vim-dirvish'                         ,   { 'branch' : 'master' }
   Plug 'keith/swift.vim'                              ,   { 'branch' : 'master', 'for' : [ 'swift' ] }
   Plug 'lervag/vimtex'                                ,   { 'branch' : 'master', 'for' : [ 'tex' ] }
-  Plug 'luochen1990/rainbow'                          ,   !has('nvim') ? { 'branch' : 'master' } : { 'branch' : 'master', 'on': [] }
   Plug 'machakann/vim-sandwich'                       ,   { 'branch' : 'master' }
   Plug 'mbbill/undotree'                              ,   { 'branch' : 'master', 'on' : 'UndotreeToggle' }
   Plug 'mhinz/vim-signify'                            ,   { 'branch' : 'master' }
@@ -121,7 +129,7 @@ if &loadplugins
   " { Neovim-only packages
   if has('nvim')
 
-    " hop.nvim; replace vim-easymotion
+    " Hop replaces EasyMotion for Neovim.
     Plug 'smoka7/hop.nvim'                            , { 'branch' : 'master' }
     "
     " orgmode.nvim
@@ -142,7 +150,7 @@ if &loadplugins
     " nvim-treesitter
     Plug 'nvim-treesitter/nvim-treesitter'            , { 'branch' : 'main' }
     Plug 'nvim-treesitter/nvim-treesitter-textobjects', { 'branch' : 'main' }
-    " replace luochen1990/rainbow
+    " rainbow-delimiters.nvim replaces rainbow for Neovim.
     Plug 'https://gitlab.com/HiPhish/rainbow-delimiters.nvim.git'   , { 'branch' : 'master' }
 
     " neogit
@@ -182,7 +190,7 @@ if &loadplugins
   let s:indent_guides_settings  = s:vimpack_settings_dir . 'indent_guides.vim'
   execute                       'source' s:indent_guides_settings
 
-  if !has('nvim')               " disable rainbow in vim
+  if !has('nvim')               " Configure the Vim-only rainbow plugin
     let s:rainbow_settings      = s:vimpack_settings_dir . 'rainbow.vim'
     execute                     'source' s:rainbow_settings
   endif
