@@ -128,11 +128,6 @@
 	url = https://github.com/sainnhe/gruvbox-material.git
 	branch = master
 	ignore = dirty
-[submodule "hlnext.vim"]
-	path = vim/.vim/pack/plugged/opt/hlnext.vim
-	url = https://github.com/Happy-Dude/hlnext.vim
-	branch = master
-	ignore = dirty
 [submodule "hop.nvim"]
 	path = vim/.vim/pack/plugged/opt/hop.nvim
 	url = https://github.com/smoka7/hop.nvim.git
