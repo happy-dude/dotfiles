@@ -16,6 +16,22 @@
         "type": "github"
       }
     },
+    "coc_zuban": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1765204132,
+        "narHash": "sha256-PVV+QZOOomse/fARJl2kuBkkJrc710ccUdwT/KDjcKQ=",
+        "owner": "yaegassy",
+        "repo": "coc-zuban",
+        "rev": "bdd08b4e20868d1f0155f934946e4cea0c33c252",
+        "type": "github"
+      },
+      "original": {
+        "owner": "yaegassy",
+        "repo": "coc-zuban",
+        "type": "github"
+      }
+    },
     "fish_autopair": {
       "flake": false,
       "locked": {
@@ -505,6 +521,7 @@
     "root": {
       "inputs": {
         "bgutil_ytdlp_pot_provider": "bgutil_ytdlp_pot_provider",
+        "coc_zuban": "coc_zuban",
         "fish_autopair": "fish_autopair",
         "fish_nvm": "fish_nvm",
         "fish_puffer": "fish_puffer",

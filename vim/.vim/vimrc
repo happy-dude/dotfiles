@@ -19,8 +19,9 @@ if !has('nvim')
   set esckeys           " Function keys that start with <Esc> are recognized in insert mode
 endif
 
-" Resolve shared configuration and plugin paths from this vimrc.
-let s:vim_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/'
+" Home Manager supplies the composed runtime root; retain direct sourcing.
+let s:vim_dir = get(g:, 'dotfiles_vim_runtime',
+      \ fnamemodify(resolve(expand('<sfile>:p')), ':h')) . '/'
 let s:vimrc_dir = s:vim_dir . 'vimrc_dir/'
 let s:vimpack_settings_dir = s:vimrc_dir . 'packages/'
 
@@ -39,8 +40,6 @@ endif
 """""""""""""""""""""""""""""""
 
 if &loadplugins
-
-  filetype off                " Turn filetype plugin off until after plugins are loaded
 
   if !has('nvim')
     let s:editorconfig_settings = s:vimpack_settings_dir . 'editorconfig.vim'
@@ -189,7 +188,7 @@ execute                         'source' s:custom_functions
 """""""""""""""""""""""""""""""
 if has('nvim')
   " Home Manager installs the locked RustOwl client as an optional package.
-  packadd! rustowl
+  packadd! rustowl-nvim
 
 lua <<EOF
   -- configs in lua/ directory

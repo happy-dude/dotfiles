@@ -7,20 +7,6 @@ let g:go_fmt_autosave = 0                   "  fmt on autosave
 let g:go_gopls_enabled = 0                  " CoC owns the gopls process
 let g:go_mod_fmt_autosave = 0
 
-" CoC extensions
-let g:coc_global_extensions = [
-      \ '@yaegassy/coc-zuban',
-      \ 'coc-actions',
-      \ 'coc-clangd',
-      \ 'coc-extension-codemod',
-      \ 'coc-go',
-      \ 'coc-highlight',
-      \ 'coc-markdownlint',
-      \ 'coc-rust-analyzer',
-      \ 'coc-tsserver',
-      \ 'coc-vimtex'
-      \]
-
 " Don't pass messages to |ins-completion-menu|.
 set shortmess+=c
 

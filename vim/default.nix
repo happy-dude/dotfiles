@@ -29,7 +29,20 @@
       path = ./.vim/lua;
     }
   ];
-  runtimeConfig = runtime: "set runtimepath^=${runtime}\nsource ${runtime}/vimrc";
+  runtimeConfig = runtime: ''
+    let g:dotfiles_vim_runtime = '${runtime}'
+    set runtimepath^=${runtime}
+    source ${runtime}/vimrc
+  '';
+
+  cocExtensions = with pkgs.vimPlugins; [
+    coc-clangd
+    coc-highlight
+    coc-markdownlint
+    coc-rust-analyzer
+    coc-vimtex
+    coc-zuban
+  ];
 
   sharedPlugins = with pkgs.vimPlugins; [
     ack-vim
@@ -107,7 +120,7 @@ in {
   programs.vim = {
     enable = true;
     extraConfig = runtimeConfig vimRuntime;
-    plugins = sharedPlugins ++ vimOnlyPlugins;
+    plugins = sharedPlugins ++ cocExtensions ++ vimOnlyPlugins;
   };
 
   programs.neovim = {
@@ -116,6 +129,7 @@ in {
     extraConfig = runtimeConfig neovimRuntime;
     plugins =
       sharedPlugins
+      ++ cocExtensions
       ++ neovimOnlyPlugins
       ++ [
         {

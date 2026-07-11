@@ -50,7 +50,6 @@
       url = "github:cordx56/rustowl?ref=v0.4.0";
       flake = false;
     };
-
     # ghostty
     # https://ghostty.org/docs/install/binary#nix-flake
     # https://github.com/ghostty-org/ghostty/blob/main/flake.nix
@@ -139,6 +138,11 @@
       url = "github:jethrokuan/z";
       flake = false;
     };
+
+    coc_zuban = {
+      url = "github:yaegassy/coc-zuban";
+      flake = false;
+    };
   };
 
   outputs = {
@@ -159,6 +163,47 @@
         inputs.rust-overlay.overlays.default
         ghostty.overlays.default
         (final: prev: let
+          cocZubanManifest = builtins.fromJSON (
+            builtins.readFile "${inputs.coc_zuban}/package.json"
+          );
+          cocZubanPackage = final.stdenvNoCC.mkDerivation (finalAttrs: {
+            pname = "coc-zuban";
+            version = cocZubanManifest.version;
+            src = inputs.coc_zuban;
+
+            pnpmDeps = final.fetchPnpmDeps {
+              inherit (finalAttrs) pname version src;
+              pnpm = final.pnpm_10;
+              fetcherVersion = 3;
+              hash = "sha256-M+PGb4bQprGZjm6uZsmy80fKFJQc7lV+WOprCXWmXms=";
+            };
+
+            nativeBuildInputs = [
+              final.nodejs
+              final.pnpmConfigHook
+              final.pnpm_10
+            ];
+
+            buildPhase = ''
+              runHook preBuild
+              pnpm build
+              runHook postBuild
+            '';
+
+            installPhase = ''
+              runHook preInstall
+              mkdir -p "$out/lib/node_modules/@yaegassy/coc-zuban"
+              cp -r lib package.json LICENSE README.md \
+                "$out/lib/node_modules/@yaegassy/coc-zuban/"
+              runHook postInstall
+            '';
+
+            meta = {
+              description = "Zuban language server extension for coc.nvim";
+              homepage = "https://github.com/yaegassy/coc-zuban";
+              license = final.lib.licenses.mit;
+            };
+          });
           rustowlManifest = builtins.fromTOML (
             builtins.readFile "${inputs.rustowl_src}/Cargo.toml"
           );
@@ -169,6 +214,10 @@
           vimPlugins =
             prev.vimPlugins
             // {
+              coc-zuban = final.vimUtils.buildVimPlugin {
+                inherit (cocZubanPackage) pname version meta;
+                src = "${cocZubanPackage}/lib/node_modules/@yaegassy/coc-zuban";
+              };
               rustowl = final.vimUtils.buildVimPlugin {
                 pname = "rustowl-nvim";
                 version = rustowlManifest.package.version;
