@@ -54,49 +54,198 @@ git -C "$parent_repo" -c protocol.file.allow=always submodule add -q \
   "$source_repo" modules/child
 commit_all "$parent_repo" submodule
 
+printf 'staged\n' >>"$child_repo/tracked"
+git -C "$child_repo" add tracked
+staged_head="$(git -C "$child_repo" rev-parse HEAD)"
+git -C "$child_repo" stash push -u -m staged-only-test >/dev/null
+staged_stash="$(git -C "$child_repo" rev-parse 'stash@{0}')"
+
+stash_has_expected_graph "$child_repo" "$staged_stash" "$staged_head" ||
+  fail 'standard staged-only stash graph was rejected'
+if git -C "$child_repo" diff --quiet \
+  "${staged_stash}^1" "${staged_stash}^2" --; then
+  fail 'staged-only fixture did not change the stash index parent'
+fi
+git -C "$child_repo" diff --quiet "${staged_stash}^2" "$staged_stash" -- ||
+  fail 'staged-only fixture unexpectedly changed the stash worktree parent'
+stash_contains_changes "$child_repo" "$staged_stash" ||
+  fail 'staged-only change was classified as an empty stash'
+git -C "$child_repo" stash clear
+
 printf 'changed\n' >>"$child_repo/tracked"
+valid_head="$(git -C "$child_repo" rev-parse HEAD)"
 (
   cd "$parent_repo"
+  collect_dirty_submodules
+  [ "${#DIRTY_SUBMODULES[@]}" -eq 1 ] ||
+    fail 'valid dirty submodule was not collected'
+  [ "${DIRTY_SUBMODULES[0]}" = modules/child ] ||
+    fail 'unexpected dirty submodule path'
+
   STASHED_SUBMODULES=()
-  stash_dirty_submodules >/dev/null
-  [ "${#STASHED_SUBMODULES[@]}" -eq 1 ] || fail 'valid change was not recorded'
-  [ -z "$(git -C modules/child status --porcelain --untracked-files=normal)" ] ||
+  stash_dirty_submodules "${DIRTY_SUBMODULES[@]}" >/dev/null
+  [ "${#STASHED_SUBMODULES[@]}" -eq 1 ] ||
+    fail 'valid change was not recorded'
+  if is_submodule_dirty modules/child; then
     fail 'valid auto-stash did not clean the submodule'
+  fi
 )
 
 valid_stash="$(git -C "$child_repo" rev-parse 'stash@{0}')"
+stash_has_expected_graph "$child_repo" "$valid_stash" "$valid_head" ||
+  fail 'valid auto-stash graph was rejected'
 stash_contains_changes "$child_repo" "$valid_stash" ||
   fail 'tracked change was classified as an empty stash'
 git -C "$child_repo" stash clear
 
-embedded_repo="$child_repo/nested"
-create_repo "$embedded_repo"
-mapfile -d '' -t embedded < <(find_untracked_embedded_repositories "$child_repo")
-[ "${#embedded[@]}" -eq 1 ] || fail 'embedded repository was not detected'
-[ "${embedded[0]}" = nested ] || fail 'unexpected embedded repository path'
-
+printf 'retained\n' >>"$child_repo/tracked"
+retention_log="$TMPDIR_TEST/retention.log"
 stash_count_before="$(git -C "$child_repo" stash list --format='%H' | wc -l)"
 if (
-  cd "$parent_repo"
+  stash_contains_changes() {
+    return 1
+  }
   STASHED_SUBMODULES=()
-  stash_dirty_submodules >/dev/null 2>&1
-); then
-  fail 'auto-stash accepted an embedded repository'
+  stash_dirty_submodules "$child_repo"
+) >"$TMPDIR_TEST/retention.out" 2>"$retention_log"; then
+  fail 'auto-stash accepted a forced empty-payload classification'
 fi
 stash_count_after="$(git -C "$child_repo" stash list --format='%H' | wc -l)"
-[ "$stash_count_before" -eq "$stash_count_after" ] ||
-  fail 'embedded repository created an empty stash'
+[ "$stash_count_after" -eq $((stash_count_before + 1)) ] ||
+  fail 'anomalous auto-stash was not retained'
+retained_stash="$(git -C "$child_repo" rev-parse refs/stash)"
+grep -F "retained auto-stash for review: $retained_stash" "$retention_log" \
+  >/dev/null || fail 'retained auto-stash OID was not reported'
+stash_contains_changes "$child_repo" "$retained_stash" ||
+  fail 'retained auto-stash lost its payload'
+git -C "$child_repo" stash clear
 
-empty_tree="$(git -C "$child_repo" rev-parse 'HEAD^{tree}')"
+embedded_host="$TMPDIR_TEST/embedded-host"
+embedded_repo="$embedded_host/wrapper/deeper/repo"
+create_repo "$embedded_host"
+create_repo "$embedded_repo"
+embedded=()
+find_untracked_embedded_repositories "$embedded_host" embedded ||
+  fail 'embedded repository scan failed'
+[ "${#embedded[@]}" -eq 1 ] || fail 'embedded repository was not detected'
+[ "${embedded[0]}" = wrapper/deeper/repo ] ||
+  fail 'unexpected embedded repository path'
+
+stash_count_before="$(git -C "$embedded_host" stash list --format='%H' | wc -l)"
+if (
+  STASHED_SUBMODULES=()
+  stash_dirty_submodules "$embedded_host"
+) >"$TMPDIR_TEST/embedded.out" 2>"$TMPDIR_TEST/embedded.err"; then
+  fail 'auto-stash accepted an embedded repository'
+fi
+stash_count_after="$(git -C "$embedded_host" stash list --format='%H' | wc -l)"
+[ "$stash_count_before" -eq "$stash_count_after" ] ||
+  fail 'embedded repository created a stash'
+
+head_commit="$(git -C "$child_repo" rev-parse HEAD)"
+head_tree="$(git -C "$child_repo" rev-parse 'HEAD^{tree}')"
+empty_tree="$(printf '' | git -C "$child_repo" mktree)"
+index_commit="$(
+  printf 'synthetic index\n' |
+    git -C "$child_repo" \
+      -c user.name='Update Test' \
+      -c user.email='update-test@example.invalid' \
+      commit-tree "$head_tree" -p "$head_commit"
+)"
+untracked_commit="$(
+  printf 'synthetic untracked\n' |
+    git -C "$child_repo" \
+      -c user.name='Update Test' \
+      -c user.email='update-test@example.invalid' \
+      commit-tree "$empty_tree"
+)"
 empty_stash="$(
   printf 'synthetic empty stash\n' |
     git -C "$child_repo" \
       -c user.name='Update Test' \
       -c user.email='update-test@example.invalid' \
-      commit-tree "$empty_tree" -p HEAD
+      commit-tree "$head_tree" \
+      -p "$head_commit" -p "$index_commit" -p "$untracked_commit"
 )"
-if stash_contains_changes "$child_repo" "$empty_stash"; then
-  fail 'empty stash was classified as containing changes'
+
+stash_has_expected_graph "$child_repo" "$empty_stash" "$head_commit" ||
+  fail 'valid synthetic stash graph was rejected'
+payload_status=0
+stash_contains_changes "$child_repo" "$empty_stash" || payload_status=$?
+[ "$payload_status" -eq 1 ] ||
+  fail 'empty stash graph was classified as containing changes'
+
+malformed_stash="$(
+  printf 'synthetic malformed stash\n' |
+    git -C "$child_repo" \
+      -c user.name='Update Test' \
+      -c user.email='update-test@example.invalid' \
+      commit-tree "$head_tree" -p "$head_commit"
+)"
+graph_status=0
+stash_has_expected_graph \
+  "$child_repo" "$malformed_stash" "$head_commit" || graph_status=$?
+[ "$graph_status" -eq 1 ] || fail 'malformed stash graph was accepted'
+
+locked_repo="$TMPDIR_TEST/locked"
+create_repo "$locked_repo"
+printf 'locked\n' >>"$locked_repo/tracked"
+locked_git_dir="$(git -C "$locked_repo" rev-parse --absolute-git-dir)"
+mkdir -p -- "$locked_git_dir/refs"
+: >"$locked_git_dir/refs/stash.lock"
+if (
+  STASHED_SUBMODULES=()
+  stash_dirty_submodules "$locked_repo"
+) >"$TMPDIR_TEST/locked.out" 2>"$TMPDIR_TEST/locked.err"; then
+  fail 'auto-stash ignored a refs/stash lock failure'
+fi
+grep -F 'git stash push failed for:' "$TMPDIR_TEST/locked.err" >/dev/null ||
+  fail 'stash push failure did not use the updater diagnostic'
+[ "$(git -C "$locked_repo" stash list --format='%H' | wc -l)" -eq 0 ] ||
+  fail 'failed stash push created a stash'
+is_submodule_dirty "$locked_repo" ||
+  fail 'failed stash push did not preserve the dirty worktree'
+
+grand_remote="$TMPDIR_TEST/grand-remote"
+middle_remote="$TMPDIR_TEST/middle-remote"
+outer_repo="$TMPDIR_TEST/outer"
+create_repo "$grand_remote"
+create_repo "$middle_remote"
+git -C "$middle_remote" -c protocol.file.allow=always submodule add -q \
+  "$grand_remote" modules/grand
+commit_all "$middle_remote" nested-submodule
+create_repo "$outer_repo"
+git -C "$outer_repo" -c protocol.file.allow=always submodule add -q \
+  "$middle_remote" modules/middle
+commit_all "$outer_repo" direct-submodule
+git -C "$outer_repo" -c protocol.file.allow=always \
+  submodule update --init --recursive -q
+
+grand_worktree="$outer_repo/modules/middle/modules/grand"
+printf 'grandchild\n' >>"$grand_worktree/tracked"
+(
+  cd "$outer_repo"
+  collect_dirty_submodules
+  [ "${#DIRTY_SUBMODULES[@]}" -eq 1 ] ||
+    fail 'descendant dirtiness contaminated a parent repository'
+  [ "${DIRTY_SUBMODULES[0]}" = modules/middle/modules/grand ] ||
+    fail 'dirty grandchild path was not collected'
+
+  STASHED_SUBMODULES=()
+  stash_dirty_submodules "${DIRTY_SUBMODULES[@]}" >/dev/null
+  [ "${#STASHED_SUBMODULES[@]}" -eq 1 ] ||
+    fail 'dirty grandchild was not stashed exactly once'
+)
+[ "$(git -C "$outer_repo/modules/middle" stash list --format='%H' | wc -l)" -eq 0 ] ||
+  fail 'clean parent received a redundant stash'
+[ "$(git -C "$grand_worktree" stash list --format='%H' | wc -l)" -eq 1 ] ||
+  fail 'dirty grandchild stash was not retained'
+
+if (
+  cd "$TMPDIR_TEST"
+  collect_dirty_submodules >/dev/null 2>&1
+); then
+  fail 'submodule enumeration failure was ignored'
 fi
 
 help_repo="$TMPDIR_TEST/help"

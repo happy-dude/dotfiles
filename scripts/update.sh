@@ -65,6 +65,7 @@ VERBOSE="${VERBOSE:-0}"
 REPO_DIR="."
 REPO_DIR_SET=0
 TMPGO=""
+DIRTY_SUBMODULES=()
 STASHED_SUBMODULES=()
 CLEAN_VIM_HELP_TAGS=()
 RESTORED_VIM_HELP_TAGS=()
@@ -479,18 +480,58 @@ recover_rime_git_state() {
 
 is_submodule_dirty() {
   local path="$1"
-  [ -n "$(git -C "$path" status --porcelain --untracked-files=normal)" ]
+  local status
+  local untracked
+
+  if git -C "$path" diff --quiet --ignore-submodules=all --; then
+    :
+  else
+    status=$?
+    [ "$status" -eq 1 ] && return 0
+    return "$status"
+  fi
+
+  if git -C "$path" diff --cached --quiet --; then
+    :
+  else
+    status=$?
+    [ "$status" -eq 1 ] && return 0
+    return "$status"
+  fi
+
+  if ! untracked="$(git -C "$path" ls-files --others --exclude-standard)"; then
+    return 2
+  fi
+
+  [ -n "$untracked" ]
 }
 
 collect_dirty_submodules() {
   local path
+  local paths
+  local status
+
+  DIRTY_SUBMODULES=()
+
   # shellcheck disable=SC2016 # Expanded by git submodule foreach's shell.
+  if ! paths="$(git submodule foreach --quiet --recursive \
+    'printf "%s\n" "$displaypath"')"; then
+    warn "failed to enumerate initialized submodules"
+    return 2
+  fi
+
   while IFS= read -r path; do
     [ -n "$path" ] || continue
     if is_submodule_dirty "$path"; then
-      printf '%s\n' "$path"
+      DIRTY_SUBMODULES+=("$path")
+    else
+      status=$?
+      if [ "$status" -ne 1 ]; then
+        warn "failed to inspect submodule state: $path"
+        return "$status"
+      fi
     fi
-  done < <(git submodule foreach --quiet --recursive 'printf "%s\n" "$displaypath"')
+  done <<<"$paths"
 }
 
 update_submodule_graph() {
@@ -513,12 +554,31 @@ update_submodule_graph() {
 
 find_untracked_embedded_repositories() {
   local path="$1"
+  local result_name="$2"
   local repo_root
   local record
   local candidate
   local candidate_root
+  local status_file
+  local -n results="$result_name"
 
-  repo_root="$(git -C "$path" rev-parse --show-toplevel)"
+  results=()
+
+  if ! repo_root="$(git -C "$path" rev-parse --show-toplevel)"; then
+    return 2
+  fi
+
+  if ! status_file="$(mktemp "${TMPDIR:-/tmp}/update-embedded.XXXXXX")"; then
+    return 2
+  fi
+
+  if ! git -C "$path" status \
+    --porcelain=v1 -z \
+    --untracked-files=all \
+    --ignore-submodules=all >"$status_file"; then
+    rm -f -- "$status_file"
+    return 2
+  fi
 
   while IFS= read -r -d '' record; do
     [[ $record == "?? "* ]] || continue
@@ -526,82 +586,184 @@ find_untracked_embedded_repositories() {
     candidate=${candidate%/}
     [ -d "$path/$candidate" ] || continue
 
-    candidate_root="$(git -C "$path/$candidate" rev-parse --show-toplevel 2>/dev/null || true)"
+    candidate_root="$(
+      git -C "$path/$candidate" rev-parse --show-toplevel 2>/dev/null || true
+    )"
     if [ -n "$candidate_root" ] && [ "$candidate_root" != "$repo_root" ]; then
-      printf '%s\0' "$candidate"
+      results+=("$candidate")
     fi
-  done < <(git -C "$path" status --porcelain=v1 -z --untracked-files=normal)
+  done <"$status_file"
+
+  rm -f -- "$status_file"
+}
+
+stash_has_expected_graph() {
+  local path="$1"
+  local stash="$2"
+  local expected_head="$3"
+  local parents
+  local head_parent
+  local index_parent
+  local untracked_parent
+  local extra_parent
+  local index_parents
+  local untracked_parents
+
+  if ! parents="$(git -C "$path" show -s --format=%P "$stash")"; then
+    return 2
+  fi
+
+  IFS=' ' read -r \
+    head_parent index_parent untracked_parent extra_parent <<<"$parents"
+
+  if [ -z "$head_parent" ] ||
+    [ -z "$index_parent" ] ||
+    [ -z "$untracked_parent" ] ||
+    [ -n "$extra_parent" ] ||
+    [ "$head_parent" != "$expected_head" ]; then
+    return 1
+  fi
+
+  if ! index_parents="$(
+    git -C "$path" show -s --format=%P "$index_parent"
+  )"; then
+    return 2
+  fi
+  [ "$index_parents" = "$expected_head" ] || return 1
+
+  if ! untracked_parents="$(
+    git -C "$path" show -s --format=%P "$untracked_parent"
+  )"; then
+    return 2
+  fi
+  [ -z "$untracked_parents" ] || return 1
 }
 
 stash_contains_changes() {
   local path="$1"
   local stash="$2"
-  local untracked_parent
+  local status
+  local untracked
 
-  if ! git -C "$path" diff --quiet "${stash}^1" "$stash" --; then
-    return 0
+  if git -C "$path" diff --quiet "${stash}^1" "${stash}^2" --; then
+    :
+  else
+    status=$?
+    [ "$status" -eq 1 ] && return 0
+    return "$status"
   fi
 
-  untracked_parent="$(git -C "$path" rev-parse --verify -q "${stash}^3" || true)"
-  if [ -n "$untracked_parent" ] &&
-    [ -n "$(git -C "$path" ls-tree -r --name-only "$untracked_parent")" ]; then
-    return 0
+  if git -C "$path" diff --quiet "${stash}^2" "$stash" --; then
+    :
+  else
+    status=$?
+    [ "$status" -eq 1 ] && return 0
+    return "$status"
   fi
+
+  if ! untracked="$(
+    git -C "$path" ls-tree -r --name-only "${stash}^3"
+  )"; then
+    return 2
+  fi
+  [ -n "$untracked" ] && return 0
 
   return 1
 }
 
 stash_dirty_submodules() {
   local path
+  local expected_head
   local stash_before
   local stash_after
+  local stash_status
+  local status
   local candidate
   local -a embedded_repositories
 
-  # shellcheck disable=SC2016 # Expanded by git submodule foreach's shell.
-  while IFS= read -r path; do
+  for path in "$@"; do
     [ -n "$path" ] || continue
+
     if is_submodule_dirty "$path"; then
-      embedded_repositories=()
-      mapfile -d '' -t embedded_repositories < <(find_untracked_embedded_repositories "$path")
-
-      if [ "${#embedded_repositories[@]}" -gt 0 ]; then
-        warn "cannot auto-stash untracked embedded Git repositories in: $path"
-        for candidate in "${embedded_repositories[@]}"; do
-          printf '  - %s/%s\n' "$path" "$candidate" >&2
-        done
-        die "move, remove, ignore, or register the embedded repositories before updating"
-      fi
-
-      msg "Stashing dirty submodule: $path"
-      stash_before="$(git -C "$path" rev-parse --verify -q refs/stash || true)"
-      git -C "$path" stash push -u -m "update.sh auto-stash"
-      stash_after="$(git -C "$path" rev-parse --verify -q refs/stash || true)"
-
-      if [ -z "$stash_after" ] || [ "$stash_after" = "$stash_before" ]; then
-        die "Git reported success but did not create a stash for: $path"
-      fi
-
-      if ! stash_contains_changes "$path" "$stash_after"; then
-        if [ "$(git -C "$path" rev-parse --verify 'stash@{0}')" != "$stash_after" ]; then
-          die "the new empty stash moved unexpectedly; refusing to discard it: $path"
-        fi
-
-        git -C "$path" stash drop -q 'stash@{0}'
-        warn "discarded an empty auto-stash for: $path"
-        git -C "$path" --no-pager status --short --untracked-files=all >&2
-        die "Git did not capture the dirty state; resolve it before updating"
-      fi
-
-      if is_submodule_dirty "$path"; then
-        warn "auto-stash did not leave the submodule clean: $path"
-        git -C "$path" --no-pager status --short --untracked-files=all >&2
-        die "resolve the remaining submodule state before updating"
-      fi
-
-      STASHED_SUBMODULES+=("$path")
+      :
+    else
+      status=$?
+      [ "$status" -eq 1 ] && continue
+      die "failed to inspect submodule before auto-stashing: $path"
     fi
-  done < <(git submodule foreach --quiet --recursive 'printf "%s\n" "$displaypath"')
+
+    if ! find_untracked_embedded_repositories \
+      "$path" embedded_repositories; then
+      die "failed to inspect embedded repositories in: $path"
+    fi
+
+    if [ "${#embedded_repositories[@]}" -gt 0 ]; then
+      warn "cannot auto-stash untracked embedded Git repositories in: $path"
+      for candidate in "${embedded_repositories[@]}"; do
+        printf '  - %s/%s\n' "$path" "$candidate" >&2
+      done
+      die "move, remove, ignore, or register the embedded repositories before updating"
+    fi
+
+    if ! expected_head="$(git -C "$path" rev-parse --verify HEAD)"; then
+      die "failed to resolve submodule HEAD before auto-stashing: $path"
+    fi
+    stash_before="$(git -C "$path" rev-parse --verify -q refs/stash || true)"
+
+    msg "Stashing dirty submodule: $path"
+    if git -C "$path" stash push -u -m "update.sh auto-stash"; then
+      stash_status=0
+    else
+      stash_status=$?
+    fi
+    stash_after="$(git -C "$path" rev-parse --verify -q refs/stash || true)"
+
+    if [ "$stash_status" -ne 0 ]; then
+      if [ -n "$stash_after" ] && [ "$stash_after" != "$stash_before" ]; then
+        warn "retained stash created before failure: $stash_after ($path)"
+      fi
+      die "git stash push failed for: $path (exit code: $stash_status)"
+    fi
+
+    if [ -z "$stash_after" ] || [ "$stash_after" = "$stash_before" ]; then
+      die "Git reported success but did not create a stash for: $path"
+    fi
+
+    if stash_has_expected_graph "$path" "$stash_after" "$expected_head"; then
+      :
+    else
+      status=$?
+      warn "retained auto-stash for review: $stash_after ($path)"
+      if [ "$status" -eq 1 ]; then
+        die "new auto-stash has an unexpected graph: $path"
+      fi
+      die "could not inspect new auto-stash graph: $path"
+    fi
+
+    if stash_contains_changes "$path" "$stash_after"; then
+      :
+    else
+      status=$?
+      warn "retained auto-stash for review: $stash_after ($path)"
+      if [ "$status" -eq 1 ]; then
+        die "new auto-stash has no verified payload: $path"
+      fi
+      die "could not inspect new auto-stash payload: $path"
+    fi
+
+    if is_submodule_dirty "$path"; then
+      warn "auto-stash did not leave the submodule clean: $path"
+      git -C "$path" --no-pager status --short --untracked-files=all >&2
+      die "resolve the remaining submodule state before updating"
+    else
+      status=$?
+      if [ "$status" -ne 1 ]; then
+        die "failed to verify submodule state after auto-stashing: $path"
+      fi
+    fi
+
+    STASHED_SUBMODULES+=("$path")
+  done
 }
 
 #--------------------------------------------------------------------------------------------------
@@ -931,12 +1093,14 @@ if [ "$SKIP_SUBMODULES" -eq 0 ]; then
 
   section_start "Checking submodules for local changes"
 
-  mapfile -t DIRTY_SUBMODULES < <(collect_dirty_submodules)
+  if ! collect_dirty_submodules; then
+    die "failed to collect dirty submodules"
+  fi
 
   if [ "${#DIRTY_SUBMODULES[@]}" -gt 0 ]; then
     if [ "$AUTO_STASH_SUBMODULES" -eq 1 ]; then
       msg "Dirty submodules detected; auto-stashing them now..."
-      stash_dirty_submodules
+      stash_dirty_submodules "${DIRTY_SUBMODULES[@]}"
     else
       warn "dirty submodules detected:"
       for path in "${DIRTY_SUBMODULES[@]}"; do
