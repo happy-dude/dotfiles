@@ -400,7 +400,9 @@
             fi
           done
 
-          cp ${self}/.gitmodules .gitmodules
+          if [ -f ${self}/.gitmodules ]; then
+            cp ${self}/.gitmodules .gitmodules
+          fi
           bash ${self}/scripts/sort_gitmodules.sh --check
           bash ${self}/scripts/test_update_submodules.sh
           bash ${self}/scripts/generate_codex_agents.sh --check
