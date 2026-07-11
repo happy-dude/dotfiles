@@ -35,13 +35,14 @@ if exists('+relativenumber')
   set number
   set numberwidth=5   " Aesthetic uses only... and for displaying large line numbers
 
-  " Switch to absolute line numbers whenever Vim loses focus
-  autocmd FocusLost * :set number
-  autocmd FocusGained * :set relativenumber
-
-  " Use absolute line numbers when in insert mode and relative numbers when in normal mode
-  autocmd InsertEnter * :set norelativenumber | set number
-  autocmd InsertLeave * :set relativenumber
+  " Switch between absolute and relative numbers as editing context changes
+  augroup dynamic_line_numbers
+    autocmd!
+    autocmd FocusLost * setlocal number norelativenumber
+    autocmd FocusGained * setlocal relativenumber
+    autocmd InsertEnter * setlocal number norelativenumber
+    autocmd InsertLeave * setlocal relativenumber
+  augroup END
 
 else
   set number          " Show absolute line numbers
