@@ -23,8 +23,10 @@ let g:coc_global_extensions = [
       \ 'coc-extension-codemod',
       \ 'coc-go',
       \ 'coc-highlight',
+      \ 'coc-json',
       \ 'coc-markdownlint',
       \ 'coc-rust-analyzer',
+      \ 'coc-tsserver',
       \ 'coc-vimtex'
       \]
       "\ 'coc-css',

@@ -65,11 +65,6 @@
         ".git"
       ]
     },
-    "json-language-server": {
-      "command": "vscode-json-language-server",
-      "args": ["--stdio"],
-      "filetypes": ["json", "jsonc"]
-    },
     "lua-language-server": {
       "command": "lua-language-server",
       "filetypes": ["lua"],
@@ -80,18 +75,6 @@
       "command": "perl",
       "args": ["-MPerl::LanguageServer", "-e", "Perl::LanguageServer::run"],
       "filetypes": ["perl"]
-    },
-    "typescript-language-server": {
-      "command": "typescript-language-server",
-      "args": ["--stdio"],
-      "filetypes": [
-        "javascript",
-        "javascriptreact",
-        "typescript",
-        "typescript.tsx",
-        "typescriptreact"
-      ],
-      "rootPatterns": ["package.json", "tsconfig.json", "jsconfig.json", ".git"]
     },
     "vim-language-server": {
       "command": "vim-language-server",
