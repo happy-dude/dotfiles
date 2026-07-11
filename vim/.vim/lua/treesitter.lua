@@ -2,6 +2,8 @@
 
 local api = vim.api
 
+require('matchtag')
+
 -- Nix deployments link parsers and queries through Home Manager. Stow
 -- deployments retain the nvim-treesitter :TSInstall/:TSUpdate workflow.
 

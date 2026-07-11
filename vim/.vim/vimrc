@@ -57,7 +57,6 @@ if &loadplugins
   Plug 'chrisbra/csv.vim'                             ,   { 'branch' : 'master', 'for' : [ 'csv' ] }
   Plug 'easymotion/vim-easymotion'                    ,   !has('nvim') ? { 'branch' : 'master' } : { 'branch' : 'master', 'on': [] }
   Plug 'fatih/vim-go'                                 ,   { 'for' : [ 'go', 'gomod', 'gohtmltmpl' ] }
-  Plug 'gregsexton/MatchTag'                          ,   { 'for' : [ 'html', 'xml' ] }
   Plug 'guns/vim-sexp'                                ,   { 'branch' : 'master' }
   Plug 'justinmk/vim-dirvish'                         ,   { 'branch' : 'master' }
   Plug 'keith/swift.vim'                              ,   { 'branch' : 'master', 'for' : [ 'swift' ] }
