@@ -139,6 +139,11 @@
       flake = false;
     };
 
+    catppuccin_fcitx5 = {
+      url = "github:catppuccin/fcitx5";
+      flake = false;
+    };
+
     coc_zuban = {
       url = "github:yaegassy/coc-zuban";
       flake = false;

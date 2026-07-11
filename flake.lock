@@ -16,6 +16,22 @@
         "type": "github"
       }
     },
+    "catppuccin_fcitx5": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1747425237,
+        "narHash": "sha256-ss0kW+ulvMhxeZKBrjQ7E5Cya+02eJrGsE4OLEkqKks=",
+        "owner": "catppuccin",
+        "repo": "fcitx5",
+        "rev": "393845cf3ed0e0000bfe57fe1b9ad75748e2547f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "catppuccin",
+        "repo": "fcitx5",
+        "type": "github"
+      }
+    },
     "coc_zuban": {
       "flake": false,
       "locked": {
@@ -521,6 +537,7 @@
     "root": {
       "inputs": {
         "bgutil_ytdlp_pot_provider": "bgutil_ytdlp_pot_provider",
+        "catppuccin_fcitx5": "catppuccin_fcitx5",
         "coc_zuban": "coc_zuban",
         "fish_autopair": "fish_autopair",
         "fish_nvm": "fish_nvm",

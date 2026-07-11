@@ -1,8 +1,3 @@
-[submodule "rime/.local/share/fcitx5/themes/catppuccin-fcitx5"]
-	path = rime/.local/share/fcitx5/themes/catppuccin-fcitx5
-	url = https://github.com/catppuccin/fcitx5.git
-	branch = main
-	ignore = dirty
 [submodule "solarized"]
 	path = other/themes/solarized_theme-altercation
 	url = https://github.com/altercation/solarized.git
