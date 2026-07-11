@@ -118,6 +118,7 @@ in {
       rsync
       ruff
       rust-analyzer
+      rustfmt
       sbcl
       shellcheck
       sparse
@@ -137,6 +138,8 @@ in {
       xclip
       xdg-utils
       xsel
+      zig
+      zls
       zuban
 
       # Language agent: translation / dictionary / grammar / OCR / TTS tooling

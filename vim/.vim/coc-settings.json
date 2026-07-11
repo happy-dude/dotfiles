@@ -2,6 +2,7 @@
   "coc.preferences.formatOnSaveFiletypes": [
     "Markdown",
     "c",
+    "cpp",
     "coc-cfn-lint",
     "css",
     "go",
@@ -10,6 +11,7 @@
     "javascript",
     "javascriptreact",
     "json",
+    "lua",
     "markdown",
     "markdownlint",
     "perl",
@@ -21,7 +23,8 @@
     "typescript",
     "typescript.tsx",
     "typescriptreact",
-    "yaml"
+    "yaml",
+    "zig"
   ],
   "clangd.checkUpdates": false,
   "clangd.path": "clangd",
@@ -81,6 +84,11 @@
       "command": "perl",
       "args": ["-MPerl::LanguageServer", "-e", "Perl::LanguageServer::run"],
       "filetypes": ["perl"]
+    },
+    "zls": {
+      "command": "zls",
+      "filetypes": ["zig"],
+      "rootPatterns": ["build.zig", "build.zig.zon", ".git"]
     },
     "vim-language-server": {
       "command": "vim-language-server",
