@@ -411,7 +411,7 @@ Every tool above (`opencc`, `translate-shell`, `sdcv`, `dict`, `tesseract5`,
 That file is the authoritative Home Manager configuration for this machine;
 `~/dotfiles/CLAUDE.md` documents the full repository layout. The full `kernel`
 and `language` Markdown prompts are canonical for their generated Codex agents
-and profiles; after editing either, run `scripts/generate_codex_agents.py`. Home
+and profiles; after editing either, run `scripts/generate_codex_agents.sh`. Home
 Manager also links the independently maintained Kagi Codex TOMLs, which the
 generator never reads or writes.
 

@@ -158,7 +158,7 @@ the default deployment path; do not `stow rime` while that module is enabled.
   target at `~/.config/zed/settings.json`.
 - **`agents/`** holds canonical `kernel` and `language` prompts. Edit
   `agents/prompts/{kernel,language}.md`, then run
-  `scripts/generate_codex_agents.py`; it regenerates their checked-in Codex
+  `scripts/generate_codex_agents.sh`; it regenerates their checked-in Codex
   custom-agent and profile TOMLs. Kagi Markdown and Codex TOMLs remain
   independently maintained and are never read or written by the generator.
   `agents/default.nix` installs both clients through `mkOutOfStoreSymlink`, so

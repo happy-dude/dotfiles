@@ -292,7 +292,6 @@
             pkgs.bash
             pkgs.fish
             pkgs.git
-            pkgs.python3
             pkgs.shellcheck
             pkgs.zsh
           ];
@@ -316,7 +315,7 @@
           cp ${self}/.gitmodules .gitmodules
           bash ${self}/scripts/sort_gitmodules.sh --check
           bash ${self}/scripts/test_update_submodules.sh
-          python3 ${self}/scripts/generate_codex_agents.py --check
+          bash ${self}/scripts/generate_codex_agents.sh --check
 
           touch "$out"
         '';

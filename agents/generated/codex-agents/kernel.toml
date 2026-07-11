@@ -575,7 +575,7 @@ structure.
   editorconfig-vim, or mutable plugin binary downloaders.
 - **Agent prompt ownership:** `agents/prompts/{kernel,language}.md` are
   canonical for the generated full agents and profiles. After editing either,
-  run `scripts/generate_codex_agents.py`; the flake check rejects drift. Home
+  run `scripts/generate_codex_agents.sh`; the flake check rejects drift. Home
   Manager links both clients out of the repo, while credentials, provider state,
   and project trust remain machine-local. Kagi Markdown and Codex TOMLs are
   independently maintained for their smaller instruction budget; the generator
