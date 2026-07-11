@@ -158,10 +158,28 @@
         inputs.neovim-nightly-overlay.overlays.default
         inputs.rust-overlay.overlays.default
         ghostty.overlays.default
-        (final: prev: {
+        (final: prev: let
+          rustowlManifest = builtins.fromTOML (
+            builtins.readFile "${inputs.rustowl_src}/Cargo.toml"
+          );
+        in {
           roswell = prev.roswell.overrideAttrs (_: {
             src = inputs.roswell_src;
           });
+          vimPlugins =
+            prev.vimPlugins
+            // {
+              rustowl = final.vimUtils.buildVimPlugin {
+                pname = "rustowl-nvim";
+                version = rustowlManifest.package.version;
+                src = inputs.rustowl_src;
+
+                postInstall = ''
+                  find "$out" -mindepth 1 -maxdepth 1 \
+                    ! -name lua ! -name ftplugin -exec rm -rf {} +
+                '';
+              };
+            };
         })
       ];
     };

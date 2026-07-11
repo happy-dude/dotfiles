@@ -459,10 +459,6 @@
 	path = vim/.vim/pack/plugged/opt/render-markdown.nvim
 	url = https://github.com/MeanderingProgrammer/render-markdown.nvim.git
 	ignore = dirty
-[submodule "vim/.vim/pack/plugged/opt/rustowl"]
-	path = vim/.vim/pack/plugged/opt/rustowl
-	url = https://github.com/cordx56/rustowl.git
-	ignore = dirty
 [submodule "which-key.nvim"]
 	path = vim/.vim/pack/plugged/opt/which-key.nvim
 	url = https://github.com/folke/which-key.nvim.git

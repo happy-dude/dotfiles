@@ -165,9 +165,6 @@ if &loadplugins
       Plug 'ravitemer/codecompanion-history.nvim'     , { 'branch' : 'main' }
     endif
 
-    " RustOwl client; Home Manager builds its server by default.
-    Plug 'cordx56/rustowl', { 'branch': 'main' }
-
   endif
   " }
 
@@ -297,6 +294,9 @@ execute                         'source' s:custom_functions
 "{ """" Neovim Lua Configs """"
 """""""""""""""""""""""""""""""
 if has('nvim')
+  " Home Manager installs the locked RustOwl client as an optional package.
+  packadd! rustowl
+
 lua <<EOF
   -- configs in lua/ directory
   require('qol')

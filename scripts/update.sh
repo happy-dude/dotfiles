@@ -158,11 +158,11 @@ Options:
 
   Neovim / Go:
     --editor-deployment <nix|stow>
-        Select declarative Nix-managed Tree-sitter/RustOwl/vim-go artifacts
+        Select declarative Nix-managed Tree-sitter/vim-go artifacts
         (default) or the legacy mutable Stow workflow.
 
     --skip-nvim
-        Skip vim-plug, Tree-sitter, RustOwl, and coc.nvim updates.
+        Skip vim-plug, Tree-sitter, and coc.nvim updates.
 
     --skip-go
         Skip mutable Go binary updates in Stow deployment mode.
@@ -191,7 +191,7 @@ Environment:
       Rime frontend passed to rime-install. Default: fcitx5-rime
 
   EDITOR_DEPLOYMENT=<nix|stow>
-      Select declarative Nix-managed Tree-sitter/RustOwl/vim-go artifacts (default:
+      Select declarative Nix-managed Tree-sitter/vim-go artifacts (default:
       nix) or the legacy mutable Stow workflow.
 
   HOME_MANAGER_FLAKE=...
@@ -824,20 +824,6 @@ run_nvim_cmd_if_exists() {
   fi
 }
 
-update_rustowl_stow() {
-  local rustowl_dir="vim/.vim/pack/plugged/opt/rustowl"
-
-  if [ ! -x "$rustowl_dir/scripts/toolchain" ]; then
-    return 3
-  fi
-
-  if ! have cargo; then
-    return 3
-  fi
-
-  (cd "$rustowl_dir" && ./scripts/toolchain cargo install --path . --locked)
-}
-
 #--------------------------------------------------------------------------------------------------
 rime_static_files_are_nix_managed() {
   local data_dir="${XDG_DATA_HOME:-$HOME/.local/share}/fcitx5/rime"
@@ -1195,34 +1181,6 @@ elif have nvim; then
     *)
       warn "Tree-sitter update encountered an error (exit code: $status)"
       warn "nvim-treesitter may not be installed or configured"
-      section_result="failed"
-      ;;
-    esac
-
-    section_end "$section_result"
-    abort_failed_section "$section_result"
-  fi
-
-  if [ "$EDITOR_DEPLOYMENT" = "nix" ]; then
-    section_start "Skipping RustOwl source build (Nix-managed)"
-    section_end "skipped"
-  else
-    section_start "Building RustOwl from its Stow source"
-
-    status=0
-    section_result="done"
-    update_rustowl_stow || status=$?
-
-    case "$status" in
-    0)
-      vmsg "RustOwl installed from its Stow source"
-      ;;
-    3)
-      msg "Skipping RustOwl build (source or cargo not available)"
-      section_result="skipped"
-      ;;
-    *)
-      warn "RustOwl build encountered an error (exit code: $status)"
       section_result="failed"
       ;;
     esac
