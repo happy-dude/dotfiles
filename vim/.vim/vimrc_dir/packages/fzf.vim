@@ -41,6 +41,6 @@ nnoremap  <silent> <leader>g       :GFiles?<CR>
 nnoremap  <silent> <leader>b       :Buffers<CR>
 nnoremap  <silent> <leader>l       :Lines<CR>
 nnoremap  <silent> <leader>m       :Marks<CR>
-nnoremap  <silent> <leader>rg      :Rg<CR>
+nnoremap  <silent> <leader>rg      :RG<CR>
 nnoremap  <silent> <leader>ex      :History:<CR>
 nnoremap  <silent> <leader>s       :History/<CR>
