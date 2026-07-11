@@ -89,6 +89,7 @@ in {
       meson
       motion
       moreutils
+      (lib.lowPrio ncurses)
       ncurses.dev
       ninja
       nix-prefetch-github
