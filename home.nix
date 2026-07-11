@@ -173,12 +173,6 @@ in {
       ".roswell/helper.el".source = ./roswell/.roswell/helper.el;
       ".stylua.toml".source = ./.stylua.toml;
       "ros_swank".source = ./roswell/ros_swank;
-
-      # Agent prompts kept live-editable via mkOutOfStoreSymlink — it targets the
-      # repo working tree, not the read-only Nix store (a plain `.source` would
-      # copy them in read-only).
-      ".claude/agents".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/claude/.claude/agents";
     };
 
     sessionVariables = {
