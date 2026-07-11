@@ -1,17 +1,11 @@
 " custom functions
 
-" Remove any trailing whitespace that is in the file and indent entire file and return to position
+" Remove trailing whitespace without changing the current view or search
 function! StripTrailingWhitespace()
-  if !&binary && &filetype != 'diff'
-    " Preparation: save last search, and cursor position.
-    let _s=@/
-    let l = line(".")
-    let c = col(".")
-    " do the business:
-    %s/\s\+$//e
-    " clean up: restore previous search history, and cursor position
-    let @/=_s
-    call cursor(l, c)
+  if !&binary && &filetype !=# 'diff'
+    let l:view = winsaveview()
+    keepjumps keeppatterns %s/\s\+$//e
+    call winrestview(l:view)
   endif
 endfunction
 
