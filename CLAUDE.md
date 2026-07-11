@@ -216,18 +216,18 @@ Vim and Emacs plugin source trees remain git submodules. Home Manager builds the
 Tree-sitter parser/query runtime and the RustOwl server by default:
 
 - Vim plugins live under `vim/.vim/pack/plugged/opt/*` (each a git submodule);
-  `vim/.vim/pack/bundle/opt/` holds `vim-pathogen` and `vim-plug`.
-  `vim/default.nix` links the Nix-built Tree-sitter parsers and queries, while
-  `rustowl/default.nix` builds the RustOwl server with its required pinned Rust
-  toolchain. The Vim config itself is in `vim/.vim/vimrc` with Lua/init.vim
-  helpers alongside. Home Manager owns the external editor binaries, including
-  vim-go's helper suite, PerlTidy, Ruff, and the language servers selected by
-  CoC. The CoC adapter settings resolve those commands from `PATH`; Fish and Zsh
-  keep mutable `~/go/bin` and `~/.cargo/bin` fallbacks behind the Home Manager
-  profile so they cannot shadow the Nix packages. `coc-settings.json` pins
-  clangd, gopls, rust-analyzer, and Zuban to those profile commands; its generic
-  JSON and Ruff clients use the Nix-managed JSON server and Ruff executable.
-  coc-json is no longer declared. Home Manager links the Nix TypeScript SDK at
+  `vim/.vim/pack/bundle/opt/` holds `vim-plug`. `vim/default.nix` links the
+  Nix-built Tree-sitter parsers and queries, while `rustowl/default.nix` builds
+  the RustOwl server with its required pinned Rust toolchain. The Vim config
+  itself is in `vim/.vim/vimrc` with Lua/init.vim helpers alongside. Home
+  Manager owns the external editor binaries, including vim-go's helper suite,
+  PerlTidy, Ruff, and the language servers selected by CoC. The CoC adapter
+  settings resolve those commands from `PATH`; Fish and Zsh keep mutable
+  `~/go/bin` and `~/.cargo/bin` fallbacks behind the Home Manager profile so
+  they cannot shadow the Nix packages. `coc-settings.json` pins clangd, gopls,
+  rust-analyzer, and Zuban to those profile commands; its generic JSON and Ruff
+  clients use the Nix-managed JSON server and Ruff executable. coc-json is no
+  longer declared. Home Manager links the Nix TypeScript SDK at
   `~/.local/share/nix-typescript/lib` for coc-tsserver, with mutable automatic
   type acquisition disabled.
 - Emacs plugins live under `emacs/.config/emacs/plugins/*` as git submodules.
