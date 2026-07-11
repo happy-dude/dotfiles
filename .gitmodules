@@ -1,8 +1,3 @@
-[submodule "prezto-sorin"]
-	path = zsh/.config/zsh/.zprezto
-	url = https://github.com/sorin-ionescu/prezto.git
-	branch = master
-	ignore = dirty
 [submodule "rime/.local/share/fcitx5/themes/catppuccin-fcitx5"]
 	path = rime/.local/share/fcitx5/themes/catppuccin-fcitx5
 	url = https://github.com/catppuccin/fcitx5.git
