@@ -417,14 +417,16 @@ and profiles; after editing either, run `scripts/generate_codex_agents.sh`. Home
 Manager also links the independently maintained Kagi Codex TOMLs, which the
 generator never reads or writes.
 
-Both Vim and Neovim are current locked-Nixpkgs packages with native package
-support. CoC loads in both and owns LSP, diagnostics, completion, navigation,
-and format-on-save; vim-go retains non-LSP Go commands. Vim uses bundled
-EditorConfig and Neovim uses native EditorConfig. Home Manager provides the
-formatter and language-server executables, including Ruff, StyLua, PerlTidy,
-clang-format, gofmt/goimports, rustfmt, Zig/ZLS, Zuban, and the CoC server
-commands. Do not reintroduce ALE, Pathogen, editorconfig-vim, or mutable plugin
-binary downloaders.
+Vim, Neovim, and their plugins are locked Nix packages. Shared, Vim-only, and
+Neovim-only plugin lists use native package support; there is no vim-plug
+checkout or mutable plugin updater. Emacs packages come exclusively from
+`programs.emacs.extraPackages`. CoC loads in both editors and owns LSP,
+diagnostics, completion, navigation, and format-on-save; vim-go retains non-LSP
+Go commands. Vim uses bundled EditorConfig and Neovim uses native EditorConfig.
+Home Manager provides the formatter and language-server executables, including
+Ruff, StyLua, PerlTidy, clang-format, gofmt/goimports, rustfmt, Zig/ZLS, Zuban,
+and the CoC server commands. Do not reintroduce ALE, Pathogen, editorconfig-vim,
+or mutable plugin binary downloaders.
 
 `flake.nix` builds two generic-Linux profiles with
 `mkHome { username, desktop, nixPackage, rimeDeployment }`. Both default to

@@ -5,15 +5,12 @@ code in this repository.
 
 ## Repository overview
 
-Personal dotfiles for `schan` (Stanley Chan / Happy-Dude). The active workflow
-on this branch is **Nix flakes + Home Manager** on Linux. The README still
-describes the older GNU Stow workflow (and `scripts/install.sh` is the original
-Stow-based bootstrap from 2015) — treat those as legacy. New configuration goes
-through Home Manager modules by default. When a file must stay writable outside
-the Nix store, prefer a Nix-managed `mkOutOfStoreSymlink` into the repo working
-tree (see `agents/` below) over a fresh Stow package. Adding a brand-new Stow
-package should be a deliberate, per-case decision, not a return to
-Stow-by-default.
+Personal dotfiles for `schan` (Stanley Chan / Happy-Dude). The active Linux
+workflow is **Nix flakes + Home Manager**. Home Manager owns deployment; the
+README's Stow-first instructions are not the active bootstrap and will be
+updated separately. When a file must stay writable outside the Nix store, prefer
+a Nix-managed `mkOutOfStoreSymlink` into the repository (see `agents/`) over a
+new Stow package. Rime retains the only deliberate Stow fallback.
 
 A separate `macos` branch exists for macOS-specific settings; this repository
 checkout is the Linux branch.
@@ -76,17 +73,15 @@ checkout is the Linux branch.
   mesa-demos, solaar) can be wrapped with `config.lib.nixGL.wrap`. Ghostty
   removes the wrapper's graphics variables before launching Fish so terminal
   children receive a normal host environment.
-- Source-only inputs also lock Prezto (with submodules), the active Fish
-  plugins, Roswell, RustOwl, and bgutil-ytdlp-pot-provider. The Nix-built
-  RustOwl server stays on the `v0.4.0` release until its input ref is changed
-  deliberately, while the Vim plugin submodule remains rolling. Shared Fish
-  configuration does not add the legacy `~/.rustowl` source-install directory,
-  so the Home Manager package remains authoritative in the default Nix
-  deployment; `nix flake update` advances the other unpinned sources together
-  with the Rime schema inputs.
+- Source-only inputs also lock Prezto, active Fish plugins, Roswell, RustOwl,
+  coc-zuban, Catppuccin Fcitx themes, and bgutil-ytdlp-pot-provider. The same
+  locked RustOwl source builds both its server and Neovim client. Ordinary
+  editor plugins come from the locked Nixpkgs `vimPlugins` set; explicit source
+  inputs are reserved for sources that are absent from Nixpkgs or intentionally
+  track upstream independently.
 - `fish/.config/fish/tide.fish` is the declarative Tide profile, linked by Home
-  Manager and sourced by the Stow-compatible `config.fish`. It overrides
-  machine-local `fish_variables` so fresh profiles have a complete prompt.
+  Manager and sourced by the tracked `config.fish`. It overrides machine-local
+  `fish_variables` so fresh profiles have a complete prompt.
 - `fish/.config/fish/config.fish` optionally sources
   `~/.config/fish/secrets.fish`. The committed example contains placeholders
   only; real values remain untracked, per-machine, and outside the Nix store.
@@ -96,10 +91,12 @@ checkout is the Linux branch.
 - `home.nix` is the entry module: it lists top-level packages, sets the shared
   `home.stateVersion = "26.11"` compatibility floor, and sets up plain-file
   symlinks — `.clang-format`, `.editorconfig`, `.golangci.yml`, `.stylua.toml`
-  (all from the **repo root**), plus `.gdbinit`, `ros_swank`,
-  `.roswell/helper.el`. Change `stateVersion` only after reviewing and applying
-  every intervening Home Manager migration. The global gitignore is handled in
-  the git module via `programs.git.ignores`, not a `home.file`.
+  (all from the **repo root**) plus `.gdbinit` from `gdb/gdbinit`. It installs
+  the low-priority ncurses runtime database alongside `ncurses.dev`; Ghostty's
+  terminal-specific entry wins path collisions. Change `stateVersion` only after
+  reviewing and applying every intervening Home Manager migration. The global
+  gitignore is handled in the git module via `programs.git.ignores`, not a
+  `home.file`.
 - Per-app modules live in their own subdirectories, each as a `default.nix`
   imported from `flake.nix`'s `modules` list: `aerc/`, `agents/`, `bat/`,
   `emacs/`, `fish/`, `fonts/`, `ghostty/`, `git/`, `nix/`, `rime/`, `rustowl/`,
@@ -119,21 +116,20 @@ checkout is the Linux branch.
 - `nix/default.nix` pins both the `nixpkgs` registry entry and legacy `NIX_PATH`
   lookup to the locked root input. This flake does not use channels.
 
-### Legacy Stow package directories double as symlink sources
+### Configuration ownership
 
-The top-level directories that are **not** Nix modules and **not** under
-`other/` — `gdb/`, `karabiner/`, `org-dirs/`, `roswell/`, `ssh/`, `terminfo/` —
-are GNU Stow packages (each holds dotfiles laid out relative to `$HOME`). Some
-provide source files for `home.nix`'s `home.file` symlinks: `gdb/.gdbinit`,
-`roswell/ros_swank`, `roswell/.roswell/helper.el`. The style/lint configs
-(`.clang-format`, `.editorconfig`, `.golangci.yml`, `.stylua.toml`) live at the
-**repo root** — they're `home.file` sources and the configs treefmt reads to
-format the repo. So editing any of these changes what Home Manager links — don't
-assume the symlink targets are generated.
+Home Manager owns Linux configuration except for `ssh/.ssh/config`, whose
+migration is intentionally deferred. `karabiner/` remains tracked because the
+macOS branch consumes the same state; Linux does not deploy it. `gdb/gdbinit` is
+a source file linked to `~/.gdbinit`. `emacs/default.nix` links
+`emacs/org-dir-locals.el` and creates the mutable `~/org/Archive` and
+`~/org/roam` directories during activation. Roswell itself remains Nix-built,
+but the copied helper and standalone `ros_swank` launcher are not deployed;
+Nix-installed SLIME starts Swank through `ros -Q run`.
 
-`agents/`, `bat/`, `git/`, and `zed/` are Home-Manager-managed, not Stow
-packages. `rime/` remains a Stow-compatible snapshot, but `rime/default.nix` is
-the default deployment path; do not `stow rime` while that module is enabled.
+The style and lint configs (`.clang-format`, `.editorconfig`, `.golangci.yml`,
+`.stylua.toml`) live at the repository root. They are both `home.file` sources
+and the inputs treefmt uses to format the repository.
 
 - **`bat/`** is a module (`bat/default.nix`, `programs.bat`); enabling the
   program owns the package, so do not duplicate `bat` in `home.packages`.
@@ -149,13 +145,12 @@ the default deployment path; do not `stow rime` while that module is enabled.
   an unmanaged `~/.gitconfig` silently overrides (git reads it last).
 
 - **`zed/`** is a Home Manager module. `zed/.config/zed/settings.json` is the
-  sole declarative source for managed keys and stays directly `stow`-able on a
-  non-Nix host. Edit the JSON directly; do **not** add a second settings
-  representation. Zed binaries remain externally managed. On `schan`, activation
-  atomically merges declared keys into the mutable Flatpak file at
-  `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json` while preserving
-  runtime-only keys. On `stachan`, `programs.zed-editor` retains the normal host
-  target at `~/.config/zed/settings.json`.
+  sole declarative source for managed keys. Edit the JSON directly; do **not**
+  add a second settings representation. Zed binaries remain externally managed.
+  On `schan`, activation atomically merges declared keys into the mutable
+  Flatpak file at `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`
+  while preserving runtime-only keys. On `stachan`, `programs.zed-editor`
+  retains the normal host target at `~/.config/zed/settings.json`.
 - **`agents/`** holds canonical `kernel` and `language` prompts. Edit
   `agents/prompts/{kernel,language}.md`, then run
   `scripts/generate_codex_agents.sh`; it regenerates their checked-in Codex
@@ -210,45 +205,27 @@ prompts still need updates when `home.nix` changes because their documentation,
 examples, and package references can drift; the live check merely makes stale
 guidance detectable.
 
-### Vim / Emacs plugin sources and runtime artifacts
+### Vim and Emacs ownership
 
-Vim and Emacs plugin source trees remain git submodules. Home Manager builds the
-Tree-sitter parser/query runtime and the RustOwl server by default:
-
-- Vim plugins live under `vim/.vim/pack/plugged/opt/*` (each a git submodule);
-  `vim/.vim/pack/bundle/opt/` holds `vim-plug`. `vim/default.nix` links the
-  Nix-built Tree-sitter parsers and queries, while `rustowl/default.nix` builds
-  the RustOwl server with its required pinned Rust toolchain. The Vim config
-  itself is in `vim/.vim/vimrc` with Lua/init.vim helpers alongside. Home
-  Manager owns the external editor binaries, including vim-go's helper suite,
-  PerlTidy, Ruff, and the language servers selected by CoC. The CoC adapter
-  settings resolve those commands from `PATH`; Fish and Zsh keep mutable
-  `~/go/bin` and `~/.cargo/bin` fallbacks behind the Home Manager profile so
-  they cannot shadow the Nix packages. `coc-settings.json` pins clangd, gopls,
-  rust-analyzer, and Zuban to those profile commands; its generic JSON and Ruff
-  clients use the Nix-managed JSON server and Ruff executable. coc-json is no
-  longer declared. Home Manager links the Nix TypeScript SDK at
-  `~/.local/share/nix-typescript/lib` for coc-tsserver, with mutable automatic
-  type acquisition disabled. Both Vim and Neovim come from the locked Nixpkgs
-  profile and require native package support; `vim-plug` remains the declaration
-  layer. CoC loads in both editors and owns LSP, diagnostics, completion,
-  navigation, and format-on-save. vim-go retains only its Go-specific build,
-  test, coverage, and alternate-file commands. Vim uses its bundled EditorConfig
-  plugin and Neovim uses native EditorConfig. Home Manager supplies
-  clang-format, Ruff, StyLua, PerlTidy, gofmt/goimports, rustfmt, Zig/ZLS, and
-  every configured language server. Do not reintroduce ALE, Pathogen, per-plugin
-  binary downloaders, or a separate editorconfig-vim submodule.
-- Emacs plugins live under `emacs/.config/emacs/plugins/*` as git submodules.
-  `emacs/default.nix` _also_ installs many of the same packages via
-  `programs.emacs.extraPackages` — both mechanisms are used in parallel
-  (submodules for source-of-truth and pinning, `extraPackages` for Nix-built
-  dependencies).
-- Home Manager links `emacs/init.el` to `~/.emacs`. The retained Stow-compatible
-  `emacs/.config/emacs/` tree has its own legacy modular entry point and
-  per-feature files.
-- `.gitmodules` is kept alphabetically sorted — see "Common commands" below.
-  Avoid documenting a fixed submodule count; it changes as plugin sources
-  evolve.
+- `vim/default.nix` composes one shared runtime for Vim and Neovim, then adds
+  Neovim's `lua/` runtime. Shared, Vim-only, and Neovim-only plugin lists use
+  `pkgs.vimPlugins`; Home Manager installs them as native packages. The shared
+  `vim/.vim/vimrc` loads ordered file-based settings, while `lua/init.lua` is
+  the Neovim entry point. There is no vim-plug checkout or mutable plugin
+  updater.
+- Home Manager builds Tree-sitter parsers and queries, the RustOwl server and
+  matching optional Neovim client, CoC plus its extensions, and all formatter,
+  helper, and language-server executables. `flake.lock` and the locked Nixpkgs
+  revision determine editor updates. Do not run mutable plugin, parser, CoC
+  extension, or vim-go binary update commands.
+- CoC loads in both editors and owns LSP, diagnostics, completion, navigation,
+  and format-on-save. vim-go retains non-LSP Go commands. Vim uses its bundled
+  EditorConfig support and Neovim uses native EditorConfig. Do not reintroduce
+  ALE, Pathogen, vim-plug, editorconfig-vim, or plugin submodules.
+- `emacs/default.nix` installs the active package set exclusively through
+  `programs.emacs.extraPackages`, links `emacs/init.el` to `~/.emacs`, links the
+  Org directory-local settings, and creates mutable Org directories. No vendored
+  Emacs plugin or legacy package.el tree remains.
 
 ### `other/` directory
 
@@ -287,13 +264,13 @@ because builds are substantially more expensive than evaluation.
 
 ### Zed / Claude Code config
 
-Both are Home-Manager-managed (see "Legacy Stow package directories" above);
-neither uses a separate `stow` step. Edit `zed/.config/zed/settings.json` (Zed)
-or `agents/prompts/*.md` (agents) directly. Zed changes require a validated
-`home-manager switch`. Claude prompt changes are live immediately once the
-out-of-store agents symlink has been installed by an initial switch.
+Both are Home Manager-managed; neither uses a separate Stow step. Edit
+`zed/.config/zed/settings.json` (Zed) or `agents/prompts/*.md` (agents)
+directly. Zed changes require a validated `home-manager switch`. Claude prompt
+changes are live immediately once the out-of-store agents symlink has been
+installed by an initial switch.
 
-### Full sync (Rime -> git -> submodules -> nvim -> nix -> home-manager)
+### Update workflow
 
 `scripts/update.sh` is the one-shot orchestrator with three explicit modes:
 
@@ -301,7 +278,6 @@ out-of-store agents symlink has been installed by an initial switch.
 ./scripts/update.sh check                # validate and build the selected locked configuration
 ./scripts/update.sh apply                # validate, build, then activate the existing lock
 ./scripts/update.sh update               # full update; default when the mode is omitted
-./scripts/update.sh --skip-nvim
 ./scripts/update.sh --autostash-submodules --verbose   # retain dirty-submodule stashes for review
 ./scripts/update.sh --rime-source plum --skip-home-manager --skip-nix-flake
 ```
@@ -323,16 +299,12 @@ To return to Stow, set the selected output's `rimeDeployment = "stow"` in
 `flake.nix`, run Home Manager once to remove its Rime links, then `stow -R rime`
 before using the Plum mode.
 
-Update-mode step order (and the flag that skips it): optional Plum fallback,
-`git pull --rebase --autostash` (`--skip-pull`), submodule sync/init/update
-(`--skip-submodules`), submodule status (`--skip-status`), vim-plug and coc.nvim
-updates (`--skip-nvim`); mutable Tree-sitter, RustOwl, and vim-go helper updates
-run only with `--editor-deployment stow` (`--skip-go` also skips the latter);
-`nix fmt .` (`--skip-nix-fmt`), `nix flake update` (`--skip-nix-flake`), locked
-flake validation and a Home Manager build, and optional `home-manager switch`
-(`--skip-home-manager`). There is no `nix-channel` step. Environment variables:
-`EDITOR_DEPLOYMENT` (default `nix`) and `HOME_MANAGER_FLAKE` (default
-`.#$(whoami)`).
+Update-mode step order is: optional Plum fallback; repository pull; generic
+submodule handling when `.gitmodules` contains entries; `nix fmt .`;
+`nix flake update`; locked flake validation and Home Manager build; and optional
+activation. The corresponding skip flags are `--skip-pull`, `--skip-submodules`,
+`--skip-status`, `--skip-nix-fmt`, `--skip-nix-flake`, and
+`--skip-home-manager`. `HOME_MANAGER_FLAKE` defaults to `.#$(whoami)`.
 
 The script refuses to update dirty submodules unless `--autostash-submodules` is
 passed, and it does **not** auto-pop stashes afterward. The auto-stash scan
@@ -341,13 +313,11 @@ ignoring descendant-only dirtiness. It recursively rejects untracked embedded
 Git repositories and validates the complete stash graph plus staged, worktree,
 and untracked payloads. An anomalous or unexpectedly empty stash is retained
 verbatim and aborts the update; valid non-empty stashes remain for explicit
-review. Clean tracked Vim `doc/tags` files are restored to their updated commit
-after vim-plug regenerates them, preventing generated tag churn without
-discarding pre-existing edits. Git fsmonitor is intentionally disabled while
-`core.untrackedCache` remains enabled. Recursive traversal otherwise starts a
-detached `git fsmonitor--daemon` for each initialized submodule and exhausts the
-per-user inotify instance limit. Do not re-enable it globally for this checkout;
-diagnose capacity with `kde-inotify-survey` before changing host sysctls.
+review. Git fsmonitor is intentionally disabled while `core.untrackedCache`
+remains enabled. Recursive traversal otherwise starts a detached
+`git fsmonitor--daemon` for each initialized submodule and exhausts the per-user
+inotify instance limit. Do not re-enable it globally for this checkout; diagnose
+capacity with `kde-inotify-survey` before changing host sysctls.
 
 ### Submodule helpers
 
@@ -365,11 +335,10 @@ Sponge dependency. `gitgc.sh` prunes stale remote-tracking branches and runs
 Git's normal garbage collection policy while preserving configured reflog and
 unreachable-object grace periods, including in `--aggressive` mode.
 
-When adding a new Vim or Emacs plugin, add a `[submodule …]` block to
-`.gitmodules`, run `sort_gitmodules.sh`, then `git submodule update --init`. Set
-a submodule's tracking branch with
-`git submodule set-branch --branch <branch> <path>` (most use `master` or `main`
-with `ignore = dirty`).
+Editor plugins are Nix packages, not submodules. Prefer `pkgs.vimPlugins` and
+`programs.emacs.extraPackages`; use an explicit source-only flake input and a
+small derivation only when the locked package set does not provide the required
+source.
 
 ## Working conventions
 
@@ -433,12 +402,11 @@ with `ignore = dirty`).
   documented exclusions; `update.sh update` performs this formatting and
   validation automatically, but manual edits do not. Never run a live
   `home-manager switch` without explicit confirmation.
-- The README's GNU Stow instructions and `scripts/install.sh` are kept for
-  historical reference; do not extend that whole-repository bootstrap. Native
-  `/nix` is visible to Kinoite host processes, so immutable host-facing assets
-  may use ordinary Home Manager store links. Use `mkOutOfStoreSymlink` or
-  home-directory materialization only when live editability or
-  writable/generated state requires it.
+- The README's GNU Stow instructions are deferred documentation debt, not the
+  active Linux bootstrap. Native `/nix` is visible to Kinoite host processes, so
+  immutable host-facing assets may use ordinary Home Manager store links. Use
+  `mkOutOfStoreSymlink` or home-directory materialization only when live
+  editability or writable/generated state requires it.
 - Do not prepend `/nix/var/nix/profiles/default/bin` in shared Fish
   configuration. The Determinate installer exposes Nix on `schan`; Home Manager
   exposes its managed client on `stachan`.
@@ -458,10 +426,9 @@ with `ignore = dirty`).
   It also sets `QT_IM_MODULE=fcitx`, which Home Manager otherwise omits for that
   frontend. Plasma uses the shared Rime files but retains host-managed Fcitx
   integration through KWin's Virtual Keyboard setting.
-- **Vim runtime artifacts** are declarative by default: Home Manager links
-  Tree-sitter parsers and queries under `~/.local/share/nvim/site` and places
-  the Nix-built `rustowl`, vim-go helpers, clang-format, PerlTidy, Ruff, StyLua,
-  rustfmt, Zig/ZLS, and CoC language servers on `PATH`. Do not run `:TSUpdate`,
-  `:GoUpdateBinaries`, or `:GoInstallBinaries` in this mode. Retain
-  `--editor-deployment stow` only for a deliberately Stow-managed Vim
-  deployment, where parser, RustOwl, and Go helper updates remain mutable.
+- **Vim runtime artifacts** are declarative: Home Manager links Tree-sitter
+  parsers and queries under `~/.local/share/nvim/site` and places the Nix-built
+  `rustowl`, vim-go helpers, clang-format, PerlTidy, Ruff, StyLua, rustfmt,
+  Zig/ZLS, and CoC language servers on `PATH`. Do not run `:TSUpdate`,
+  `:GoUpdateBinaries`, `:GoInstallBinaries`, vim-plug, or mutable CoC extension
+  updates.

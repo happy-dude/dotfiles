@@ -597,11 +597,10 @@ cd "$HOME/dotfiles"
 ### Git filesystem monitoring and inotify
 
 Home Manager explicitly disables Git's built-in fsmonitor while retaining the
-untracked cache. With fsmonitor enabled globally, a recursive traversal of this
-submodule-heavy checkout starts a detached `git fsmonitor--daemon` for each
-initialized repository. Multiplying that daemon across hundreds of submodules
-can consume the per-user inotify capacity shared with desktop applications.
-Disabling fsmonitor addresses the repository shape without increasing a host
+untracked cache. If submodules are configured again, recursive traversal can
+start a detached `git fsmonitor--daemon` for each initialized repository and
+consume the per-user inotify capacity shared with desktop applications.
+Disabling fsmonitor keeps that failure mode contained without increasing a host
 sysctl.
 
 After migrating from a profile that enabled fsmonitor, stop its daemons once:
@@ -788,10 +787,9 @@ Native postflight confirms:
   read-only.
 - The daemon, sockets, mountpoint helper, and SELinux policy survive multiple
   cold boots and a later Fedora deployment.
-- `./scripts/update.sh --autostash-submodules --verbose` completes natively,
-  including direct-submodule updates, descendant pinning, flake checks, a locked
-  Home Manager build, and activation.
-- Generated Vim help tags are restored without creating new stash churn.
+- `./scripts/update.sh --verbose` completes natively, including flake checks, a
+  locked Home Manager build, and activation. Its generic submodule stage is a
+  no-op when `.gitmodules` has no entries.
 - Ghostty, tmux Shift+Enter, Rime learned state, bgutil, Git signing, and user
   Flatpak smoke tests pass.
 - Copied Ghostty integration and obsolete Home Manager unit links remain
