@@ -24,10 +24,18 @@ def prompt(name: str) -> tuple[dict[str, str], str]:
     if not separator:
         raise ValueError(f"unterminated frontmatter: {name}.md")
     metadata = {}
+    current_key = None
     for line in frontmatter.splitlines():
         key, separator, value = line.partition(":")
         if separator and key in {"name", "description"}:
             metadata[key] = value.strip()
+            current_key = key
+        elif line[:1].isspace() and current_key:
+            metadata[current_key] = " ".join(
+                part for part in (metadata[current_key], line.strip()) if part
+            )
+        else:
+            current_key = None
     for key in ("name", "description"):
         if not metadata.get(key):
             raise ValueError(f"missing {key} in frontmatter: {name}.md")
