@@ -21,6 +21,17 @@
         fish_add_path -p "$(go env GOPATH)/bin"
         fish_add_path -p "$HOME/.cargo/bin"
       ''}
+      ${lib.optionalString (username == "schan") ''
+        set -l normalized_path
+
+        for path_entry in $PATH
+          contains -- "$path_entry" $normalized_path
+          or set -a normalized_path "$path_entry"
+        end
+
+        set -gx PATH $normalized_path
+        set -e normalized_path path_entry
+      ''}
     '';
 
     plugins = [

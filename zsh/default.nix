@@ -33,6 +33,9 @@
     envExtra = ''
       # Put the content of your .zshenv file here
       ${builtins.readFile ./.zshenv}
+      ${lib.optionalString (username == "schan") ''
+        typeset -gU path PATH
+      ''}
     '';
   };
 }
