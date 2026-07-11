@@ -1,9 +1,5 @@
 " coc.nvim settings
 
-" When coc.nvim is enabled
-let g:ale_disable_lsp = 1                   " Diable ALE LSP
-let g:ale_set_signs = 0                     "  signcolumn gutter
-
 let g:go_code_completion_enabled = 0        " Disable vim-go LSP autocomplete
 let g:go_def_mapping_enabled = 0            "  goto-definition
 let g:go_doc_keywordprg_enabled = 0         "  godoc window

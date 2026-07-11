@@ -74,7 +74,6 @@ if &loadplugins
   Plug 'Happy-Dude/hlnext.vim'                        ,   { 'branch' : 'master' }
   Plug 'cespare/vim-toml'                             ,   { 'branch' : 'main', 'for' : [ 'toml' ] }
   Plug 'chrisbra/csv.vim'                             ,   { 'branch' : 'master', 'for' : [ 'csv' ] }
-  Plug 'dense-analysis/ale'                           ,   { 'branch' : 'master' }
   Plug 'easymotion/vim-easymotion'                    ,   !has('nvim') ? { 'branch' : 'master' } : { 'branch' : 'master', 'on': [] }
   Plug 'editorconfig/editorconfig-vim'                ,   { 'branch' : 'master' }
   Plug 'fatih/vim-go'                                 ,   { 'for' : [ 'go', 'gomod', 'gohtmltmpl' ] }
@@ -137,6 +136,14 @@ if &loadplugins
   Plug 'sainnhe/gruvbox-material'                     , { 'branch' : 'master' }
   " }
 
+  " Enable CoC in both Vim and Neovim when Node.js is available.
+  if executable('node')
+    Plug 'neoclide/coc.nvim'                        , { 'branch' : 'master', 'do': 'npm ci' }
+
+    let s:coc_settings = s:vimpack_settings_dir . 'coc.vim'
+    execute 'source' s:coc_settings
+  endif
+
   " { Neovim-only packages
   if has('nvim')
 
@@ -169,13 +176,8 @@ if &loadplugins
     Plug 'nvim-lua/plenary.nvim'                      , { 'branch' : 'master' }
     Plug 'NeogitOrg/neogit'                           , { 'branch' : 'master' }
 
-    " Enable coc.nvim if node.js is installed
+    " Neovim AI plugins require Node.js.
     if executable('node')
-      Plug 'neoclide/coc.nvim'                        , { 'branch' : 'master', 'do': 'npm ci'}
-
-      let s:coc_settings = s:vimpack_settings_dir . 'coc.vim'
-      execute 'source' s:coc_settings
-
       Plug 'MeanderingProgrammer/render-markdown.nvim', { 'branch' : 'main' }
       Plug 'hakonharnes/img-clip.nvim'                , { 'branch' : 'main' }
       Plug 'olimorris/codecompanion.nvim'             , { 'branch' : 'main' }
@@ -197,9 +199,6 @@ if &loadplugins
 
   let s:airline_settings        = s:vimpack_settings_dir . 'airline.vim'
   execute                       'source' s:airline_settings
-
-  let s:ale_settings            = s:vimpack_settings_dir . 'ale.vim'
-  execute                       'source' s:ale_settings
 
   let s:dirvish_settings        = s:vimpack_settings_dir . 'dirvish.vim'
   execute                       'source' s:dirvish_settings

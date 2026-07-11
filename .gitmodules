@@ -3,11 +3,6 @@
 	url = https://github.com/mileszs/ack.vim.git
 	branch = master
 	ignore = dirty
-[submodule "ale"]
-	path = vim/.vim/pack/plugged/opt/ale
-	url = https://github.com/dense-analysis/ale
-	branch = master
-	ignore = dirty
 [submodule "annalist.el"]
 	path = emacs/.config/emacs/plugins/annalist.el
 	url = https://github.com/noctuid/annalist.el.git
