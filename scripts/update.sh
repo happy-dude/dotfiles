@@ -14,9 +14,9 @@
 ###     update  Run the update workflow below, validate it, and optionally activate it (default)
 ###
 ### Update workflow:
-###     1. Optionally update Rime schemas via Plum (Nix sources update in step 5)
+###     1. Optionally update a Stow-deployed Rime tree via Plum
 ###     2. Update the main dotfiles repository
-###     3. Sync / init / update configured git submodules
+###     3. Sync / init / update configured git submodules, if any
 ###     4. Run `nix fmt .`
 ###     5. Run `nix flake update`
 ###     6. Validate the flake and build the Home Manager configuration
@@ -29,11 +29,11 @@
 ###     - Dirty top-level repo pull is allowed via:
 ###           git pull --rebase --autostash
 ###
-###     - Dirty submodules are NOT updated unless either:
+###     - Configured dirty submodules are NOT updated unless either:
 ###           1. you clean them up yourself, or
 ###           2. you pass --autostash-submodules
 ###
-###     - Set tracked submodule branches in .gitmodules with:
+###     - When .gitmodules exists, set tracked branches with:
 ###           git submodule set-branch --branch <branch> <path>
 ###
 ###################################################################################################
@@ -105,7 +105,7 @@ Usage:
 Modes:
   update
       Run the full update workflow, validate it, then activate it unless
-      --skip-home-manager is set. This is the default for compatibility.
+      --skip-home-manager is set. This is the default mode.
 
   check
       Run non-mutating flake validation and build the selected Home Manager
@@ -139,14 +139,15 @@ Options:
         Skip `git pull --rebase --autostash`.
 
     --skip-submodules
-        Skip submodule sync/init/check/update steps.
+        Skip submodule sync/init/check/update steps. These steps are already
+        skipped when the repository has no configured submodules.
 
     --skip-status
-        Skip `git submodule status --recursive`.
+        Skip `git submodule status --recursive` when submodules are configured.
 
     --autostash-submodules
         Automatically stash dirty submodules before updating them.
-        Stashes are NOT automatically popped afterward.
+        Retain the stashes for explicit review instead of applying them.
 
   Nix / Home Manager:
     --skip-nix-fmt
@@ -1024,7 +1025,7 @@ else
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 7. Run `nix flake update`
+# 5. Run `nix flake update`
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_NIX_FLAKE" -eq 1 ]; then
@@ -1052,13 +1053,13 @@ else
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 8. Validate the result without changing the active profile
+# 6. Validate the result without changing the active profile
 #--------------------------------------------------------------------------------------------------
 
 run_validation || exit $?
 
 #--------------------------------------------------------------------------------------------------
-# 9. Optionally activate the validated configuration
+# 7. Optionally activate the validated configuration
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_HOME_MANAGER" -eq 1 ]; then
@@ -1069,7 +1070,7 @@ else
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 10. Final summary
+# 8. Final summary
 #--------------------------------------------------------------------------------------------------
 
 finish_successfully
