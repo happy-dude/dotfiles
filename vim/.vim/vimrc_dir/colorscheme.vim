@@ -41,7 +41,7 @@ if (&t_Co >= 16) && (($TERM =~# "color") || ($TERM =~# "alacritty") || ($TERM =~
 endif
 
 if has('gui_running')
-  set guifont=FiraCode\ Nerd\ Font\ Mono:h16
+  set guifont=FantasqueSansM\ Nerd\ Font\ Mono:h16
 
   if filereadable(expand(s:vim_plugged_dir . "/vim-solarized8/colors/solarized8_flat.vim"))
     set background=dark
