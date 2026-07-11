@@ -3,7 +3,15 @@
   pkgs,
   ...
 }: {
-  home.file.".emacs".source = ./init.el;
+  home.file = {
+    ".emacs".source = ./init.el;
+    "org/.dir-locals.el".source = ./org-dir-locals.el;
+  };
+
+  home.activation.createOrgDirectories = config.lib.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.coreutils}/bin/mkdir -p "$HOME/org/Archive" "$HOME/org/roam"
+  '';
+
   programs.emacs = {
     enable = true;
     package = pkgs.emacs-pgtk;
