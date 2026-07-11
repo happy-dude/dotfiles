@@ -139,17 +139,6 @@
 in
   assert duplicateRimeDataTargetNames == []; {
     config = lib.mkMerge [
-      {
-        assertions = [
-          {
-            assertion = builtins.elem rimeDeployment [
-              "nix"
-              "stow"
-            ];
-            message = "rimeDeployment must be either `nix` or `stow`";
-          }
-        ];
-      }
       (lib.mkIf (rimeDeployment == "nix") {
         home.activation.rimeClaimOwnership = lib.hm.dag.entryAfter ["linkGeneration"] ''
           rime_state_dir="''${XDG_STATE_HOME:-$HOME/.local/state}/rime"
