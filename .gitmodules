@@ -403,11 +403,6 @@
 	url = https://github.com/vim-pandoc/vim-pandoc-syntax.git
 	branch = master
 	ignore = dirty
-[submodule "vim-pathogen"]
-	path = vim/.vim/pack/bundle/opt/vim-pathogen
-	url = https://github.com/tpope/vim-pathogen.git
-	branch = master
-	ignore = dirty
 [submodule "vim-perl"]
 	path = vim/.vim/pack/plugged/opt/vim-perl
 	url = https://github.com/vim-perl/vim-perl.git

@@ -42,33 +42,13 @@ if &loadplugins
 
   filetype off                " Turn filetype plugin off until after plugins are loaded
 
-  if has('packages')
-    if !has('nvim')
-      let s:editorconfig_settings = s:vimpack_settings_dir . 'editorconfig.vim'
-      execute 'source' s:editorconfig_settings
-      packadd! editorconfig
-    endif
-
-    " { vim-plug
-    packadd! vim-plug
-    " }
-
-  else
-    " { pathogen fallback
-    " Unconventional path to plugin (inside submodule)
-    runtime pack/bundle/opt/vim-pathogen/autoload/pathogen.vim
-
-
-    " pathogen: Activate vim-plug
-    execute pathogen#infect('pack/bundle/opt/vim-plug/')
-
-    " pathogen: Activate plugin
-    "execute pathogen#infect('pack/{}/opt/{}')
-    "execute pathogen#helptags()
-
-    " }
-
+  if !has('nvim')
+    let s:editorconfig_settings = s:vimpack_settings_dir . 'editorconfig.vim'
+    execute 'source' s:editorconfig_settings
+    packadd! editorconfig
   endif
+
+  packadd! vim-plug
 
   " { Load plugin packages
   call plug#begin(s:vim_dir . 'pack/plugged/opt/')
