@@ -506,8 +506,6 @@
 
 ;; Use Roswell's lisp
 (setq inferior-lisp-program "ros -Q run")
-;; slime
-;(load (expand-file-name "~/.roswell/helper.el"))
 
 ;; Use Nix-installed SLIME
 (require 'slime-autoloads)

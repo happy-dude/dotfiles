@@ -188,10 +188,8 @@ in {
       ".editorconfig".source = ./.editorconfig;
       ".gdbinit".source = ./gdb/gdbinit;
       ".golangci.yml".source = ./.golangci.yml;
-      ".roswell/helper.el".source = ./roswell/.roswell/helper.el;
       ".stylua.toml".source = ./.stylua.toml;
       ".local/share/nix-typescript".source = "${pkgs.typescript}/lib/node_modules/typescript";
-      "ros_swank".source = ./roswell/ros_swank;
     };
 
     sessionVariables = {
