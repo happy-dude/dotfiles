@@ -206,6 +206,9 @@ if &loadplugins
   let s:editorconfig_settings   = s:vimpack_settings_dir . 'editorconfig.vim'
   execute                       'source' s:editorconfig_settings
 
+  let s:go_settings             = s:vimpack_settings_dir . 'go.vim'
+  execute                       'source' s:go_settings
+
   let s:indent_guides_settings  = s:vimpack_settings_dir . 'indent_guides.vim'
   execute                       'source' s:indent_guides_settings
 
