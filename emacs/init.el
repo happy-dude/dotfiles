@@ -1,3 +1,5 @@
+;;; init.el --- Personal Emacs configuration -*- lexical-binding: t; -*-
+
 ;; auto-save settings
 ;; create cache directories if they do not exist
 (let ((cache-dir "~/.local/share/emacs")
@@ -85,7 +87,7 @@
 ;; Set default font
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
-(add-hook 'after-make-frame-functions (lambda (frame) (set-fontset-font t '(#Xe100 . #Xe16f) "FiraCode Nerd Font Mono")))
+(add-hook 'after-make-frame-functions (lambda (_frame) (set-fontset-font t '(#Xe100 . #Xe16f) "FiraCode Nerd Font Mono")))
 (set-fontset-font t '(#Xe100 . #Xe16f) "FiraCode Nerd Font Mono")
 (add-to-list 'default-frame-alist
              '(font . "FiraCode Nerd Font Mono-16"))
@@ -127,17 +129,13 @@
 ;;      Use Automator to create a Quick Action that runs a shell script that starts emacsclient binded to daemon with org-capture
 ;;      Bind that Quick Action to a keyboard shortcut in Keyboard settings under System Preferences
 
-(defadvice org-capture-finalize
-           (after delete-capture-frame activate)
-           "Advise capture-finalize to close the frame"
-           (if (equal "capture" (frame-parameter nil 'name))
-               (delete-frame)))
+(defun dotfiles-delete-capture-frame (&rest _)
+  "Delete the temporary Org capture frame."
+  (when (equal "capture" (frame-parameter nil 'name))
+    (delete-frame)))
 
-(defadvice org-capture-destroy
-           (after delete-capture-frame activate)
-           "Advise capture-destroy to close the frame"
-           (if (equal "capture" (frame-parameter nil 'name))
-               (delete-frame)))
+(advice-add 'org-capture-finalize :after #'dotfiles-delete-capture-frame)
+(advice-add 'org-capture-destroy :after #'dotfiles-delete-capture-frame)
 
 (require 'cl-lib)
 (defun make-capture-frame ()
@@ -207,12 +205,12 @@
          "* WISHLIST %?" :prepend t)
         ("sw" "Wishlist" entry (file+headline "~/org/notes.org" "Wishlist")
          "* WISHLIST %?" :prepend t)
-        ("sg" "Gifts" entry (file+headline "~/org/notes.org" "Gifts")
+        ("sf" "Gifts" entry (file+headline "~/org/notes.org" "Gifts")
          "* WISHLIST %?" :prepend t)
 
         ("e" "Cloudflare")
         ("et" "Tickets" entry (file+headline "~/org/work.org" "Tickets")
-         "* [[https://jira.cfops.it/browse/%?" :prepend t)
+         "* [[https://jira.cfops.it/browse/%?]]" :prepend t)
         ("ei" "Incidents" entry (file+headline "~/org/work.org" "Incidents")
          "* DETECT [[https://jira.cfops.it/browse/INCIDENT-%?" :prepend t)
         ("ew" "Watching" entry (file+headline "~/org/work.org" "Watching")
@@ -269,10 +267,6 @@
 
 ;; org-roam settings
 (require 'org-roam)
-;; config
-;; acknowledge v2 migration
-(setq org-roam-v2-ack t)
-
 ;; update last_modified when saving
 ;; ref: https://github.com/emacs-mirror/emacs/blob/master/lisp/time-stamp.el#L44-L73
 (add-hook 'org-mode-hook
@@ -286,15 +280,9 @@
 ;; ref: https://www.orgroam.com/manual/Getting-Started.html#Getting-Started
 (setq org-roam-directory "~/org/roam")
 (setq org-roam-db-location "~/org/roam/org-roam.db")
-(setq org-roam-graph-executable "/usr/local/bin/dot")
-(setq org-roam-graph-viewer '(lambda (file)
-                               (let ((file-file (concat "file://" file)))
-                                 (call-process
-                                   "/Applications/Firefox Nightly.app/Contents/MacOS/firefox"
-                                   nil
-                                   0
-                                   nil
-                                   file-file))))
+(require 'browse-url)
+(setq org-roam-graph-executable "dot")
+(setq org-roam-graph-viewer #'browse-url-of-file)
 
 (setq org-roam-capture-templates
       '(("d" "default" plain "%?"
@@ -461,7 +449,7 @@
 ;; config
 ;; ref: https://github.com/bastibe/org-journal
 (setq org-journal-file-type 'weekly)
-(defun org-journal-file-header-func (time)
+(defun org-journal-file-header-func (_time)
   "Custom function to create journal header."
   (concat
     (org-id-get-create)
