@@ -36,7 +36,7 @@
 [submodule "conjure"]
 	path = vim/.vim/pack/plugged/opt/conjure
 	url = https://github.com/Olical/conjure.git
-	branch = master
+	branch = main
 	ignore = dirty
 [submodule "csv.vim"]
 	path = vim/.vim/pack/plugged/opt/csv.vim
