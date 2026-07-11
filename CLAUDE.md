@@ -373,6 +373,16 @@ with `ignore = dirty`).
 
 ## Working conventions
 
+- At the start of any session that may edit files, before the first write,
+  inspect AppArmor or SELinux enforcement and run the safe unprivileged
+  namespace/Bubblewrap probe described above. Decide whether `apply_patch` is
+  usable before beginning edits; if policy blocks it, use the documented
+  narrowly scoped fallback from the outset instead of discovering the failure
+  after work has started.
+- Before starting work expected to produce commits, establish the exact
+  `Assisted-by:` product, model/version, agent, and reasoning-level text for the
+  current session. If any field is unavailable, ask the user before making
+  commit-intended changes rather than waiting until commit time.
 - When asking the user to run and return commands from a host, session,
   container, VM, Toolbox, or other environment the agent cannot access, collect
   all presently knowable safe read-only checks for that context into one
