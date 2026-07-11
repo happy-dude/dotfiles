@@ -14,16 +14,19 @@
 set nocompatible        " Use Vim defaults
 set modelines=0         " Set modelines to 0 to prevent several security exploits
 
-" Enable Vim-specific, non-Neovim features
-if !has('nvim')
-  set esckeys           " Function keys that start with <Esc> are recognized in insert mode
-endif
-
 " Home Manager supplies the composed runtime root; retain direct sourcing.
 let s:vim_dir = get(g:, 'dotfiles_vim_runtime',
       \ fnamemodify(resolve(expand('<sfile>:p')), ':h')) . '/'
 let s:vimrc_dir = s:vim_dir . 'vimrc_dir/'
 let s:vimpack_settings_dir = s:vimrc_dir . 'packages/'
+
+function! s:SourceConfig(name) abort
+  execute 'source' fnameescape(s:vimrc_dir . a:name . '.vim')
+endfunction
+
+function! s:SourcePackageConfig(name) abort
+  execute 'source' fnameescape(s:vimpack_settings_dir . a:name . '.vim')
+endfunction
 
 if has('nvim')
   " Disable unused providers and silence checkhealth warnings
@@ -31,6 +34,9 @@ if has('nvim')
   let g:loaded_perl_provider = 0
   let g:loaded_python3_provider = 0
   let g:loaded_ruby_provider = 0
+else
+  " Function keys that start with <Esc> are recognized in insert mode.
+  set esckeys
 endif
 " }
 
@@ -42,8 +48,7 @@ endif
 if &loadplugins
 
   if !has('nvim')
-    let s:editorconfig_settings = s:vimpack_settings_dir . 'editorconfig.vim'
-    execute 'source' s:editorconfig_settings
+    call s:SourcePackageConfig('editorconfig')
     packadd! editorconfig
   endif
 
@@ -52,47 +57,34 @@ if &loadplugins
 
   " Use fzf when available; ctrlp remains the pure Vimscript fallback.
   if executable("fzf")
-    let s:fzf_settings = s:vimpack_settings_dir . "fzf.vim"
-    execute "source" s:fzf_settings
+    call s:SourcePackageConfig('fzf')
   else
-    let s:ctrlp_settings = s:vimpack_settings_dir . "ctrlp.vim"
-    execute "source" s:ctrlp_settings
+    call s:SourcePackageConfig('ctrlp')
   endif
 
   if executable("node")
-    let s:coc_settings = s:vimpack_settings_dir . "coc.vim"
-    execute "source" s:coc_settings
+    call s:SourcePackageConfig('coc')
   endif
 
-  " { Source plugin settings
-  let s:ack_settings            = s:vimpack_settings_dir . 'ack.vim'
-  execute                       'source' s:ack_settings
+  let s:package_configs = [
+        \ 'ack',
+        \ 'airline',
+        \ 'dirvish',
+        \ 'go',
+        \ 'indent_guides',
+        \ 'solarized',
+        \ 'vimtex',
+        \ ]
 
-  let s:airline_settings        = s:vimpack_settings_dir . 'airline.vim'
-  execute                       'source' s:airline_settings
-
-  let s:dirvish_settings        = s:vimpack_settings_dir . 'dirvish.vim'
-  execute                       'source' s:dirvish_settings
-
-  let s:go_settings             = s:vimpack_settings_dir . 'go.vim'
-  execute                       'source' s:go_settings
-
-  let s:indent_guides_settings  = s:vimpack_settings_dir . 'indent_guides.vim'
-  execute                       'source' s:indent_guides_settings
-
-  if !has('nvim')               " Configure the Vim-only rainbow plugin
-    let s:rainbow_settings      = s:vimpack_settings_dir . 'rainbow.vim'
-    execute                     'source' s:rainbow_settings
+  if !has('nvim')
+    call add(s:package_configs, 'rainbow')
   endif
 
-
-  let s:solarized_settings      = s:vimpack_settings_dir . 'solarized.vim'
-  execute                       'source' s:solarized_settings
-
-  let s:vimtex_settings         = s:vimpack_settings_dir . 'vimtex.vim'
-  execute                       'source' s:vimtex_settings
-
-  " }
+  for s:package_config in s:package_configs
+    call s:SourcePackageConfig(s:package_config)
+  endfor
+  unlet s:package_config
+  unlet s:package_configs
 
   syntax enable               " Enable syntax highlighting
   filetype plugin indent on   " Enable filetype plugin and filetype-based indentation
@@ -101,86 +93,35 @@ endif
 " }
 
 
-"""""""""""""""""""""""""""""""
-"{ """"       vimrc        """"
-"""""""""""""""""""""""""""""""
-let s:bell_settings             = s:vimrc_dir . 'bell.vim'
-execute                         'source' s:bell_settings
-
-let s:buffer_settings           = s:vimrc_dir . 'buffer.vim'
-execute                         'source' s:buffer_settings
-
-let s:cache_settings            = s:vimrc_dir . 'cache.vim'
-execute                         'source' s:cache_settings
-
-let s:clipboard_settings        = s:vimrc_dir . 'clipboard.vim'
-execute                         'source' s:clipboard_settings
-
-let s:colorscheme_settings      = s:vimrc_dir . 'colorscheme.vim'
-execute                         'source' s:colorscheme_settings
-
-let s:cpoptions_settings        = s:vimrc_dir . 'cpoptions.vim'
-execute                         'source' s:cpoptions_settings
-
-let s:cursorlinecolumn_settings = s:vimrc_dir . 'cursorlinecolumn.vim'
-execute                         'source' s:cursorlinecolumn_settings
-
-let s:diff_settings             = s:vimrc_dir . 'diff.vim'
-execute                         'source' s:diff_settings
-
-let s:encoding_settings         = s:vimrc_dir . 'encoding.vim'
-execute                         'source' s:encoding_settings
-
-let s:folding_settings          = s:vimrc_dir . 'folding.vim'
-execute                         'source' s:folding_settings
-
-let s:formatoptions_settings    = s:vimrc_dir . 'formatoptions.vim'
-execute                         'source' s:formatoptions_settings
-
-let s:listchars_settings        = s:vimrc_dir . 'listchars.vim'
-execute                         'source' s:listchars_settings
-
-let s:match_settings            = s:vimrc_dir . 'match.vim'
-execute                         'source' s:match_settings
-
-let s:mouse_settings            = s:vimrc_dir . 'mouse.vim'
-execute                         'source' s:mouse_settings
-
-let s:search_settings           = s:vimrc_dir . 'search.vim'
-execute                         'source' s:search_settings
-
-let s:spellcheck_settings       = s:vimrc_dir . 'spellcheck.vim'
-execute                         'source' s:spellcheck_settings
-
-let s:statusline_settings       = s:vimrc_dir . 'statusline.vim'
-execute                         'source' s:statusline_settings
-
-let s:tabspaces_settings        = s:vimrc_dir . 'tabspaces.vim'
-execute                         'source' s:tabspaces_settings
-
-let s:visual_settings           = s:vimrc_dir . 'visual.vim'
-execute                         'source' s:visual_settings
-
-let s:wildmenu_settings         = s:vimrc_dir . 'wildmenu.vim'
-execute                         'source' s:wildmenu_settings
-
-let s:wordwrap_settings         = s:vimrc_dir . 'wordwrap.vim'
-execute                         'source' s:wordwrap_settings
-" }
-
-
-"""""""""""""""""""""""""""""""
-"{ """"   Custom Configs   """"
-"""""""""""""""""""""""""""""""
-let s:custom_mappings           = s:vimrc_dir . 'mappings.vim'
-execute                         'source' s:custom_mappings
-
-let s:custom_autocmds           = s:vimrc_dir . 'autocmds.vim'
-execute                         'source' s:custom_autocmds
-
-let s:custom_functions          = s:vimrc_dir . 'functions.vim'
-execute                         'source' s:custom_functions
-" }
+for s:config in [
+      \ "bell",
+      \ "buffer",
+      \ "cache",
+      \ "clipboard",
+      \ "colorscheme",
+      \ "cpoptions",
+      \ "cursorlinecolumn",
+      \ "diff",
+      \ "encoding",
+      \ "folding",
+      \ "formatoptions",
+      \ "listchars",
+      \ "match",
+      \ "mouse",
+      \ "search",
+      \ "spellcheck",
+      \ "statusline",
+      \ "tabspaces",
+      \ "visual",
+      \ "wildmenu",
+      \ "wordwrap",
+      \ "mappings",
+      \ "autocmds",
+      \ "functions",
+      \ ]
+  call s:SourceConfig(s:config)
+endfor
+unlet s:config
 
 
 """""""""""""""""""""""""""""""
@@ -189,43 +130,6 @@ execute                         'source' s:custom_functions
 if has('nvim')
   " Home Manager installs the locked RustOwl client as an optional package.
   packadd! rustowl-nvim
-
-lua <<EOF
-  -- configs in lua/ directory
-  require('qol')
-
- require('rustowl').setup {
-   auto_attach = true, -- Auto attach the RustOwl LSP client when opening a Rust file
-   auto_enable = true, -- Enable RustOwl immediately when attaching the LSP client
-   idle_time = 500, -- Time in milliseconds to hover with the cursor before triggering RustOwl
-   client = {
-     cmd = {
-       'rustowl', '--stdio',
-     },
-   },  -- LSP client configuration that gets passed to `vim.lsp.start`
-   highlight_style = 'undercurl', -- You can also use 'underline'
-   colors = { -- Customize highlight colors (hex colors)
-    lifetime = '#00cc00',   -- 🟩 green: variable's actual lifetime
-    imm_borrow = '#0000cc', -- 🟦 blue: immutable borrowing
-    mut_borrow = '#cc00cc', -- 🟪 purple: mutable borrowing
-    move = '#cccc00',       -- 🟧 orange: value moved
-    call = '#cccc00',       -- 🟧 orange: function call
-    outlive = '#cc0000',    -- 🟥 red: lifetime error
-  },
-  }
-
-  require('debugging')
-  require('hop_nvim')
-  require('org')
-  require('treesitter')
-
-  -- CodeCompanion.nvim + AI-adjacent (render-markdown, img-clip). See
-  -- lua/codecompanion_nvim.lua (named _nvim to avoid shadowing the plugin's
-  -- own `codecompanion` module).
-  require('codecompanion_nvim')
-
-  require('neogit').setup{}
-  require('which-key').setup{}
-EOF
+  lua require('init')
 endif
 " }

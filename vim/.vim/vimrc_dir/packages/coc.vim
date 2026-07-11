@@ -132,7 +132,7 @@ xmap <silent> <C-s> <Plug>(coc-range-select)
 " Add `:Format` command to format current buffer
 command! -nargs=0 Format :call CocActionAsync('format')
 
-" Add `:OR` for coc-tsserver to organize JavaScript/TypeScript imports
+" Ask the configured JavaScript/TypeScript language server to organize imports.
 command! -nargs=0 OR call CocActionAsync('runCommand', 'editor.action.organizeImport')
 
 " Add `:Fold` command to fold current buffer
