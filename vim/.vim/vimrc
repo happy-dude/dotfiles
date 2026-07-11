@@ -103,7 +103,6 @@ if &loadplugins
   Plug 'vim-pandoc/vim-pandoc-syntax'                 ,   { 'branch' : 'master', 'for' : [ 'markdown', 'pandoc', 'rmd', 'textile' ] }
   Plug 'vim-perl/vim-perl'                            ,   { 'branch' : 'dev', 'for' : [ 'perl', 'perl6', 'mason' ], 'do': 'make clean carp dancer highlight-all-pragmas moose test-more try-tiny' }
   Plug 'wlangstroth/vim-racket'                       ,   { 'branch' : 'master', 'for' : [ 'racket' ] }
-  "Plug 'zirrostig/vim-schlepp'                        ,   { 'branch' : 'master' }
 
   " if fzf is available, use fzf.vim
   " otherwise, use ctrlp which is pure vimscript
@@ -155,7 +154,6 @@ if &loadplugins
     " Lisp + neovim-lua-based REPL
     Plug 'Olical/nfnl'                                , { 'branch' : 'main' }
     Plug 'Olical/conjure'                             , { 'branch' : 'main', 'for' : [ 'clojure', 'fennel', 'janet', 'hy', 'julia', 'racket', 'scheme', 'lua', 'lisp', 'python', 'sql' ] }
-    "Plug 'gpanders/nvim-parinfer'                     , { 'branch' : 'master' }
 
     " nvim-dap
     Plug 'mfussenegger/nvim-dap'                      , { 'branch' : 'master' }
@@ -213,8 +211,6 @@ if &loadplugins
     execute                     'source' s:rainbow_settings
   endif
 
-  "let s:schlepp_settings        = s:vimpack_settings_dir . 'schlepp.vim'
-  "execute                       'source' s:schlepp_settings
 
   let s:slimv_settings          = s:vimpack_settings_dir . 'slimv.vim'
   execute                       'source' s:slimv_settings

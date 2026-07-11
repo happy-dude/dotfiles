@@ -203,11 +203,6 @@
 	url = https://github.com/nvim-neotest/nvim-nio.git
 	branch = master
 	ignore = dirty
-[submodule "nvim-parinfer"]
-	path = vim/.vim/pack/plugged/opt/nvim-parinfer
-	url = https://github.com/gpanders/nvim-parinfer.git
-	branch = master
-	ignore = dirty
 [submodule "nvim-treesitter"]
 	path = vim/.vim/pack/plugged/opt/nvim-treesitter
 	url = https://github.com/nvim-treesitter/nvim-treesitter.git
@@ -446,11 +441,6 @@
 [submodule "vim-sandwich"]
 	path = vim/.vim/pack/plugged/opt/vim-sandwich
 	url = https://github.com/machakann/vim-sandwich
-	branch = master
-	ignore = dirty
-[submodule "vim-schelepp"]
-	path = vim/.vim/pack/plugged/opt/vim-schlepp
-	url = https://github.com/zirrostig/vim-schlepp.git
 	branch = master
 	ignore = dirty
 [submodule "vim-sexp"]
