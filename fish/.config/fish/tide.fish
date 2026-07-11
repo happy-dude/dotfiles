@@ -94,7 +94,7 @@ set -g tide_nohist_bg_color magenta
 set -g tide_nohist_color black
 set -g tide_os_bg_color white
 set -g tide_os_color black
-set -g tide_os_icon \uf31b
+set -g tide_os_icon \uf17c
 set -g tide_php_bg_color blue
 set -g tide_php_color black
 set -g tide_php_icon \ue608

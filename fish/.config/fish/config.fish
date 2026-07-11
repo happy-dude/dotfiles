@@ -19,18 +19,6 @@ end
 # Homebrew curl
 fish_add_path -p /opt/homebrew/opt/curl/bin
 
-# ghostty
-# ghostty requires OpenGL 3.3, which UTM 4.x unfortunately does not support (yet?)
-# workaround: use `LIBGL_ALWAYS_SOFTWARE=true ghostty` alias
-# refs:
-#   https://github.com/ghostty-org/ghostty/discussions/2602
-#   https://github.com/utmapp/UTM/issues/4285
-#   https://docs.mesa3d.org/envvars.html#envvar-LIBGL_ALWAYS_SOFTWARE
-#function ghostty
-#    set -lx LIBGL_ALWAYS_SOFTWARE true
-#    command ghostty $argv
-#end
-
 # Turn off terminal flow control (ctrl-q and ctrl-s)
 # already default by off in fish
 #stty -F/dev/tty -ixon -ixoff   Linux
@@ -162,7 +150,6 @@ set -gx BUILDKIT_PROGRESS plain # building the VM may output auth URLs the user 
 #set -gx DOCKER_HOST unix://$HOME/.docker/desktop/docker.sock          # linux docker-desktop host -- comment if using baseline docker-ce
 # go
 fish_add_path -p /usr/local/go/bin
-fish_add_path -p "$(go env GOPATH)/bin"
 # lua
 fish_add_path "$HOME/.luarocks/bin"
 # luamake from sumneko
@@ -173,9 +160,6 @@ set -gx NVM_DIR "$HOME/.nvm"
 set --universal nvm_default_version system
 # perl
 #source ~/perl5/perlbrew/etc/bashrc
-# rust
-fish_add_path -p "$HOME/.cargo/bin"
-fish_add_path -p "$HOME/.rustowl"
 
 # eza
 if command -v eza &>/dev/null

@@ -36,7 +36,9 @@
       };
 
       core = {
-        fsmonitor = true;
+        # Recursive operations otherwise start a detached daemon for each
+        # initialized submodule and exhaust the per-user inotify instances.
+        fsmonitor = false;
         untrackedCache = true;
         pager = "bat";
       };

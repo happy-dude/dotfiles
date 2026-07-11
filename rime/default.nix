@@ -83,9 +83,9 @@
     target: builtins.length (lib.filter (name: name == target) rimeDataTargetNames) > 1
   ) (lib.unique rimeDataTargetNames);
 
-  # The link farm declares every discovered source file as a Nix input. The
-  # activation below dereferences it while copying to the shared home directory,
-  # so host Fcitx never has to resolve a Toolbox-only /nix/store path.
+  # The link farm declares every discovered source file as a Nix input.
+  # Activation materializes it in the writable Rime directory so managed static
+  # inputs can coexist with generated schemas, learned databases, and sync state.
   rimeStaticData = pkgs.linkFarm "rime-static-data" (
     map (entry: {
       name = entry.relative;

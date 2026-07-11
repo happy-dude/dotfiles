@@ -10,6 +10,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # User-scoped declarative Flatpak management on worldmind.
+    nix-flatpak = {
+      url = "github:gmodena/nix-flatpak?ref=v0.7.0";
+    };
+
     # nixGL
     # https://nix-community.github.io/home-manager/index.xhtml#sec-usage-gpu-non-nixos
     # https://github.com/nix-community/nixGL
@@ -42,7 +47,7 @@
     };
 
     rustowl_src = {
-      url = "github:cordx56/rustowl";
+      url = "github:cordx56/rustowl?ref=v0.4.0";
       flake = false;
     };
 
@@ -139,7 +144,6 @@
   outputs = {
     nixpkgs,
     home-manager,
-    nixgl,
     ghostty,
     treefmt-nix,
     self,
@@ -154,7 +158,6 @@
         inputs.neovim-nightly-overlay.overlays.default
         inputs.rust-overlay.overlays.default
         ghostty.overlays.default
-        nixgl.overlay
         (final: prev: {
           roswell = prev.roswell.overrideAttrs (_: {
             src = inputs.roswell_src;
@@ -168,6 +171,7 @@
     mkHome = {
       username,
       desktop,
+      nixPackage ? pkgs.nixVersions.latest,
       rimeDeployment ? "nix",
     }:
       home-manager.lib.homeManagerConfiguration {
@@ -177,32 +181,38 @@
             inputs
             username
             desktop
+            nixPackage
             rimeDeployment
             ;
         };
 
-        modules = [
-          ./home.nix
-          ./aerc
-          ./bat
-          ./emacs
-          ./fish
-          ./fonts
-          ./ghostty
-          ./git
-          ./nix
-          ./rime
-          ./rime/gnome.nix
-          ./rustowl
-          ./tldr
-          ./tmux
-          ./wezterm
-          ./vim
-          ./xdg
-          ./yt-dlp
-          ./zed
-          ./zsh
-        ];
+        modules =
+          [
+            ./home.nix
+            ./aerc
+            ./bat
+            ./emacs
+            ./fish
+            ./fonts
+            ./ghostty
+            ./git
+            ./nix
+            ./rime
+            ./rime/gnome.nix
+            ./rustowl
+            ./tldr
+            ./tmux
+            ./wezterm
+            ./vim
+            ./xdg
+            ./yt-dlp
+            ./zed
+            ./zsh
+          ]
+          ++ lib.optionals (username == "schan") [
+            inputs.nix-flatpak.homeManagerModules.nix-flatpak
+            ./flatpak
+          ];
       };
 
     # One `nix fmt` for the whole repo: clang-format (C/C++), Alejandra (Nix),
@@ -255,6 +265,7 @@
       "schan" = mkHome {
         username = "schan";
         desktop = "plasma";
+        nixPackage = null;
         rimeDeployment = "nix";
       };
       "stachan" = mkHome {
@@ -263,6 +274,7 @@
         rimeDeployment = "nix";
       };
     };
+    packages.${system}.home-manager = home-manager.packages.${system}.home-manager;
     formatter.${system} = treefmtEval.config.build.wrapper;
 
     checks.${system} = {
@@ -274,6 +286,7 @@
           nativeBuildInputs = [
             pkgs.bash
             pkgs.fish
+            pkgs.git
             pkgs.shellcheck
             pkgs.zsh
           ];
@@ -296,6 +309,7 @@
 
           cp ${self}/.gitmodules .gitmodules
           bash ${self}/scripts/sort_gitmodules.sh --check
+          bash ${self}/scripts/test_update_submodules.sh
 
           touch "$out"
         '';

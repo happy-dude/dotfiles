@@ -2,7 +2,18 @@
   config,
   pkgs,
   ...
-}: {
+}: let
+  fishWithoutGraphicsOverrides = pkgs.writeShellScriptBin "fish" ''
+    unset \
+      GBM_BACKENDS_PATH \
+      LIBGL_ALWAYS_SOFTWARE \
+      LIBGL_DRIVERS_PATH \
+      LIBVA_DRIVERS_PATH \
+      __EGL_VENDOR_LIBRARY_FILENAMES \
+      LD_LIBRARY_PATH
+    exec ${pkgs.fish}/bin/fish --login "$@"
+  '';
+in {
   programs.ghostty = {
     enable = true;
     package = config.lib.nixGL.wrap pkgs.ghostty;
@@ -16,7 +27,7 @@
     settings = {
       #command = ${pkgs.zsh} --login -c 'tmux attach -t "mux" || tmux new -s "mux"';
       #command = ${pkgs.zsh} --login;
-      command = "${pkgs.fish}/bin/fish --login";
+      command = "${fishWithoutGraphicsOverrides}/bin/fish";
 
       # https://ghostty.org/docs/features/shell-integration
       shell-integration-features = "ssh-terminfo,ssh-env";
