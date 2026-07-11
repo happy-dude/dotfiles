@@ -19,8 +19,6 @@ services.
 - **🟨 SAVE AS A BASH SCRIPT, THEN RUN ON THE KINOITE HOST** means save the
   complete fenced block as the named file and execute it with `bash`. Do not
   paste the surrounding prose into the shell.
-- **🟧 RUN INSIDE THE LEGACY NIX TOOLBOX** is used only for rollback inventory.
-  Fresh installations skip those steps.
 
 Commands that stage an OSTree deployment, write `/etc`, enable system units,
 install Nix, switch Home Manager, reboot, or remove rollback state are explicitly
@@ -28,17 +26,17 @@ marked as state-changing.
 
 ## Validated architecture
 
-| Layer                     | Owner and state                                                                     |
-| ------------------------- | ----------------------------------------------------------------------------------- |
-| Operating system          | Fedora Kinoite 44, deployed through rpm-ostree with a composefs root                |
-| Root filesystem           | Read-only for ordinary processes                                                    |
-| Dynamic `/nix` mountpoint | Created transiently during boot by `nix-ostree-mountpoint.service`                  |
-| Persistent Nix data       | `/var/home/nix`, mounted at `/nix` by Determinate's `nix.mount`                     |
-| Nix implementation        | Determinate Nix installer 3.21.5, Nix 2.34.8                                        |
-| SELinux                   | Enforcing, with the installer-provided Nix policy loaded                            |
-| User configuration        | Generic-Linux Home Manager output `.#schan`, not NixOS                              |
-| Nix package selection     | `nixPackage = null`; Home Manager must not install a competing Nix client           |
-| Rollback during migration | Pinned OSTree deployment plus the preserved Toolbox, old store, and profile backups |
+| Layer                     | Owner and state                                                            |
+| ------------------------- | -------------------------------------------------------------------------- |
+| Operating system          | Fedora Kinoite 44, deployed through rpm-ostree with a composefs root       |
+| Root filesystem           | Read-only for ordinary processes                                           |
+| Dynamic `/nix` mountpoint | Created transiently during boot by `nix-ostree-mountpoint.service`         |
+| Persistent Nix data       | `/var/home/nix`, mounted at `/nix` by Determinate's `nix.mount`            |
+| Nix implementation        | Determinate Nix installer 3.21.5, Nix 2.34.8                               |
+| SELinux                   | Enforcing, with the installer-provided Nix policy loaded                   |
+| User configuration        | Generic-Linux Home Manager output `.#schan`, not NixOS                     |
+| Nix package selection     | `nixPackage = null`; Home Manager must not install a competing Nix client  |
+| Recovery layers           | Pinned OSTree deployment, native-store backup, and profile/cutover backups |
 
 The validated snapshot also recorded:
 
@@ -72,8 +70,8 @@ Do not continue an installation or upgrade unless all of these remain true:
 6. The Determinate install plan selects the OSTree planner, Determinate Nix, and
    `/var/home/nix` persistence.
 7. A locked Home Manager build succeeds before any live switch.
-8. Existing Toolbox storage and profile backups remain intact until native Nix
-   survives multiple boots and a Fedora deployment update.
+8. Recovery artifacts remain intact until their individual retention gates are
+   satisfied and an equivalent tested recovery path exists.
 9. Destructive retirement and installer uninstall are separate, explicitly
    approved operations—not troubleshooting shortcuts.
 
@@ -89,6 +87,7 @@ Primary references:
 - [Fedora 44 Nix package change](https://fedoraproject.org/wiki/Changes/Nix_package_tool)
 - [Fedora Nix RPM sources](https://src.fedoraproject.org/rpms/nix)
 - [rpm-ostree administrator handbook](https://coreos.github.io/rpm-ostree/administrator-handbook/)
+- [Toolbx documentation](https://containertoolbx.org/doc/)
 
 The Fedora 44 Nix RPM is useful on conventional Fedora, but Fedora's own change
 page still calls `/nix` incompatible with rpm-ostree and recommends Toolbox or a
@@ -668,10 +667,10 @@ need PRIME offload or a Vulkan wrapper.
 
 ### Rime
 
-Rime needs no immediate native-host rewrite. Keep the ownership checks and the
-`.home-manager-static` materialization: it now separates immutable managed
-schemas from writable generated, learned, and sync state rather than crossing a
-Toolbox-only store boundary.
+Rime's ownership checks and `.home-manager-static` materialization separate
+immutable managed schemas from writable generated schemas, learned databases,
+and sync state. Preserve that boundary unless a replacement keeps the same
+ownership and persistence guarantees.
 
 Before any later simplification:
 
@@ -711,7 +710,12 @@ replace that descriptor with a raw remote URL or a nonexistent nix-flatpak
 `branch` option. Stable Firefox uses the different `org.mozilla.firefox` ID and
 is not a substitute for `org.mozilla.FirefoxNightly`.
 
-The qView and Firefox Nightly system-to-user migration is deliberately staged:
+Zed Preview is declared as `dev.zed.Zed-Preview`. Flatpak gives it an app-scoped
+XDG config home, so `zed/default.nix` merges the repository settings into the
+mutable file at `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`. The
+host `~/.config/zed/settings.json` is not the active worldmind target.
+
+If duplicate system qView or Firefox Nightly refs exist, migrate them as follows:
 
 1. Close both applications and back up their existing `~/.var/app` directories.
 2. Record system and user refs, remotes, overrides, permissions, and commits.
@@ -731,10 +735,9 @@ Always pass `--user` or `--system` during migration, and never use
 `--delete-data`: it would remove the application-ID-keyed user state and
 permission-store entries shared by the migration.
 
-Keep `dev.edfloreshz.CosmicTweaks` unmanaged during the native migration. Remove
-this user-scoped Flatpak explicitly only after application migration is complete
-and the later host/Toolbox cleanup begins; verify its data and overrides before
-uninstalling it.
+Keep `dev.edfloreshz.CosmicTweaks` outside Home Manager ownership. Verify its
+data and overrides before any explicit uninstall; Toolbx retirement does not
+authorize its removal.
 
 Keep the nixGL package input and per-application wrappers on generic Linux even
 though Nix is native; they bridge Nix-built GUI applications to the host
@@ -743,35 +746,24 @@ worldmind, Home Manager owns the wrapped Solaar executable and user autostart
 entry. The host retains only an explicit `solaar-udev` RPM overlay because
 generic-Linux Home Manager cannot activate udev rules from the Nix store.
 
-## Existing Toolbox migration record
+## Worldmind native deployment record
 
-The migration on 2026-07-10 started with Nix and Home Manager inside
-`nix-toolbox-42`, a user-owned 33 GiB store at `~/.local/share/nix`, and profile
-links into that store. The container and store were deliberately retained as a
-rollback layer.
+As of 2026-07-10, `worldmind` runs Determinate Nix directly on Fedora Kinoite.
+`/var/home/nix` is the persistent store behind the host-visible `/nix` mount,
+and Home Manager uses `nixPackage = null` so it does not install a competing Nix
+client. The former `nix-toolbox-42` container and
+`ghcr.io/thrix/nix-toolbox:42` image are retired; `toolbox list` is empty.
 
-`/var/home/nix` was confirmed to be a normal directory on the existing `/home`
-Btrfs subvolume, not a subvolume of its own. A future backup plan must therefore
-back up the directory or snapshot an appropriate containing subvolume; running
-`btrfs subvolume snapshot /var/home/nix` would be invalid on this installation.
+Any content remaining at `~/.local/share/nix` is inactive legacy data, not part
+of the active Nix or Home Manager profile and not a valid recovery source.
+Legacy-store cleanup remains separate from container and image retirement.
 
-The repository changes were split into four logical commits:
+`/var/home/nix` is a normal directory on the existing `/home` Btrfs subvolume,
+not a subvolume of its own. Back it up by copying the directory or snapshotting
+an appropriate containing subvolume. Running
+`btrfs subvolume snapshot /var/home/nix` is invalid on this installation.
 
-1. Select host-provided Nix for `schan` and export the locked Home Manager
-   bootstrap package.
-2. Remove Ghostty Toolbox desktop integration and host-copy activation.
-3. Let each host provide its own Nix path instead of hardcoding the native
-   installer profile in shared Fish configuration.
-4. Enable request-driven tmux CSI-u extended keys for Ghostty.
-
-Before the first native Home Manager switch, the old profile namespace was
-quarantined and the repository diff, staged diff, lock checksum, and Rime user
-state inventory were recorded. The native switch then created a clean Home
-Manager generation without a Nix client. Git comparisons using a neutral global
-configuration proved that apparent status differences came from the restored
-Git ignore configuration rather than activation changes.
-
-Recorded rollback locations:
+Recorded recovery artifacts:
 
 - Installer-time profile backup:
   `~/.local/state/nix-toolbox-profile-backup-20260710-100258`
@@ -779,16 +771,31 @@ Recorded rollback locations:
   `~/.local/state/nix-native-cutover-20260710-110632`
 - Quarantined copied launchers, icons, and legacy unit links:
   `~/.local/state/nix-native-cutover-20260710-110632/quarantined-after-native-home-manager`
+- Stash cleanup archive refs:
+  `refs/archive/worldmind-stash-cleanup/20260710T202927-0500`
+- Stash cleanup manifest and repository bundles:
+  `~/.local/state/worldmind-stash-cleanup-20260710T202927-0500`
 
-The first native verification confirmed:
+The stash archive covers all 599 pre-cleanup stashes. Normal stash refs retain
+the six substantive entries; 593 verified empty or generated-payload entries
+were removed only after the archive refs and repository bundles were created.
 
-- Determinate Nix resolved in fresh Bash and Fish logins.
-- Home Manager and its activation contained no competing Nix client.
-- `/nix` mounted from persistent home storage and root stayed read-only.
-- Daemon, sockets, helper, SELinux policy, Ghostty, and Rime links were healthy.
-- The Toolbox launcher, five copied Ghostty icons, and six obsolete dangling
-  Home Manager unit links were quarantined rather than deleted.
-- bgutil required no migration-specific host changes.
+Native postflight confirms:
+
+- Determinate Nix resolves in fresh Bash and Fish logins, and Home Manager
+  contains no competing Nix client.
+- `/nix` mounts from persistent home storage while the composefs root remains
+  read-only.
+- The daemon, sockets, mountpoint helper, and SELinux policy survive multiple
+  cold boots and a later Fedora deployment.
+- `./scripts/update.sh --autostash-submodules --verbose` completes natively,
+  including direct-submodule updates, descendant pinning, flake checks, a locked
+  Home Manager build, and activation.
+- Generated Vim help tags are restored without creating new stash churn.
+- Ghostty, tmux Shift+Enter, Rime learned state, bgutil, Git signing, and user
+  Flatpak smoke tests pass.
+- Copied Ghostty integration and obsolete Home Manager unit links remain
+  quarantined in the cutover backup.
 
 ## Rollback and recovery
 
@@ -797,41 +804,39 @@ Use the narrowest rollback layer that addresses the failure:
 1. **Boot failure or missing `/nix`:** choose the pinned prior OSTree deployment
    in the bootloader. Do not repair a failed mount by making the global root
    writable.
-2. **Before the first Home Manager switch:** stop and leave the Toolbox profile,
-   store, and container untouched.
-3. **User-profile failure after the switch:** inspect the cutover backup and
-   current profile targets before restoring anything. Confirm which `/nix` a
-   Toolbox sees now that the host has a native mount; do not assume the old
-   fallback still resolves correctly.
+2. **User-profile failure:** inspect the cutover backup and current profile
+   targets before restoring anything. Restore only links that resolve into the
+   active `/nix/store` namespace; do not recreate the retired Toolbx environment
+   as a profile fallback.
+3. **Native-store damage:** preserve the failed store and use the separately
+   recorded tested backup procedure. Do not improvise a direct Btrfs subvolume
+   snapshot or restore at `/var/home/nix`.
 4. **Daemon or SELinux failure:** capture `findmnt`, unit definitions and
    ordering, boot journals, labels, and AVCs. Fix the specific ordering or policy
    regression; do not disable SELinux.
 5. **Installer removal:** the installed interface is `nix-installer uninstall
 [OPTIONS] [RECEIPT]`, defaulting to `/nix/receipt.json`. Preserve the receipt
    and review the current `--help` before use. The available `--no-confirm`
-   option is intentionally not part of this runbook. Uninstall and store
-   deletion are destructive retirement operations requiring a separate plan.
+   option is intentionally not part of this runbook. Uninstall and active-store
+   deletion require a separate destructive-operation plan.
 
-Never delete `/var/home/nix`, the old Toolbox store, pinned deployment, or
-cutover backups merely to retry an installation.
+Never delete `/var/home/nix`, the pinned deployment, its tested backup, or
+cutover recovery artifacts merely to retry an installation.
 
-## Toolbox retirement gate
+## Retired Toolbx state
 
-Retire the Toolbox only after all of these have happened:
+The retirement gate is complete: native Nix survived multiple cold boots and a
+later Fedora deployment, the full native updater passed, application smoke tests
+passed, container-only state and submodule stashes were inventoried, and tested
+backup and rollback paths exist.
 
-- Native Nix has survived multiple cold boots.
-- At least one new Fedora deployment has booted with the helper ordering intact.
-- `./scripts/update.sh check` and a separately approved `apply` pass natively.
-- Ghostty, tmux Shift+Enter, Rime learned state, bgutil, Git signing, and Flatpak
-  smoke tests pass.
-- `podman diff`, container-only packages/configuration, submodule stashes, and
-  old profile/store backups have been inventoried.
-- A tested rollback path and a backup of `/var/home/nix` exist.
+The `nix-toolbox-42` container and `ghcr.io/thrix/nix-toolbox:42` image were
+removed on 2026-07-10. Do not recreate them as a first-line repair path; use the
+pinned deployment, native-store backup, and cutover artifacts instead.
 
-Stop the container first and observe normal operation. Remove the container and
-image later. Delete the old 33 GiB store only as the final, separately confirmed
-step. Keep the pinned deployment until after the first successful major-upgrade
-postflight.
+Keep the pinned deployment until after the first successful major-upgrade
+postflight. Treat legacy-store cleanup and Determinate installer removal as
+independent destructive operations that each require explicit approval.
 
 ## Major Fedora upgrade checklist
 
