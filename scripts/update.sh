@@ -14,15 +14,13 @@
 ###     update  Run the update workflow below, validate it, and optionally activate it (default)
 ###
 ### Update workflow:
-###     1. Optionally update Rime schemas via Plum (Nix sources update in step 7)
+###     1. Optionally update Rime schemas via Plum (Nix sources update in step 5)
 ###     2. Update the main dotfiles repository
-###     3. Sync / init / update git submodules
-###     4. Update Neovim plugins and coc.nvim extensions
-###     5. Update Go editor binaries
-###     6. Run `nix fmt .`
-###     7. Run `nix flake update`
-###     8. Validate the flake and build the Home Manager configuration
-###     9. Optionally run `home-manager switch`
+###     3. Sync / init / update configured git submodules
+###     4. Run `nix fmt .`
+###     5. Run `nix flake update`
+###     6. Validate the flake and build the Home Manager configuration
+###     7. Optionally run `home-manager switch`
 ###
 ### Usage:
 ###     ./scripts/update.sh [options] [directory]
@@ -420,6 +418,11 @@ recover_rime_git_state() {
 #--------------------------------------------------------------------------------------------------
 # 2. Git / submodule helpers
 #--------------------------------------------------------------------------------------------------
+
+has_configured_submodules() {
+  [ -f .gitmodules ] &&
+    git config -f .gitmodules --get-regexp '^submodule\..*\.path$' >/dev/null 2>&1
+}
 
 is_submodule_dirty() {
   local path="$1"
@@ -934,7 +937,10 @@ fi
 # 3. Sync / init / update git submodules
 #--------------------------------------------------------------------------------------------------
 
-if [ "$SKIP_SUBMODULES" -eq 0 ]; then
+if ! has_configured_submodules; then
+  section_start "Skipping submodule operations (none configured)"
+  section_end "skipped"
+elif [ "$SKIP_SUBMODULES" -eq 0 ]; then
   section_start "Syncing submodule URLs"
   git submodule sync --recursive
   section_end "done"
@@ -978,13 +984,15 @@ else
   section_end "skipped"
 fi
 
-if [ "$SKIP_STATUS" -eq 1 ]; then
-  section_start "Skipping submodule status (--skip-status)"
-  section_end "skipped"
-else
-  section_start "Submodule status"
-  git submodule status --recursive
-  section_end "done"
+if has_configured_submodules; then
+  if [ "$SKIP_STATUS" -eq 1 ]; then
+    section_start "Skipping submodule status (--skip-status)"
+    section_end "skipped"
+  else
+    section_start "Submodule status"
+    git submodule status --recursive
+    section_end "done"
+  fi
 fi
 
 #--------------------------------------------------------------------------------------------------
