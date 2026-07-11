@@ -229,7 +229,15 @@ Tree-sitter parser/query runtime and the RustOwl server by default:
   clients use the Nix-managed JSON server and Ruff executable. coc-json is no
   longer declared. Home Manager links the Nix TypeScript SDK at
   `~/.local/share/nix-typescript/lib` for coc-tsserver, with mutable automatic
-  type acquisition disabled.
+  type acquisition disabled. Both Vim and Neovim come from the locked Nixpkgs
+  profile and require native package support; `vim-plug` remains the declaration
+  layer. CoC loads in both editors and owns LSP, diagnostics, completion,
+  navigation, and format-on-save. vim-go retains only its Go-specific build,
+  test, coverage, and alternate-file commands. Vim uses its bundled EditorConfig
+  plugin and Neovim uses native EditorConfig. Home Manager supplies
+  clang-format, Ruff, StyLua, PerlTidy, gofmt/goimports, rustfmt, Zig/ZLS, and
+  every configured language server. Do not reintroduce ALE, Pathogen, per-plugin
+  binary downloaders, or a separate editorconfig-vim submodule.
 - Emacs plugins live under `emacs/.config/emacs/plugins/*` as git submodules.
   `emacs/default.nix` _also_ installs many of the same packages via
   `programs.emacs.extraPackages` — both mechanisms are used in parallel
@@ -442,8 +450,8 @@ with `ignore = dirty`).
   integration through KWin's Virtual Keyboard setting.
 - **Vim runtime artifacts** are declarative by default: Home Manager links
   Tree-sitter parsers and queries under `~/.local/share/nvim/site` and places
-  the Nix-built `rustowl`, vim-go helpers, PerlTidy, Ruff, and CoC language
-  servers on `PATH`. Do not run `:TSUpdate`, `:GoUpdateBinaries`, or
-  `:GoInstallBinaries` in this mode. Retain `--editor-deployment stow` only for
-  a deliberately Stow-managed Vim deployment, where parser, RustOwl, and Go
-  helper updates remain mutable.
+  the Nix-built `rustowl`, vim-go helpers, clang-format, PerlTidy, Ruff, StyLua,
+  rustfmt, Zig/ZLS, and CoC language servers on `PATH`. Do not run `:TSUpdate`,
+  `:GoUpdateBinaries`, or `:GoInstallBinaries` in this mode. Retain
+  `--editor-deployment stow` only for a deliberately Stow-managed Vim
+  deployment, where parser, RustOwl, and Go helper updates remain mutable.

@@ -572,6 +572,14 @@ structure.
   uses `~/.config/zed/settings.json`. The agent prompts remain live through
   `mkOutOfStoreSymlink`. The global gitignore is `git/.gitignore_global`;
   machine identity and signing remain in untracked `~/.config/git/local.config`.
+- **Editor ownership:** Vim and Neovim are current locked-Nixpkgs packages with
+  native package support. CoC loads in both and owns LSP, diagnostics,
+  completion, navigation, and format-on-save; vim-go retains non-LSP Go
+  commands. Vim uses bundled EditorConfig and Neovim uses native EditorConfig.
+  Home Manager provides the formatter and language-server executables, including
+  Ruff, StyLua, PerlTidy, clang-format, gofmt/goimports, rustfmt, Zig/ZLS,
+  Zuban, and the CoC server commands. Do not reintroduce ALE, Pathogen,
+  editorconfig-vim, or mutable plugin binary downloaders.
 - **Agent prompt ownership:** `agents/prompts/{kernel,language}.md` are
   canonical for the generated full agents and profiles. After editing either,
   run `scripts/generate_codex_agents.py`; the flake check rejects drift. Home

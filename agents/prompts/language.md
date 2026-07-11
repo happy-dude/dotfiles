@@ -425,6 +425,15 @@ and profiles; after editing either, run `scripts/generate_codex_agents.py`. Home
 Manager also links the independently maintained Kagi Codex TOMLs, which the
 generator never reads or writes.
 
+Both Vim and Neovim are current locked-Nixpkgs packages with native package
+support. CoC loads in both and owns LSP, diagnostics, completion, navigation,
+and format-on-save; vim-go retains non-LSP Go commands. Vim uses bundled
+EditorConfig and Neovim uses native EditorConfig. Home Manager provides the
+formatter and language-server executables, including Ruff, StyLua, PerlTidy,
+clang-format, gofmt/goimports, rustfmt, Zig/ZLS, Zuban, and the CoC server
+commands. Do not reintroduce ALE, Pathogen, editorconfig-vim, or mutable plugin
+binary downloaders.
+
 `flake.nix` builds two generic-Linux profiles with
 `mkHome { username, desktop, nixPackage, rimeDeployment }`. Both default to
 Nix-managed Rime and retain `home.stateVersion = "26.11"` as their compatibility
