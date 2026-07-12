@@ -59,49 +59,56 @@ set -gx MANWIDTH 80
 set -gx LESS '--mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --CLEAR-SCREEN'
 set -gx PAGER 'less --mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --CLEAR-SCREEN'
 
-## cc flags
-## https://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html
-## https://clang.llvm.org/docs/UsersManual.html#diagnostics-enable-everything
-## https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
-## https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html
-## https://songdongsheng.github.io/2021/03/21/statically-linked-executable-hardening-with-pie/
-if command -v clang &>/dev/null
-    alias cc='clang \
-        -g3 -ggdb3 -glldb \
-        -Weverything -pedantic \
-        -Wconversion \
-        -Wdouble-promotion \
-        -Wimplicit-fallthrough \
-        -Wmissing-prototypes \
+# Hardened C compiler wrapper for small standalone builds.
+function cc
+    set -l compiler
+    set -l flags
+    if command -q clang
+        set compiler clang
+        set flags -O1 -g3 -glldb
+    else if command -q gcc
+        set compiler gcc
+        set flags -O1 -g3 -ggdb3 -ftrivial-auto-var-init=zero
+    else
+        echo 'cc: neither clang nor gcc is available' >&2
+        return 127
+    end
+
+    set -a flags \
+        -Wall -Wextra -Wpedantic \
+        -Wconversion -Wdouble-promotion \
+        -Wformat=2 -Wimplicit-fallthrough -Wmissing-prototypes \
         -fno-omit-frame-pointer \
         -fsanitize=address,undefined \
-        -fsanitize-trap=alignment \
-        -fstack-clash-protection \
-        -fstack-protector-strong \
-        -fPIE \
-        -fPIC \
-        -D_FORTIFY_SOURCE=3 \
-        -D_GLIBCXX_ASSERTIONS \
-        -Wl,-z,defs,-z,relro,-z,now,-z,noexecstack,-z,noexecheap,-pie'
-else if command -v gcc &>/dev/null
-    alias cc='gcc \
-        -g3 -ggdb3 \
-        -Wall -Wextra -pedantic \
-        -Wconversion \
-        -Wdouble-promotion \
-        -Wimplicit-fallthrough \
-        -Wmissing-prototypes \
-        -fno-omit-frame-pointer \
-        -fsanitize=address,undefined \
-        -fsanitize-trap=alignment \
-        -fstack-clash-protection \
-        -fstack-protector-strong \
-        -ftrivial-auto-var-init=zero \
-        -fPIE \
-        -fPIC \
-        -D_FORTIFY_SOURCE=3 \
-        -D_GLIBCXX_ASSERTIONS \
-        -Wl,-z,defs,-z,relro,-z,now,-z,noexecstack,-z,noexecheap,-pie'
+        -fstack-clash-protection -fstack-protector-strong \
+        -D_FORTIFY_SOURCE=3
+
+    set -l link 1
+    set -l pic 0
+    for arg in $argv
+        switch $arg
+            case -c -E -S -fsyntax-only -M -MM
+                set link 0
+            case -shared -fPIC
+                set pic 1
+        end
+    end
+
+    if test $pic -eq 1
+        set -a flags -fPIC
+    else
+        set -a flags -fPIE
+    end
+
+    if test $link -eq 1
+        set -a flags \
+            -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack
+        if test $pic -eq 0
+            set -a flags -Wl,-z,defs -pie
+        end
+    end
+
+    command $compiler $flags $argv
 end
 
 ## git

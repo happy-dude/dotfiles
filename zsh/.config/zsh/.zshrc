@@ -89,52 +89,57 @@ export MANWIDTH=80
 export LESS='--mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --CLEAR-SCREEN'
 export PAGER='less --mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --CLEAR-SCREEN'
 
-# cc flags
-# https://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html
-# https://clang.llvm.org/docs/UsersManual.html#diagnostics-enable-everything
-# https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
-# https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html
-# https://songdongsheng.github.io/2021/03/21/statically-linked-executable-hardening-with-pie/
-if command -v clang &> /dev/null
-then
-    alias cc='clang \
-        -g3 -ggdb3 -glldb \
-        -Weverything -pedantic \
-        -Wconversion \
-        -Wdouble-promotion \
-        -Wimplicit-fallthrough \
-        -Wmissing-prototypes \
-        -fno-omit-frame-pointer \
-        -fsanitize=address,undefined \
-        -fsanitize-trap=alignment \
-        -fstack-clash-protection \
-        -fstack-protector-strong \
-        -fPIE \
-        -fPIC \
-        -D_FORTIFY_SOURCE=3 \
-        -D_GLIBCXX_ASSERTIONS \
-        -Wl,-z,defs,-z,relro,-z,now,-z,noexecstack,-z,noexecheap,-pie'
-elif command -v gcc &> /dev/null
-then
-    alias cc='gcc \
-        -g3 -ggdb3 \
-        -Wall -Wextra -pedantic \
-        -Wconversion \
-        -Wdouble-promotion \
-        -Wimplicit-fallthrough \
-        -Wmissing-prototypes \
-        -fno-omit-frame-pointer \
-        -fsanitize=address,undefined \
-        -fsanitize-trap=alignment \
-        -fstack-clash-protection \
-        -fstack-protector-strong \
-        -ftrivial-auto-var-init=zero \
-        -fPIE \
-        -fPIC \
-        -D_FORTIFY_SOURCE=3 \
-        -D_GLIBCXX_ASSERTIONS \
-        -Wl,-z,defs,-z,relro,-z,now,-z,noexecstack,-z,noexecheap,-pie'
-fi
+# Hardened C compiler wrapper for small standalone builds.
+function cc() {
+    local compiler
+    local -a flags
+    local link=1
+    local pic=0
+
+    if (( $+commands[clang] )); then
+        compiler=clang
+        flags=(-O1 -g3 -glldb)
+    elif (( $+commands[gcc] )); then
+        compiler=gcc
+        flags=(-O1 -g3 -ggdb3 -ftrivial-auto-var-init=zero)
+    else
+        print -u2 'cc: neither clang nor gcc is available'
+        return 127
+    fi
+
+    flags+=(
+        -Wall -Wextra -Wpedantic
+        -Wconversion -Wdouble-promotion
+        -Wformat=2 -Wimplicit-fallthrough -Wmissing-prototypes
+        -fno-omit-frame-pointer
+        -fsanitize=address,undefined
+        -fstack-clash-protection -fstack-protector-strong
+        -D_FORTIFY_SOURCE=3
+    )
+
+    local arg
+    for arg in "$@"; do
+        case "$arg" in
+            -c|-E|-S|-fsyntax-only|-M|-MM) link=0 ;;
+            -shared|-fPIC) pic=1 ;;
+        esac
+    done
+
+    if (( pic )); then
+        flags+=(-fPIC)
+    else
+        flags+=(-fPIE)
+    fi
+
+    if (( link )); then
+        flags+=(
+            -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack
+        )
+        (( pic )) || flags+=(-Wl,-z,defs -pie)
+    fi
+
+    command "$compiler" "${flags[@]}" "$@"
+}
 
 # git
 alias gl="git log --date=relative --abbrev=12 -n 160 \
