@@ -330,6 +330,7 @@
             ./fish
             ./fonts
             ./ghostty
+            ./gnome
             ./git
             ./nix
             ./rime
