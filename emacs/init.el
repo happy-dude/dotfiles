@@ -316,7 +316,11 @@
                             :unnarrowed t)))
 
 (setq org-roam-capture-ref-templates
-      '(("r" "ref" plain "%?"
+      '(("r" "ref" plain "#+begin_quote
+%i
+#+end_quote
+
+%?"
          :if-new (file+head "%<%Y%m%d>-$\{slug}.org"
                             ":PROPERTIES:
                             :ID: %(org-id-new)
@@ -338,7 +342,7 @@
                             *** Habits (Define)
 
                             * Notes
-                            -")
+                            ")
                             :unnarrowed t)))
 
 

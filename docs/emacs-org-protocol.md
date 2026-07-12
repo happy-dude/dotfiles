@@ -79,6 +79,8 @@ The same code expanded for readability is:
    - `ref` becomes the node's `ROAM_REFS` value.
    - `title` supplies the node title after whitespace normalization.
    - `body` supplies the selected page text as the capture's initial content.
+     The reference template expands it with `%i` inside an Org quote block and
+     places `%?` afterward for additional notes.
 6. Assigning the resulting URL to `location.href` asks Firefox to dispatch it
    through the desktop's registered `org-protocol` handler.
 7. `void 0` prevents a returned string from replacing the current page in
@@ -94,7 +96,7 @@ large selections because the selected text is transported inside the URL.
 After changing this configuration, activate the appropriate Home Manager
 profile. Then verify the service and handler:
 
-```sh
+```bash
 systemctl --user status emacs.service
 xdg-mime query default x-scheme-handler/org-protocol
 emacsclient --eval "(featurep 'org-roam-protocol)"

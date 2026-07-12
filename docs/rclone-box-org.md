@@ -19,7 +19,7 @@ occur in that state.
 
 Configure the remote interactively and verify its name:
 
-```sh
+```bash
 rclone config
 chmod 600 ~/.config/rclone/rclone.conf
 rclone listremotes
@@ -62,7 +62,7 @@ bounded without relying on inotify.
 Create a matching access-check file on both sides, then inspect the initial
 resync without changing either side:
 
-```sh
+```bash
 touch ~/org/RCLONE_TEST
 rclone copyto ~/org/RCLONE_TEST box:org/RCLONE_TEST
 rclone bisync ~/org box:org \
@@ -76,6 +76,7 @@ rclone bisync ~/org box:org \
   --resilient \
   --recover \
   --max-lock 30m \
+  --resync \
   --resync-mode newer \
   --dry-run \
   --verbose
@@ -85,7 +86,7 @@ Review every proposed change. Repeat without `--dry-run` only when the result is
 correct. After a successful initial resync, create the readiness marker and
 start the timer:
 
-```sh
+```bash
 mkdir -p ~/.local/state/rclone
 touch ~/.local/state/rclone/org-bisync-ready
 systemctl --user start rclone-box-org-bisync.timer
@@ -98,7 +99,7 @@ requires it.
 
 ## Validation and recovery
 
-```sh
+```bash
 systemctl --user status rclone-box-org-bisync.timer
 systemctl --user status rclone-box-org-bisync.service
 systemctl --user status rclone-box-org-watch.service
@@ -119,8 +120,9 @@ rclone bisync ~/org box:org \
 ```
 
 If a run reports that resync is required, inspect both sides and perform a
-manual `--resync-mode newer --dry-run` before allowing changes. Never bypass
-access checks or deletion limits merely to make a failed scheduled run pass.
+manual `--resync --resync-mode newer --dry-run` before allowing changes. Never
+bypass access checks or deletion limits merely to make a failed scheduled run
+pass.
 
 See the [rclone Box backend](https://rclone.org/box/) and
 [bisync documentation](https://rclone.org/bisync/) for backend limitations and
