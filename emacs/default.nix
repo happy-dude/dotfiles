@@ -18,8 +18,17 @@
 
     registerOrgProtocol = config.lib.dag.entryAfter ["linkGeneration"] ''
       $DRY_RUN_CMD ${pkgs.xdg-utils}/bin/xdg-mime \
-        default emacsclient.desktop x-scheme-handler/org-protocol
+        default emacs-org-protocol.desktop x-scheme-handler/org-protocol
     '';
+  };
+
+  xdg.desktopEntries.emacs-org-protocol = {
+    name = "Emacs Org Protocol";
+    exec = "${pkgs.emacs-pgtk}/bin/emacsclient --alternate-editor= --reuse-frame %u";
+    icon = "emacs";
+    mimeType = ["x-scheme-handler/org-protocol"];
+    noDisplay = true;
+    terminal = false;
   };
 
   programs.emacs = {

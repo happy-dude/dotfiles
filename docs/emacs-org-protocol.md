@@ -1,7 +1,9 @@
 # Emacs Org Protocol
 
-Home Manager starts an Emacs daemon with the graphical session and registers
-`emacsclient.desktop` as the handler for `org-protocol://` URLs. Emacs loads
+Home Manager starts an Emacs daemon with the graphical session and registers a
+dedicated `emacs-org-protocol.desktop` as the handler for `org-protocol://`
+URLs. Its `%u` field passes the protocol URL to `emacsclient`; the ordinary
+Emacs desktop entry remains responsible for opening files. Emacs loads
 `org-roam-protocol`, which adds the `roam-ref` handler used to create or visit
 an Org Roam node for a web page. The derived Org Roam database stays in the
 local XDG cache rather than the synchronizable `~/org` tree.
@@ -102,9 +104,9 @@ xdg-mime query default x-scheme-handler/org-protocol
 emacsclient --eval "(featurep 'org-roam-protocol)"
 ```
 
-The expected handler is `emacsclient.desktop`, and the feature check should
-return `t`. Clicking the bookmark should open the `r` Org Roam reference capture
-template. Finalizing or aborting the capture closes its temporary frame.
+The expected handler is `emacs-org-protocol.desktop`, and the feature check
+should return `t`. Clicking the bookmark should open the `r` Org Roam reference
+capture template. Finalizing or aborting the capture closes its temporary frame.
 
 Synchronize the authoritative `.org` files rather than `org-roam.db`. Org Roam
 rebuilds its per-machine database at
