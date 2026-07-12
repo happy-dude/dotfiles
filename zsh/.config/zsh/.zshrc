@@ -97,10 +97,10 @@ function c() {
 
     if (( $+commands[clang] )); then
         compiler=clang
-        flags=(-O1 -g3 -glldb)
+        flags=(-O2 -g3 -glldb)
     elif (( $+commands[gcc] )); then
         compiler=gcc
-        flags=(-O1 -g3 -ggdb3 -ftrivial-auto-var-init=zero)
+        flags=(-O2 -g3 -ggdb3 -ftrivial-auto-var-init=zero)
     else
         print -u2 'c: neither clang nor gcc is available'
         return 127
