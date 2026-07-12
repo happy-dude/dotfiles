@@ -1,12 +1,6 @@
 # Declarative Tide settings shared by Home Manager and Stow installations.
 # These globals deliberately override any per-machine universal Tide defaults.
 
-# Render a magenta-on-black warning while history saving is off.
-function _tide_item_nohist
-    set -q fish_history; and test -z "$fish_history"; or return
-    _tide_print_item nohist \uf02d\ no-hist
-end
-
 set -g tide_aws_bg_color yellow
 set -g tide_aws_color brblack
 set -g tide_aws_icon \uf270
