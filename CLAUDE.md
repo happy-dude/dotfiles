@@ -242,13 +242,15 @@ guidance detectable.
   updater.
 - Home Manager builds Tree-sitter parsers and queries in `vim/default.nix`,
   including an explicit `org.so` from `tree-sitter-org-nvim` because
-  `nvim-treesitter.withAllGrammars` omits it. The `neovim-org` flake check
-  parses a real Org buffer with the parser directory from the evaluated Home
-  Manager configuration. Home Manager also builds the RustOwl server and
-  matching optional Neovim client, CoC plus its extensions, and all formatter,
-  helper, and language-server executables. `flake.lock` and the locked Nixpkgs
-  revision determine editor updates. Do not run mutable plugin, parser, CoC
-  extension, or vim-go binary update commands.
+  `nvim-treesitter.withAllGrammars` omits it. The `neovim-org` flake check opens
+  a real Org file with each profile's evaluated Neovim package, configuration,
+  plugin pack, parsers, and queries. It verifies that Orgmode is configured
+  before its filetype hook and that the resulting buffer parses successfully.
+  Home Manager also builds the RustOwl server and matching optional Neovim
+  client, CoC plus its extensions, and all formatter, helper, and
+  language-server executables. `flake.lock` and the locked Nixpkgs revision
+  determine editor updates. Do not run mutable plugin, parser, CoC extension, or
+  vim-go binary update commands.
 - CoC loads in both editors and owns LSP, diagnostics, completion, navigation,
   and format-on-save. vim-go retains non-LSP Go commands. Vim uses its bundled
   EditorConfig support and Neovim uses native EditorConfig. Do not reintroduce
