@@ -2,9 +2,11 @@
   "coc.preferences.formatOnSaveFiletypes": [
     "Markdown",
     "c",
+    "clojure",
     "cpp",
     "coc-cfn-lint",
     "css",
+    "fish",
     "go",
     "gomod",
     "html",
@@ -52,6 +54,30 @@
       "command": "bash-language-server",
       "args": ["start"],
       "filetypes": ["sh"]
+    },
+    "fish-lsp": {
+      "command": "fish-lsp",
+      "args": ["start"],
+      "filetypes": ["fish"]
+    },
+    "clojure-lsp": {
+      "command": "clojure-lsp",
+      "args": ["listen"],
+      "filetypes": ["clojure"],
+      "rootPatterns": [
+        "deps.edn",
+        "bb.edn",
+        "shadow-cljs.edn",
+        "project.clj",
+        "build.boot",
+        ".git"
+      ]
+    },
+    "fennel-ls": {
+      "command": "fennel-ls",
+      "args": ["--server"],
+      "filetypes": ["fennel"],
+      "rootPatterns": ["flsproject.fnl", ".git"]
     },
     "digestif": {
       "command": "digestif",

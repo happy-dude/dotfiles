@@ -33,6 +33,7 @@ in {
       autoconf
       automake
       babelfish
+      babashka
       bash-language-server
       bear
       bc
@@ -41,6 +42,8 @@ in {
       bpftools
       bpftrace
       ccache
+      clojure
+      clojure-lsp
       cmake
       coccinelle
       cpio
@@ -57,8 +60,11 @@ in {
       eza
       errcheck
       fd
+      fennel-ls
       ffmpeg
+      fish-lsp
       flex
+      fnlfmt
       fzf
       gdb
       gettext
@@ -87,6 +93,7 @@ in {
       lldb
       ltrace
       lua-language-server
+      luaPackages.fennel
       meson
       motion
       moreutils
