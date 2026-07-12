@@ -79,10 +79,10 @@ function c
     set -l flags
     if command -q clang
         set compiler clang
-        set flags -O1 -g3 -glldb
+        set flags -O2 -g3 -glldb
     else if command -q gcc
         set compiler gcc
-        set flags -O1 -g3 -ggdb3 -ftrivial-auto-var-init=zero
+        set flags -O2 -g3 -ggdb3 -ftrivial-auto-var-init=zero
     else
         echo 'c: neither clang nor gcc is available' >&2
         return 127
