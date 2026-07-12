@@ -275,9 +275,7 @@
   "Run an Org Roam protocol handler in a dedicated capture frame."
   (set-frame-parameter nil 'name "capture")
   (delete-other-windows)
-  (cl-letf (((symbol-function 'switch-to-buffer-other-window)
-             (lambda (buffer-or-name &rest _)
-               (switch-to-buffer buffer-or-name))))
+  (let ((display-buffer-overriding-action '(display-buffer-same-window)))
     (funcall function info)))
 
 (advice-add 'org-roam-protocol-open-ref

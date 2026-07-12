@@ -7,8 +7,9 @@ URLs. Its `%u` field passes the protocol URL to a non-blocking graphical
 files. Emacs loads `org-roam-protocol`, which adds the `roam-ref` handler used
 to create or visit an Org Roam node for a web page. The handler marks that
 client frame as the temporary capture frame instead of splitting the capture
-into another window. The derived Org Roam database and undo-tree history stay in
-the local XDG cache rather than the synchronizable `~/org` tree.
+into another window. Its display override takes precedence over Org's explicit
+split-window capture action. The derived Org Roam database and undo-tree history
+stay in the local XDG cache rather than the synchronizable `~/org` tree.
 
 The browser bookmark is intentionally manual state because Firefox owns and
 syncs its bookmarks. Add a bookmark in Firefox and use the following single line
