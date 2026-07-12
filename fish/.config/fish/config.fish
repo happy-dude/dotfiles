@@ -112,8 +112,11 @@ alias gl="git log --date=relative --abbrev=12 -n 160 \
 alias gits="git --no-pager show --no-patch --format='commit %h (\"%s\")%n'"
 
 # emacsclient
-alias et='TERM=xterm-256color emacsclient -nw'
-alias ef='emacsclient -nc'
+# Attach terminal clients; detach GUI and Org capture clients.
+# An empty alternate editor starts the daemon if the user service is not ready.
+alias et='emacsclient --alternate-editor= --tty'
+alias ef='emacsclient --alternate-editor= --create-frame --no-wait'
+alias ec="emacsclient --alternate-editor= --no-wait --eval '(make-capture-frame)'"
 
 # Run the current kernel tree with the usual AMD debugging defaults.
 function vmeamd --wraps vng
