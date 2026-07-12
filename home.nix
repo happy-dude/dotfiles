@@ -62,6 +62,7 @@ in {
       fzf
       gdb
       gettext
+      ghidra
       ghostscript
       glibc
       gnumake
