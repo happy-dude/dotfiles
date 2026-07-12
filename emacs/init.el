@@ -253,7 +253,9 @@
                                ("RECON" . "dark violet") ("PAYLOAD" . "pale violet red") ("DELIVER" . "firebrick") ("EXPLOIT" . "red") ("INSTALL" . "goldenrod") ("C2" . "lime green") ("ACTION" . "forest green")
                                ("WISHLIST" . "systemOrangeColor") ("CART" . "systemPurpleColor") ("SHIPPING" . "systemBlueColor") ("ATTN" . "systemRedColor") ("RETURNED" . "systemYellowColor")
                                ))
-(add-hook 'org-mode-hook #'visual-line-mode)
+(add-hook
+    'org-mode-hook #'visual-line-mode)
+(add-hook 'org-mode-hook #'auto-revert-mode)
 (add-hook 'text-mode-hook #'visual-line-mode)
 
 ; Make org-mode, iOS BeOrg, emacs, and (Drop)Box sync play well with each other
