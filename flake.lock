@@ -473,11 +473,11 @@
     "rime_luna_pinyin": {
       "flake": false,
       "locked": {
-        "lastModified": 1783071318,
-        "narHash": "sha256-sThCYmOwY9Ml+/+lwKZOmCPvdXCPfcHttTNUp0DzIrw=",
+        "lastModified": 1783832515,
+        "narHash": "sha256-yXkF2f980Z0OMb39QQHknqodzIj3SyW23NVo+1C2p/s=",
         "owner": "rime",
         "repo": "rime-luna-pinyin",
-        "rev": "32f4a2cf3a3ab82d2a8a306eb843233de579b5c7",
+        "rev": "56b934b099dfbeab842320f13aa8b461a6ab3e42",
         "type": "github"
       },
       "original": {
@@ -592,11 +592,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783747106,
-        "narHash": "sha256-KlepQu/O5m11lAjcJ4ER5bc6bIzyX2UMPDARzMzQfIw=",
+        "lastModified": 1783834461,
+        "narHash": "sha256-FCmrs1StAghJDKfqy56KM96KZtxpYzgeq6zM3QO8wjA=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "e598b37857b895b81020a65a802ef55f5bbed72f",
+        "rev": "a286e5b998e852297a403786f063fb2c9fe7f57a",
         "type": "github"
       },
       "original": {
