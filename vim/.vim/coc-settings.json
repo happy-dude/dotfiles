@@ -81,7 +81,7 @@
     },
     "texlab": {
       "command": "texlab",
-      "filetypes": ["tex", "plaintex"],
+      "filetypes": ["latex", "plaintex"],
       "rootPatterns": [".latexmkrc", "latexmkrc", ".git"]
     },
     "tinymist": {
