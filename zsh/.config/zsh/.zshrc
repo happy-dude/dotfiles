@@ -5,6 +5,13 @@
 #   Sorin Ionescu <sorin.ionescu@gmail.com>
 #
 
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
 # Add nix completions to fpath
 if [[ -d "$HOME/.nix-profile/share/zsh/site-functions" ]]; then
   fpath=("$HOME/.nix-profile/share/zsh/site-functions" $fpath)
@@ -20,13 +27,6 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
 fi
 
 # Customize to your needs...
-
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
 
 # To customize prompt, run `p10k configure` or edit ~/dotfiles/zsh/.config/zsh/.p10k.zsh.
 [[ ! -f "${ZDOTDIR:-$HOME}/.p10k.zsh" ]] || source "${ZDOTDIR:-$HOME}/.p10k.zsh"
@@ -69,10 +69,6 @@ fi
 #stty -F/dev/tty -ixon -ixoff   Linux
 #stty -ixon -ixoff              macOS
 
-# nvim default editor
-export EDITOR='nvim'
-export VISUAL='nvim'
-
 # Confirm Ctrl-D before an empty interactive shell exits its tmux pane.
 function confirm-tmux-exit() {
   if [[ -n $TMUX && -z $BUFFER ]]; then
@@ -92,16 +88,8 @@ function confirm-tmux-exit() {
 zle -N confirm-tmux-exit
 bindkey "^D" confirm-tmux-exit
 
-# use neovim as manpager
-export MANPAGER='nvim +Man!'
-export MANWIDTH=80
-
-# LESS mouse scrolling
-export LESS='--mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --CLEAR-SCREEN'
-export PAGER='less'
-
 # Hardened C compiler wrapper for small standalone builds.
-function cc() {
+function c() {
     local compiler
     local -a flags
     local link=1
@@ -114,7 +102,7 @@ function cc() {
         compiler=gcc
         flags=(-O1 -g3 -ggdb3 -ftrivial-auto-var-init=zero)
     else
-        print -u2 'cc: neither clang nor gcc is available'
+        print -u2 'c: neither clang nor gcc is available'
         return 127
     fi
 
@@ -157,14 +145,6 @@ alias gl="git log --date=relative --abbrev=12 -n 160 \
     --pretty='format:%C(dim blue)%h%C(auto)%d %s %>|(68,trunc)%C(8)- %C(dim magenta)%an%C(8), %ad' --graph --all"
 alias gits="git --no-pager show --no-patch --format='commit %h (\"%s\")%n'"
 
-# fzf
-if command -v fzf &> /dev/null; then
-    source <(fzf --zsh)
-fi
-if command -v rg &> /dev/null; then
-    export FZF_DEFAULT_COMMAND="$(command -v rg) --files --hidden --follow --glob '!.git'"
-fi
-
 
 # emacsclient
 alias et='TERM=xterm-256color emacsclient -nw'
@@ -183,11 +163,7 @@ function vmeamd() {
 
 # programming language environments
 
-# docker
-export DOCKER_BUILDKIT=1
-export BUILDKIT_PROGRESS=plain                  # building the VM may output auth URLs the user needs to click
 # node / nvm
-export NVM_DIR="$HOME/.nvm"
 if [[ -s "$NVM_DIR/nvm.sh" ]]; then
     function nvm() {
         unfunction nvm
