@@ -556,10 +556,10 @@ structure.
   `~/.local/share/nix` content is inactive legacy data pending cleanup, not a
   recovery source or executable environment. Do not “fix” `nixPackage = null` or
   recommend `nixos-rebuild`. `home.nix` holds shared packages; imported modules
-  include `aerc/`, `agents/`, `bat/`, `emacs/`, `fish/`, `fonts/`, `ghostty/`,
-  `gnome/`, `git/`, `nix/`, `rime/`, `rime/gnome.nix`, `rustowl/`, `tldr/`,
-  `tmux/`, `vim/`, `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`, and `zsh/`. For
-  `schan` only, `mkHome` also imports the external `nix-flatpak` and
+  include `aerc/`, `agents/`, `bat/`, `emacs/`, `fish/`, `fonts/`, `fzf/`,
+  `ghostty/`, `gnome/`, `git/`, `nix/`, `rime/`, `rime/gnome.nix`, `rustowl/`,
+  `tldr/`, `tmux/`, `vim/`, `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`, and `zsh/`.
+  For `schan` only, `mkHome` also imports the external `nix-flatpak` and
   `plasma-manager` modules with `flatpak/` and `plasma/`. The shared
   `home.stateVersion = "26.11"` is a compatibility floor, not the installed Home
   Manager version.

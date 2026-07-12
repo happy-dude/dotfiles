@@ -122,5 +122,10 @@ in {
       XCURSOR_SIZE = toString cursorSize;
       XCURSOR_THEME = cursorTheme;
     };
+
+    systemd.user.sessionVariables = {
+      XCURSOR_SIZE = toString cursorSize;
+      XCURSOR_THEME = cursorTheme;
+    };
   };
 }

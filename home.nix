@@ -5,19 +5,7 @@
   inputs,
   username,
   ...
-}: let
-  solaarWrapped = config.lib.nixGL.wrap pkgs.solaar;
-in {
-  home.activation.createZshStateDirectory = config.lib.dag.entryAfter ["writeBoundary"] ''
-    ${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg "${config.xdg.stateHome}/zsh"}
-  '';
-
-  programs.fzf = {
-    enable = true;
-    enableFishIntegration = true;
-    enableZshIntegration = true;
-  };
-
+}: {
   targets.genericLinux.nixGL.packages = inputs.nixgl.packages;
   targets.genericLinux.nixGL.defaultWrapper = "mesa";
   targets.genericLinux.nixGL.installScripts = ["mesa"];
@@ -145,6 +133,16 @@ in {
       prettier
       procs
       protobuf
+      # Language-agent one-liners require these libraries to be importable from
+      # the python3 executable on PATH.
+      (python3.withPackages (
+        ps:
+          with ps; [
+            jieba
+            pypinyin
+            requests
+          ]
+      ))
       qemu
       reftools
       revive
@@ -188,20 +186,6 @@ in {
       languagetool # multilingual grammar/style checker - covers eo/es/it/pl; complements aspell's spellcheck-only coverage
       ocrmypdf # OCR-to-searchable-PDF wrapper; needs tesseract5 below on PATH, does not bundle it itself
       opencc # Simplified <-> Traditional Chinese conversion (s2t/t2s/s2hk/hk2s/s2twp configs bundled)
-      # python3 carrying jieba (Mandarin word segmentation) and pypinyin
-      # (Pinyin generation). MUST be a withPackages wrapper, not bare
-      # python3Packages.* entries — those only drop the libs in the store and
-      # never become importable by a python3 on PATH. This puts an
-      # `import jieba`-capable python3 on PATH, which is what language.md's
-      # one-liners rely on.
-      (python3.withPackages (
-        ps:
-          with ps; [
-            jieba
-            pypinyin
-            requests
-          ]
-      ))
       sdcv # StarDict console dictionary client (needs a dictionary file, see note below)
       tesseract5 # OCR engine - already bundles chi_sim/chi_tra/eng/epo/ita/pol/spa/vie traineddata, no extra config needed
       translate-shell # `trans` - MT cross-check only, never the final answer; also covers eo/es/it/pl (:eo, :es, :it, :pl)
@@ -216,7 +200,6 @@ in {
 
       # graphical packages
       (config.lib.nixGL.wrap mesa-demos)
-      solaarWrapped
 
       # resolve collisions for generic binaries (cc, c++, ld, etc.)
       (lib.hiPrio gcc) # gcc, g++
@@ -231,25 +214,10 @@ in {
       ".gdbinit".source = ./gdb/gdbinit;
       ".golangci.yml".source = ./.golangci.yml;
       ".stylua.toml".source = ./.stylua.toml;
-      ".local/share/nix-typescript".source = "${pkgs.typescript}/lib/node_modules/typescript";
     };
 
     sessionVariables = {
     };
-  };
-
-  xdg.configFile."autostart/solaar.desktop" = lib.mkIf (username == "schan") {
-    text = ''
-      [Desktop Entry]
-      Type=Application
-      Name=Solaar
-      Comment=Logitech Unifying Receiver peripherals manager
-      Exec=${solaarWrapped}/bin/solaar --window=hide
-      Icon=solaar
-      Terminal=false
-      StartupNotify=false
-      X-GNOME-UsesNotifications=true
-    '';
   };
 
   programs.home-manager.enable = true;

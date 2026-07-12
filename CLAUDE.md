@@ -102,13 +102,13 @@ checkout is the Linux branch.
   reviewing and applying every intervening Home Manager migration. The global
   gitignore is handled in the git module via `programs.git.ignores`, not a
   `home.file`.
-- Per-app modules live in their own subdirectories, each as a `default.nix`
+- Feature modules live in their own subdirectories, each as a `default.nix`
   imported from `flake.nix`'s `modules` list: `aerc/`, `agents/`, `bat/`,
-  `emacs/`, `fish/`, `fonts/`, `ghostty/`, `gnome/`, `git/`, `nix/`, `rime/`,
-  `rustowl/`, `tldr/`, `tmux/`, `vim/`, `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`,
-  `zsh/`. The desktop-specific `rime/gnome.nix` module is imported separately.
-  Adding a new app otherwise means creating `<app>/default.nix` and adding it to
-  the `modules` list in `flake.nix`.
+  `emacs/`, `fish/`, `fonts/`, `fzf/`, `ghostty/`, `gnome/`, `git/`, `nix/`,
+  `rime/`, `rustowl/`, `tldr/`, `tmux/`, `vim/`, `wezterm/`, `xdg/`, `yt-dlp/`,
+  `zed/`, `zsh/`. The desktop-specific `rime/gnome.nix` module is imported
+  separately. Adding a new app otherwise means creating `<app>/default.nix` and
+  adding it to the `modules` list in `flake.nix`.
 - `flatpak/` and `plasma/` are host-conditional modules: `mkHome` imports them
   with the external nix-flatpak and plasma-manager modules only for `schan`.
 - The formatter is **treefmt** (`treefmt-nix`, run via `nix fmt`): the Linux
@@ -138,6 +138,8 @@ and the inputs treefmt uses to format the repository.
 
 - **`bat/`** is a module (`bat/default.nix`, `programs.bat`); enabling the
   program owns the package, so do not duplicate `bat` in `home.packages`.
+- **`fzf/`** enables Home Manager's FZF package and its Fish and Zsh
+  integrations; do not duplicate `fzf` in `home.packages` or shell startup.
 - **`git/`** is a module (`git/default.nix`, `programs.git`); enabling the
   program owns the package, so do not duplicate `git` in `home.packages`. It
   defines aliases, delta for diffs and bat as its pager, and
@@ -148,6 +150,8 @@ and the inputs treefmt uses to format the repository.
   `include`s — SSH/GPG keys and email differ per box; template in
   `git/local.config.example`. Home Manager writes `~/.config/git/config`, which
   an unmanaged `~/.gitconfig` silently overrides (git reads it last).
+- **`xdg/`** owns generic-Linux XDG integration plus the nixGL-wrapped Solaar
+  package and its `schan`-only autostart entry.
 
 - **`zed/`** is a Home Manager module. `zed/.config/zed/settings.json` is the
   sole declarative source for managed keys. Edit the JSON directly; do **not**
@@ -449,9 +453,11 @@ source.
   it only when Home Manager should own the complete panel layout; leave display
   topology, generated IDs, wallpaper, and session history unmanaged.
 - **Vim runtime artifacts** are declarative: Home Manager links Tree-sitter
-  parsers and queries under `~/.local/share/nvim/site`; Home Manager provides
-  every formatter and language-server command. `vim/.vim/coc-settings.json` is
-  the authoritative server and format-on-save matrix, including C/C++, Rust, Go,
-  Zig, Perl, Python, Lua, shell, Fish, Clojure, Fennel, JavaScript, TypeScript,
-  Markdown, LaTeX, and Typst. Do not run `:TSUpdate`, `:GoUpdateBinaries`,
-  `:GoInstallBinaries`, vim-plug, or mutable CoC extension updates.
+  parsers and queries under `~/.local/share/nvim/site` and owns the stable
+  TypeScript SDK link under `~/.local/share/nix-typescript`; Home Manager
+  provides every formatter and language-server command.
+  `vim/.vim/coc-settings.json` is the authoritative server and format-on-save
+  matrix, including C/C++, Rust, Go, Zig, Perl, Python, Lua, shell, Fish,
+  Clojure, Fennel, JavaScript, TypeScript, Markdown, LaTeX, and Typst. Do not
+  run `:TSUpdate`, `:GoUpdateBinaries`, `:GoInstallBinaries`, vim-plug, or
+  mutable CoC extension updates.
