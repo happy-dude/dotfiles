@@ -73,6 +73,25 @@ fi
 export EDITOR='nvim'
 export VISUAL='nvim'
 
+# Confirm Ctrl-D before an empty interactive shell exits its tmux pane.
+function confirm-tmux-exit() {
+  if [[ -n $TMUX && -z $BUFFER ]]; then
+    local reply
+    zle -I
+    if read -q "reply?Exit this shell? [y/N] "; then
+      print
+      exit
+    fi
+    print
+    zle reset-prompt
+    return
+  fi
+
+  zle .delete-char-or-list
+}
+zle -N confirm-tmux-exit
+bindkey "^D" confirm-tmux-exit
+
 # use neovim as manpager
 export MANPAGER='nvim +Man!'
 export MANWIDTH=80

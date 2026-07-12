@@ -11,8 +11,22 @@ end
 set -gx EDITOR nvim
 set -gx VISUAL nvim
 
+# Confirm Ctrl-D before an empty interactive shell exits its tmux pane.
+function __confirm_tmux_exit
+    if set -q TMUX; and test (string length -- (commandline)) -eq 0
+        read --local --prompt-str "Exit this shell? [y/N] " response
+        commandline --function repaint
+        string match --quiet --regex --ignore-case '^y(es)?$' -- "$response"
+        and commandline --function exit
+        return
+    end
+
+    commandline --function exit
+end
+
 # ctrl-x ctrl-e to open $EDITOR, like in zsh
 if status is-interactive
+    bind ctrl-d __confirm_tmux_exit
     bind \cx\ce edit_command_buffer
 end
 
