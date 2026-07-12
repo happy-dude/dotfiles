@@ -134,11 +134,14 @@ in {
       stow
       strace
       stylua
+      texlab
       texliveFull
+      tinymist
       tokei
       tree
       tree-sitter
       typescript-language-server
+      typst
       util-linux
       valgrind
       virtme-ng

@@ -17,14 +17,17 @@
     "markdown",
     "markdownlint",
     "perl",
+    "plaintex",
     "python",
     "ruby",
     "rust",
     "sh",
     "sql",
     "terraform",
+    "tex",
     "typescript",
     "typescriptreact",
+    "typst",
     "yaml",
     "zig"
   ],
@@ -79,9 +82,16 @@
       "filetypes": ["fennel"],
       "rootPatterns": ["flsproject.fnl", ".git"]
     },
-    "digestif": {
-      "command": "digestif",
-      "filetypes": ["tex", "plaintex", "context"]
+    "texlab": {
+      "command": "texlab",
+      "filetypes": ["tex", "plaintex"],
+      "rootPatterns": [".latexmkrc", "latexmkrc", ".git"]
+    },
+    "tinymist": {
+      "command": "tinymist",
+      "args": ["lsp"],
+      "filetypes": ["typst"],
+      "rootPatterns": ["typst.toml", ".git"]
     },
     "json-language-server": {
       "command": "vscode-json-language-server",
