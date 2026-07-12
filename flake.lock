@@ -565,7 +565,8 @@
         "roswell_src": "roswell_src",
         "rust-overlay": "rust-overlay",
         "rustowl_src": "rustowl_src",
-        "treefmt-nix": "treefmt-nix"
+        "treefmt-nix": "treefmt-nix",
+        "virtme_ng_src": "virtme_ng_src"
       }
     },
     "roswell_src": {
@@ -669,6 +670,22 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "virtme_ng_src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1783455763,
+        "narHash": "sha256-VwPgDvE4MDYAU23jao16oNku0DdrnGYQa33mxxVN1SU=",
+        "owner": "arighi",
+        "repo": "virtme-ng",
+        "rev": "bb8caa74139235aed501a61f24879cd919426aff",
+        "type": "github"
+      },
+      "original": {
+        "owner": "arighi",
+        "repo": "virtme-ng",
         "type": "github"
       }
     },

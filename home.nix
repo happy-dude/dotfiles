@@ -133,6 +133,7 @@ in {
       typescript-language-server
       util-linux
       valgrind
+      virtme-ng
       vim-language-server
       vscode-langservers-extracted
       xclip

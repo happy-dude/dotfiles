@@ -41,6 +41,10 @@
       url = "github:roswell/roswell";
       flake = false;
     };
+    virtme_ng_src = {
+      url = "github:arighi/virtme-ng";
+      flake = false;
+    };
     bgutil_ytdlp_pot_provider = {
       url = "github:Brainicism/bgutil-ytdlp-pot-provider";
       flake = false;
@@ -216,6 +220,48 @@
           roswell = prev.roswell.overrideAttrs (_: {
             src = inputs.roswell_src;
           });
+          virtme-ng = final.python3Packages.buildPythonApplication {
+            pname = "virtme-ng";
+            version = "unstable-${builtins.substring 0 8 inputs.virtme_ng_src.lastModifiedDate}";
+            pyproject = true;
+            src = inputs.virtme_ng_src;
+
+            build-system = with final.python3Packages; [
+              argparse-manpage
+              setuptools
+            ];
+
+            dependencies = with final.python3Packages; [
+              argcomplete
+              requests
+            ];
+
+            makeWrapperArgs = [
+              "--prefix"
+              "PATH"
+              ":"
+              (final.lib.makeBinPath [
+                final.busybox
+                final.openssh
+                final.qemu
+                final.socat
+                final.virtiofsd
+              ])
+            ];
+
+            pythonImportsCheck = [
+              "virtme"
+              "virtme_ng"
+            ];
+
+            meta = {
+              description = "Build and run kernels in a virtualized host filesystem";
+              homepage = "https://github.com/arighi/virtme-ng";
+              license = final.lib.licenses.gpl2Only;
+              mainProgram = "vng";
+              platforms = final.lib.platforms.linux;
+            };
+          };
           vimPlugins =
             prev.vimPlugins
             // {
