@@ -1,10 +1,8 @@
 {
   "coc.preferences.formatOnSaveFiletypes": [
-    "Markdown",
     "c",
     "clojure",
     "cpp",
-    "coc-cfn-lint",
     "css",
     "fish",
     "go",
@@ -15,7 +13,6 @@
     "json",
     "lua",
     "markdown",
-    "markdownlint",
     "perl",
     "plaintex",
     "python",
@@ -97,6 +94,12 @@
       "command": "vscode-json-language-server",
       "args": ["--stdio"],
       "filetypes": ["json", "jsonc"]
+    },
+    "marksman": {
+      "command": "marksman",
+      "args": ["server"],
+      "filetypes": ["markdown"],
+      "rootPatterns": [".marksman.toml", ".git"]
     },
     "golang": {
       "command": "gopls",

@@ -39,6 +39,7 @@
     coc-clangd
     coc-highlight
     coc-markdownlint
+    coc-prettier
     coc-rust-analyzer
     coc-vimtex
     coc-zuban

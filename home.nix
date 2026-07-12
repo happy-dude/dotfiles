@@ -94,6 +94,7 @@ in {
       ltrace
       lua-language-server
       luaPackages.fennel
+      marksman
       meson
       motion
       moreutils
