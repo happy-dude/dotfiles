@@ -270,6 +270,18 @@
 ;; org-roam settings
 (require 'org-roam)
 (require 'org-roam-protocol)
+
+(defun dotfiles-org-roam-protocol-frame (function info)
+  "Run an Org Roam protocol handler in a dedicated capture frame."
+  (let ((frame (make-frame '((name . "capture")))))
+    (select-frame-set-input-focus frame)
+    (with-selected-frame frame
+      (delete-other-windows)
+      (funcall function info))))
+
+(advice-add 'org-roam-protocol-open-ref
+            :around #'dotfiles-org-roam-protocol-frame)
+
 ;; update last_modified when saving
 ;; ref: https://github.com/emacs-mirror/emacs/blob/master/lisp/time-stamp.el#L44-L73
 (add-hook 'org-mode-hook
@@ -510,6 +522,11 @@
 (require 'undo-tree)
 (evil-set-undo-system 'undo-tree)
 ;; undo-tree
+
+(setq undo-tree-history-directory-alist
+      `(("." . ,(expand-file-name
+                   "emacs/undo-tree/"
+                   (or (getenv "XDG_CACHE_HOME") "~/.cache")))))
 
 (global-undo-tree-mode)
 

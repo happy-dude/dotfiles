@@ -13,7 +13,7 @@
       ${pkgs.coreutils}/bin/mkdir -p \
         "$HOME/org/Archive" \
         "$HOME/org/roam" \
-        "${config.xdg.cacheHome}/emacs"
+        "${config.xdg.cacheHome}/emacs/undo-tree"
     '';
 
     registerOrgProtocol = config.lib.dag.entryAfter ["linkGeneration"] ''
@@ -24,7 +24,7 @@
 
   xdg.desktopEntries.emacs-org-protocol = {
     name = "Emacs Org Protocol";
-    exec = "${pkgs.emacs-pgtk}/bin/emacsclient --alternate-editor= --reuse-frame %u";
+    exec = "${pkgs.emacs-pgtk}/bin/emacsclient --alternate-editor= --no-wait %u";
     icon = "emacs";
     mimeType = ["x-scheme-handler/org-protocol"];
     noDisplay = true;

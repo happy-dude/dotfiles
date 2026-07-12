@@ -2,11 +2,13 @@
 
 Home Manager starts an Emacs daemon with the graphical session and registers a
 dedicated `emacs-org-protocol.desktop` as the handler for `org-protocol://`
-URLs. Its `%u` field passes the protocol URL to `emacsclient`; the ordinary
-Emacs desktop entry remains responsible for opening files. Emacs loads
-`org-roam-protocol`, which adds the `roam-ref` handler used to create or visit
-an Org Roam node for a web page. The derived Org Roam database stays in the
-local XDG cache rather than the synchronizable `~/org` tree.
+URLs. Its `%u` field passes the protocol URL to a non-blocking `emacsclient`;
+the ordinary Emacs desktop entry remains responsible for opening files. Emacs
+loads `org-roam-protocol`, which adds the `roam-ref` handler used to create or
+visit an Org Roam node for a web page. The handler creates a dedicated capture
+frame instead of exposing an intermediate scratch buffer. The derived Org Roam
+database and undo-tree history stay in the local XDG cache rather than the
+synchronizable `~/org` tree.
 
 The browser bookmark is intentionally manual state because Firefox owns and
 syncs its bookmarks. Add a bookmark in Firefox and use the following single line
@@ -107,10 +109,13 @@ emacsclient --eval "(featurep 'org-roam-protocol)"
 The expected handler is `emacs-org-protocol.desktop`, and the feature check
 should return `t`. Clicking the bookmark should open the `r` Org Roam reference
 capture template. Finalizing or aborting the capture closes its temporary frame.
+A reference that already exists opens its node in the dedicated frame instead of
+starting another capture.
 
 Synchronize the authoritative `.org` files rather than `org-roam.db`. Org Roam
 rebuilds its per-machine database at
-`${XDG_CACHE_HOME:-$HOME/.cache}/emacs/org-roam.db`.
+`${XDG_CACHE_HOME:-$HOME/.cache}/emacs/org-roam.db`. Undo-tree history is
+similarly stored below `${XDG_CACHE_HOME:-$HOME/.cache}/emacs/undo-tree/`.
 
 The shell aliases provide related entry points:
 
