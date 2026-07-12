@@ -64,14 +64,6 @@ if (( ! ${POWERLEVEL9K_LEFT_PROMPT_ELEMENTS[(I)nohist]} )); then
   POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(nohist $POWERLEVEL9K_LEFT_PROMPT_ELEMENTS)
 fi
 
-# Nix home-manager
-if [[ -s "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]]; then
-    source $HOME/.nix-profile/etc/profile.d/hm-session-vars.sh
-fi
-
-# homebrew
-#eval "$($(brew --prefix)/bin/brew shellenv)"
-
 # Turn off terminal flow control (ctrl-q and ctrl-s)
 # already set in prezto with `unsetopt FLOW_CONTROL` in modules/completion/init.zsh
 #stty -F/dev/tty -ixon -ixoff   Linux
@@ -87,7 +79,7 @@ export MANWIDTH=80
 
 # LESS mouse scrolling
 export LESS='--mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --CLEAR-SCREEN'
-export PAGER='less --mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --CLEAR-SCREEN'
+export PAGER='less'
 
 # Hardened C compiler wrapper for small standalone builds.
 function cc() {
@@ -159,40 +151,32 @@ fi
 alias et='TERM=xterm-256color emacsclient -nw'
 alias ef='emacsclient -nc'
 
-# virtme
-alias vmeamd="~/sources/virtme-ng/virtme-run --show-boot-console --show-command --memory 8G --rw --rwdir=$HOME/cf/bpf-lsm --kdir . --mods=auto --net user -a nokaslr"
-
-# LLVM, Xcode SDK
-#export LDFLAGS="-L$(brew --prefix)/opt/llvm/lib -Wl,-rpath,$(brew --prefix)/opt/llvm/lib"
-#export CPPFLAGS="-I$(brew --prefix)/opt/llvm/include"
-#export PATH="$(brew --prefix)/opt/llvm/bin:$PATH"
-#export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
+# Run the current kernel tree with the usual AMD debugging defaults.
+function vmeamd() {
+    command vng \
+        --run \
+        --memory 8G \
+        --rw \
+        --network user \
+        --append nokaslr \
+        "$@"
+}
 
 # programming language environments
 
 # docker
 export DOCKER_BUILDKIT=1
 export BUILDKIT_PROGRESS=plain                  # building the VM may output auth URLs the user needs to click
-#export DOCKER_DEFAULT_PLATFORM=linux/amd64     # for Apple Silicon: building the VM only works in a amd64 environment at the moment
-#export DOCKER_HOST=unix://$HOME/.docker/desktop/docker.sock          # linux docker-desktop host -- comment if using baseline docker-ce
-# go
-export PATH="/usr/local/go/bin:$PATH"
-export PATH="$(go env GOPATH)/bin:$PATH"
-# lua
-export PATH="$HOME/.luarocks/bin:$PATH"
-# luamake from sumneko
-alias luamake="$HOME/sources/lua-language-server/3rd/luamake/luamake"
 # node / nvm
-#export PATH="$HOME/node_modules/.bin:$PATH"
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                    # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-# perl
-#source ~/perl5/perlbrew/etc/bashrc
-# rust
-[[ ! -r "$HOME/.cargo/env" ]] || source "$HOME/.cargo/env"
-export PATH="$HOME/.cargo/bin:$PATH"
-
+if [[ -s "$NVM_DIR/nvm.sh" ]]; then
+    function nvm() {
+        unfunction nvm
+        source "$NVM_DIR/nvm.sh"
+        nvm "$@"
+    }
+fi
+[[ ! -s "$NVM_DIR/bash_completion" ]] || source "$NVM_DIR/bash_completion"
 # eza
 if command -v eza &> /dev/null
 then
@@ -207,8 +191,4 @@ then
     alias lS='eza -a1'                                                      # one column, just names
     alias lg='eza -labGd --git --sort=modified --tree --level=2'            # tree w/ git
     alias lt='eza -labGF --tree --level=2'                                  # tree
-else
-    echo "eza could not be found"
 fi
-
-export PATH="$PATH:$HOME/.local/bin"

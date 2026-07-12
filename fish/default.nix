@@ -20,17 +20,15 @@
       # Keep mutable source-install fallbacks behind Home Manager packages.
       fish_add_path --append --path --move "$(go env GOPATH)/bin"
       fish_add_path --append --path --move "$HOME/.cargo/bin"
-      ${lib.optionalString (username == "schan") ''
-        set -l normalized_path
+      set -l normalized_path
 
-        for path_entry in $PATH
-          contains -- "$path_entry" $normalized_path
-          or set -a normalized_path "$path_entry"
-        end
+      for path_entry in $PATH
+        contains -- "$path_entry" $normalized_path
+        or set -a normalized_path "$path_entry"
+      end
 
-        set -gx PATH $normalized_path
-        set -e normalized_path path_entry
-      ''}
+      set -gx PATH $normalized_path
+      set -e normalized_path path_entry
     '';
 
     plugins = [
