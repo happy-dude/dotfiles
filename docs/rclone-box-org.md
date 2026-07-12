@@ -93,6 +93,10 @@ systemctl --user start rclone-box-org-bisync.timer
 systemctl --user start rclone-box-org-watch.service
 ```
 
+Keep `RCLONE_TEST` on both sides permanently. Every scheduled run verifies that
+the matching sentinel is visible before applying changes; deleting either copy
+causes bisync to fail closed until both copies are restored.
+
 Do not use `--resync` during normal scheduled operation. It is reserved for the
 initial run, deliberate filter changes, or recovery when bisync explicitly
 requires it.

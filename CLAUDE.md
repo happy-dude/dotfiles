@@ -129,10 +129,12 @@ macOS branch consumes the same state; Linux does not deploy it. `gdb/gdbinit` is
 a source file linked to `~/.gdbinit`. `emacs/default.nix` links
 `emacs/org-dir-locals.el`, creates the mutable `~/org/Archive` and `~/org/roam`
 directories during activation, starts the Emacs daemon with the graphical user
-session, and associates `org-protocol://` URLs with the packaged
-`emacsclient.desktop`. The Firefox bookmarklet, protocol flow, and validation
-steps are documented in `docs/emacs-org-protocol.md`. The derived Org Roam
-database stays under the local XDG cache and must not be synchronized with the
+session, and associates `org-protocol://` URLs with the dedicated URL-aware
+`emacs-org-protocol.desktop`. Protocol captures reuse one graphical client frame
+instead of Org's split-window display action. The canonical Firefox bookmarklet,
+optional `org` keyword, Flatpak portal flow, and validation steps are documented
+in `docs/emacs-org-protocol.md`. The derived Org Roam database and undo-tree
+history stay under the local XDG cache and must not be synchronized with the
 authoritative `~/org` files. Roswell itself remains Nix-built, but the copied
 helper and standalone `ros_swank` launcher are not deployed; Nix-installed SLIME
 starts Swank through `ros -Q run`.
@@ -185,9 +187,11 @@ and the inputs treefmt uses to format the repository.
   and missed changes. The services remain inert until a manually reviewed
   initial resync creates `~/.local/state/rclone/org-bisync-ready`. Its filter
   keeps legacy and derived Org Roam databases, Home Manager links, locks, and
-  editor backups out of Box. OAuth state in `~/.config/rclone/rclone.conf` is
-  machine-local and must never enter Git or the Nix store. Setup and recovery
-  are documented in `docs/rclone-box-org.md`.
+  editor backups out of Box. The matching `RCLONE_TEST` access-check file is a
+  permanent safety sentinel on both sides, not a disposable test artifact. OAuth
+  state in `~/.config/rclone/rclone.conf` is machine-local and must never enter
+  Git or the Nix store. Setup and recovery are documented in
+  `docs/rclone-box-org.md`.
 - **`rime/`** is a Home Manager module (`rime/default.nix`) over a retained
   Stow-compatible snapshot. Locked schema inputs replace matching snapshot files
   and `pkgs.rime-zhwiki` supplies Zhwiki. Nix mode claims explicit ownership,
