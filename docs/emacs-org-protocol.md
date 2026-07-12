@@ -2,13 +2,14 @@
 
 Home Manager starts an Emacs daemon with the graphical session and registers a
 dedicated `emacs-org-protocol.desktop` as the handler for `org-protocol://`
-URLs. Its `%u` field passes the protocol URL to a non-blocking `emacsclient`;
-the ordinary Emacs desktop entry remains responsible for opening files. Emacs
-loads `org-roam-protocol`, which adds the `roam-ref` handler used to create or
-visit an Org Roam node for a web page. The handler creates a dedicated capture
-frame instead of exposing an intermediate scratch buffer. The derived Org Roam
-database and undo-tree history stay in the local XDG cache rather than the
-synchronizable `~/org` tree.
+URLs. Its `%u` field passes the protocol URL to a non-blocking graphical
+`emacsclient`; the ordinary Emacs desktop entry remains responsible for opening
+files. Emacs loads `org-roam-protocol`, which adds the `roam-ref` handler used
+to create or visit an Org Roam node for a web page. The handler marks that
+client frame as the temporary capture frame instead of creating a second frame
+or exposing an intermediate scratch buffer. The derived Org Roam database and
+undo-tree history stay in the local XDG cache rather than the synchronizable
+`~/org` tree.
 
 The browser bookmark is intentionally manual state because Firefox owns and
 syncs its bookmarks. Add a bookmark in Firefox and use the following single line

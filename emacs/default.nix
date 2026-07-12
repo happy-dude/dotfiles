@@ -24,7 +24,7 @@
 
   xdg.desktopEntries.emacs-org-protocol = {
     name = "Emacs Org Protocol";
-    exec = "${pkgs.emacs-pgtk}/bin/emacsclient --alternate-editor= --no-wait %u";
+    exec = "${pkgs.emacs-pgtk}/bin/emacsclient --alternate-editor= --create-frame --no-wait %u";
     icon = "emacs";
     mimeType = ["x-scheme-handler/org-protocol"];
     noDisplay = true;

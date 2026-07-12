@@ -273,11 +273,9 @@
 
 (defun dotfiles-org-roam-protocol-frame (function info)
   "Run an Org Roam protocol handler in a dedicated capture frame."
-  (let ((frame (make-frame '((name . "capture")))))
-    (select-frame-set-input-focus frame)
-    (with-selected-frame frame
-      (delete-other-windows)
-      (funcall function info))))
+  (set-frame-parameter nil 'name "capture")
+  (delete-other-windows)
+  (funcall function info))
 
 (advice-add 'org-roam-protocol-open-ref
             :around #'dotfiles-org-roam-protocol-frame)
