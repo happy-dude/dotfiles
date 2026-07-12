@@ -128,11 +128,6 @@ end
 
 # programming language environments
 
-# node / nvm
-# nvm scripts not compatible with non-POSIX fish, use nvm.fish plugin
-if status is-interactive && not set -q nvm_default_version
-    set --universal nvm_default_version system
-end
 # eza
 if command -q eza
     alias ls='eza' # ls

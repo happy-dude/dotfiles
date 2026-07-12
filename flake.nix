@@ -122,10 +122,6 @@
       url = "github:jorgebucaran/autopair.fish";
       flake = false;
     };
-    fish_nvm = {
-      url = "github:jorgebucaran/nvm.fish";
-      flake = false;
-    };
     fish_puffer = {
       url = "github:nickeb96/puffer-fish";
       flake = false;

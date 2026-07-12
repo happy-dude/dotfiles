@@ -38,10 +38,6 @@
         src = inputs.fish_autopair;
       }
       {
-        name = "nvm.fish";
-        src = inputs.fish_nvm;
-      }
-      {
         name = "puffer-fish";
         src = inputs.fish_puffer;
       }

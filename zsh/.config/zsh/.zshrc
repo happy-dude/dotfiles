@@ -163,15 +163,6 @@ function vmeamd() {
 
 # programming language environments
 
-# node / nvm
-if [[ -s "$NVM_DIR/nvm.sh" ]]; then
-    function nvm() {
-        unfunction nvm
-        source "$NVM_DIR/nvm.sh"
-        nvm "$@"
-    }
-fi
-[[ ! -s "$NVM_DIR/bash_completion" ]] || source "$NVM_DIR/bash_completion"
 # eza
 if command -v eza &> /dev/null
 then
