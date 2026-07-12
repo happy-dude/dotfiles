@@ -127,10 +127,13 @@ Home Manager owns Linux configuration except for `ssh/.ssh/config`, whose
 migration is intentionally deferred. `karabiner/` remains tracked because the
 macOS branch consumes the same state; Linux does not deploy it. `gdb/gdbinit` is
 a source file linked to `~/.gdbinit`. `emacs/default.nix` links
-`emacs/org-dir-locals.el` and creates the mutable `~/org/Archive` and
-`~/org/roam` directories during activation. Roswell itself remains Nix-built,
-but the copied helper and standalone `ros_swank` launcher are not deployed;
-Nix-installed SLIME starts Swank through `ros -Q run`.
+`emacs/org-dir-locals.el`, creates the mutable `~/org/Archive` and `~/org/roam`
+directories during activation, starts the Emacs daemon with the graphical user
+session, and associates `org-protocol://` URLs with the packaged
+`emacsclient.desktop`. The Firefox bookmarklet, protocol flow, and validation
+steps are documented in `docs/emacs-org-protocol.md`. Roswell itself remains
+Nix-built, but the copied helper and standalone `ros_swank` launcher are not
+deployed; Nix-installed SLIME starts Swank through `ros -Q run`.
 
 The style and lint configs (`.clang-format`, `.editorconfig`, `.golangci.yml`,
 `.stylua.toml`) live at the repository root. They are both `home.file` sources

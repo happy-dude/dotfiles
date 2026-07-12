@@ -269,6 +269,7 @@
 
 ;; org-roam settings
 (require 'org-roam)
+(require 'org-roam-protocol)
 ;; update last_modified when saving
 ;; ref: https://github.com/emacs-mirror/emacs/blob/master/lisp/time-stamp.el#L44-L73
 (add-hook 'org-mode-hook
@@ -281,7 +282,9 @@
 
 ;; ref: https://www.orgroam.com/manual/Getting-Started.html#Getting-Started
 (setq org-roam-directory "~/org/roam")
-(setq org-roam-db-location "~/org/roam/org-roam.db")
+(setq org-roam-db-location
+      (expand-file-name "emacs/org-roam.db"
+                        (or (getenv "XDG_CACHE_HOME") "~/.cache")))
 (require 'browse-url)
 (setq org-roam-graph-executable "dot")
 (setq org-roam-graph-viewer #'browse-url-of-file)
