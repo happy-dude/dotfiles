@@ -110,12 +110,10 @@ alias gl="git log --date=relative --abbrev=12 -n 160 \
 alias gits="git --no-pager show --no-patch --format='commit %h (\"%s\")%n'"
 
 # fzf
-#[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-#[ -d $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/ ] && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/completion.zsh && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/key-bindings.zsh
-if test -d $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell
+if command -q fzf
     fzf --fish | source
-    if command -v rg &>/dev/null
-        set -gx FZF_DEFAULT_COMMAND "$(which rg) --files --hidden --follow --glob '!.git'"
+    if command -q rg
+        set -gx FZF_DEFAULT_COMMAND (command -s rg)" --files --hidden --follow --glob '!.git'"
     end
 end
 
