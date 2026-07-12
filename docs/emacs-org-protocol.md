@@ -6,19 +6,24 @@ URLs. Its `%u` field passes the protocol URL to a non-blocking graphical
 `emacsclient`; the ordinary Emacs desktop entry remains responsible for opening
 files. Emacs loads `org-roam-protocol`, which adds the `roam-ref` handler used
 to create or visit an Org Roam node for a web page. The handler marks that
-client frame as the temporary capture frame instead of creating a second frame
-or exposing an intermediate scratch buffer. The derived Org Roam database and
-undo-tree history stay in the local XDG cache rather than the synchronizable
-`~/org` tree.
+client frame as the temporary capture frame instead of splitting the capture
+into another window. The derived Org Roam database and undo-tree history stay in
+the local XDG cache rather than the synchronizable `~/org` tree.
 
 The browser bookmark is intentionally manual state because Firefox owns and
 syncs its bookmarks. Add a bookmark in Firefox and use the following single line
-as its URL:
+as its URL. This is the canonical bookmarklet; copy the line exactly because
+missing spaces, periods, or regular-expression delimiters make it invalid:
 
 <!-- prettier-ignore -->
 ```javascript
 javascript:(()=>{const canonical=document.querySelector('link[rel="canonical"]')?.href;const ref=new URL(canonical||location.href);for(const key of [...ref.searchParams.keys()]){if(/^utm_/i.test(key)||/^(fbclid|gclid|dclid|mc_cid|mc_eid)$/i.test(key))ref.searchParams.delete(key)}ref.hash='';location.href='org-protocol://roam-ref?'+new URLSearchParams({template:'r',ref:ref.href,title:document.title.replace(/\s+/g,' ').trim(),body:String(getSelection()).trim()});void 0})()
 ```
+
+Optionally assign the Firefox bookmark the keyword `org`. Typing `org` in the
+address bar and pressing Enter then invokes the bookmarklet on the current page.
+The JavaScript does not contain the keyword, and its URL deliberately has no
+`%s` placeholder because it does not accept keyword-search text.
 
 ## How the bookmarklet works
 
@@ -112,6 +117,38 @@ should return `t`. Clicking the bookmark should open the `r` Org Roam reference
 capture template. Finalizing or aborting the capture closes its temporary frame.
 A reference that already exists opens its node in the dedicated frame instead of
 starting another capture.
+
+### Flatpak Firefox
+
+Flatpak Firefox dispatches external URLs through the desktop portal. A host-side
+`xdg-open org-protocol://...` test validates the desktop entry and Emacs, but it
+does not exercise the Flatpak-to-portal boundary. Test the actual bookmarklet in
+Firefox as a separate step.
+
+Use this temporary bookmarklet to confirm that Firefox can read the selection
+before diagnosing external URL dispatch:
+
+<!-- prettier-ignore -->
+```javascript
+javascript:(()=>{alert(JSON.stringify(String(window.getSelection())));void 0})()
+```
+
+If the selection test works and Emacs opens without receiving a capture, verify
+the handler and refresh the desktop application cache:
+
+```bash
+flatpak ps | rg -i firefox
+xdg-mime query default x-scheme-handler/org-protocol
+gio mime x-scheme-handler/org-protocol
+update-desktop-database ~/.local/share/applications
+kbuildsycoca6 --noincremental
+systemctl --user list-units --type=service 'xdg-desktop-portal*'
+```
+
+Portal backend unit names vary by desktop and distribution. Restart only the
+active portal units shown by the final command, fully exit Firefox, and relaunch
+it before retesting. KDE may otherwise retain the previous desktop entry and
+discard the protocol URL even though `xdg-mime` reports the new default.
 
 Synchronize the authoritative `.org` files rather than `org-roam.db`. Org Roam
 rebuilds its per-machine database at
