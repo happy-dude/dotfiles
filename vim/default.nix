@@ -47,24 +47,20 @@
 
   sharedPlugins = with pkgs.vimPlugins; [
     ack-vim
-    base16-vim
     coc-nvim
     csv-vim
     ctrlp-vim
     fzf-vim
     gruvbox-material
     html5-vim
-    jellybeans-vim
     nerdcommenter
     rust-vim
     salt-vim
-    seoul256-vim
     splitjoin-vim
     swift-vim
     undotree
     vim-airline
     vim-airline-themes
-    vim-colors-solarized
     vim-dirvish
     vim-fugitive
     vim-go
