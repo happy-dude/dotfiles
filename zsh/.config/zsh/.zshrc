@@ -28,7 +28,7 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# To customize prompt, run `p10k configure` or edit ~/dotfiles/zsh/.p10k.zsh.
+# To customize prompt, run `p10k configure` or edit ~/dotfiles/zsh/.config/zsh/.p10k.zsh.
 [[ ! -f "${ZDOTDIR:-$HOME}/.p10k.zsh" ]] || source "${ZDOTDIR:-$HOME}/.p10k.zsh"
 
 # History toggle: `nohist` stops persisting this session's commands to disk (handy
@@ -142,12 +142,13 @@ alias gl="git log --date=relative --abbrev=12 -n 160 \
 alias gits="git --no-pager show --no-patch --format='commit %h (\"%s\")%n'"
 
 # fzf
-#[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-[ -d $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/ ] && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/completion.zsh && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/key-bindings.zsh
-if command -v rg &> /dev/null
-then
-    export FZF_DEFAULT_COMMAND="$(which rg) --files --hidden --follow --glob '!.git'"
+if command -v fzf &> /dev/null; then
+    source <(fzf --zsh)
 fi
+if command -v rg &> /dev/null; then
+    export FZF_DEFAULT_COMMAND="$(command -v rg) --files --hidden --follow --glob '!.git'"
+fi
+
 
 # emacsclient
 alias et='TERM=xterm-256color emacsclient -nw'
@@ -184,7 +185,7 @@ export NVM_DIR="$HOME/.nvm"
 # perl
 #source ~/perl5/perlbrew/etc/bashrc
 # rust
-source "$HOME/.cargo/env"
+[[ ! -r "$HOME/.cargo/env" ]] || source "$HOME/.cargo/env"
 export PATH="$HOME/.cargo/bin:$PATH"
 
 # eza
