@@ -527,9 +527,11 @@ whether a safe unprivileged user/network-namespace probe can configure its
 namespace. If the active security policy prevents Bubblewrap from configuring
 the namespace, treat the patch helper as unavailable for that session. Retry the
 required operation through the narrowly scoped approved elevated or unsandboxed
-mode, with a concise justification. For file edits, use a deterministic,
-file-scoped Perl change, inspect the resulting diff immediately, and run the
-normal formatter and tests.
+mode, with a concise justification. For file edits, use a narrowly scoped
+elevated Python script that reads one named file, asserts the exact old text
+occurs once, replaces it once, and writes the same file. Prefer exact multiline
+strings; use regular expressions only when the edit genuinely requires them.
+Inspect the resulting diff immediately, then run the normal formatter and tests.
 
 Tell the user when this fallback is used. Do not weaken AppArmor or SELinux
 policy, disable namespace restrictions, make Bubblewrap setuid, or disable

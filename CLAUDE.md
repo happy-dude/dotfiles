@@ -56,12 +56,14 @@ checkout is the Linux branch.
   user/network-namespace probe can configure its namespace. If the active
   security policy prevents Bubblewrap from configuring the namespace, treat the
   patch helper as unavailable for that session: use the narrowly scoped approved
-  elevated mode and, for file edits, a deterministic file-scoped Perl change.
-  Inspect the resulting diff immediately and run the normal formatter and tests.
-  State when this fallback is used. Do not weaken AppArmor or SELinux policy,
-  disable namespace restrictions, make Bubblewrap setuid, or disable sandboxing
-  without explicit user authorization. Do not generalize this workaround to
-  unrelated failures.
+  elevated mode and, for file edits, a narrowly scoped Python script that reads
+  one named file, asserts the exact old text occurs once, replaces it once, and
+  writes the same file. Prefer exact multiline strings; use regular expressions
+  only when the edit genuinely requires them. Inspect the resulting diff
+  immediately, then run the normal formatter and tests. State when this fallback
+  is used. Do not weaken AppArmor or SELinux policy, disable namespace
+  restrictions, make Bubblewrap setuid, or disable sandboxing without explicit
+  user authorization. Do not generalize this workaround to unrelated failures.
 - Flake inputs: `nixpkgs` (nixos-unstable), `home-manager`, `nix-flatpak`,
   `nixgl`, `neovim-nightly-overlay`, `rust-overlay`, `treefmt-nix`, the
   `ghostty` flake, and source-only Rime schema repositories. Home Manager,
