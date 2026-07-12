@@ -564,11 +564,12 @@ structure.
   recovery source or executable environment. Do not “fix” `nixPackage = null` or
   recommend `nixos-rebuild`. `home.nix` holds shared packages; imported modules
   include `aerc/`, `agents/`, `bat/`, `emacs/`, `fish/`, `fonts/`, `ghostty/`,
-  `git/`, `nix/`, `rime/`, `rime/gnome.nix`, `rustowl/`, `tldr/`, `tmux/`,
-  `vim/`, `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`, and `zsh/`. For `schan` only,
-  `mkHome` also imports the external `nix-flatpak` module and `flatpak/`. The
-  shared `home.stateVersion = "26.11"` is a compatibility floor, not the
-  installed Home Manager version.
+  `gnome/`, `git/`, `nix/`, `rime/`, `rime/gnome.nix`, `rustowl/`, `tldr/`,
+  `tmux/`, `vim/`, `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`, and `zsh/`. For
+  `schan` only, `mkHome` also imports the external `nix-flatpak` and
+  `plasma-manager` modules with `flatpak/` and `plasma/`. The shared
+  `home.stateVersion = "26.11"` is a compatibility floor, not the installed Home
+  Manager version.
 - **Ownership and sources:** Home Manager owns Linux configuration except for
   the intentionally deferred `ssh/.ssh/config`. `gdb/gdbinit` is linked to
   `~/.gdbinit`; the Emacs module links Org directory-local settings and creates
@@ -588,6 +589,11 @@ structure.
   uses `~/.config/zed/settings.json`. The agent prompts remain live through
   `mkOutOfStoreSymlink`. The global gitignore is `git/.gitignore_global`;
   machine identity and signing remain in untracked `~/.config/git/local.config`.
+  Plasma's captured panel declaration remains disabled because enabling
+  high-level panel management deletes and rebuilds
+  `plasma-org.kde.plasma.desktop-appletsrc` when the declaration changes.
+  Display topology, generated IDs, wallpaper, and session history remain
+  unmanaged.
 - **Editor ownership:** Vim, Neovim, and their plugins are locked Nix packages;
   shared, Vim-only, and Neovim-only plugin lists live in `vim/default.nix` and
   use native package support. Emacs packages are declared exclusively through

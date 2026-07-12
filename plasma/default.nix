@@ -2,12 +2,75 @@
   lib,
   desktop,
   ...
-}: {
+}: let
+  managePanel = false;
+in {
   config = lib.mkIf (desktop == "plasma") {
     programs.plasma = {
       enable = true;
       overrideConfig = false;
       immutableByDefault = false;
+
+      panels = lib.optionals managePanel [
+        {
+          location = "bottom";
+          floating = true;
+          hiding = "none";
+          lengthMode = "fill";
+          height = 36;
+          widgets = [
+            {
+              kickoff = {
+                compactDisplayStyle = true;
+                sortAlphabetically = true;
+              };
+            }
+            "org.kde.plasma.pager"
+            {
+              panelSpacer = {
+                expanding = false;
+                length = 120;
+              };
+            }
+            {
+              iconTasks = {
+                launchers = [
+                  "preferred://filemanager"
+                  "applications:com.mitchellh.ghostty.desktop"
+                  "preferred://browser"
+                  "applications:org.mozilla.thunderbird.desktop"
+                ];
+                behavior.showTasks.onlyInCurrentDesktop = false;
+              };
+            }
+            {
+              panelSpacer = {
+                expanding = false;
+                length = 120;
+              };
+            }
+            "org.kde.plasma.marginsseparator"
+            {
+              systemTray = {
+                items = {
+                  hidden = ["org.kde.plasma.addons.katesessions"];
+                  shown = [
+                    "org.kde.plasma.battery"
+                    "org.kde.plasma.bluetooth"
+                    "org.kde.plasma.volume"
+                    "org.kde.plasma.mediacontroller"
+                    "Fcitx"
+                    "org.kde.plasma.brightness"
+                  ];
+                  configs.battery.showPercentage = true;
+                };
+              };
+            }
+            "org.kde.plasma.digitalclock"
+            "org.kde.plasma.showdesktop"
+          ];
+        }
+      ];
 
       workspace = {
         lookAndFeel = "org.kde.breezedark.desktop";
@@ -138,6 +201,13 @@
           };
           Windows.ElectricBorderDelay = 50;
           Xwayland.Scale = 1.25;
+        };
+
+        kxkbrc.Layout = {
+          DisplayNames = "";
+          LayoutList = "us";
+          Use = true;
+          VariantList = "colemak";
         };
 
         dolphinrc = {
