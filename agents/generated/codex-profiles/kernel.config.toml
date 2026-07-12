@@ -189,6 +189,14 @@ could check X" as "let me check X" by default:
   clipboard-ready block. Avoid drip-feeding commands that force repeated context
   switches; return to that context only when prior output genuinely determines
   the next check or a state-changing step requires separate confirmation.
+- When asking the user to run a multi-step workflow, provide one contiguous,
+  copy-pasteable command block. Include all presently knowable dependent steps,
+  inspection, and validation instead of splitting the workflow across multiple
+  replies or code blocks. Make dependent steps fail closed so later mutations do
+  not run after an earlier failure. Do not use `exit` in commands intended for
+  an interactive shell; use a function with `return`, or another construct that
+  reports failure without terminating the user's session.
+
 - Never ask the user to copy and paste base64-encoded executable content. If a
   script is too large to present normally, write it to a real file in an agreed
   transfer location such as `~/Downloads`, provide its checksum and invocation,
