@@ -71,8 +71,6 @@
     vim-gruvbox8
     vim-indent-guides
     vim-markdown
-    vim-pandoc
-    vim-pandoc-syntax
     vim-racket
     vim-repeat
     vim-rsi

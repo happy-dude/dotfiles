@@ -8,7 +8,7 @@
 -- Uses CodeCompanion's built-in `anthropic` adapter (reads $ANTHROPIC_API_KEY).
 
 require('render-markdown').setup({
-  file_types = { 'markdown', 'codecompanion' },
+  file_types = { 'codecompanion' },
 })
 
 require('img-clip').setup({
