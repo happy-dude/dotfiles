@@ -91,6 +91,12 @@ if &loadplugins
   unlet s:package_config
   unlet s:package_configs
 
+  if has('nvim')
+    " Configure Neovim plugins before filetype hooks can use their state.
+    packadd! rustowl-nvim
+    lua require('init')
+  endif
+
   syntax enable               " Enable syntax highlighting
   filetype plugin indent on   " Enable filetype plugin and filetype-based indentation
 
@@ -127,14 +133,3 @@ for s:config in [
   call s:SourceConfig(s:config)
 endfor
 unlet s:config
-
-
-"""""""""""""""""""""""""""""""
-"{ """" Neovim Lua Configs """"
-"""""""""""""""""""""""""""""""
-if has('nvim')
-  " Home Manager installs the locked RustOwl client as an optional package.
-  packadd! rustowl-nvim
-  lua require('init')
-endif
-" }

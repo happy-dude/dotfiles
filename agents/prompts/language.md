@@ -458,7 +458,11 @@ format-on-save matrix. Home Manager provides every command it names, including
 the C/C++, Rust, Go, Zig, Perl, Python, Lua, shell, Fish, Clojure, Fennel,
 JavaScript, TypeScript, Markdown, LaTeX, and Typst toolchains. Do not
 reintroduce ALE, Pathogen, editorconfig-vim, or mutable plugin binary
-downloaders.
+downloaders. `vim/default.nix` builds the managed Tree-sitter runtime, including
+the explicit Org parser omitted by `nvim-treesitter`'s all-grammar set;
+`checks.x86_64-linux.neovim-org` opens and parses a real Org file with the
+evaluated Neovim runtime from both Home Manager profiles. Do not run mutable
+parser update commands.
 
 `flake.nix` builds two generic-Linux profiles with
 `mkHome { username, desktop, nixPackage, rimeDeployment }`. Both default to
@@ -480,10 +484,11 @@ keeps a four-space global fallback plus project-specific overrides.
 `nix flake check --show-trace --no-update-lock-file` covers treefmt output; Bash
 syntax and ShellCheck for `scripts/*.sh`; the focused
 `scripts/test_update_submodules.sh` regression suite; native syntax for managed
-Fish and Zsh files; Emacs parentheses and Org lint for tracked Org files;
-workflows and pinned Actions; Rime Lua; and secret scanning. CI runs those
-checks and locked evaluation of both Home Manager profiles. Full builds require
-the manual `workflow_dispatch` `build_homes` input.
+Fish and Zsh files; Emacs parentheses and Org lint for tracked Org files; a real
+Neovim Org Tree-sitter parse; workflows and pinned Actions; Rime Lua; and secret
+scanning. CI runs those checks and locked evaluation of both Home Manager
+profiles. Full builds require the manual `workflow_dispatch` `build_homes`
+input.
 
 That enumeration is a quick reference, not the source of truth — it can go stale
 the moment someone edits `home.nix` without updating this file. If you're unsure

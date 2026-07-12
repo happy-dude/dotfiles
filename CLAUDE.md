@@ -240,11 +240,17 @@ guidance detectable.
   `vim/.vim/vimrc` loads ordered file-based settings, while `lua/init.lua` is
   the Neovim entry point. There is no vim-plug checkout or mutable plugin
   updater.
-- Home Manager builds Tree-sitter parsers and queries, the RustOwl server and
-  matching optional Neovim client, CoC plus its extensions, and all formatter,
-  helper, and language-server executables. `flake.lock` and the locked Nixpkgs
-  revision determine editor updates. Do not run mutable plugin, parser, CoC
-  extension, or vim-go binary update commands.
+- Home Manager builds Tree-sitter parsers and queries in `vim/default.nix`,
+  including an explicit `org.so` from `tree-sitter-org-nvim` because
+  `nvim-treesitter.withAllGrammars` omits it. The `neovim-org` flake check opens
+  a real Org file with each profile's evaluated Neovim package, configuration,
+  plugin pack, parsers, and queries. It verifies that Orgmode is configured
+  before its filetype hook and that the resulting buffer parses successfully.
+  Home Manager also builds the RustOwl server and matching optional Neovim
+  client, CoC plus its extensions, and all formatter, helper, and
+  language-server executables. `flake.lock` and the locked Nixpkgs revision
+  determine editor updates. Do not run mutable plugin, parser, CoC extension, or
+  vim-go binary update commands.
 - CoC loads in both editors and owns LSP, diagnostics, completion, navigation,
   and format-on-save. vim-go retains non-LSP Go commands. Vim uses its bundled
   EditorConfig support and Neovim uses native EditorConfig. Do not reintroduce
@@ -283,7 +289,8 @@ The flake checks cover treefmt formatting; Bash syntax and ShellCheck for
 `scripts/*.sh`; the focused `scripts/test_update_submodules.sh` regression
 suite; native syntax checks for the managed Fish and Zsh files; sorted
 `.gitmodules`; Emacs `check-parens` and Org lint for tracked Org files; GitHub
-Actions syntax and pinned action revisions; Rime Lua syntax and focused tests;
+Actions syntax and pinned action revisions; a real Neovim Org Tree-sitter parse
+against the evaluated Home Manager runtime; Rime Lua syntax and focused tests;
 and gitleaks secret scanning. CI runs those checks and evaluates both Home
 Manager configurations on pushes and pull requests. Full builds of both
 configurations are opt-in through the `workflow_dispatch` `build_homes` input

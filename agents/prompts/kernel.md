@@ -564,10 +564,10 @@ structure.
   recovery source or executable environment. Do not “fix” `nixPackage = null` or
   recommend `nixos-rebuild`. `home.nix` holds shared packages; imported modules
   include `aerc/`, `agents/`, `bat/`, `emacs/`, `fish/`, `fonts/`, `fzf/`,
-  `ghostty/`, `gnome/`, `git/`, `nix/`, `rime/`, `rime/gnome.nix`, `rustowl/`,
-  `tldr/`, `tmux/`, `vim/`, `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`, and `zsh/`.
-  For `schan` only, `mkHome` also imports the external `nix-flatpak` and
-  `plasma-manager` modules with `flatpak/` and `plasma/`. The shared
+  `ghostty/`, `gnome/`, `git/`, `nix/`, `rclone/`, `rime/`, `rime/gnome.nix`,
+  `rustowl/`, `tldr/`, `tmux/`, `vim/`, `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`,
+  and `zsh/`. For `schan` only, `mkHome` also imports the external `nix-flatpak`
+  and `plasma-manager` modules with `flatpak/` and `plasma/`. The shared
   `home.stateVersion = "26.11"` is a compatibility floor, not the installed Home
   Manager version.
 - **Ownership and sources:** Home Manager owns Linux configuration except for
@@ -605,8 +605,12 @@ structure.
   language-server and format-on-save matrix; Home Manager provides every command
   it names, including the C/C++, Rust, Go, Zig, Perl, Python, Lua, shell, Fish,
   Clojure, Fennel, JavaScript, TypeScript, Markdown, LaTeX, and Typst
-  toolchains. Do not reintroduce ALE, Pathogen, editorconfig-vim, or mutable
-  plugin binary downloaders. The locked `virtme_ng_src` input builds the
+  toolchains. `vim/default.nix` also builds the managed Tree-sitter runtime,
+  including the explicit Org parser omitted by `nvim-treesitter`'s all-grammar
+  set; `checks.x86_64-linux.neovim-org` opens and parses a real Org file with
+  the evaluated Neovim runtime from both Home Manager profiles. Do not
+  reintroduce ALE, Pathogen, editorconfig-vim, mutable parser downloads, or
+  mutable plugin binary downloaders. The locked `virtme_ng_src` input builds the
   installed `vng` kernel VM command, while Ghidra comes from locked Nixpkgs.
 - **Agent prompt ownership:** `agents/prompts/{kernel,language}.md` are
   canonical for the generated full agents and profiles. After editing either,
@@ -636,10 +640,10 @@ structure.
   treefmt output; Bash syntax and ShellCheck for `scripts/*.sh`; the focused
   `scripts/test_update_submodules.sh` regression suite; native syntax for the
   managed Fish and Zsh files; `.gitmodules` ordering; Emacs parentheses and Org
-  lint for tracked Org files; actionlint and pinned Actions; Rime Lua
-  syntax/tests; and gitleaks. GitHub CI runs those checks and evaluates both
-  Home Manager profiles on pushes and pull requests; full profile builds are
-  opt-in through `workflow_dispatch`.
+  lint for tracked Org files; a real Neovim Org Tree-sitter parse; actionlint
+  and pinned Actions; Rime Lua syntax/tests; and gitleaks. GitHub CI runs those
+  checks and evaluates both Home Manager profiles on pushes and pull requests;
+  full profile builds are opt-in through `workflow_dispatch`.
 - **Test/verify before recommending or installing anything, the same
   anti-fabrication discipline as everywhere else in this prompt:**
   `nix search nixpkgs <term>` to check a package actually exists (careful:

@@ -486,6 +486,63 @@
           touch "$out"
         '';
 
+      neovim-org = let
+        mkProfileCheck = {
+          username,
+          desktop,
+          nixPackage ? pkgs.nixVersions.latest,
+        }: let
+          home = mkHome {
+            inherit username desktop nixPackage;
+            rimeDeployment = "nix";
+          };
+          parserDirectory = home.config.home.file.".local/share/nvim/site/parser".source;
+          queryDirectory = home.config.home.file.".local/share/nvim/site/queries".source;
+          pluginDirectory = home.config.home.file."/home/${username}/.local/share/nvim/site/pack/hm".source;
+          neovim = home.config.programs.neovim.finalPackage;
+          neovimConfig = pkgs.writeText "dotfiles-neovim-${username}-test.vim" ''
+            ${home.config.programs.neovim.extraConfig}
+          '';
+        in
+          pkgs.runCommand "dotfiles-neovim-org-${username}-check"
+          {}
+          ''
+            mkdir -p data/nvim/site/pack home/cache home/state fixture
+            ln -s ${parserDirectory} data/nvim/site/parser
+            ln -s ${queryDirectory} data/nvim/site/queries
+            ln -s ${pluginDirectory} data/nvim/site/pack/hm
+            printf '%s\n' '* Parser check' > fixture/check.org
+
+            HOME="$PWD/home" \
+            XDG_CACHE_HOME="$PWD/home/cache" \
+            XDG_DATA_HOME="$PWD/data" \
+            XDG_STATE_HOME="$PWD/home/state" \
+              ${neovim}/bin/nvim \
+                --headless \
+                -u ${neovimConfig} \
+                fixture/check.org \
+                -l ${self}/vim/tests/org.lua
+
+            touch "$out"
+          '';
+        stachanCheck = mkProfileCheck {
+          username = "stachan";
+          desktop = "gnome";
+        };
+        schanCheck = mkProfileCheck {
+          username = "schan";
+          desktop = "plasma";
+          nixPackage = null;
+        };
+      in
+        pkgs.runCommand "dotfiles-neovim-org-check"
+        {}
+        ''
+          test -e ${stachanCheck}
+          test -e ${schanCheck}
+          touch "$out"
+        '';
+
       workflow =
         pkgs.runCommand "dotfiles-workflow-check"
         {
