@@ -117,15 +117,5 @@ in {
       "org/gnome/shell/extensions/custom-hot-corners-extended/monitor-1-top-right-0".action = "show-desktop-mon";
       "org/gnome/shell/extensions/custom-hot-corners-extended/monitor-1-top-right-6".ctrl = true;
     };
-
-    home.sessionVariables = {
-      XCURSOR_SIZE = toString cursorSize;
-      XCURSOR_THEME = cursorTheme;
-    };
-
-    systemd.user.sessionVariables = {
-      XCURSOR_SIZE = toString cursorSize;
-      XCURSOR_THEME = cursorTheme;
-    };
   };
 }
