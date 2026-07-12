@@ -188,7 +188,7 @@ in
                   exit 1
                 fi
               else
-                return
+                return 0
               fi
             elif [ -e "$target" ]; then
               echo "Refusing to replace unmanaged Rime path: $target" >&2
@@ -226,7 +226,7 @@ in
                 echo "Refusing to replace unmanaged Rime link: $target" >&2
                 exit 1
               fi
-              return
+              return 0
             elif [ -e "$target" ]; then
               echo "Refusing to replace unmanaged Rime path: $target" >&2
               exit 1
