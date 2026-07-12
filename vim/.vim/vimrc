@@ -55,6 +55,11 @@ if &loadplugins
   " Load Home Manager native packages before configuring them.
   packloadall
 
+  if has('nvim')
+    " Register the CodeCompanion source before CoC scans autoload sources.
+    lua require('codecompanion_nvim')
+  endif
+
   " Use fzf when available; ctrlp remains the pure Vimscript fallback.
   if executable("fzf")
     call s:SourcePackageConfig('fzf')

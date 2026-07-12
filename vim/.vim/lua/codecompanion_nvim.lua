@@ -49,7 +49,7 @@ require('codecompanion').setup({
       },
     },
   },
-  strategies = {
+  interactions = {
     chat = {
       adapter = 'anthropic',
       opts = { completion_provider = 'coc' },
