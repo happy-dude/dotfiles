@@ -109,6 +109,7 @@ in {
         "ctrl+grave_accent>l=clear_screen"
 
         # backspace niceties
+        "ctrl+backspace=text:\\x17"
         "alt+delete=esc:d"
         "alt+left=esc:b"
         "alt+right=esc:f"

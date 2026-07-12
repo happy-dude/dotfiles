@@ -64,22 +64,6 @@
         "type": "github"
       }
     },
-    "fish_nvm": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1782130753,
-        "narHash": "sha256-SI30Md3OKCN5qZ3pT/ZcweB8njGZ9okJFnCLqmfmL44=",
-        "owner": "jorgebucaran",
-        "repo": "nvm.fish",
-        "rev": "85cadd56f71b11574566dbd6c32e0027e361d085",
-        "type": "github"
-      },
-      "original": {
-        "owner": "jorgebucaran",
-        "repo": "nvm.fish",
-        "type": "github"
-      }
-    },
     "fish_puffer": {
       "flake": false,
       "locked": {
@@ -356,6 +340,29 @@
         "type": "github"
       }
     },
+    "plasma-manager": {
+      "inputs": {
+        "home-manager": [
+          "home-manager"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1783574839,
+        "narHash": "sha256-ICof1tV4/9XheBLBGf7dhMhfMq4dOs1zwTHrr7zGFlA=",
+        "owner": "nix-community",
+        "repo": "plasma-manager",
+        "rev": "c551f0687658e4bb699cfff6015436ad7ee57a0d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "plasma-manager",
+        "type": "github"
+      }
+    },
     "prezto": {
       "flake": false,
       "locked": {
@@ -540,7 +547,6 @@
         "catppuccin_fcitx5": "catppuccin_fcitx5",
         "coc_zuban": "coc_zuban",
         "fish_autopair": "fish_autopair",
-        "fish_nvm": "fish_nvm",
         "fish_puffer": "fish_puffer",
         "fish_spark": "fish_spark",
         "fish_tide": "fish_tide",
@@ -551,6 +557,7 @@
         "nix-flatpak": "nix-flatpak",
         "nixgl": "nixgl",
         "nixpkgs": "nixpkgs",
+        "plasma-manager": "plasma-manager",
         "prezto": "prezto",
         "rime_bopomofo": "rime_bopomofo",
         "rime_cangjie": "rime_cangjie",

@@ -10,6 +10,5 @@ export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:=$HOME/.config}"
 [[ -d $XDG_CONFIG_HOME/zsh ]] && export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
 source "$ZDOTDIR/.zshenv"
 
-# Also create $HOME/.local/state/zsh for HISTFILE set in .zpreztorc
+# Keep XDG_STATE_HOME available for HISTFILE set in .zpreztorc
 export XDG_STATE_HOME="${XDG_STATE_HOME:=$HOME/.local/state}"
-[ -d "$XDG_STATE_HOME"/zsh ] || mkdir -p "$XDG_STATE_HOME"/zsh

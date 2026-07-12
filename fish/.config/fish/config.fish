@@ -26,12 +26,22 @@ fish_add_path -p /opt/homebrew/opt/curl/bin
 #stty -F/dev/tty -ixon -ixoff   Linux
 #stty -ixon -ixoff              macOS
 
-# nvim default editor
-set -gx EDITOR nvim
-set -gx VISUAL nvim
+# Confirm Ctrl-D before an empty interactive shell exits its tmux pane.
+function __confirm_tmux_exit
+    if set -q TMUX; and test (string length -- (commandline)) -eq 0
+        read --local --prompt-str "Exit this shell? [y/N] " response
+        commandline --function repaint
+        string match --quiet --regex --ignore-case '^y(es)?$' -- "$response"
+        and commandline --function exit
+        return
+    end
+
+    commandline --function exit
+end
 
 # ctrl-x ctrl-e to open $EDITOR, like in zsh
 if status is-interactive
+    bind ctrl-d __confirm_tmux_exit
     bind \cx\ce edit_command_buffer
 end
 
@@ -63,16 +73,8 @@ if status is-interactive
     source (status dirname)/tide.fish
 end
 
-# use neovim as manpager
-set -gx MANPAGER 'nvim +Man!'
-set -gx MANWIDTH 80
-
-## LESS mouse scrolling
-set -gx LESS '--mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --CLEAR-SCREEN'
-set -gx PAGER less
-
 # Hardened C compiler wrapper for small standalone builds.
-function cc
+function c
     set -l compiler
     set -l flags
     if command -q clang
@@ -82,7 +84,7 @@ function cc
         set compiler gcc
         set flags -O1 -g3 -ggdb3 -ftrivial-auto-var-init=zero
     else
-        echo 'cc: neither clang nor gcc is available' >&2
+        echo 'c: neither clang nor gcc is available' >&2
         return 127
     end
 
@@ -128,14 +130,6 @@ alias gl="git log --date=relative --abbrev=12 -n 160 \
     --pretty='format:%C(dim blue)%h%C(auto)%d %s %>|(68,trunc)%C(8)- %C(dim magenta)%an%C(8), %ad' --graph --all"
 alias gits="git --no-pager show --no-patch --format='commit %h (\"%s\")%n'"
 
-# fzf
-if status is-interactive && command -q fzf
-    fzf --fish | source
-    if command -q rg
-        set -gx FZF_DEFAULT_COMMAND (command -s rg)" --files --hidden --follow --glob '!.git'"
-    end
-end
-
 # emacsclient
 alias et='TERM=xterm-256color emacsclient -nw'
 alias ef='emacsclient -nc'
@@ -162,28 +156,19 @@ end
 
 # programming language environments
 
-# docker
-set -gx DOCKER_BUILDKIT 1
-set -gx BUILDKIT_PROGRESS plain # building the VM may output auth URLs the user needs to click
-# node / nvm
-set -gx NVM_DIR "$HOME/.nvm"
-# nvm scripts not compatible with non-POSIX fish, use nvm.fish plugin
-if status is-interactive && not set -q nvm_default_version
-    set --universal nvm_default_version system
-end
 # eza
-if command -v eza &>/dev/null
+if command -q eza
     alias ls='eza' # ls
-    alias l='eza -lbF --git' # list, size, type, git
-    alias ll='eza -lbGF --git' # long list
-    alias llm='eza -lbGd --git --sort=modified' # long list, modified date sort
-    alias la='eza -lbhHigUmuSa --time-style=long-iso --git --color-scale' # all list
-    alias lx='eza -lbhHigUmuSa@ --time-style=long-iso --git --color-scale' # all + extended list
+    alias l='eza -lahbF --git' # list, size, type, git
+    alias ll='eza -labGF --git' # long list
+    alias llm='eza -labGd --git --sort=modified' # long list, modified date sort
+    alias lla='eza -labhHigUmuS --time-style=long-iso --git --color-scale' # all list
+    alias lx='eza -labhHigUmuS@ --time-style=long-iso --git --color-scale' # all + extended list
 
     # specialty views
-    alias lS='eza -1' # one column, just names
-    alias lt='eza -lbGF --tree --level=2' # tree
-    alias lg='eza -lbGd --git --sort=modified --tree --level=2' # tree w/ git
+    alias lS='eza -a1' # one column, just names
+    alias lt='eza -labGF --tree --level=2' # tree
+    alias lg='eza -labGd --git --sort=modified --tree --level=2' # tree w/ git
 end
 
 fish_add_path -a "$HOME/.local/bin"

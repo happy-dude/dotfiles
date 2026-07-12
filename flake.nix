@@ -15,6 +15,13 @@
       url = "github:gmodena/nix-flatpak?ref=v0.7.0";
     };
 
+    # Declarative KDE Plasma preferences on worldmind.
+    plasma-manager = {
+      url = "github:nix-community/plasma-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
+
     # nixGL
     # https://nix-community.github.io/home-manager/index.xhtml#sec-usage-gpu-non-nixos
     # https://github.com/nix-community/nixGL
@@ -120,10 +127,6 @@
     # Rolling Fish plugin sources.
     fish_autopair = {
       url = "github:jorgebucaran/autopair.fish";
-      flake = false;
-    };
-    fish_nvm = {
-      url = "github:jorgebucaran/nvm.fish";
       flake = false;
     };
     fish_puffer = {
@@ -330,6 +333,7 @@
             ./fish
             ./fonts
             ./ghostty
+            ./gnome
             ./git
             ./nix
             ./rime
@@ -346,7 +350,9 @@
           ]
           ++ lib.optionals (username == "schan") [
             inputs.nix-flatpak.homeManagerModules.nix-flatpak
+            inputs.plasma-manager.homeModules.plasma-manager
             ./flatpak
+            ./plasma
           ];
       };
 

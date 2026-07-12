@@ -17,6 +17,14 @@
       };
     };
 
+    xdg.configFile."fcitx5/conf/notifications.conf" = {
+      force = true;
+      text = ''
+        # Hidden Notifications
+        HiddenNotifications=wayland-diagnose-gnome
+      '';
+    };
+
     # Home Manager omits this for the Wayland frontend; GNOME Qt apps need it.
     home.sessionVariables.QT_IM_MODULE = "fcitx";
   };

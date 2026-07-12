@@ -56,23 +56,25 @@ checkout is the Linux branch.
   user/network-namespace probe can configure its namespace. If the active
   security policy prevents Bubblewrap from configuring the namespace, treat the
   patch helper as unavailable for that session: use the narrowly scoped approved
-  elevated mode and, for file edits, a deterministic file-scoped Perl change.
-  Inspect the resulting diff immediately and run the normal formatter and tests.
-  State when this fallback is used. Do not weaken AppArmor or SELinux policy,
-  disable namespace restrictions, make Bubblewrap setuid, or disable sandboxing
-  without explicit user authorization. Do not generalize this workaround to
-  unrelated failures.
+  elevated mode and, for file edits, a narrowly scoped Python script that reads
+  one named file, asserts the exact old text occurs once, replaces it once, and
+  writes the same file. Prefer exact multiline strings; use regular expressions
+  only when the edit genuinely requires them. Inspect the resulting diff
+  immediately, then run the normal formatter and tests. State when this fallback
+  is used. Do not weaken AppArmor or SELinux policy, disable namespace
+  restrictions, make Bubblewrap setuid, or disable sandboxing without explicit
+  user authorization. Do not generalize this workaround to unrelated failures.
 - Flake inputs: `nixpkgs` (nixos-unstable), `home-manager`, `nix-flatpak`,
-  `nixgl`, `neovim-nightly-overlay`, `rust-overlay`, `treefmt-nix`, the
-  `ghostty` flake, and source-only Rime schema repositories. Home Manager,
-  nixGL, the Neovim nightly overlay, the Rust overlay, treefmt, and Ghostty all
-  follow the root `nixpkgs` input so the graph has one package-set revision. The
-  Rime sources are locked in `flake.lock` and advance with `nix flake update`;
-  `rime/default.nix` consumes them. `nixGL` is wired up via
-  `targets.genericLinux.nixGL` in `home.nix` so OpenGL apps (Ghostty,
-  mesa-demos, solaar) can be wrapped with `config.lib.nixGL.wrap`. Ghostty
-  removes the wrapper's graphics variables before launching Fish so terminal
-  children receive a normal host environment.
+  `plasma-manager`, `nixgl`, `neovim-nightly-overlay`, `rust-overlay`,
+  `treefmt-nix`, the `ghostty` flake, and source-only Rime schema repositories.
+  Home Manager, plasma-manager, nixGL, the Neovim nightly overlay, the Rust
+  overlay, treefmt, and Ghostty all follow the root `nixpkgs` input so the graph
+  has one package-set revision. The Rime sources are locked in `flake.lock` and
+  advance with `nix flake update`; `rime/default.nix` consumes them. `nixGL` is
+  wired up via `targets.genericLinux.nixGL` in `home.nix` so OpenGL apps
+  (Ghostty, mesa-demos, solaar) can be wrapped with `config.lib.nixGL.wrap`.
+  Ghostty removes the wrapper's graphics variables before launching Fish so
+  terminal children receive a normal host environment.
 - Source-only inputs also lock Prezto, active Fish plugins, Roswell, RustOwl,
   virtme-ng, coc-zuban, Catppuccin Fcitx themes, and bgutil-ytdlp-pot-provider.
   The same locked RustOwl source builds both its server and Neovim client.
@@ -102,13 +104,13 @@ checkout is the Linux branch.
   `home.file`.
 - Per-app modules live in their own subdirectories, each as a `default.nix`
   imported from `flake.nix`'s `modules` list: `aerc/`, `agents/`, `bat/`,
-  `emacs/`, `fish/`, `fonts/`, `ghostty/`, `git/`, `nix/`, `rime/`, `rustowl/`,
-  `tldr/`, `tmux/`, `vim/`, `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`, `zsh/`. The
-  desktop-specific `rime/gnome.nix` module is imported separately. Adding a new
-  app otherwise means creating `<app>/default.nix` and adding it to the
-  `modules` list in `flake.nix`.
-- `flatpak/` is the one host-conditional app module: `mkHome` imports it and the
-  external `nix-flatpak` module only for `schan`.
+  `emacs/`, `fish/`, `fonts/`, `ghostty/`, `gnome/`, `git/`, `nix/`, `rime/`,
+  `rustowl/`, `tldr/`, `tmux/`, `vim/`, `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`,
+  `zsh/`. The desktop-specific `rime/gnome.nix` module is imported separately.
+  Adding a new app otherwise means creating `<app>/default.nix` and adding it to
+  the `modules` list in `flake.nix`.
+- `flatpak/` and `plasma/` are host-conditional modules: `mkHome` imports them
+  with the external nix-flatpak and plasma-manager modules only for `schan`.
 - The formatter is **treefmt** (`treefmt-nix`, run via `nix fmt`): the Linux
   kernel's `.clang-format` for C/C++, Alejandra for Nix, `fish_indent` for Fish,
   `shfmt` for shell, Neovim's exact StyLua configuration for Lua, Prettier for
@@ -437,6 +439,15 @@ source.
   It also sets `QT_IM_MODULE=fcitx`, which Home Manager otherwise omits for that
   frontend. Plasma uses the shared Rime files but retains host-managed Fcitx
   integration through KWin's Virtual Keyboard setting.
+- **`gnome/`** manages stable GNOME preferences only when `desktop = "gnome"`.
+  DConf values remain writable during the session and return to the declared
+  baseline on a later Home Manager activation.
+- **`plasma/`** manages stable Plasma preferences for `schan` through the pinned
+  plasma-manager module. Its captured panel declaration is disabled by default:
+  enabling high-level panel management deletes and rebuilds
+  `plasma-org.kde.plasma.desktop-appletsrc` when the declaration changes. Enable
+  it only when Home Manager should own the complete panel layout; leave display
+  topology, generated IDs, wallpaper, and session history unmanaged.
 - **Vim runtime artifacts** are declarative: Home Manager links Tree-sitter
   parsers and queries under `~/.local/share/nvim/site`; Home Manager provides
   every formatter and language-server command. `vim/.vim/coc-settings.json` is

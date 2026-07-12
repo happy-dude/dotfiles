@@ -8,6 +8,16 @@
 }: let
   solaarWrapped = config.lib.nixGL.wrap pkgs.solaar;
 in {
+  home.activation.createZshStateDirectory = config.lib.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg "${config.xdg.stateHome}/zsh"}
+  '';
+
+  programs.fzf = {
+    enable = true;
+    enableFishIntegration = true;
+    enableZshIntegration = true;
+  };
+
   targets.genericLinux.nixGL.packages = inputs.nixgl.packages;
   targets.genericLinux.nixGL.defaultWrapper = "mesa";
   targets.genericLinux.nixGL.installScripts = ["mesa"];
@@ -22,6 +32,18 @@ in {
       "$HOME/go/bin"
       "/nix/var/nix/profiles/default/bin"
     ];
+
+    sessionVariables = {
+      BUILDKIT_PROGRESS = "plain";
+      DOCKER_BUILDKIT = "1";
+      EDITOR = "nvim";
+      FZF_DEFAULT_COMMAND = "rg --files --hidden --follow --glob '!.git'";
+      LESS = "--mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --CLEAR-SCREEN";
+      MANPAGER = "nvim +Man!";
+      MANWIDTH = "80";
+      PAGER = "less";
+      VISUAL = "nvim";
+    };
 
     # Change this compatibility floor only after reviewing and applying every
     # intervening Home Manager migration.
@@ -65,7 +87,6 @@ in {
       fish-lsp
       flex
       fnlfmt
-      fzf
       gdb
       gettext
       ghidra
@@ -86,6 +107,7 @@ in {
       imagemagick
       img2pdf
       impl
+      inxi
       jq
       less
       libgcc
@@ -104,8 +126,10 @@ in {
       nix-prefetch-github
       nix-zsh-completions
       nixfmt
+      nmap
       nodejs
       openssl
+      p7zip
       pahole
       pandoc
       pass
@@ -120,6 +144,7 @@ in {
       pkgconf
       prettier
       procs
+      protobuf
       qemu
       reftools
       revive
@@ -139,6 +164,7 @@ in {
       texliveFull
       tinymist
       tokei
+      traceroute
       tree
       tree-sitter
       typescript-language-server
@@ -147,6 +173,7 @@ in {
       valgrind
       virtme-ng
       vim-language-server
+      whois
       vscode-langservers-extracted
       xclip
       xdg-utils
