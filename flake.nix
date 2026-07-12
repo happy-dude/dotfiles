@@ -332,6 +332,7 @@
             ./emacs
             ./fish
             ./fonts
+            ./fzf
             ./ghostty
             ./gnome
             ./git

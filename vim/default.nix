@@ -136,6 +136,7 @@ in {
   home.file = {
     ".config/nvim/coc-settings.json".source = ./.vim/coc-settings.json;
     ".vim/coc-settings.json".source = ./.vim/coc-settings.json;
+    ".local/share/nix-typescript".source = "${pkgs.typescript}/lib/node_modules/typescript";
     ".local/share/nvim/site/parser".source = "${treesitterRuntime}/parser";
     ".local/share/nvim/site/queries".source = "${treesitterRuntime}/queries";
   };
