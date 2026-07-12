@@ -20,10 +20,10 @@
     "python",
     "ruby",
     "rust",
+    "sh",
     "sql",
     "terraform",
     "typescript",
-    "typescript.tsx",
     "typescriptreact",
     "yaml",
     "zig"
@@ -108,13 +108,13 @@
       "command": "ruff",
       "args": ["server"],
       "filetypes": ["python"],
-      "rootPatterns": ["pyproject.toml", "ruff.toml", ".ruff.toml", ".git"]
+      "rootPatterns": ["pyproject.toml", "ruff.toml", ".ruff.toml", ".git"],
+      "disabledFeatures": ["hover"]
     },
     "lua-language-server": {
       "command": "lua-language-server",
       "filetypes": ["lua"],
-      "rootPatterns": [".luarc.json", ".luarc.jsonc"],
-      "ignoredRootPaths": ["$HOME/dotfiles"]
+      "rootPatterns": [".luarc.json", ".luarc.jsonc", ".git"]
     },
     "perl-navigator": {
       "command": "perlnavigator",
