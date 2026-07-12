@@ -90,10 +90,26 @@
       "rootPatterns": [".luarc.json", ".luarc.jsonc"],
       "ignoredRootPaths": ["$HOME/dotfiles"]
     },
+    "perl-navigator": {
+      "command": "perlnavigator",
+      "args": ["--stdio"],
+      "filetypes": ["perl"]
+    },
     "perl-language-server": {
       "command": "perl",
       "args": ["-MPerl::LanguageServer", "-e", "Perl::LanguageServer::run"],
-      "filetypes": ["perl"]
+      "filetypes": ["perl"],
+      "disabledFeatures": [
+        "completion",
+        "diagnostics",
+        "hover",
+        "definition",
+        "documentSymbol",
+        "workspaceSymbol",
+        "formatting",
+        "documentFormatting",
+        "documentRangeFormatting"
+      ]
     },
     "zls": {
       "command": "zls",

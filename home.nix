@@ -106,6 +106,7 @@ in {
         ps.PerlLanguageServer
         ps.PerlTidy
       ]))
+      perlnavigator
       pinentry-all
       pkgconf
       prettier
