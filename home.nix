@@ -86,6 +86,7 @@ in {
       imagemagick
       img2pdf
       impl
+      inxi
       jq
       less
       libgcc
@@ -104,8 +105,10 @@ in {
       nix-prefetch-github
       nix-zsh-completions
       nixfmt
+      nmap
       nodejs
       openssl
+      p7zip
       pahole
       pandoc
       pass
@@ -120,6 +123,7 @@ in {
       pkgconf
       prettier
       procs
+      protobuf
       qemu
       reftools
       revive
@@ -139,6 +143,7 @@ in {
       texliveFull
       tinymist
       tokei
+      traceroute
       tree
       tree-sitter
       typescript-language-server
@@ -147,6 +152,7 @@ in {
       valgrind
       virtme-ng
       vim-language-server
+      whois
       vscode-langservers-extracted
       xclip
       xdg-utils
