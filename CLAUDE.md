@@ -74,11 +74,11 @@ checkout is the Linux branch.
   removes the wrapper's graphics variables before launching Fish so terminal
   children receive a normal host environment.
 - Source-only inputs also lock Prezto, active Fish plugins, Roswell, RustOwl,
-  coc-zuban, Catppuccin Fcitx themes, and bgutil-ytdlp-pot-provider. The same
-  locked RustOwl source builds both its server and Neovim client. Ordinary
-  editor plugins come from the locked Nixpkgs `vimPlugins` set; explicit source
-  inputs are reserved for sources that are absent from Nixpkgs or intentionally
-  track upstream independently.
+  virtme-ng, coc-zuban, Catppuccin Fcitx themes, and bgutil-ytdlp-pot-provider.
+  The same locked RustOwl source builds both its server and Neovim client.
+  Ordinary editor plugins come from the locked Nixpkgs `vimPlugins` set;
+  explicit source inputs are reserved for sources that are absent from Nixpkgs
+  or intentionally track upstream independently.
 - `fish/.config/fish/tide.fish` is the declarative Tide profile, linked by Home
   Manager and sourced by the tracked `config.fish`. It overrides machine-local
   `fish_variables` so fresh profiles have a complete prompt.
@@ -88,6 +88,9 @@ checkout is the Linux branch.
 - A small inline overlay in `flake.nix` builds Roswell from the locked
   `roswell_src` input (a workaround for the upstream package); advance it with
   `nix flake update`.
+- The same overlay builds `virtme-ng` from `virtme_ng_src` with its runtime
+  helpers on `PATH`; `home.nix` installs its `vng` command. Ghidra comes from
+  the locked Nixpkgs package set rather than a Flatpak or mutable installer.
 - `home.nix` is the entry module: it lists top-level packages, sets the shared
   `home.stateVersion = "26.11"` compatibility floor, and sets up plain-file
   symlinks — `.clang-format`, `.editorconfig`, `.golangci.yml`, `.stylua.toml`
@@ -435,8 +438,9 @@ source.
   frontend. Plasma uses the shared Rime files but retains host-managed Fcitx
   integration through KWin's Virtual Keyboard setting.
 - **Vim runtime artifacts** are declarative: Home Manager links Tree-sitter
-  parsers and queries under `~/.local/share/nvim/site` and places the Nix-built
-  `rustowl`, vim-go helpers, clang-format, PerlTidy, Ruff, StyLua, rustfmt,
-  Zig/ZLS, and CoC language servers on `PATH`. Do not run `:TSUpdate`,
-  `:GoUpdateBinaries`, `:GoInstallBinaries`, vim-plug, or mutable CoC extension
-  updates.
+  parsers and queries under `~/.local/share/nvim/site`; Home Manager provides
+  every formatter and language-server command. `vim/.vim/coc-settings.json` is
+  the authoritative server and format-on-save matrix, including C/C++, Rust, Go,
+  Zig, Perl, Python, Lua, shell, Fish, Clojure, Fennel, JavaScript, TypeScript,
+  Markdown, LaTeX, and Typst. Do not run `:TSUpdate`, `:GoUpdateBinaries`,
+  `:GoInstallBinaries`, vim-plug, or mutable CoC extension updates.

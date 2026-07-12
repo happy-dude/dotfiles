@@ -584,10 +584,13 @@ structure.
   vim-plug checkout, or mutable plugin updater. CoC loads in both editors and
   owns LSP, diagnostics, completion, navigation, and format-on-save; vim-go
   retains non-LSP Go commands. Vim uses bundled EditorConfig and Neovim uses
-  native EditorConfig. Home Manager provides the formatter and language-server
-  executables, including Ruff, StyLua, PerlTidy, clang-format, gofmt/goimports,
-  rustfmt, Zig/ZLS, Zuban, and the CoC server commands. Do not reintroduce ALE,
-  Pathogen, editorconfig-vim, or mutable plugin binary downloaders.
+  native EditorConfig. `vim/.vim/coc-settings.json` is the authoritative
+  language-server and format-on-save matrix; Home Manager provides every command
+  it names, including the C/C++, Rust, Go, Zig, Perl, Python, Lua, shell, Fish,
+  Clojure, Fennel, JavaScript, TypeScript, Markdown, LaTeX, and Typst
+  toolchains. Do not reintroduce ALE, Pathogen, editorconfig-vim, or mutable
+  plugin binary downloaders. The locked `virtme_ng_src` input builds the
+  installed `vng` kernel VM command, while Ghidra comes from locked Nixpkgs.
 - **Agent prompt ownership:** `agents/prompts/{kernel,language}.md` are
   canonical for the generated full agents and profiles. After editing either,
   run `scripts/generate_codex_agents.sh`; the flake check rejects drift. Home

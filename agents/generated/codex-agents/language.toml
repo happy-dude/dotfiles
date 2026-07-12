@@ -443,10 +443,12 @@ checkout or mutable plugin updater. Emacs packages come exclusively from
 `programs.emacs.extraPackages`. CoC loads in both editors and owns LSP,
 diagnostics, completion, navigation, and format-on-save; vim-go retains non-LSP
 Go commands. Vim uses bundled EditorConfig and Neovim uses native EditorConfig.
-Home Manager provides the formatter and language-server executables, including
-Ruff, StyLua, PerlTidy, clang-format, gofmt/goimports, rustfmt, Zig/ZLS, Zuban,
-and the CoC server commands. Do not reintroduce ALE, Pathogen, editorconfig-vim,
-or mutable plugin binary downloaders.
+`vim/.vim/coc-settings.json` is the authoritative language-server and
+format-on-save matrix. Home Manager provides every command it names, including
+the C/C++, Rust, Go, Zig, Perl, Python, Lua, shell, Fish, Clojure, Fennel,
+JavaScript, TypeScript, Markdown, LaTeX, and Typst toolchains. Do not
+reintroduce ALE, Pathogen, editorconfig-vim, or mutable plugin binary
+downloaders.
 
 `flake.nix` builds two generic-Linux profiles with
 `mkHome { username, desktop, nixPackage, rimeDeployment }`. Both default to
