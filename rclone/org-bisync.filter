@@ -1,0 +1,5 @@
+- /org-roam.bak/**
+- **/org-roam*.db*
+- /.dir-locals.el
+- **/.#*
+- **/*~

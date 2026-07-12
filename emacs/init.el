@@ -269,6 +269,18 @@
 
 ;; org-roam settings
 (require 'org-roam)
+(require 'org-roam-protocol)
+
+(defun dotfiles-org-roam-protocol-frame (function info)
+  "Run an Org Roam protocol handler in a dedicated capture frame."
+  (set-frame-parameter nil 'name "capture")
+  (delete-other-windows)
+  (let ((display-buffer-overriding-action '(display-buffer-same-window)))
+    (funcall function info)))
+
+(advice-add 'org-roam-protocol-open-ref
+            :around #'dotfiles-org-roam-protocol-frame)
+
 ;; update last_modified when saving
 ;; ref: https://github.com/emacs-mirror/emacs/blob/master/lisp/time-stamp.el#L44-L73
 (add-hook 'org-mode-hook
@@ -281,7 +293,9 @@
 
 ;; ref: https://www.orgroam.com/manual/Getting-Started.html#Getting-Started
 (setq org-roam-directory "~/org/roam")
-(setq org-roam-db-location "~/org/roam/org-roam.db")
+(setq org-roam-db-location
+      (expand-file-name "emacs/org-roam.db"
+                        (or (getenv "XDG_CACHE_HOME") "~/.cache")))
 (require 'browse-url)
 (setq org-roam-graph-executable "dot")
 (setq org-roam-graph-viewer #'browse-url-of-file)
@@ -313,7 +327,11 @@
                             :unnarrowed t)))
 
 (setq org-roam-capture-ref-templates
-      '(("r" "ref" plain "%?"
+      '(("r" "ref" plain "#+begin_quote
+%i
+#+end_quote
+
+%?"
          :if-new (file+head "%<%Y%m%d>-$\{slug}.org"
                             ":PROPERTIES:
                             :ID: %(org-id-new)
@@ -335,7 +353,7 @@
                             *** Habits (Define)
 
                             * Notes
-                            -")
+                            ")
                             :unnarrowed t)))
 
 
@@ -503,6 +521,11 @@
 (require 'undo-tree)
 (evil-set-undo-system 'undo-tree)
 ;; undo-tree
+
+(setq undo-tree-history-directory-alist
+      `(("." . ,(expand-file-name
+                   "emacs/undo-tree/"
+                   (or (getenv "XDG_CACHE_HOME") "~/.cache")))))
 
 (global-undo-tree-mode)
 

@@ -28,6 +28,13 @@ fi
 
 # Customize to your needs...
 
+# emacsclient
+# Attach terminal clients; detach GUI and Org capture clients.
+# An empty alternate editor starts the daemon if the user service is not ready.
+alias et='emacsclient --alternate-editor= --tty'
+alias ef='emacsclient --alternate-editor= --create-frame --no-wait'
+alias ec="emacsclient --alternate-editor= --no-wait --eval '(make-capture-frame)'"
+
 # To customize prompt, run `p10k configure` or edit ~/dotfiles/zsh/.config/zsh/.p10k.zsh.
 [[ ! -f "${ZDOTDIR:-$HOME}/.p10k.zsh" ]] || source "${ZDOTDIR:-$HOME}/.p10k.zsh"
 

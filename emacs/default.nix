@@ -8,9 +8,28 @@
     "org/.dir-locals.el".source = ./org-dir-locals.el;
   };
 
-  home.activation.createOrgDirectories = config.lib.dag.entryAfter ["writeBoundary"] ''
-    ${pkgs.coreutils}/bin/mkdir -p "$HOME/org/Archive" "$HOME/org/roam"
-  '';
+  home.activation = {
+    createOrgDirectories = config.lib.dag.entryAfter ["writeBoundary"] ''
+      ${pkgs.coreutils}/bin/mkdir -p \
+        "$HOME/org/Archive" \
+        "$HOME/org/roam" \
+        "${config.xdg.cacheHome}/emacs/undo-tree"
+    '';
+
+    registerOrgProtocol = config.lib.dag.entryAfter ["linkGeneration"] ''
+      $DRY_RUN_CMD ${pkgs.xdg-utils}/bin/xdg-mime \
+        default emacs-org-protocol.desktop x-scheme-handler/org-protocol
+    '';
+  };
+
+  xdg.desktopEntries.emacs-org-protocol = {
+    name = "Emacs Org Protocol";
+    exec = "${pkgs.emacs-pgtk}/bin/emacsclient --alternate-editor= --create-frame --no-wait %u";
+    icon = "emacs";
+    mimeType = ["x-scheme-handler/org-protocol"];
+    noDisplay = true;
+    terminal = false;
+  };
 
   programs.emacs = {
     enable = true;
@@ -51,5 +70,10 @@
         yaml
         yaml-mode
       ];
+  };
+
+  services.emacs = {
+    enable = true;
+    startWithUserSession = "graphical";
   };
 }

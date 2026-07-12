@@ -105,10 +105,10 @@ checkout is the Linux branch.
 - Feature modules live in their own subdirectories, each as a `default.nix`
   imported from `flake.nix`'s `modules` list: `aerc/`, `agents/`, `bat/`,
   `emacs/`, `fish/`, `fonts/`, `fzf/`, `ghostty/`, `gnome/`, `git/`, `nix/`,
-  `rime/`, `rustowl/`, `tldr/`, `tmux/`, `vim/`, `wezterm/`, `xdg/`, `yt-dlp/`,
-  `zed/`, `zsh/`. The desktop-specific `rime/gnome.nix` module is imported
-  separately. Adding a new app otherwise means creating `<app>/default.nix` and
-  adding it to the `modules` list in `flake.nix`.
+  `rclone/`, `rime/`, `rustowl/`, `tldr/`, `tmux/`, `vim/`, `wezterm/`, `xdg/`,
+  `yt-dlp/`, `zed/`, `zsh/`. The desktop-specific `rime/gnome.nix` module is
+  imported separately. Adding a new app otherwise means creating
+  `<app>/default.nix` and adding it to the `modules` list in `flake.nix`.
 - `flatpak/` and `plasma/` are host-conditional modules: `mkHome` imports them
   with the external nix-flatpak and plasma-manager modules only for `schan`.
 - The formatter is **treefmt** (`treefmt-nix`, run via `nix fmt`): the Linux
@@ -127,10 +127,15 @@ Home Manager owns Linux configuration except for `ssh/.ssh/config`, whose
 migration is intentionally deferred. `karabiner/` remains tracked because the
 macOS branch consumes the same state; Linux does not deploy it. `gdb/gdbinit` is
 a source file linked to `~/.gdbinit`. `emacs/default.nix` links
-`emacs/org-dir-locals.el` and creates the mutable `~/org/Archive` and
-`~/org/roam` directories during activation. Roswell itself remains Nix-built,
-but the copied helper and standalone `ros_swank` launcher are not deployed;
-Nix-installed SLIME starts Swank through `ros -Q run`.
+`emacs/org-dir-locals.el`, creates the mutable `~/org/Archive` and `~/org/roam`
+directories during activation, starts the Emacs daemon with the graphical user
+session, and associates `org-protocol://` URLs with the packaged
+`emacsclient.desktop`. The Firefox bookmarklet, protocol flow, and validation
+steps are documented in `docs/emacs-org-protocol.md`. The derived Org Roam
+database stays under the local XDG cache and must not be synchronized with the
+authoritative `~/org` files. Roswell itself remains Nix-built, but the copied
+helper and standalone `ros_swank` launcher are not deployed; Nix-installed SLIME
+starts Swank through `ros -Q run`.
 
 The style and lint configs (`.clang-format`, `.editorconfig`, `.golangci.yml`,
 `.stylua.toml`) live at the repository root. They are both `home.file` sources
@@ -174,6 +179,15 @@ and the inputs treefmt uses to format the repository.
   activation, move any profile-local `[projects]` trust entries into
   `~/.codex/config.toml`; Home Manager deliberately refuses to replace unmanaged
   profile files.
+- **`rclone/`** installs the pinned rclone client and schedules guarded bisync
+  between `~/org` and `box:org`. A recursive inotify watcher batches local
+  changes five minutes after the first event; a 15-minute timer catches remote
+  and missed changes. The services remain inert until a manually reviewed
+  initial resync creates `~/.local/state/rclone/org-bisync-ready`. Its filter
+  keeps legacy and derived Org Roam databases, Home Manager links, locks, and
+  editor backups out of Box. OAuth state in `~/.config/rclone/rclone.conf` is
+  machine-local and must never enter Git or the Nix store. Setup and recovery
+  are documented in `docs/rclone-box-org.md`.
 - **`rime/`** is a Home Manager module (`rime/default.nix`) over a retained
   Stow-compatible snapshot. Locked schema inputs replace matching snapshot files
   and `pkgs.rime-zhwiki` supplies Zhwiki. Nix mode claims explicit ownership,

@@ -337,6 +337,7 @@
             ./gnome
             ./git
             ./nix
+            ./rclone
             ./rime
             ./rime/gnome.nix
             ./rustowl
