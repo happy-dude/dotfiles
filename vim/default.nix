@@ -104,12 +104,20 @@
   ];
 
   nvimTreesitter = pkgs.vimPlugins.nvim-treesitter;
-  treesitterRuntime = pkgs.symlinkJoin {
-    name = "nvim-treesitter-runtime";
+  baseTreesitterRuntime = pkgs.symlinkJoin {
+    name = "nvim-treesitter-base-runtime";
     # Query-only languages have no grammar derivation, so include the plugin
     # runtime alongside withAllGrammars dependencies.
     paths = nvimTreesitter.withAllGrammars.passthru.dependencies ++ ["${nvimTreesitter}/runtime"];
   };
+  treesitterRuntime = pkgs.runCommand "nvim-treesitter-runtime" {} ''
+    mkdir -p "$out"
+    cp -rs ${baseTreesitterRuntime}/. "$out/"
+    chmod u+w "$out" "$out/parser"
+    ln -s \
+      ${pkgs.tree-sitter-grammars.tree-sitter-org-nvim}/parser \
+      "$out/parser/org.so"
+  '';
 in {
   programs.vim = {
     enable = true;

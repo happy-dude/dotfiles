@@ -486,6 +486,28 @@
           touch "$out"
         '';
 
+      neovim-org = let
+        parserDirectory =
+          (mkHome {
+            username = "stachan";
+            desktop = "gnome";
+            rimeDeployment = "nix";
+          }).config.home.file.".local/share/nvim/site/parser".source;
+      in
+        pkgs.runCommand "dotfiles-neovim-org-check"
+        {
+          nativeBuildInputs = [pkgs.neovim];
+        }
+        ''
+          mkdir -p runtime
+          ln -s ${parserDirectory} runtime/parser
+
+          ORG_TREESITTER_RUNTIME="$PWD/runtime" \
+          nvim --headless --clean -l ${self}/vim/tests/org.lua
+
+          touch "$out"
+        '';
+
       workflow =
         pkgs.runCommand "dotfiles-workflow-check"
         {
