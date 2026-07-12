@@ -52,8 +52,8 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 
 if [ ! -f "$GITMODULES" ]; then
-  printf 'Error: %s not found in %s\n' "$GITMODULES" "$PWD" >&2
-  exit 1
+  printf '%s is absent; there are no submodules to sort.\n' "$GITMODULES"
+  exit 0
 fi
 
 TMP_FILE="$(mktemp "${GITMODULES}.tmp.XXXXXX")"

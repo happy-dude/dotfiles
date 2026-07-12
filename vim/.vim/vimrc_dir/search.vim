@@ -6,11 +6,19 @@ set infercase           " Infer keyword-completion case
 set hlsearch            " Highlight search matches
 set incsearch           " Highlight matches while entering a search
 
-function! s:ClearSearchHighlight() abort
-  if exists('*HLNextOff')
-    call HLNextOff()
-  endif
+function! s:ApplySearchHighlights() abort
+  " Replace hlnext.vim with the editors' built-in current-match group.
+  highlight! link CurSearch IncSearch
+endfunction
 
+call s:ApplySearchHighlights()
+
+augroup SearchHighlights
+  autocmd!
+  autocmd ColorScheme * call <SID>ApplySearchHighlights()
+augroup END
+
+function! s:ClearSearchHighlight() abort
   nohlsearch
   if &diff
     diffupdate

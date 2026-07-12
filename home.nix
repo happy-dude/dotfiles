@@ -33,6 +33,7 @@ in {
       autoconf
       automake
       babelfish
+      babashka
       bash-language-server
       bear
       bc
@@ -41,6 +42,8 @@ in {
       bpftools
       bpftrace
       ccache
+      clojure
+      clojure-lsp
       cmake
       coccinelle
       cpio
@@ -57,11 +60,15 @@ in {
       eza
       errcheck
       fd
+      fennel-ls
       ffmpeg
+      fish-lsp
       flex
+      fnlfmt
       fzf
       gdb
       gettext
+      ghidra
       ghostscript
       glibc
       gnumake
@@ -86,11 +93,13 @@ in {
       lldb
       ltrace
       lua-language-server
+      luaPackages.fennel
+      marksman
       meson
       motion
       moreutils
+      (lib.lowPrio ncurses)
       ncurses.dev
-      neovim
       ninja
       nix-prefetch-github
       nix-zsh-completions
@@ -106,6 +115,7 @@ in {
         ps.PerlLanguageServer
         ps.PerlTidy
       ]))
+      perlnavigator
       pinentry-all
       pkgconf
       prettier
@@ -125,14 +135,17 @@ in {
       stow
       strace
       stylua
+      texlab
       texliveFull
+      tinymist
       tokei
       tree
       tree-sitter
       typescript-language-server
+      typst
       util-linux
       valgrind
-      vim
+      virtme-ng
       vim-language-server
       vscode-langservers-extracted
       xclip
@@ -188,12 +201,10 @@ in {
     file = {
       ".clang-format".source = ./.clang-format;
       ".editorconfig".source = ./.editorconfig;
-      ".gdbinit".source = ./gdb/.gdbinit;
+      ".gdbinit".source = ./gdb/gdbinit;
       ".golangci.yml".source = ./.golangci.yml;
-      ".roswell/helper.el".source = ./roswell/.roswell/helper.el;
       ".stylua.toml".source = ./.stylua.toml;
       ".local/share/nix-typescript".source = "${pkgs.typescript}/lib/node_modules/typescript";
-      "ros_swank".source = ./roswell/ros_swank;
     };
 
     sessionVariables = {

@@ -1,3 +1,5 @@
+;;; init.el --- Personal Emacs configuration -*- lexical-binding: t; -*-
+
 ;; auto-save settings
 ;; create cache directories if they do not exist
 (let ((cache-dir "~/.local/share/emacs")
@@ -85,7 +87,7 @@
 ;; Set default font
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
-(add-hook 'after-make-frame-functions (lambda (frame) (set-fontset-font t '(#Xe100 . #Xe16f) "FiraCode Nerd Font Mono")))
+(add-hook 'after-make-frame-functions (lambda (_frame) (set-fontset-font t '(#Xe100 . #Xe16f) "FiraCode Nerd Font Mono")))
 (set-fontset-font t '(#Xe100 . #Xe16f) "FiraCode Nerd Font Mono")
 (add-to-list 'default-frame-alist
              '(font . "FiraCode Nerd Font Mono-16"))
@@ -102,10 +104,15 @@
       ;; solarized-height-plus-4 1.0)
       )
 ;(load-theme 'solarized-dark t)
+(let ((theme-file (locate-library "solarized-gruvbox-dark-theme")))
+  (unless theme-file
+    (error "Unable to locate solarized-gruvbox-dark-theme"))
+  (add-to-list 'custom-theme-load-path (file-name-directory theme-file)))
 (load-theme 'solarized-gruvbox-dark t)
 
 ; editorconfig settings
 ;; Preserve Emacs' form-aware indentation at the conventional Lisp width.
+(require 'editorconfig)
 (setq editorconfig-lisp-use-default-indent 2)
 (editorconfig-mode 1)
 
@@ -122,29 +129,27 @@
 ;;      Use Automator to create a Quick Action that runs a shell script that starts emacsclient binded to daemon with org-capture
 ;;      Bind that Quick Action to a keyboard shortcut in Keyboard settings under System Preferences
 
-(defadvice org-capture-finalize
-           (after delete-capture-frame activate)
-           "Advise capture-finalize to close the frame"
-           (if (equal "capture" (frame-parameter nil 'name))
-               (delete-frame)))
+(defun dotfiles-delete-capture-frame (&rest _)
+  "Delete the temporary Org capture frame."
+  (when (equal "capture" (frame-parameter nil 'name))
+    (delete-frame)))
 
-(defadvice org-capture-destroy
-           (after delete-capture-frame activate)
-           "Advise capture-destroy to close the frame"
-           (if (equal "capture" (frame-parameter nil 'name))
-               (delete-frame)))
+(advice-add 'org-capture-finalize :after #'dotfiles-delete-capture-frame)
+(advice-add 'org-capture-destroy :after #'dotfiles-delete-capture-frame)
 
-;; noflet
+(require 'cl-lib)
 (defun make-capture-frame ()
   "Create a new frame and run org-capture."
   (interactive)
   (make-frame '((name . "capture")))
   (select-frame-by-name "capture")
   (delete-other-windows)
-  (noflet ((switch-to-buffer-other-window (buf) (switch-to-buffer buf)))
-          (org-capture)))
+  (cl-letf (((symbol-function 'switch-to-buffer-other-window)
+             (lambda (buf) (switch-to-buffer buf))))
+    (org-capture)))
 
 ;; org-mode
+(require 'org)
 (define-key global-map (kbd "C-c l") 'org-store-link)
 (define-key global-map (kbd "C-c a") 'org-agenda)
 (global-set-key (kbd "C-c c") 'org-capture)
@@ -200,12 +205,12 @@
          "* WISHLIST %?" :prepend t)
         ("sw" "Wishlist" entry (file+headline "~/org/notes.org" "Wishlist")
          "* WISHLIST %?" :prepend t)
-        ("sg" "Gifts" entry (file+headline "~/org/notes.org" "Gifts")
+        ("sf" "Gifts" entry (file+headline "~/org/notes.org" "Gifts")
          "* WISHLIST %?" :prepend t)
 
         ("e" "Cloudflare")
         ("et" "Tickets" entry (file+headline "~/org/work.org" "Tickets")
-         "* [[https://jira.cfops.it/browse/%?" :prepend t)
+         "* [[https://jira.cfops.it/browse/%?]]" :prepend t)
         ("ei" "Incidents" entry (file+headline "~/org/work.org" "Incidents")
          "* DETECT [[https://jira.cfops.it/browse/INCIDENT-%?" :prepend t)
         ("ew" "Watching" entry (file+headline "~/org/work.org" "Watching")
@@ -248,7 +253,9 @@
                                ("RECON" . "dark violet") ("PAYLOAD" . "pale violet red") ("DELIVER" . "firebrick") ("EXPLOIT" . "red") ("INSTALL" . "goldenrod") ("C2" . "lime green") ("ACTION" . "forest green")
                                ("WISHLIST" . "systemOrangeColor") ("CART" . "systemPurpleColor") ("SHIPPING" . "systemBlueColor") ("ATTN" . "systemRedColor") ("RETURNED" . "systemYellowColor")
                                ))
-(add-hook 'org-mode-hook #'visual-line-mode)
+(add-hook
+    'org-mode-hook #'visual-line-mode)
+(add-hook 'org-mode-hook #'auto-revert-mode)
 (add-hook 'text-mode-hook #'visual-line-mode)
 
 ; Make org-mode, iOS BeOrg, emacs, and (Drop)Box sync play well with each other
@@ -261,10 +268,7 @@
 (setq-default major-mode 'org-mode)
 
 ;; org-roam settings
-;; config
-;; acknowledge v2 migration
-(setq org-roam-v2-ack t)
-
+(require 'org-roam)
 ;; update last_modified when saving
 ;; ref: https://github.com/emacs-mirror/emacs/blob/master/lisp/time-stamp.el#L44-L73
 (add-hook 'org-mode-hook
@@ -278,15 +282,9 @@
 ;; ref: https://www.orgroam.com/manual/Getting-Started.html#Getting-Started
 (setq org-roam-directory "~/org/roam")
 (setq org-roam-db-location "~/org/roam/org-roam.db")
-(setq org-roam-graph-executable "/usr/local/bin/dot")
-(setq org-roam-graph-viewer '(lambda (file)
-                               (let ((file-file (concat "file://" file)))
-                                 (call-process
-                                   "/Applications/Firefox Nightly.app/Contents/MacOS/firefox"
-                                   nil
-                                   0
-                                   nil
-                                   file-file))))
+(require 'browse-url)
+(setq org-roam-graph-executable "dot")
+(setq org-roam-graph-viewer #'browse-url-of-file)
 
 (setq org-roam-capture-templates
       '(("d" "default" plain "%?"
@@ -449,10 +447,11 @@
     ))
 
 ;; org-journal
+(require 'org-journal)
 ;; config
 ;; ref: https://github.com/bastibe/org-journal
 (setq org-journal-file-type 'weekly)
-(defun org-journal-file-header-func (time)
+(defun org-journal-file-header-func (_time)
   "Custom function to create journal header."
   (concat
     (org-id-get-create)
@@ -479,12 +478,15 @@
 ;; evil-mode
 (setq evil-want-C-u-scroll t)
 (setq evil-want-C-i-jump nil)
+(require 'evil)
 (evil-mode 1)
 
 ;; evil-collection
+(require 'evil-collection)
 (evil-collection-init)
 
 ;; evil-surround
+(require 'evil-surround)
 (global-evil-surround-mode 1)
 
 (require 'evil-org)
@@ -494,9 +496,11 @@
 (evil-org-agenda-set-keys)
 
 ;; evil-rsi
+(require 'evil-rsi)
 (evil-rsi-mode)
 
 ;; use undo-tree for evil-mode
+(require 'undo-tree)
 (evil-set-undo-system 'undo-tree)
 ;; undo-tree
 
@@ -504,17 +508,16 @@
 
 ;; Use Roswell's lisp
 (setq inferior-lisp-program "ros -Q run")
-;; slime
-;(load (expand-file-name "~/.roswell/helper.el"))
 
 ;; Use Nix-installed SLIME
 (require 'slime-autoloads)
 (slime-setup '(slime-fancy slime-asdf))
 
 ;; which-key settings
+(require 'which-key)
 (which-key-mode t)
 
 ;; rainbow-delimiters
+(require 'rainbow-delimiters)
 (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
 (add-hook 'org-mode-hook #'rainbow-delimiters-mode)
-

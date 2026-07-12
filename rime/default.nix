@@ -6,6 +6,25 @@
   ...
 }: let
   localRimeDataDir = ./.local/share/fcitx5/rime;
+  localFcitxThemesDir = ./.local/share/fcitx5/themes;
+
+  catppuccinThemeDir = "${inputs.catppuccin_fcitx5}/src";
+  catppuccinThemeNames = builtins.attrNames (
+    lib.filterAttrs (_: type: type == "directory") (builtins.readDir catppuccinThemeDir)
+  );
+  fcitxThemes = pkgs.linkFarm "fcitx5-themes" (
+    map (name: {
+      inherit name;
+      path = "${catppuccinThemeDir}/${name}";
+    })
+    catppuccinThemeNames
+    ++ [
+      {
+        name = "plasma";
+        path = localFcitxThemesDir + "/plasma";
+      }
+    ]
+  );
 
   # Locked schema revisions take precedence over the retained Stow snapshot
   # when Home Manager deploys this module.
@@ -120,17 +139,6 @@
 in
   assert duplicateRimeDataTargetNames == []; {
     config = lib.mkMerge [
-      {
-        assertions = [
-          {
-            assertion = builtins.elem rimeDeployment [
-              "nix"
-              "stow"
-            ];
-            message = "rimeDeployment must be either `nix` or `stow`";
-          }
-        ];
-      }
       (lib.mkIf (rimeDeployment == "nix") {
         home.activation.rimeClaimOwnership = lib.hm.dag.entryAfter ["linkGeneration"] ''
           rime_state_dir="''${XDG_STATE_HOME:-$HOME/.local/state}/rime"
@@ -159,6 +167,7 @@ in
           link_rime_path() {
             source="$1"
             target="$2"
+            legacy_source="''${3:-}"
 
             if [ ! -e "$source" ]; then
               echo "Rime source does not exist: $source" >&2
@@ -171,10 +180,16 @@ in
               actual="$(${pkgs.coreutils}/bin/readlink -m -- "$target")"
               expected="$(${pkgs.coreutils}/bin/readlink -m -- "$source")"
               if [ "$actual" != "$expected" ]; then
-                echo "Refusing to replace unmanaged Rime link: $target" >&2
-                exit 1
+                if [ -n "$legacy_source" ] &&
+                  [ "$actual" = "$(${pkgs.coreutils}/bin/readlink -m -- "$legacy_source")" ]; then
+                  ${pkgs.coreutils}/bin/rm -f -- "$target"
+                else
+                  echo "Refusing to replace unmanaged Rime link: $target" >&2
+                  exit 1
+                fi
+              else
+                return 0
               fi
-              return
             elif [ -e "$target" ]; then
               echo "Refusing to replace unmanaged Rime path: $target" >&2
               exit 1
@@ -187,7 +202,10 @@ in
           link_rime_path "$rime_dotfiles/.config/fcitx5/profile" "$HOME/.config/fcitx5/profile"
           link_rime_path "$rime_dotfiles/.config/fcitx5/conf/classicui.conf" "$HOME/.config/fcitx5/conf/classicui.conf"
           link_rime_path "$rime_dotfiles/.config/fcitx5/conf/rime.conf" "$HOME/.config/fcitx5/conf/rime.conf"
-          link_rime_path "$rime_dotfiles/.local/share/fcitx5/themes" "$HOME/.local/share/fcitx5/themes"
+          link_rime_path \
+            "${fcitxThemes}" \
+            "$HOME/.local/share/fcitx5/themes" \
+            "$rime_dotfiles/.local/share/fcitx5/themes"
         '';
         home.activation.rimeSchemaBuild = lib.hm.dag.entryAfter ["rimeHostFiles"] ''
           ensure_static_link() {
@@ -208,7 +226,7 @@ in
                 echo "Refusing to replace unmanaged Rime link: $target" >&2
                 exit 1
               fi
-              return
+              return 0
             elif [ -e "$target" ]; then
               echo "Refusing to replace unmanaged Rime path: $target" >&2
               exit 1
@@ -378,7 +396,7 @@ in
               "$rime_dotfiles/.config/fcitx5/conf/rime.conf"
             validate_owned_link \
               "$HOME/.local/share/fcitx5/themes" \
-              "$rime_dotfiles/.local/share/fcitx5/themes"
+              "${fcitxThemes}"
 
             ${lib.concatMapStringsSep "\n" (entry: ''
               validate_owned_link \

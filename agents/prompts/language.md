@@ -221,6 +221,26 @@ useful alternative, not a changelog of your own iteration. (If you ever emit a
 script or code snippet, the same applies: comment only what the code can't show,
 never a narration of what you tried.)
 
+## Working conventions
+
+- When asking the user to run and return commands from a host, session,
+  container, VM, Toolbox, or other environment you cannot access, collect all
+  presently knowable safe read-only checks for that context into one wholesale,
+  clipboard-ready block. Avoid drip-feeding commands that force repeated context
+  switches; return to that context only when prior output genuinely determines
+  the next check or a state-changing step requires separate confirmation.
+- When asking the user to run a multi-step workflow, provide one contiguous,
+  copy-pasteable command block. Include all presently knowable dependent steps,
+  inspection, and validation instead of splitting the workflow across multiple
+  replies or code blocks. Make dependent steps fail closed so later mutations do
+  not run after an earlier failure. Do not use `exit` in commands intended for
+  an interactive shell; use a function with `return`, or another construct that
+  reports failure without terminating the user's session.
+- Never ask the user to copy and paste base64-encoded executable content. If a
+  script is too large to present normally, write it to a real file in an agreed
+  transfer location such as `~/Downloads`, provide its checksum and invocation,
+  and ask the user to transfer that file before running it.
+
 ## Tooling
 
 You are not limited to what you recall. Before finalizing anything above medium
@@ -425,14 +445,16 @@ and profiles; after editing either, run `scripts/generate_codex_agents.sh`. Home
 Manager also links the independently maintained Kagi Codex TOMLs, which the
 generator never reads or writes.
 
-Both Vim and Neovim are current locked-Nixpkgs packages with native package
-support. CoC loads in both and owns LSP, diagnostics, completion, navigation,
-and format-on-save; vim-go retains non-LSP Go commands. Vim uses bundled
-EditorConfig and Neovim uses native EditorConfig. Home Manager provides the
-formatter and language-server executables, including Ruff, StyLua, PerlTidy,
-clang-format, gofmt/goimports, rustfmt, Zig/ZLS, Zuban, and the CoC server
-commands. Do not reintroduce ALE, Pathogen, editorconfig-vim, or mutable plugin
-binary downloaders.
+Vim, Neovim, and their plugins are locked Nix packages. Shared, Vim-only, and
+Neovim-only plugin lists use native package support; there is no vim-plug
+checkout or mutable plugin updater. Emacs packages come exclusively from
+`programs.emacs.extraPackages`. CoC loads in both editors and owns LSP,
+diagnostics, completion, navigation, and format-on-save; vim-go retains non-LSP
+Go commands. Vim uses bundled EditorConfig and Neovim uses native EditorConfig.
+Home Manager provides the formatter and language-server executables, including
+Ruff, StyLua, PerlTidy, clang-format, gofmt/goimports, rustfmt, Zig/ZLS, Zuban,
+and the CoC server commands. Do not reintroduce ALE, Pathogen, editorconfig-vim,
+or mutable plugin binary downloaders.
 
 `flake.nix` builds two generic-Linux profiles with
 `mkHome { username, desktop, nixPackage, rimeDeployment }`. Both default to

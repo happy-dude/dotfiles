@@ -7,20 +7,6 @@ let g:go_fmt_autosave = 0                   "  fmt on autosave
 let g:go_gopls_enabled = 0                  " CoC owns the gopls process
 let g:go_mod_fmt_autosave = 0
 
-" CoC extensions
-let g:coc_global_extensions = [
-      \ '@yaegassy/coc-zuban',
-      \ 'coc-actions',
-      \ 'coc-clangd',
-      \ 'coc-extension-codemod',
-      \ 'coc-go',
-      \ 'coc-highlight',
-      \ 'coc-markdownlint',
-      \ 'coc-rust-analyzer',
-      \ 'coc-tsserver',
-      \ 'coc-vimtex'
-      \]
-
 " Don't pass messages to |ins-completion-menu|.
 set shortmess+=c
 
@@ -88,8 +74,10 @@ nmap <leader>f  <Plug>(coc-format-selected)
 
 augroup dotfiles_coc
   autocmd!
-  autocmd User EasyMotionPromptBegin silent! CocDisable
-  autocmd User EasyMotionPromptEnd silent! CocEnable
+  if !has('nvim')
+    autocmd User EasyMotionPromptBegin silent! CocDisable
+    autocmd User EasyMotionPromptEnd silent! CocEnable
+  endif
   autocmd CursorHold * silent call CocActionAsync('highlight')
   autocmd FileType typescript,json setlocal formatexpr=CocAction('formatSelected')
   autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
@@ -144,7 +132,7 @@ xmap <silent> <C-s> <Plug>(coc-range-select)
 " Add `:Format` command to format current buffer
 command! -nargs=0 Format :call CocActionAsync('format')
 
-" Add `:OR` for coc-tsserver to organize JavaScript/TypeScript imports
+" Ask the configured JavaScript/TypeScript language server to organize imports.
 command! -nargs=0 OR call CocActionAsync('runCommand', 'editor.action.organizeImport')
 
 " Add `:Fold` command to fold current buffer

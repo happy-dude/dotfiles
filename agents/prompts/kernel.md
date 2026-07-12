@@ -198,6 +198,14 @@ could check X" as "let me check X" by default:
   clipboard-ready block. Avoid drip-feeding commands that force repeated context
   switches; return to that context only when prior output genuinely determines
   the next check or a state-changing step requires separate confirmation.
+- When asking the user to run a multi-step workflow, provide one contiguous,
+  copy-pasteable command block. Include all presently knowable dependent steps,
+  inspection, and validation instead of splitting the workflow across multiple
+  replies or code blocks. Make dependent steps fail closed so later mutations do
+  not run after an earlier failure. Do not use `exit` in commands intended for
+  an interactive shell; use a function with `return`, or another construct that
+  reports failure without terminating the user's session.
+
 - Never ask the user to copy and paste base64-encoded executable content. If a
   script is too large to present normally, write it to a real file in an agreed
   transfer location such as `~/Downloads`, provide its checksum and invocation,
@@ -559,10 +567,16 @@ structure.
   `mkHome` also imports the external `nix-flatpak` module and `flatpak/`. The
   shared `home.stateVersion = "26.11"` is a compatibility floor, not the
   installed Home Manager version.
-- **Ownership and sources:** The remaining GNU Stow packages are `gdb/`,
-  `karabiner/`, `org-dirs/`, `roswell/`, `ssh/`, and `terminfo/`. `rime/`
-  retains a guarded Stow fallback, but Home Manager deploys it by default:
-  activation claims ownership, materializes managed static inputs under
+- **Ownership and sources:** Home Manager owns Linux configuration except for
+  the intentionally deferred `ssh/.ssh/config`. `gdb/gdbinit` is linked to
+  `~/.gdbinit`; the Emacs module links Org directory-local settings and creates
+  mutable `~/org/Archive` and `~/org/roam` directories. Roswell and SLIME are
+  Nix-installed without copied helpers or a standalone `ros_swank` launcher. The
+  low-priority ncurses runtime supplies standard terminfo entries while
+  Ghostty's package wins terminal-specific collisions. `karabiner/` remains
+  tracked for the macOS branch but is not deployed on Linux. `rime/` retains a
+  guarded Stow fallback, but Home Manager deploys it by default: activation
+  claims ownership, materializes managed static inputs under
   `~/.local/share/fcitx5/rime/.home-manager-static`, and keeps generated and
   learned state writable. Selecting `rimeDeployment = "stow"` validates
   ownership and every managed link before removing only Home Manager-owned
@@ -572,14 +586,17 @@ structure.
   uses `~/.config/zed/settings.json`. The agent prompts remain live through
   `mkOutOfStoreSymlink`. The global gitignore is `git/.gitignore_global`;
   machine identity and signing remain in untracked `~/.config/git/local.config`.
-- **Editor ownership:** Vim and Neovim are current locked-Nixpkgs packages with
-  native package support. CoC loads in both and owns LSP, diagnostics,
-  completion, navigation, and format-on-save; vim-go retains non-LSP Go
-  commands. Vim uses bundled EditorConfig and Neovim uses native EditorConfig.
-  Home Manager provides the formatter and language-server executables, including
-  Ruff, StyLua, PerlTidy, clang-format, gofmt/goimports, rustfmt, Zig/ZLS,
-  Zuban, and the CoC server commands. Do not reintroduce ALE, Pathogen,
-  editorconfig-vim, or mutable plugin binary downloaders.
+- **Editor ownership:** Vim, Neovim, and their plugins are locked Nix packages;
+  shared, Vim-only, and Neovim-only plugin lists live in `vim/default.nix` and
+  use native package support. Emacs packages are declared exclusively through
+  `programs.emacs.extraPackages`. There are no editor plugin submodules,
+  vim-plug checkout, or mutable plugin updater. CoC loads in both editors and
+  owns LSP, diagnostics, completion, navigation, and format-on-save; vim-go
+  retains non-LSP Go commands. Vim uses bundled EditorConfig and Neovim uses
+  native EditorConfig. Home Manager provides the formatter and language-server
+  executables, including Ruff, StyLua, PerlTidy, clang-format, gofmt/goimports,
+  rustfmt, Zig/ZLS, Zuban, and the CoC server commands. Do not reintroduce ALE,
+  Pathogen, editorconfig-vim, or mutable plugin binary downloaders.
 - **Agent prompt ownership:** `agents/prompts/{kernel,language}.md` are
   canonical for the generated full agents and profiles. After editing either,
   run `scripts/generate_codex_agents.sh`; the flake check rejects drift. Home
@@ -638,8 +655,9 @@ structure.
   before a switch because it mutates the live profile.
   `./scripts/update.sh check` validates and builds without changing the lock or
   active profile; `apply` activates the validated existing lock; and `update`
-  performs the guarded source-update workflow. Update mode advances direct
-  submodules and pins initialized descendants to their parent gitlinks.
+  performs the guarded source-update workflow. When `.gitmodules` contains
+  entries, update mode advances direct submodules and pins initialized
+  descendants to their parent gitlinks; otherwise that stage is a no-op.
   `--autostash-submodules` validates and retains stash payloads for review
   instead of applying them automatically. Fedora OSTree or Determinate system
   changes are outside Home Manager: consult

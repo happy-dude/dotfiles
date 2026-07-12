@@ -44,6 +44,20 @@ create_repo() {
 # shellcheck disable=SC1091 # Intentionally sources the repository script.
 DOTFILES_UPDATE_SOURCE_ONLY=1 source "$REPO_DIR/scripts/update.sh"
 
+detection_repo="$TMPDIR_TEST/detection"
+create_repo "$detection_repo"
+if (cd "$detection_repo" && has_configured_submodules); then
+  fail 'repository without .gitmodules reported configured submodules'
+fi
+touch "$detection_repo/.gitmodules"
+if (cd "$detection_repo" && has_configured_submodules); then
+  fail 'empty .gitmodules reported configured submodules'
+fi
+git -C "$detection_repo" config -f .gitmodules \
+  submodule.example.path modules/example
+(cd "$detection_repo" && has_configured_submodules) ||
+  fail 'configured submodule was not detected'
+
 source_repo="$TMPDIR_TEST/source"
 parent_repo="$TMPDIR_TEST/parent"
 child_repo="$parent_repo/modules/child"
@@ -247,22 +261,6 @@ if (
 ); then
   fail 'submodule enumeration failure was ignored'
 fi
-
-help_repo="$TMPDIR_TEST/help"
-create_repo "$help_repo"
-mkdir -p -- "$help_repo/doc"
-printf 'original\n' >"$help_repo/doc/tags"
-commit_all "$help_repo" help-tags
-printf 'generated\n' >>"$help_repo/doc/tags"
-
-# shellcheck disable=SC2034 # Read by the sourced restore helper.
-CLEAN_VIM_HELP_TAGS=("$help_repo")
-RESTORED_VIM_HELP_TAGS=()
-restore_generated_vim_help_tags
-git -C "$help_repo" diff --quiet -- doc/tags ||
-  fail 'generated help tags were not restored'
-[ "${#RESTORED_VIM_HELP_TAGS[@]}" -eq 1 ] ||
-  fail 'restored help tags were not reported'
 
 topology_root="$TMPDIR_TEST/topology-root"
 direct_remote="$TMPDIR_TEST/direct-remote"

@@ -1,10 +1,10 @@
 {
   "coc.preferences.formatOnSaveFiletypes": [
-    "Markdown",
     "c",
+    "clojure",
     "cpp",
-    "coc-cfn-lint",
     "css",
+    "fish",
     "go",
     "gomod",
     "html",
@@ -13,30 +13,26 @@
     "json",
     "lua",
     "markdown",
-    "markdownlint",
     "perl",
+    "plaintex",
     "python",
     "ruby",
     "rust",
+    "sh",
     "sql",
     "terraform",
+    "tex",
     "typescript",
-    "typescript.tsx",
     "typescriptreact",
+    "typst",
     "yaml",
     "zig"
   ],
   "clangd.checkUpdates": false,
   "clangd.path": "clangd",
-  "go.checkForUpdates": "disabled",
-  "go.goplsPath": "gopls",
   "rust-analyzer.server.path": "rust-analyzer",
   "rust-analyzer.updates.checkOnStartup": false,
   "rust-analyzer.updates.prompt": false,
-  "tsserver.disableAutomaticTypeAcquisition": true,
-  "tsserver.tsdk": "~/.local/share/nix-typescript/lib",
-  "tsserver.useLocalTsdk": false,
-  "typescript.check.npmIsInstalled": false,
   "diagnostic.checkCurrentLine": true,
   "diagnostic.errorSign": ">>",
   "diagnostic.refreshAfterSave": true,
@@ -59,31 +55,100 @@
       "args": ["start"],
       "filetypes": ["sh"]
     },
-    "digestif": {
-      "command": "digestif",
-      "filetypes": ["tex", "plaintex", "context"]
+    "fish-lsp": {
+      "command": "fish-lsp",
+      "args": ["start"],
+      "filetypes": ["fish"]
+    },
+    "clojure-lsp": {
+      "command": "clojure-lsp",
+      "args": ["listen"],
+      "filetypes": ["clojure"],
+      "rootPatterns": [
+        "deps.edn",
+        "bb.edn",
+        "shadow-cljs.edn",
+        "project.clj",
+        "build.boot",
+        ".git"
+      ]
+    },
+    "fennel-ls": {
+      "command": "fennel-ls",
+      "args": ["--server"],
+      "filetypes": ["fennel"],
+      "rootPatterns": ["flsproject.fnl", ".git"]
+    },
+    "texlab": {
+      "command": "texlab",
+      "filetypes": ["latex", "plaintex"],
+      "rootPatterns": [".latexmkrc", "latexmkrc", ".git"]
+    },
+    "tinymist": {
+      "command": "tinymist",
+      "args": ["lsp"],
+      "filetypes": ["typst"],
+      "rootPatterns": ["typst.toml", ".git"]
     },
     "json-language-server": {
       "command": "vscode-json-language-server",
       "args": ["--stdio"],
       "filetypes": ["json", "jsonc"]
     },
+    "marksman": {
+      "command": "marksman",
+      "args": ["server"],
+      "filetypes": ["markdown"],
+      "rootPatterns": [".marksman.toml", ".git"]
+    },
+    "golang": {
+      "command": "gopls",
+      "filetypes": ["go", "gomod", "gowork", "gotmpl"],
+      "rootPatterns": ["go.work", "go.mod", ".git"]
+    },
+    "typescript-language-server": {
+      "command": "typescript-language-server",
+      "args": ["--stdio"],
+      "filetypes": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+      ],
+      "rootPatterns": ["package.json", "tsconfig.json", "jsconfig.json", ".git"]
+    },
     "ruff": {
       "command": "ruff",
       "args": ["server"],
       "filetypes": ["python"],
-      "rootPatterns": ["pyproject.toml", "ruff.toml", ".ruff.toml", ".git"]
+      "rootPatterns": ["pyproject.toml", "ruff.toml", ".ruff.toml", ".git"],
+      "disabledFeatures": ["hover"]
     },
     "lua-language-server": {
       "command": "lua-language-server",
       "filetypes": ["lua"],
-      "rootPatterns": [".luarc.json", ".luarc.jsonc"],
-      "ignoredRootPaths": ["$HOME/dotfiles"]
+      "rootPatterns": [".luarc.json", ".luarc.jsonc", ".git"]
+    },
+    "perl-navigator": {
+      "command": "perlnavigator",
+      "args": ["--stdio"],
+      "filetypes": ["perl"]
     },
     "perl-language-server": {
       "command": "perl",
       "args": ["-MPerl::LanguageServer", "-e", "Perl::LanguageServer::run"],
-      "filetypes": ["perl"]
+      "filetypes": ["perl"],
+      "disabledFeatures": [
+        "completion",
+        "diagnostics",
+        "hover",
+        "definition",
+        "documentSymbol",
+        "workspaceSymbol",
+        "formatting",
+        "documentFormatting",
+        "documentRangeFormatting"
+      ]
     },
     "zls": {
       "command": "zls",

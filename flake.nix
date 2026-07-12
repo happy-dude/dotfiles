@@ -41,6 +41,10 @@
       url = "github:roswell/roswell";
       flake = false;
     };
+    virtme_ng_src = {
+      url = "github:arighi/virtme-ng";
+      flake = false;
+    };
     bgutil_ytdlp_pot_provider = {
       url = "github:Brainicism/bgutil-ytdlp-pot-provider";
       flake = false;
@@ -50,7 +54,6 @@
       url = "github:cordx56/rustowl?ref=v0.4.0";
       flake = false;
     };
-
     # ghostty
     # https://ghostty.org/docs/install/binary#nix-flake
     # https://github.com/ghostty-org/ghostty/blob/main/flake.nix
@@ -139,6 +142,16 @@
       url = "github:jethrokuan/z";
       flake = false;
     };
+
+    catppuccin_fcitx5 = {
+      url = "github:catppuccin/fcitx5";
+      flake = false;
+    };
+
+    coc_zuban = {
+      url = "github:yaegassy/coc-zuban";
+      flake = false;
+    };
   };
 
   outputs = {
@@ -158,10 +171,131 @@
         inputs.neovim-nightly-overlay.overlays.default
         inputs.rust-overlay.overlays.default
         ghostty.overlays.default
-        (final: prev: {
+        (final: prev: let
+          cocZubanManifest = builtins.fromJSON (
+            builtins.readFile "${inputs.coc_zuban}/package.json"
+          );
+          cocZubanPackage = final.stdenvNoCC.mkDerivation (finalAttrs: {
+            pname = "coc-zuban";
+            version = cocZubanManifest.version;
+            src = inputs.coc_zuban;
+
+            pnpmDeps = final.fetchPnpmDeps {
+              inherit (finalAttrs) pname version src;
+              pnpm = final.pnpm_10;
+              fetcherVersion = 3;
+              hash = "sha256-M+PGb4bQprGZjm6uZsmy80fKFJQc7lV+WOprCXWmXms=";
+            };
+
+            nativeBuildInputs = [
+              final.nodejs
+              final.pnpmConfigHook
+              final.pnpm_10
+            ];
+
+            buildPhase = ''
+              runHook preBuild
+              pnpm build
+              runHook postBuild
+            '';
+
+            installPhase = ''
+              runHook preInstall
+              mkdir -p "$out/lib/node_modules/@yaegassy/coc-zuban"
+              cp -r lib package.json LICENSE README.md \
+                "$out/lib/node_modules/@yaegassy/coc-zuban/"
+              runHook postInstall
+            '';
+
+            meta = {
+              description = "Zuban language server extension for coc.nvim";
+              homepage = "https://github.com/yaegassy/coc-zuban";
+              license = final.lib.licenses.mit;
+            };
+          });
+          rustowlManifest = builtins.fromTOML (
+            builtins.readFile "${inputs.rustowl_src}/Cargo.toml"
+          );
+        in {
           roswell = prev.roswell.overrideAttrs (_: {
             src = inputs.roswell_src;
           });
+          virtme-ng = final.python3Packages.buildPythonApplication {
+            pname = "virtme-ng";
+            version = "unstable-${builtins.substring 0 8 inputs.virtme_ng_src.lastModifiedDate}";
+            pyproject = true;
+            src = inputs.virtme_ng_src;
+
+            build-system = with final.python3Packages; [
+              argparse-manpage
+              setuptools
+            ];
+
+            dependencies = with final.python3Packages; [
+              argcomplete
+              requests
+            ];
+
+            makeWrapperArgs = [
+              "--prefix"
+              "PATH"
+              ":"
+              (final.lib.makeBinPath [
+                final.busybox
+                final.openssh
+                final.qemu
+                final.socat
+                final.virtiofsd
+              ])
+            ];
+
+            pythonImportsCheck = [
+              "virtme"
+              "virtme_ng"
+            ];
+
+            meta = {
+              description = "Build and run kernels in a virtualized host filesystem";
+              homepage = "https://github.com/arighi/virtme-ng";
+              license = final.lib.licenses.gpl2Only;
+              mainProgram = "vng";
+              platforms = final.lib.platforms.linux;
+            };
+          };
+          vimPlugins =
+            prev.vimPlugins
+            // {
+              coc-zuban = final.vimUtils.buildVimPlugin {
+                inherit (cocZubanPackage) pname version meta;
+                src = "${cocZubanPackage}/lib/node_modules/@yaegassy/coc-zuban";
+              };
+              rustowl = final.vimUtils.buildVimPlugin {
+                pname = "rustowl-nvim";
+                version = rustowlManifest.package.version;
+                src = inputs.rustowl_src;
+
+                postInstall = ''
+                  find "$out" -mindepth 1 -maxdepth 1 \
+                    ! -name lua ! -name ftplugin -exec rm -rf {} +
+                '';
+              };
+              vim-sandwich = prev.vimPlugins.vim-sandwich.overrideAttrs (old: {
+                meta =
+                  old.meta
+                  // {
+                    license = {
+                      free = true;
+                      fullName = "NYSL 0.9982";
+                      redistributable = true;
+                      shortName = "NYSL";
+                      url = "https://www.kmonos.net/nysl/index.en.html";
+                    };
+                  };
+              });
+              vim-solarized8 = prev.vimPlugins.vim-solarized8.overrideAttrs (old: {
+                meta = old.meta // {license = final.lib.licenses.mit;};
+              });
+            };
         })
       ];
     };
@@ -312,7 +446,9 @@
             fi
           done
 
-          cp ${self}/.gitmodules .gitmodules
+          if [ -f ${self}/.gitmodules ]; then
+            cp ${self}/.gitmodules .gitmodules
+          fi
           bash ${self}/scripts/sort_gitmodules.sh --check
           bash ${self}/scripts/test_update_submodules.sh
           bash ${self}/scripts/generate_codex_agents.sh --check

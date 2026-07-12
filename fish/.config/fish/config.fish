@@ -2,7 +2,9 @@
 # done automatically in fish config
 #set -q __fish_home_manager_config_sourced; and exit
 #set -g __fish_home_manager_config_sourced 1
-set -gx GPG_TTY (tty) #nix gpg pinentry workaround
+if status is-interactive && tty -s
+    set -gx GPG_TTY (tty) # GPG pinentry needs the active terminal.
+end
 
 #fish_add_path -p "/nix/var/nix/profiles/default/bin"
 
@@ -29,7 +31,9 @@ set -gx EDITOR nvim
 set -gx VISUAL nvim
 
 # ctrl-x ctrl-e to open $EDITOR, like in zsh
-bind \cx\ce edit_command_buffer
+if status is-interactive
+    bind \cx\ce edit_command_buffer
+end
 
 # History toggle: `nohist` selects Fish's private, unsaved history session.
 # `yeshist` restores the previous session, including the default session.
@@ -54,8 +58,10 @@ function yeshist
     echo 'history on'
 end
 
-# This file is linked by Home Manager and also used directly by Stow.
-source (status dirname)/tide.fish
+# Home Manager supplies the prompt for interactive sessions.
+if status is-interactive
+    source (status dirname)/tide.fish
+end
 
 # use neovim as manpager
 set -gx MANPAGER 'nvim +Man!'
@@ -63,51 +69,58 @@ set -gx MANWIDTH 80
 
 ## LESS mouse scrolling
 set -gx LESS '--mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --CLEAR-SCREEN'
-set -gx PAGER 'less --mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --CLEAR-SCREEN'
+set -gx PAGER less
 
-## cc flags
-## https://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html
-## https://clang.llvm.org/docs/UsersManual.html#diagnostics-enable-everything
-## https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
-## https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html
-## https://songdongsheng.github.io/2021/03/21/statically-linked-executable-hardening-with-pie/
-if command -v clang &>/dev/null
-    alias cc='clang \
-        -g3 -ggdb3 -glldb \
-        -Weverything -pedantic \
-        -Wconversion \
-        -Wdouble-promotion \
-        -Wimplicit-fallthrough \
-        -Wmissing-prototypes \
+# Hardened C compiler wrapper for small standalone builds.
+function cc
+    set -l compiler
+    set -l flags
+    if command -q clang
+        set compiler clang
+        set flags -O1 -g3 -glldb
+    else if command -q gcc
+        set compiler gcc
+        set flags -O1 -g3 -ggdb3 -ftrivial-auto-var-init=zero
+    else
+        echo 'cc: neither clang nor gcc is available' >&2
+        return 127
+    end
+
+    set -a flags \
+        -Wall -Wextra -Wpedantic \
+        -Wconversion -Wdouble-promotion \
+        -Wformat=2 -Wimplicit-fallthrough -Wmissing-prototypes \
         -fno-omit-frame-pointer \
         -fsanitize=address,undefined \
-        -fsanitize-trap=alignment \
-        -fstack-clash-protection \
-        -fstack-protector-strong \
-        -fPIE \
-        -fPIC \
-        -D_FORTIFY_SOURCE=3 \
-        -D_GLIBCXX_ASSERTIONS \
-        -Wl,-z,defs,-z,relro,-z,now,-z,noexecstack,-z,noexecheap,-pie'
-else if command -v gcc &>/dev/null
-    alias cc='gcc \
-        -g3 -ggdb3 \
-        -Wall -Wextra -pedantic \
-        -Wconversion \
-        -Wdouble-promotion \
-        -Wimplicit-fallthrough \
-        -Wmissing-prototypes \
-        -fno-omit-frame-pointer \
-        -fsanitize=address,undefined \
-        -fsanitize-trap=alignment \
-        -fstack-clash-protection \
-        -fstack-protector-strong \
-        -ftrivial-auto-var-init=zero \
-        -fPIE \
-        -fPIC \
-        -D_FORTIFY_SOURCE=3 \
-        -D_GLIBCXX_ASSERTIONS \
-        -Wl,-z,defs,-z,relro,-z,now,-z,noexecstack,-z,noexecheap,-pie'
+        -fstack-clash-protection -fstack-protector-strong \
+        -D_FORTIFY_SOURCE=3
+
+    set -l link 1
+    set -l pic 0
+    for arg in $argv
+        switch $arg
+            case -c -E -S -fsyntax-only -M -MM
+                set link 0
+            case -shared -fPIC
+                set pic 1
+        end
+    end
+
+    if test $pic -eq 1
+        set -a flags -fPIC
+    else
+        set -a flags -fPIE
+    end
+
+    if test $link -eq 1
+        set -a flags \
+            -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack
+        if test $pic -eq 0
+            set -a flags -Wl,-z,defs -pie
+        end
+    end
+
+    command $compiler $flags $argv
 end
 
 ## git
@@ -116,21 +129,16 @@ alias gl="git log --date=relative --abbrev=12 -n 160 \
 alias gits="git --no-pager show --no-patch --format='commit %h (\"%s\")%n'"
 
 # fzf
-#[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-#[ -d $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/ ] && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/completion.zsh && source $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell/key-bindings.zsh
-if test -d $HOME/dotfiles/vim/.vim/pack/plugged/opt/fzf/shell
+if status is-interactive && command -q fzf
     fzf --fish | source
-    if command -v rg &>/dev/null
-        set -gx FZF_DEFAULT_COMMAND "$(which rg) --files --hidden --follow --glob '!.git'"
+    if command -q rg
+        set -gx FZF_DEFAULT_COMMAND (command -s rg)" --files --hidden --follow --glob '!.git'"
     end
 end
 
 # emacsclient
 alias et='TERM=xterm-256color emacsclient -nw'
 alias ef='emacsclient -nc'
-
-## virtme
-alias vmeamd="~/sources/virtme-ng/virtme-run --show-boot-console --show-command --memory 8G --rw --rwdir=$HOME/cf/bpf-lsm --kdir . --mods=auto --net user -a nokaslr"
 
 # Ubuntu/Fedora system libs (for Nix gcc/ld to find distro-installed libraries)
 set -gx LIBRARY_PATH "/usr/lib/x86_64-linux-gnu:/usr/lib64"
@@ -141,26 +149,28 @@ set -gx CPPFLAGS "-I$(brew --prefix)/opt/llvm/include"
 fish_add_path -p "$(brew --prefix)/opt/llvm/bin"
 set -gx SDKROOT $(xcrun --sdk macosx --show-sdk-path)
 
+# Run the current kernel tree with the usual AMD debugging defaults.
+function vmeamd --wraps vng
+    command vng \
+        --run \
+        --memory 8G \
+        --rw \
+        --network user \
+        --append nokaslr \
+        $argv
+end
+
 # programming language environments
 
 # docker
 set -gx DOCKER_BUILDKIT 1
 set -gx BUILDKIT_PROGRESS plain # building the VM may output auth URLs the user needs to click
-#set -gx DOCKER_DEFAULT_PLATFORM linux/amd64     # for Apple Silicon: building the VM only works in a amd64 environment at the moment
-#set -gx DOCKER_HOST unix://$HOME/.docker/desktop/docker.sock          # linux docker-desktop host -- comment if using baseline docker-ce
-# go
-fish_add_path -p /usr/local/go/bin
-# lua
-fish_add_path "$HOME/.luarocks/bin"
-# luamake from sumneko
-alias luamake="$HOME/sources/lua-language-server/3rd/luamake/luamake"
 # node / nvm
 set -gx NVM_DIR "$HOME/.nvm"
 # nvm scripts not compatible with non-POSIX fish, use nvm.fish plugin
-set --universal nvm_default_version system
-# perl
-#source ~/perl5/perlbrew/etc/bashrc
-
+if status is-interactive && not set -q nvm_default_version
+    set --universal nvm_default_version system
+end
 # eza
 if command -v eza &>/dev/null
     alias ls='eza' # ls
@@ -174,8 +184,6 @@ if command -v eza &>/dev/null
     alias lS='eza -1' # one column, just names
     alias lt='eza -lbGF --tree --level=2' # tree
     alias lg='eza -lbGd --git --sort=modified --tree --level=2' # tree w/ git
-else
-    echo "eza could not be found"
 end
 
 fish_add_path -a "$HOME/.local/bin"

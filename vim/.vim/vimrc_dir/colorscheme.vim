@@ -1,66 +1,38 @@
 " colorscheme settings
 
-" Resolve plugin paths from this settings file.
-let s:vim_plugged_dir = fnamemodify(resolve(expand('<sfile>:p')), ':h:h') . '/pack/plugged/opt/'
+function! s:ColorschemeAvailable(name) abort
+  return !empty(globpath(&runtimepath, 'colors/' . a:name . '.vim', 1))
+endfunction
 
 if (&t_Co >= 16) && (($TERM =~# "color") || ($TERM =~# "alacritty") || ($TERM =~# "wezterm") || ($TERM =~# "ghostty")) && (has("termguicolors")) && (!has("gui_running"))
 
   set termguicolors     " Prefer true color palettes instead of cterm 256-color palettes
 
 
-  " Colorscheme preferences:
-  "   gruvbox-material, solarized8_flat, gruvbox8_hard
-  "   otherwise, prefer solarized w/ 256 color setting, jellybeans, Tomorrow-Night, seoul256, lucius, tango2, desert, torte, murphy
-
-  if filereadable(expand(s:vim_plugged_dir . "/gruvbox-material/colors/gruvbox-material.vim"))
+  if s:ColorschemeAvailable('gruvbox-material')
     set background=dark
     let g:gruvbox_material_palette = 'mix'
     let g:gruvbox_material_background = 'medium'
     let g:gruvbox_material_transparent_background = 1
     colorscheme gruvbox-material
-  elseif filereadable(expand(s:vim_plugged_dir . "/vim-solarized8/colors/solarized8_flat.vim"))
+  elseif s:ColorschemeAvailable('solarized8_flat')
     set background=dark
     colorscheme solarized8_flat
-  elseif filereadable(expand(s:vim_plugged_dir . "/vim-gruvbox8/colors/gruvbox8_hard.vim"))
+  elseif s:ColorschemeAvailable('gruvbox8_hard')
     set background=dark
     colorscheme gruvbox8_hard
-  "elseif filereadable(expand(s:vim_plugged_dir . "/base16-vim/colors/base16-tomorrow-night.vim"))
-  "  set termguicolors
-  "  set background=light
-  "  colorscheme base16-tomorrow-night
-  "elseif filereadable(expand(s:vim_plugged_dir . "/vim-colors-solarized/colors/solarized.vim"))
-  "  colorscheme solarized
-  "  set background=dark
-  "elseif filereadable(expand(s:vim_plugged_dir . "/jellybeans.vim/colors/jellybeans.vim"))
-  "  colorscheme jellybeans
-  "  set background=dark
-  "elseif filereadable(expand(s:vim_plugged_dir . "/seoul256.vim/colors/seoul256.vim"))
-  "  colorscheme seoul256
-  "  set background=dark
   endif
 endif
 
 if has('gui_running')
   set guifont=FantasqueSansM\ Nerd\ Font\ Mono:h16
 
-  if filereadable(expand(s:vim_plugged_dir . "/vim-solarized8/colors/solarized8_flat.vim"))
+  if s:ColorschemeAvailable('solarized8_flat')
     set background=dark
     colorscheme solarized8_flat
-  elseif filereadable(expand(s:vim_plugged_dir . "/vim-gruvbox8/colors/gruvbox8_hard.vim"))
+  elseif s:ColorschemeAvailable('gruvbox8_hard')
     set background=dark
     colorscheme gruvbox8_hard
-  "elseif filereadable(expand(s:vim_plugged_dir . "/base16-vim/colors/base16-tomorrow-night.vim"))
-  "  set background=dark
-  "  colorscheme base16-tomorrow-night
-  "elseif filereadable(expand(s:vim_plugged_dir . "/vim-colors-solarized/colors/solarized.vim"))
-  "  colorscheme solarized
-  "  set background=dark
-  "elseif filereadable(expand(s:vim_plugged_dir . "/jellybeans.vim/colors/jellybeans.vim"))
-  "  colorscheme jellybeans
-  "  set background=dark
-  "elseif filereadable(expand(s:vim_plugged_dir . "/seoul256.vim/colors/seoul256-light.vim"))
-  "  colorscheme seoul256-light
-  "  set background=dark
   endif
 
 endif

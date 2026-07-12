@@ -17,11 +17,6 @@
     source = "${pkgs.rustup}/share/zsh/site-functions/_rustup";
   };
 
-  # for some reason, home-manager errors
-  #… while adding path '/nix/store/...-source/zsh/.zprezto'
-  # error: path '/nix/store/...-source/zsh/.zprezto' does not exist
-  #home.file.".zprezto".source = ./.zprezto;
-
   xdg.configFile."zsh/.zprezto".source = inputs.prezto;
 
   programs.zsh = {
