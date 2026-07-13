@@ -303,6 +303,7 @@
       ];
     };
     codex = import ./agents/codex.nix {inherit pkgs;};
+    rimeHostFiles = import ./rime/host-files.nix {inherit pkgs;};
     sortGitmodules = pkgs.writeShellApplication {
       name = "sort-gitmodules";
       runtimeInputs = [
@@ -395,6 +396,7 @@
             desktop
             nixPackage
             rimeDeployment
+            rimeHostFiles
             ;
         };
 
@@ -517,6 +519,51 @@
       codex-profile-materializer = codex.checks.profileMaterializer;
       codex-agent-directory-migration = codex.checks.agentDirectoryMigration;
       gitmodules-format = sortGitmodulesTest;
+      rime-host-files = pkgs.runCommand "rime-host-files-test" {nativeBuildInputs = [rimeHostFiles];} ''
+        source_root="$PWD/source"
+        home="$PWD/home"
+        state="$PWD/state"
+        mkdir -p "$source_root/.config/fcitx5/conf" "$source_root/.local/share/fcitx5/themes"
+        printf '%s\n' profile-v1 >"$source_root/.config/fcitx5/profile"
+        printf '%s\n' classic-v1 >"$source_root/.config/fcitx5/conf/classicui.conf"
+        printf '%s\n' rime-v1 >"$source_root/.config/fcitx5/conf/rime.conf"
+
+        HOME="$home" XDG_STATE_HOME="$state" \
+          rime-host-files deploy "$source_root" "$source_root/.local/share/fcitx5/themes"
+        test -f "$home/.config/fcitx5/profile"
+        test ! -L "$home/.config/fcitx5/profile"
+        test "$(stat -c %a "$home/.config/fcitx5/profile")" = 644
+
+        printf '%s\n' runtime-edit >"$home/.config/fcitx5/profile"
+        HOME="$home" XDG_STATE_HOME="$state" \
+          rime-host-files deploy "$source_root" "$source_root/.local/share/fcitx5/themes"
+        grep -qx runtime-edit "$home/.config/fcitx5/profile"
+
+        printf '%s\n' classic-v2 >"$source_root/.config/fcitx5/conf/classicui.conf"
+        HOME="$home" XDG_STATE_HOME="$state" \
+          rime-host-files deploy "$source_root" "$source_root/.local/share/fcitx5/themes"
+        grep -qx classic-v2 "$home/.config/fcitx5/conf/classicui.conf"
+
+        printf '%s\n' profile-v2 >"$source_root/.config/fcitx5/profile"
+        if HOME="$home" XDG_STATE_HOME="$state" \
+          rime-host-files deploy "$source_root" "$source_root/.local/share/fcitx5/themes"; then
+          echo "accepted conflicting Rime host-file updates" >&2
+          exit 1
+        fi
+
+        printf '%s\n' profile-v1 >"$source_root/.config/fcitx5/profile"
+        if HOME="$home" XDG_STATE_HOME="$state" \
+          rime-host-files release "$source_root" "$source_root/.local/share/fcitx5/themes"; then
+          echo "discarded a runtime-modified Rime host file" >&2
+          exit 1
+        fi
+        printf '%s\n' profile-v1 >"$home/.config/fcitx5/profile"
+        HOME="$home" XDG_STATE_HOME="$state" \
+          rime-host-files release "$source_root" "$source_root/.local/share/fcitx5/themes"
+        test ! -e "$home/.config/fcitx5/profile"
+        test ! -e "$home/.local/share/fcitx5/themes"
+        touch "$out"
+      '';
 
       scripts =
         pkgs.runCommand "dotfiles-script-checks"

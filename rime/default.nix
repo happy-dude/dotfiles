@@ -3,6 +3,7 @@
   pkgs,
   inputs,
   rimeDeployment,
+  rimeHostFiles,
   ...
 }: let
   localRimeDataDir = ./.local/share/fcitx5/rime;
@@ -164,48 +165,8 @@ in
         '';
 
         home.activation.rimeHostFiles = lib.hm.dag.entryAfter ["rimeClaimOwnership"] ''
-          link_rime_path() {
-            source="$1"
-            target="$2"
-            legacy_source="''${3:-}"
-
-            if [ ! -e "$source" ]; then
-              echo "Rime source does not exist: $source" >&2
-              exit 1
-            fi
-
-            ${pkgs.coreutils}/bin/mkdir -p "$( ${pkgs.coreutils}/bin/dirname "$target" )"
-
-            if [ -L "$target" ]; then
-              actual="$(${pkgs.coreutils}/bin/readlink -m -- "$target")"
-              expected="$(${pkgs.coreutils}/bin/readlink -m -- "$source")"
-              if [ "$actual" != "$expected" ]; then
-                if [ -n "$legacy_source" ] &&
-                  [ "$actual" = "$(${pkgs.coreutils}/bin/readlink -m -- "$legacy_source")" ]; then
-                  ${pkgs.coreutils}/bin/rm -f -- "$target"
-                else
-                  echo "Refusing to replace unmanaged Rime link: $target" >&2
-                  exit 1
-                fi
-              else
-                return 0
-              fi
-            elif [ -e "$target" ]; then
-              echo "Refusing to replace unmanaged Rime path: $target" >&2
-              exit 1
-            fi
-
-            ${pkgs.coreutils}/bin/ln -s "$source" "$target"
-          }
-
           rime_dotfiles="$HOME/dotfiles/rime"
-          link_rime_path "$rime_dotfiles/.config/fcitx5/profile" "$HOME/.config/fcitx5/profile"
-          link_rime_path "$rime_dotfiles/.config/fcitx5/conf/classicui.conf" "$HOME/.config/fcitx5/conf/classicui.conf"
-          link_rime_path "$rime_dotfiles/.config/fcitx5/conf/rime.conf" "$HOME/.config/fcitx5/conf/rime.conf"
-          link_rime_path \
-            "${fcitxThemes}" \
-            "$HOME/.local/share/fcitx5/themes" \
-            "$rime_dotfiles/.local/share/fcitx5/themes"
+          ${rimeHostFiles}/bin/rime-host-files deploy "$rime_dotfiles" "${fcitxThemes}"
         '';
         home.activation.rimeSchemaBuild = lib.hm.dag.entryAfter ["rimeHostFiles"] ''
           ensure_static_link() {
@@ -316,13 +277,6 @@ in
             fi
           }
 
-          release_link() {
-            target="$1"
-            if [ -L "$target" ]; then
-              ${pkgs.coreutils}/bin/rm -f -- "$target"
-            fi
-          }
-
           rime_dotfiles="$HOME/dotfiles/rime"
           rime_data_dir="''${XDG_DATA_HOME:-$HOME/.local/share}/fcitx5/rime"
           rime_static_dir="$rime_data_dir/.home-manager-static"
@@ -385,19 +339,6 @@ in
           fi
 
           if [ "$rime_owned" -eq 1 ]; then
-            validate_owned_link \
-              "$HOME/.config/fcitx5/profile" \
-              "$rime_dotfiles/.config/fcitx5/profile"
-            validate_owned_link \
-              "$HOME/.config/fcitx5/conf/classicui.conf" \
-              "$rime_dotfiles/.config/fcitx5/conf/classicui.conf"
-            validate_owned_link \
-              "$HOME/.config/fcitx5/conf/rime.conf" \
-              "$rime_dotfiles/.config/fcitx5/conf/rime.conf"
-            validate_owned_link \
-              "$HOME/.local/share/fcitx5/themes" \
-              "${fcitxThemes}"
-
             ${lib.concatMapStringsSep "\n" (entry: ''
               validate_owned_link \
                 "$rime_data_dir/${entry.relative}" \
@@ -405,10 +346,7 @@ in
             '')
             rimeDataEntries}
 
-            release_link "$HOME/.config/fcitx5/profile"
-            release_link "$HOME/.config/fcitx5/conf/classicui.conf"
-            release_link "$HOME/.config/fcitx5/conf/rime.conf"
-            release_link "$HOME/.local/share/fcitx5/themes"
+            ${rimeHostFiles}/bin/rime-host-files release "$rime_dotfiles" "${fcitxThemes}"
 
             for link in "''${owned_schema_links[@]}"; do
               ${pkgs.coreutils}/bin/rm -f -- "$link"
