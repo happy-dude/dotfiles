@@ -587,11 +587,11 @@ structure.
   paths. `zed/` is sourced from `zed/.config/zed/settings.json`; `schan`
   materializes it as a mutable Flatpak config at
   `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`, while `stachan`
-  uses `~/.config/zed/settings.json`. The agent prompts remain live through
-  `mkOutOfStoreSymlink`. The global gitignore is `git/.gitignore_global`;
-  machine identity and signing remain in untracked `~/.config/git/local.config`.
-  Plasma's captured panel declaration remains disabled because enabling
-  high-level panel management deletes and rebuilds
+  uses `~/.config/zed/settings.json`. The Claude prompt directory remains live
+  through `mkOutOfStoreSymlink`. The global gitignore is
+  `git/.gitignore_global`; machine identity and signing remain in untracked
+  `~/.config/git/local.config`. Plasma's captured panel declaration remains
+  disabled because enabling high-level panel management deletes and rebuilds
   `plasma-org.kde.plasma.desktop-appletsrc` when the declaration changes.
   Display topology, generated IDs, wallpaper, and session history remain
   unmanaged.
@@ -614,12 +614,17 @@ structure.
   mutable plugin binary downloaders. The locked `virtme_ng_src` input builds the
   installed `vng` kernel VM command, while Ghidra comes from locked Nixpkgs.
 - **Agent prompt ownership:** `agents/prompts/{kernel,language}.md` are
-  canonical for the generated full agents and profiles. After editing either,
-  run `scripts/generate_codex_agents.sh`; the flake check rejects drift. Home
-  Manager live-links agent definitions and installs generated profile TOMLs as
-  immutable store files. Credentials, provider state, and project trust remain
-  machine-local. Kagi Markdown and Codex TOMLs are independently maintained for
-  their smaller instruction budget; the generator never reads or writes them.
+  canonical for the full agents and profiles. Nix generates the Codex TOML
+  templates directly from their Markdown bodies and frontmatter; there are no
+  checked-in generated artifacts. `agents/codex.nix` owns generation support,
+  profile materialization, guarded agent-directory ownership migration, and
+  their focused checks. Home Manager keeps the immutable templates under
+  `~/.local/share/codex/generated-profiles` and uses the materializer to create
+  missing mode-0600 profiles or refresh generated keys when a template changes.
+  Generated profiles retain readable multiline instructions and Codex's official
+  `config.toml` schema directive. Runtime-owned project trust, TUI state, and
+  other profile keys survive the merge. Kagi Markdown and Codex TOMLs are
+  independently maintained and live-linked for their smaller instruction budget.
 - **Machine-local secrets:** Fish may source `~/.config/fish/secrets.fish`, but
   the real file must remain untracked and outside the Nix store. The committed
   example contains placeholders only; install the private copy with mode `0600`.
@@ -634,17 +639,19 @@ structure.
 - **Formatting and checks:** `nix fmt .` runs treefmt over supported,
   non-submodule files with the Linux kernel's `.clang-format` for C/C++,
   Alejandra for Nix, `fish_indent` for Fish, `shfmt` for shell, Neovim's exact
-  `.stylua.toml` for Lua, Prettier for JSON/Markdown/YAML, and Taplo for TOML.
-  The root `.editorconfig` deliberately keeps a four-space global fallback and
-  applies project-specific Linux, Neovim, Ghostty, Fish, Org, and Magit
-  policies. `nix flake check --show-trace --no-update-lock-file` validates
-  treefmt output; Bash syntax and ShellCheck for `scripts/*.sh`; the focused
-  `scripts/test_update_submodules.sh` regression suite; native syntax for the
-  managed Fish and Zsh files; `.gitmodules` ordering; Emacs parentheses and Org
-  lint for tracked Org files; a real Neovim Org Tree-sitter parse; actionlint
-  and pinned Actions; Rime Lua syntax/tests; and gitleaks. GitHub CI runs those
-  checks and evaluates both Home Manager profiles on pushes and pull requests;
-  full profile builds are opt-in through `workflow_dispatch`.
+  `.stylua.toml` for Lua, Prettier for JSON/Markdown/YAML, Taplo for TOML, and a
+  Nix-built formatter for a tracked `.gitmodules` when present. The root
+  `.editorconfig` deliberately keeps a four-space global fallback and applies
+  project-specific Linux, Neovim, Ghostty, Fish, Org, and Magit policies.
+  `nix flake check --show-trace --no-update-lock-file` validates treefmt output;
+  Bash syntax and ShellCheck for `scripts/*.sh`; the focused
+  `scripts/test_update_submodules.sh` regression suite; the Codex profile
+  materializer, agent-directory migration, and `.gitmodules` formatter; native
+  syntax for the managed Fish and Zsh files; Emacs parentheses and Org lint for
+  tracked Org files; a real Neovim Org Tree-sitter parse; actionlint and pinned
+  Actions; Rime Lua syntax/tests; and gitleaks. GitHub CI runs those checks and
+  evaluates both Home Manager profiles on pushes and pull requests; full profile
+  builds are opt-in through `workflow_dispatch`.
 - **Test/verify before recommending or installing anything, the same
   anti-fabrication discipline as everywhere else in this prompt:**
   `nix search nixpkgs <term>` to check a package actually exists (careful:

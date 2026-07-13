@@ -174,20 +174,20 @@ and installs StyLua's config under `~/.config/stylua`.
   Flatpak file at `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`
   while preserving runtime-only keys. On `stachan`, `programs.zed-editor`
   retains the normal host target at `~/.config/zed/settings.json`.
-- **`agents/`** holds canonical `kernel` and `language` prompts. Edit
-  `agents/prompts/{kernel,language}.md`, then run
-  `scripts/generate_codex_agents.sh`; it regenerates their checked-in Codex
-  custom-agent and profile TOMLs. Kagi Markdown and Codex TOMLs remain
-  independently maintained and are never read or written by the generator.
-  `agents/default.nix` live-links Claude prompts and Codex custom agents, while
-  generated Codex profile TOMLs are immutable Home Manager store files so
-  runtime metadata cannot modify generated artifacts. `nix flake check` rejects
-  stale generated files. Kagi prompts remain separate because their instruction
-  budget is different. Claude and Codex session state, credentials, provider
-  configuration, and project trust remain machine-local and must never be
-  committed. Before the first Codex activation, move any profile-local
-  `[projects]` trust entries into `~/.codex/config.toml`; Home Manager
-  deliberately refuses to replace unmanaged profile files.
+- **`agents/`** holds canonical `kernel` and `language` prompts. Nix reads their
+  Markdown bodies and frontmatter to generate the corresponding Codex custom
+  agents and profile templates without checked-in generated artifacts.
+  `agents/codex.nix` owns the profile materializer, the guarded agent-directory
+  ownership migration, and their focused checks. Home Manager stores the
+  immutable templates under `~/.local/share/codex/generated-profiles` and uses a
+  Nix-built materializer to create missing writable mode-0600 profiles or
+  refresh generator-owned keys when a template changes. Generated profiles carry
+  Codex's official `config.toml` schema directive and preserve readable
+  multiline instructions. Runtime-owned project trust, TUI state, and other
+  profile keys survive that merge. Independently maintained Kagi Markdown and
+  Codex TOMLs remain live-linked because their instruction budget is different.
+  Claude and Codex session state, credentials, provider configuration, and
+  project trust remain machine-local and must never be committed.
 - **`rclone/`** installs the pinned rclone client and schedules guarded bisync
   between `~/org` and `box:org`. A recursive inotify watcher batches local
   changes five minutes after the first event; a 15-minute timer catches remote
@@ -228,9 +228,9 @@ follow the propose → confirm → edit → `nix fmt .` → locked checks/build 
 the static Rime source tree (`rime/.local/share/fcitx5/rime/`), and the Zed
 configuration (`zed/.config/zed/settings.json`). Update both prompts when those
 headings, package names, or paths change; they are maintained documentation, not
-generated files. Update the canonical Markdown when those headings, package
-names, or paths change, then regenerate the Codex artifacts; the flake check
-makes drift detectable.
+generated files. The canonical Markdown is the only source to update: Nix
+generates Codex agents and profile templates during evaluation, so there is no
+manual regeneration step or generated-file drift to commit.
 
 The package lists embedded in those prompts are caches, not sources of truth.
 Each prompt tells the agent to inspect `home.nix` before deciding whether a tool
@@ -285,9 +285,10 @@ home-manager build --flake .#$(whoami) --show-trace --no-out-link --no-update-lo
 ```
 
 `nix fmt .` is the repository-wide style-fix pass for supported, non-submodule
-files. Strict validation keeps `flake.lock` unchanged and builds the selected
-activation package before any activation. A live switch mutates the active
-profile; run it only after explicit confirmation:
+files and atomically sorts a tracked `.gitmodules` when present. Strict
+validation keeps `flake.lock` unchanged and builds the selected activation
+package before any activation. A live switch mutates the active profile; run it
+only after explicit confirmation:
 
 ```bash
 home-manager switch --flake .#$(whoami) --show-trace --no-update-lock-file
@@ -295,22 +296,29 @@ home-manager switch --flake .#$(whoami) --show-trace --no-update-lock-file
 
 The flake checks cover treefmt formatting; Bash syntax and ShellCheck for
 `scripts/*.sh`; the focused `scripts/test_update_submodules.sh` regression
-suite; native syntax checks for the managed Fish and Zsh files; sorted
-`.gitmodules`; Emacs `check-parens` and Org lint for tracked Org files; GitHub
-Actions syntax and pinned action revisions; a real Neovim Org Tree-sitter parse
-against the evaluated Home Manager runtime; Rime Lua syntax and focused tests;
-and gitleaks secret scanning. CI runs those checks and evaluates both Home
-Manager configurations on pushes and pull requests. Full builds of both
-configurations are opt-in through the `workflow_dispatch` `build_homes` input
-because builds are substantially more expensive than evaluation.
+suite; native syntax checks for the managed Fish and Zsh files; focused tests
+for the Codex profile materializer, agent-directory ownership migration, and
+`.gitmodules` formatter; Emacs `check-parens` and Org lint for tracked Org
+files; GitHub Actions syntax and pinned action revisions; a real Neovim Org
+Tree-sitter parse against the evaluated Home Manager runtime; Rime Lua syntax
+and focused tests; and gitleaks secret scanning. CI runs those checks and
+evaluates both Home Manager configurations on pushes and pull requests. Full
+builds of both configurations are opt-in through the `workflow_dispatch`
+`build_homes` input because builds are substantially more expensive than
+evaluation.
 
-### Zed / Claude Code config
+### Zed / agent config
 
 Both are Home Manager-managed; neither uses a separate Stow step. Edit
 `zed/.config/zed/settings.json` (Zed) or `agents/prompts/*.md` (agents)
-directly. Zed changes require a validated `home-manager switch`. Claude prompt
-changes are live immediately once the out-of-store agents symlink has been
-installed by an initial switch.
+directly. Zed and generated Codex changes require a validated Home Manager
+switch. Claude prompt changes are live immediately once the out-of-store agents
+symlink has been installed by an initial switch. The writable Codex profiles at
+`~/.codex/{kernel,language}.config.toml` are runtime state, not canonical prompt
+sources; do not edit their generated keys manually. Their schema directive
+points editors at Codex's current official `config.toml` schema. Standalone
+custom-agent TOMLs use Codex's separate custom-agent schema and therefore do not
+carry the `config.toml` directive.
 
 ### Update workflow
 
@@ -367,14 +375,13 @@ capacity with `kde-inotify-survey` before changing host sysctls.
 git submodule update --remote
 git submodule sync --recursive
 git submodule foreach --quiet 'git submodule update --init --recursive'
-./scripts/sort_gitmodules.sh                         # atomically sort .gitmodules
-./scripts/sort_gitmodules.sh --check                 # report drift without writing
+nix fmt .                                            # includes .gitmodules ordering
 ./scripts/gitgc.sh [--aggressive] [dir]              # gc main repo and initialized submodules
 ```
 
-`sort_gitmodules.sh` uses standard text tools and a temporary file; it has no
-Sponge dependency. `gitgc.sh` prunes stale remote-tracking branches and runs
-Git's normal garbage collection policy while preserving configured reflog and
+The Nix-built treefmt formatter sorts `.gitmodules` atomically when the file is
+present. `gitgc.sh` prunes stale remote-tracking branches and runs Git's normal
+garbage collection policy while preserving configured reflog and
 unreachable-object grace periods, including in `--aggressive` mode.
 
 Editor plugins are Nix packages, not submodules. Prefer `pkgs.vimPlugins` and

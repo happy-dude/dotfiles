@@ -442,10 +442,17 @@ Every tool above (`opencc`, `translate-shell`, `sdcv`, `dict`, `tesseract5`,
 `Aspell spellcheck-backed word validation for Esperanto/Italian/Polish/Spanish`.
 That file is the authoritative Home Manager configuration for this machine;
 `~/dotfiles/CLAUDE.md` documents the full repository layout. The full `kernel`
-and `language` Markdown prompts are canonical for their generated Codex agents
-and profiles; after editing either, run `scripts/generate_codex_agents.sh`. Home
-Manager also links the independently maintained Kagi Codex TOMLs, which the
-generator never reads or writes.
+and `language` Markdown prompts are canonical for their Codex agents and
+profiles; Nix generates the TOML templates directly from their bodies and
+frontmatter without checked-in generated artifacts. `agents/codex.nix` owns the
+supporting materializer, guarded agent-directory ownership migration, and
+focused checks. Home Manager stores immutable templates under
+`~/.local/share/codex/generated-profiles` and merges their generated keys into
+writable mode-0600 profiles only when templates change or profiles are missing.
+Profiles retain readable multiline instructions and Codex's official
+`config.toml` schema directive. Machine-local project trust, TUI state, and
+other runtime keys survive the merge. Home Manager also live-links the
+independently maintained Kagi Codex TOMLs.
 
 Vim, Neovim, and their plugins are locked Nix packages. Shared, Vim-only, and
 Neovim-only plugin lists use native package support; there is no vim-plug
@@ -479,16 +486,18 @@ remain declarative locked-flake builds.
 The flake pins registry and `NIX_PATH` resolution to its locked nixpkgs input
 and does not use channels. `nix fmt .` formats supported, non-submodule files
 with the Linux kernel's `.clang-format`, Alejandra, `fish_indent`, `shfmt`,
-Neovim's exact StyLua settings, Prettier, and Taplo. The root `.editorconfig`
-keeps a four-space global fallback plus project-specific overrides.
+Neovim's exact StyLua settings, Prettier, Taplo, and a Nix-built formatter for a
+tracked `.gitmodules` when present. The root `.editorconfig` keeps a four-space
+global fallback plus project-specific overrides.
 `nix flake check --show-trace --no-update-lock-file` covers treefmt output; Bash
 syntax and ShellCheck for `scripts/*.sh`; the focused
-`scripts/test_update_submodules.sh` regression suite; native syntax for managed
-Fish and Zsh files; Emacs parentheses and Org lint for tracked Org files; a real
-Neovim Org Tree-sitter parse; workflows and pinned Actions; Rime Lua; and secret
-scanning. CI runs those checks and locked evaluation of both Home Manager
-profiles. Full builds require the manual `workflow_dispatch` `build_homes`
-input.
+`scripts/test_update_submodules.sh` regression suite; the Codex profile
+materializer, agent-directory migration, and `.gitmodules` formatter; native
+syntax for managed Fish and Zsh files; Emacs parentheses and Org lint for
+tracked Org files; a real Neovim Org Tree-sitter parse; workflows and pinned
+Actions; Rime Lua; and secret scanning. CI runs those checks and locked
+evaluation of both Home Manager profiles. Full builds require the manual
+`workflow_dispatch` `build_homes` input.
 
 That enumeration is a quick reference, not the source of truth — it can go stale
 the moment someone edits `home.nix` without updating this file. If you're unsure
