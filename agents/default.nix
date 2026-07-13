@@ -1,5 +1,5 @@
 {
-  codexProfileMaterializer,
+  codex,
   config,
   lib,
   pkgs,
@@ -8,6 +8,13 @@
   repo = "${config.home.homeDirectory}/dotfiles";
   liveLink = path: config.lib.file.mkOutOfStoreSymlink "${repo}/${path}";
   toml = pkgs.formats.toml {};
+  withConfigSchema = name: source:
+    pkgs.runCommand "codex-profile-${name}-with-schema.toml" {} ''
+      {
+        printf '%s\n' '#:schema ${codex.configSchemaUrl}'
+        cat ${source}
+      } >"$out"
+    '';
   agentNames = [
     "kernel"
     "language"
@@ -75,20 +82,23 @@
   profileFiles =
     lib.mapAttrs (
       name: prompt:
-        toml.generate "codex-profile-${name}.toml" (
-          {inherit (prompt) developer_instructions;}
-          // lib.optionalAttrs (name == "kernel") {
-            model_reasoning_effort = "medium";
-          }
+        withConfigSchema name (
+          toml.generate "codex-profile-${name}.toml" (
+            {inherit (prompt) developer_instructions;}
+            // lib.optionalAttrs (name == "kernel") {
+              model_reasoning_effort = "medium";
+            }
+          )
         )
     )
     prompts;
 
   materializeProfile = name: profile: ''
-    ${lib.getExe codexProfileMaterializer} \
+    ${lib.getExe codex.profileMaterializer} \
       ${profile} \
       "$HOME/.codex/${name}.config.toml"
   '';
+  legacyAgentDirectory = "${repo}/agents/generated/codex-agents";
 in {
   home.file =
     {
@@ -113,6 +123,14 @@ in {
         }
     )
     profileFiles;
+
+  home.activation.migrateCodexAgentDirectory = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
+    $DRY_RUN_CMD ${lib.getExe codex.agentDirectoryMigration} \
+      ${lib.escapeShellArg legacyAgentDirectory} \
+      "$HOME/.codex/agents" \
+      ${lib.escapeShellArg "kernel=${agentFiles.kernel}"} \
+      ${lib.escapeShellArg "language=${agentFiles.language}"}
+  '';
 
   home.activation.ensureCodexProfiles = lib.hm.dag.entryAfter ["onFilesChange"] (
     lib.concatMapStrings (name: ''
