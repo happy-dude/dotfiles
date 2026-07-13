@@ -211,13 +211,16 @@
     file = {
       ".clang-format".source = ./.clang-format;
       ".editorconfig".source = ./.editorconfig;
-      ".gdbinit".source = ./gdb/gdbinit;
       ".golangci.yml".source = ./.golangci.yml;
-      ".stylua.toml".source = ./.stylua.toml;
     };
 
     sessionVariables = {
     };
+  };
+
+  xdg.configFile = {
+    "gdb/gdbinit".source = ./gdb/gdbinit;
+    "stylua/stylua.toml".source = ./.stylua.toml;
   };
 
   programs.home-manager.enable = true;

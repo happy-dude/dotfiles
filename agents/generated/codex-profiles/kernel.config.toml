@@ -563,8 +563,9 @@ structure.
   Manager version.
 - **Ownership and sources:** Home Manager owns Linux configuration except for
   the intentionally deferred `ssh/.ssh/config`. `gdb/gdbinit` is linked to
-  `~/.gdbinit`; the Emacs module links Org directory-local settings and creates
-  mutable `~/org/Archive` and `~/org/roam` directories. Roswell and SLIME are
+  `~/.config/gdb/gdbinit`; the Emacs module links its init file under
+  `~/.config/emacs`, links Org directory-local settings, and creates mutable
+  `~/org/Archive` and `~/org/roam` directories. Roswell and SLIME are
   Nix-installed without copied helpers or a standalone `ros_swank` launcher. The
   low-priority ncurses runtime supplies standard terminfo entries while
   Ghostty's package wins terminal-specific collisions. `karabiner/` remains
