@@ -564,6 +564,22 @@
         test ! -e "$home/.local/share/fcitx5/themes"
         touch "$out"
       '';
+      editor-secret-state =
+        pkgs.runCommand "editor-secret-state-test"
+        {
+          nativeBuildInputs = [
+            pkgs.neovim
+            pkgs.vim
+          ];
+        }
+        ''
+          export HOME="$PWD/home"
+          export DOTFILES_CACHE_VIM=${self}/vim/.vim/vimrc_dir/cache.vim
+          mkdir -p "$HOME/.config/rclone" "$HOME/.config/nix"
+          vim -Nu NONE -i NONE -es -S ${self}/vim/tests/secret-state.vim
+          nvim --headless -u NONE -i NONE -S ${self}/vim/tests/secret-state.vim
+          touch "$out"
+        '';
 
       scripts =
         pkgs.runCommand "dotfiles-script-checks"
