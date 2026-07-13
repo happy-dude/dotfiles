@@ -3,12 +3,12 @@
   lib,
   pkgs,
   username,
+  zedSettingsMaterializer,
   ...
 }: let
   managedSettings = builtins.fromJSON (builtins.readFile ./.config/zed/settings.json);
   jsonFormat = pkgs.formats.json {};
   staticSettings = jsonFormat.generate "zed-user-settings" managedSettings;
-  json5 = pkgs.python3Packages.toPythonApplication pkgs.python3Packages.json5;
   flatpakConfigHome = "${config.home.homeDirectory}/.var/app/dev.zed.Zed-Preview/config";
 in {
   # zed/.config/zed/settings.json is the sole declarative source for managed
@@ -29,41 +29,10 @@ in {
 
   home.activation = lib.mkIf (username == "schan") {
     zedFlatpakSettingsActivation = lib.hm.dag.entryAfter ["linkGeneration"] ''
-      settings_dir=${lib.escapeShellArg "${flatpakConfigHome}/zed"}
-      settings_path="$settings_dir/settings.json"
-      mkdir -p -- "$settings_dir"
-
-      if [[ -L "$settings_path" ]]; then
-        echo "Refusing symlinked Zed settings: $settings_path" >&2
-        exit 1
-      fi
-      if [[ -e "$settings_path" && ! -f "$settings_path" ]]; then
-        echo "Refusing non-regular Zed settings: $settings_path" >&2
-        exit 1
-      fi
-
-      if [[ -e "$settings_path" ]]; then
-        if ! dynamic="$(${lib.getExe json5} --as-json "$settings_path" 2>/dev/null)"; then
-          echo "Refusing malformed Zed settings: $settings_path" >&2
-          exit 1
-        fi
-      else
-        dynamic='{}'
-      fi
-
-      static="$(cat ${lib.escapeShellArg staticSettings})"
-      merged="$(
-        ${lib.getExe pkgs.jq} -n '$dynamic * $static' \
-          --argjson dynamic "$dynamic" \
-          --argjson static "$static"
-      )"
-
-      (
-        temporary="$(mktemp "$settings_dir/.settings.json.XXXXXX")"
-        trap 'rm -f -- "$temporary"' EXIT
-        printf '%s\n' "$merged" >"$temporary"
-        mv -f -- "$temporary" "$settings_path"
-      )
+      settings_path=${lib.escapeShellArg "${flatpakConfigHome}/zed/settings.json"}
+      ${zedSettingsMaterializer}/bin/materialize-zed-settings \
+        ${lib.escapeShellArg staticSettings} \
+        "$settings_path"
     '';
   };
 }

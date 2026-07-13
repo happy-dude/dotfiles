@@ -7,44 +7,19 @@
   filterFile = "${config.xdg.configHome}/rclone/org-bisync.filter";
   readyMarker = "${config.xdg.stateHome}/rclone/org-bisync-ready";
   workDir = "${config.xdg.cacheHome}/rclone/bisync";
-  changeWatcher = pkgs.writeShellApplication {
-    name = "rclone-box-org-watch";
-    runtimeInputs = [
-      pkgs.inotify-tools
-      pkgs.systemd
-    ];
-    text = ''
-      inotifywait \
-        --monitor \
-        --recursive \
-        --quiet \
-        --format '%w%f' \
-        --event close_write,create,delete,moved_to,moved_from \
-        "$HOME/org" |
-        while IFS= read -r changed_path; do
-          case "$changed_path" in
-            "$HOME/org/org-roam.bak/"* | \
-            */org-roam*.db* | \
-            "$HOME/org/.dir-locals.el" | \
-            */.#* | \
-            *~)
-              continue
-              ;;
-          esac
-
-          # The fixed transient-unit name keeps the first five-minute deadline;
-          # later changes join that pending batch instead of resetting it.
-          systemd-run \
-            --user \
-            --quiet \
-            --collect \
-            --unit=rclone-box-org-bisync-change \
-            --on-active=5m \
-            systemctl --user start rclone-box-org-bisync.service \
-            >/dev/null 2>&1 || true
-        done
-    '';
-  };
+  changeWatcher =
+    pkgs.writers.writePython3Bin
+    "rclone-box-org-watch"
+    {}
+    (builtins.readFile ./watch_org.py);
+  watcherCommand = lib.concatStringsSep " " [
+    (lib.getExe changeWatcher)
+    "watch"
+    (lib.escapeShellArg "${config.home.homeDirectory}/org")
+    (lib.escapeShellArg "${pkgs.inotify-tools}/bin/inotifywait")
+    (lib.escapeShellArg "${pkgs.systemd}/bin/systemd-run")
+    (lib.escapeShellArg "${pkgs.systemd}/bin/systemctl")
+  ];
 in {
   home.packages = [pkgs.rclone];
 
@@ -99,7 +74,7 @@ in {
       ];
     };
     Service = {
-      ExecStart = lib.getExe changeWatcher;
+      ExecStart = watcherCommand;
       Restart = "always";
       RestartSec = "5s";
     };

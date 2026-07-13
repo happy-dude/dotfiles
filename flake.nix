@@ -304,55 +304,13 @@
     };
     codex = import ./agents/codex.nix {inherit pkgs;};
     rimeHostFiles = import ./rime/host-files.nix {inherit pkgs;};
-    sortGitmodules = pkgs.writeShellApplication {
-      name = "sort-gitmodules";
-      runtimeInputs = [
-        pkgs.coreutils
-        pkgs.gawk
-        pkgs.gnused
-      ];
-      text = ''
-        sort_one() {
-          local path=$1
-          local temporary
-
-          [[ -f $path ]] || return 0
-          temporary=$(mktemp "$path.tmp.XXXXXX")
-          trap 'rm -f -- "$temporary"' RETURN
-
-          awk '
-            BEGIN { block = 0; line = 0; key = "" }
-            /^\[submodule/ {
-              block += 1
-              line = 1
-              key = $2
-              gsub(/("vendor\/|["\]])/, "", key)
-            }
-            { print key, block, line, $0; line += 1 }
-          ' "$path" \
-            | LC_ALL=C sort -d -f \
-            | awk '{$1 = ""; $2 = ""; $3 = ""; print}' \
-            | sed 's/^ *//g' \
-            | awk '/^\[/ { print; next } { print "\t" $0 }' \
-              >"$temporary"
-
-          chmod --reference="$path" "$temporary"
-          if cmp -s -- "$path" "$temporary"; then
-            rm -f -- "$temporary"
-          else
-            mv -- "$temporary" "$path"
-          fi
-          trap - RETURN
-        }
-
-        if (($# == 0)); then
-          set -- .gitmodules
-        fi
-        for path in "$@"; do
-          sort_one "$path"
-        done
-      '';
-    };
+    rimeStateManager = import ./rime/state-manager.nix {inherit pkgs;};
+    zedSettingsMaterializer = import ./zed/materializer.nix {inherit pkgs;};
+    sortGitmodules =
+      pkgs.writers.writePython3Bin
+      "sort-gitmodules"
+      {}
+      (builtins.readFile ./scripts/sort_gitmodules.py);
     sortGitmodulesTest =
       pkgs.runCommand
       "sort-gitmodules-test"
@@ -397,6 +355,8 @@
             nixPackage
             rimeDeployment
             rimeHostFiles
+            rimeStateManager
+            zedSettingsMaterializer
             ;
         };
 
@@ -474,6 +434,10 @@
           enable = true;
           settings.proseWrap = "always";
         };
+        ruff-format = {
+          enable = true;
+          lineLength = 79;
+        };
         taplo.enable = true;
       };
       settings.excludes = [
@@ -519,6 +483,53 @@
       codex-profile-materializer = codex.checks.profileMaterializer;
       codex-agent-directory-migration = codex.checks.agentDirectoryMigration;
       gitmodules-format = sortGitmodulesTest;
+      python =
+        pkgs.runCommand "dotfiles-python-checks"
+        {
+          nativeBuildInputs = [
+            pkgs.python3
+            pkgs.ruff
+          ];
+        }
+        ''
+          ruff format --check --no-cache ${self}
+          ruff check --no-cache ${self}
+          PYTHONPYCACHEPREFIX="$TMPDIR/pycache" \
+            python3 -m compileall -q ${self}
+          touch "$out"
+        '';
+      rclone-org-watcher =
+        pkgs.runCommand "rclone-org-watcher-test"
+        {nativeBuildInputs = [pkgs.python3];}
+        ''
+          test "$(python3 ${self}/rclone/watch_org.py classify notes.org)" = sync
+          test "$(python3 ${self}/rclone/watch_org.py classify org-roam.db)" = ignore
+          test "$(python3 ${self}/rclone/watch_org.py classify org-roam.bak/note.org)" = ignore
+          test "$(python3 ${self}/rclone/watch_org.py classify .#note.org)" = ignore
+          touch "$out"
+        '';
+      rime-state-manager =
+        pkgs.runCommand "rime-state-manager-test"
+        {nativeBuildInputs = [rimeStateManager];}
+        ''
+          mkdir -p home source/subdir state
+          printf '%s\n' owned >marker
+          printf '%s\n' stamp >stamp
+          printf '%s\n' schema >source/subdir/schema.yaml
+          HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
+            rime-state-manager claim "$PWD/marker"
+          HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
+            rime-state-manager deploy \
+              "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
+              subdir/schema.yaml
+          test -L home/.local/share/fcitx5/rime/subdir/schema.yaml
+          HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
+            rime-state-manager release \
+              "$PWD/marker" ${pkgs.coreutils}/bin/true \
+              "$PWD" "$PWD/source" subdir/schema.yaml
+          test ! -e home/.local/share/fcitx5/rime/subdir/schema.yaml
+          touch "$out"
+        '';
       rime-host-files = pkgs.runCommand "rime-host-files-test" {nativeBuildInputs = [rimeHostFiles];} ''
         source_root="$PWD/source"
         home="$PWD/home"
@@ -564,6 +575,46 @@
         test ! -e "$home/.local/share/fcitx5/themes"
         touch "$out"
       '';
+      zed-settings-materializer =
+        pkgs.runCommand "zed-settings-materializer-test"
+        {
+          nativeBuildInputs = [
+            pkgs.python3
+            zedSettingsMaterializer
+          ];
+        }
+        ''
+          mkdir work
+          printf '%s\n' \
+            '{' \
+            '  "theme": {"mode": "dark"},' \
+            '  "vim_mode": true' \
+            '}' \
+            >work/static.json
+          printf '%s\n' \
+            '{' \
+            '  // Zed accepts JSON5 comments and trailing commas.' \
+            '  theme: {font_size: 14, mode: "light"},' \
+            '  runtime_only: "preserved",' \
+            '}' \
+            >work/settings.json
+
+          materialize-zed-settings work/static.json work/settings.json
+          python3 - work/settings.json <<'PYTHON'
+          import json
+          import stat
+          import sys
+          from pathlib import Path
+
+          path = Path(sys.argv[1])
+          settings = json.loads(path.read_text(encoding="utf-8"))
+          assert settings["theme"] == {"font_size": 14, "mode": "dark"}
+          assert settings["runtime_only"] == "preserved"
+          assert settings["vim_mode"] is True
+          assert stat.S_IMODE(path.stat().st_mode) == 0o600
+          PYTHON
+          touch "$out"
+        '';
       editor-secret-state =
         pkgs.runCommand "editor-secret-state-test"
         {
