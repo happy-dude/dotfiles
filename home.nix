@@ -173,6 +173,7 @@
       vim-language-server
       whois
       vscode-langservers-extracted
+      wl-clipboard
       xclip
       xdg-utils
       xsel

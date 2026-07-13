@@ -179,15 +179,15 @@ and installs StyLua's config under `~/.config/stylua`.
   `scripts/generate_codex_agents.sh`; it regenerates their checked-in Codex
   custom-agent and profile TOMLs. Kagi Markdown and Codex TOMLs remain
   independently maintained and are never read or written by the generator.
-  `agents/default.nix` installs both clients through `mkOutOfStoreSymlink`, so
-  generated changes remain live-editable after the initial Home Manager
-  activation. `nix flake check` rejects stale generated files. Kagi prompts
-  remain separate because their instruction budget is different. Claude and
-  Codex session state, credentials, provider configuration, and project trust
-  remain machine-local and must never be committed. Before the first Codex
-  activation, move any profile-local `[projects]` trust entries into
-  `~/.codex/config.toml`; Home Manager deliberately refuses to replace unmanaged
-  profile files.
+  `agents/default.nix` live-links Claude prompts and Codex custom agents, while
+  generated Codex profile TOMLs are immutable Home Manager store files so
+  runtime metadata cannot modify generated artifacts. `nix flake check` rejects
+  stale generated files. Kagi prompts remain separate because their instruction
+  budget is different. Claude and Codex session state, credentials, provider
+  configuration, and project trust remain machine-local and must never be
+  committed. Before the first Codex activation, move any profile-local
+  `[projects]` trust entries into `~/.codex/config.toml`; Home Manager
+  deliberately refuses to replace unmanaged profile files.
 - **`rclone/`** installs the pinned rclone client and schedules guarded bisync
   between `~/org` and `box:org`. A recursive inotify watcher batches local
   changes five minutes after the first event; a 15-minute timer catches remote

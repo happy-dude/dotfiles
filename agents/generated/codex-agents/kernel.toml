@@ -609,10 +609,10 @@ structure.
 - **Agent prompt ownership:** `agents/prompts/{kernel,language}.md` are
   canonical for the generated full agents and profiles. After editing either,
   run `scripts/generate_codex_agents.sh`; the flake check rejects drift. Home
-  Manager links both clients out of the repo, while credentials, provider state,
-  and project trust remain machine-local. Kagi Markdown and Codex TOMLs are
-  independently maintained for their smaller instruction budget; the generator
-  never reads or writes them.
+  Manager live-links agent definitions and installs generated profile TOMLs as
+  immutable store files. Credentials, provider state, and project trust remain
+  machine-local. Kagi Markdown and Codex TOMLs are independently maintained for
+  their smaller instruction budget; the generator never reads or writes them.
 - **Machine-local secrets:** Fish may source `~/.config/fish/secrets.fish`, but
   the real file must remain untracked and outside the Nix store. The committed
   example contains placeholders only; install the private copy with mode `0600`.
