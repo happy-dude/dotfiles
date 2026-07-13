@@ -95,13 +95,14 @@ checkout is the Linux branch.
   the locked Nixpkgs package set rather than a Flatpak or mutable installer.
 - `home.nix` is the entry module: it lists top-level packages, sets the shared
   `home.stateVersion = "26.11"` compatibility floor, and sets up plain-file
-  symlinks — `.clang-format`, `.editorconfig`, `.golangci.yml`, `.stylua.toml`
-  (all from the **repo root**) plus `.gdbinit` from `gdb/gdbinit`. It installs
-  the low-priority ncurses runtime database alongside `ncurses.dev`; Ghostty's
-  terminal-specific entry wins path collisions. Change `stateVersion` only after
-  reviewing and applying every intervening Home Manager migration. The global
-  gitignore is handled in the git module via `programs.git.ignores`, not a
-  `home.file`.
+  symlinks for the repo-root `.clang-format`, `.editorconfig`, and
+  `.golangci.yml`. The same module installs `.stylua.toml` as
+  `~/.config/stylua/stylua.toml` and `gdb/gdbinit` as `~/.config/gdb/gdbinit`.
+  It installs the low-priority ncurses runtime database alongside `ncurses.dev`;
+  Ghostty's terminal-specific entry wins path collisions. Change `stateVersion`
+  only after reviewing and applying every intervening Home Manager migration.
+  The global gitignore is handled in the git module via `programs.git.ignores`,
+  not a `home.file`.
 - Feature modules live in their own subdirectories, each as a `default.nix`
   imported from `flake.nix`'s `modules` list: `aerc/`, `agents/`, `bat/`,
   `emacs/`, `fish/`, `fonts/`, `fzf/`, `ghostty/`, `gnome/`, `git/`, `nix/`,
@@ -126,7 +127,8 @@ checkout is the Linux branch.
 Home Manager owns Linux configuration except for `ssh/.ssh/config`, whose
 migration is intentionally deferred. `karabiner/` remains tracked because the
 macOS branch consumes the same state; Linux does not deploy it. `gdb/gdbinit` is
-a source file linked to `~/.gdbinit`. `emacs/default.nix` links
+linked to `~/.config/gdb/gdbinit`, and `emacs/init.el` is linked to
+`~/.config/emacs/init.el`. `emacs/default.nix` also links
 `emacs/org-dir-locals.el`, creates the mutable `~/org/Archive` and `~/org/roam`
 directories during activation, starts the Emacs daemon with the graphical user
 session, and associates `org-protocol://` URLs with the dedicated URL-aware
@@ -140,13 +142,18 @@ helper and standalone `ros_swank` launcher are not deployed; Nix-installed SLIME
 starts Swank through `ros -Q run`.
 
 The style and lint configs (`.clang-format`, `.editorconfig`, `.golangci.yml`,
-`.stylua.toml`) live at the repository root. They are both `home.file` sources
-and the inputs treefmt uses to format the repository.
+`.stylua.toml`) live at the repository root and are inputs to treefmt. Home
+Manager keeps the first three at the home-directory locations their tools search
+and installs StyLua's config under `~/.config/stylua`.
 
 - **`bat/`** is a module (`bat/default.nix`, `programs.bat`); enabling the
   program owns the package, so do not duplicate `bat` in `home.packages`.
 - **`fzf/`** enables Home Manager's FZF package and its Fish and Zsh
   integrations; do not duplicate `fzf` in `home.packages` or shell startup.
+- **`zsh/`** sets `ZDOTDIR` to `~/.config/zsh` and lets Home Manager compose its
+  generated integrations with the tracked runcom files there. Only `~/.zshenv`
+  remains at the home root because Zsh needs it to bootstrap `ZDOTDIR` before
+  reading the other startup files.
 - **`git/`** is a module (`git/default.nix`, `programs.git`); enabling the
   program owns the package, so do not duplicate `git` in `home.packages`. It
   defines aliases, delta for diffs and bat as its pager, and
@@ -256,9 +263,10 @@ guidance detectable.
   EditorConfig support and Neovim uses native EditorConfig. Do not reintroduce
   ALE, Pathogen, vim-plug, editorconfig-vim, or plugin submodules.
 - `emacs/default.nix` installs the active package set exclusively through
-  `programs.emacs.extraPackages`, links `emacs/init.el` to `~/.emacs`, links the
-  Org directory-local settings, and creates mutable Org directories. No vendored
-  Emacs plugin or legacy package.el tree remains.
+  `programs.emacs.extraPackages`, links `emacs/init.el` to
+  `~/.config/emacs/init.el`, links the Org directory-local settings, and creates
+  mutable Org directories. No vendored Emacs plugin or legacy package.el tree
+  remains.
 
 ### `other/` directory
 

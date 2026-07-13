@@ -3,10 +3,9 @@
   pkgs,
   ...
 }: {
-  home.file = {
-    ".emacs".source = ./init.el;
-    "org/.dir-locals.el".source = ./org-dir-locals.el;
-  };
+  home.file."org/.dir-locals.el".source = ./org-dir-locals.el;
+
+  xdg.configFile."emacs/init.el".source = ./init.el;
 
   home.activation = {
     createOrgDirectories = config.lib.dag.entryAfter ["writeBoundary"] ''
