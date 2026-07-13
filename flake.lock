@@ -432,11 +432,11 @@
     "rime_essay": {
       "flake": false,
       "locked": {
-        "lastModified": 1783951489,
-        "narHash": "sha256-vveiJFU6y48TTYsKQShpRnbFIrXPBZHKvAeT3IxvWr0=",
+        "lastModified": 1783954308,
+        "narHash": "sha256-WPutZuxoLQfNk0devhGb2ooAZ7zJt0Ta7OiUtuveJ00=",
         "owner": "rime",
         "repo": "rime-essay",
-        "rev": "67c242ea54abce18dde185ca0ac2c5feb8cdd761",
+        "rev": "e9b1a374a6ea015fca5bdd04318924b4483ac35a",
         "type": "github"
       },
       "original": {
