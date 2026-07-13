@@ -8,9 +8,10 @@ code in this repository.
 Personal dotfiles for `schan` (Stanley Chan / Happy-Dude). The active Linux
 workflow is **Nix flakes + Home Manager**. Home Manager owns deployment; the
 README's Stow-first instructions are not the active bootstrap and will be
-updated separately. When a file must stay writable outside the Nix store, prefer
-a Nix-managed `mkOutOfStoreSymlink` into the repository (see `agents/`) over a
-new Stow package. Rime retains the only deliberate Stow fallback.
+updated separately. Immutable inputs may be store links, live-editable sources
+may use guarded out-of-store links, and application-mutated configuration must
+be materialized as guarded regular files. Rime retains the only deliberate Stow
+fallback.
 
 A separate `macos` branch exists for macOS-specific settings; this repository
 checkout is the Linux branch.
@@ -120,7 +121,10 @@ checkout is the Linux branch.
   and Magit policies. Treefmt's Git walk skips submodule contents and excludes
   `other/`, `karabiner/`, Rime YAML data, lock files, and `LICENSE`.
 - `nix/default.nix` pins both the `nixpkgs` registry entry and legacy `NIX_PATH`
-  lookup to the locked root input. This flake does not use channels.
+  lookup to the locked root input. It optionally includes the untracked
+  `~/.config/nix/local.conf` for per-machine access tokens and client settings;
+  `nix/local.conf.example` is the non-secret template. This flake does not use
+  channels.
 
 ### Configuration ownership
 
@@ -128,18 +132,19 @@ Home Manager owns Linux configuration except for `ssh/.ssh/config`, whose
 migration is intentionally deferred. `karabiner/` remains tracked because the
 macOS branch consumes the same state; Linux does not deploy it. `gdb/gdbinit` is
 linked to `~/.config/gdb/gdbinit`, and `emacs/init.el` is linked to
-`~/.config/emacs/init.el`. `emacs/default.nix` also links
-`emacs/org-dir-locals.el`, creates the mutable `~/org/Archive` and `~/org/roam`
-directories during activation, starts the Emacs daemon with the graphical user
-session, and associates `org-protocol://` URLs with the dedicated URL-aware
-`emacs-org-protocol.desktop`. Protocol captures reuse one graphical client frame
-instead of Org's split-window display action. The canonical Firefox bookmarklet,
-optional `org` keyword, Flatpak portal flow, and validation steps are documented
-in `docs/emacs-org-protocol.md`. The derived Org Roam database and undo-tree
-history stay under the local XDG cache and must not be synchronized with the
-authoritative `~/org` files. Roswell itself remains Nix-built, but the copied
-helper and standalone `ros_swank` launcher are not deployed; Nix-installed SLIME
-starts Swank through `ros -Q run`.
+`~/.config/emacs/init.el`. Emacs Custom writes machine-local state to
+`~/.config/emacs/custom.el` and loads it after the declarative defaults.
+`emacs/default.nix` also links `emacs/org-dir-locals.el`, creates the mutable
+`~/org/Archive` and `~/org/roam` directories during activation, starts the Emacs
+daemon with the graphical user session, and associates `org-protocol://` URLs
+with the dedicated URL-aware `emacs-org-protocol.desktop`. Protocol captures
+reuse one graphical client frame instead of Org's split-window display action.
+The canonical Firefox bookmarklet, optional `org` keyword, Flatpak portal flow,
+and validation steps are documented in `docs/emacs-org-protocol.md`. The derived
+Org Roam database and undo-tree history stay under the local XDG cache and must
+not be synchronized with the authoritative `~/org` files. Roswell itself remains
+Nix-built, but the copied helper and standalone `ros_swank` launcher are not
+deployed; Nix-installed SLIME starts Swank through `ros -Q run`.
 
 The style and lint configs (`.clang-format`, `.editorconfig`, `.golangci.yml`,
 `.stylua.toml`) live at the repository root and are inputs to treefmt. Home
@@ -187,7 +192,9 @@ and installs StyLua's config under `~/.config/stylua`.
   profile keys survive that merge. Independently maintained Kagi Markdown and
   Codex TOMLs remain live-linked because their instruction budget is different.
   Claude and Codex session state, credentials, provider configuration, and
-  project trust remain machine-local and must never be committed.
+  project trust remain machine-local and must never be committed. Activation
+  requires `~/.claude` and `~/.codex` to be real directories and restricts them
+  to mode `0700` while leaving their contents writable.
 - **`rclone/`** installs the pinned rclone client and schedules guarded bisync
   between `~/org` and `box:org`. A recursive inotify watcher batches local
   changes five minutes after the first event; a 15-minute timer catches remote
@@ -202,12 +209,16 @@ and installs StyLua's config under `~/.config/stylua`.
 - **`rime/`** is a Home Manager module (`rime/default.nix`) over a retained
   Stow-compatible snapshot. Locked schema inputs replace matching snapshot files
   and `pkgs.rime-zhwiki` supplies Zhwiki. Nix mode claims explicit ownership,
+  materializes the Fcitx profile and host configuration as writable regular
+  files with prior-source snapshots under `~/.local/state/rime/host-config`,
   rejects malformed or unmanaged conflicts, materializes managed static data
   under `~/.local/share/fcitx5/rime/.home-manager-static`, and leaves generated
-  schemas, learned user databases, and sync state writable beside it. Stow mode
-  validates ownership and every managed link before releasing only Home
-  Manager-owned paths. Source changes invalidate only generated build data and
-  reload Rime; if Fcitx is not running, it rebuilds on its next start.
+  schemas, learned user databases, and sync state writable beside it. Host-file
+  updates preserve runtime-only edits, replace an unchanged managed baseline,
+  and fail when both sides changed. Stow mode refuses to discard runtime edits
+  before releasing only Home Manager-owned paths. Source changes invalidate only
+  generated build data and reload Rime; if Fcitx is not running, it rebuilds on
+  its next start.
 - `scripts/update.sh` selects the locked Nix schema sources by default.
   `--rime-source plum --skip-home-manager` is the guarded fallback after
   switching the Rime snapshot back to Stow.
@@ -257,7 +268,9 @@ guidance detectable.
   client, CoC plus its extensions, and all formatter, helper, and
   language-server executables. `flake.lock` and the locked Nixpkgs revision
   determine editor updates. Do not run mutable plugin, parser, CoC extension, or
-  vim-go binary update commands.
+  vim-go binary update commands. Vim and Neovim retain backup, swap, and
+  persistent undo for ordinary files but disable them before reading known
+  credentials and machine-local secret directories.
 - CoC loads in both editors and owns LSP, diagnostics, completion, navigation,
   and format-on-save. vim-go retains non-LSP Go commands. Vim uses its bundled
   EditorConfig support and Neovim uses native EditorConfig. Do not reintroduce
@@ -265,8 +278,9 @@ guidance detectable.
 - `emacs/default.nix` installs the active package set exclusively through
   `programs.emacs.extraPackages`, links `emacs/init.el` to
   `~/.config/emacs/init.el`, links the Org directory-local settings, and creates
-  mutable Org directories. No vendored Emacs plugin or legacy package.el tree
-  remains.
+  mutable Org directories. Emacs Custom writes to the machine-local
+  `~/.config/emacs/custom.el`. No vendored Emacs plugin or legacy package.el
+  tree remains.
 
 ### `other/` directory
 
@@ -297,8 +311,9 @@ home-manager switch --flake .#$(whoami) --show-trace --no-update-lock-file
 The flake checks cover treefmt formatting; Bash syntax and ShellCheck for
 `scripts/*.sh`; the focused `scripts/test_update_submodules.sh` regression
 suite; native syntax checks for the managed Fish and Zsh files; focused tests
-for the Codex profile materializer, agent-directory ownership migration, and
-`.gitmodules` formatter; Emacs `check-parens` and Org lint for tracked Org
+for the Codex profile materializer, agent-directory ownership migration,
+`.gitmodules` formatter, guarded Rime host-file materialization, and editor
+secret-state exclusions; Emacs `check-parens` and Org lint for tracked Org
 files; GitHub Actions syntax and pinned action revisions; a real Neovim Org
 Tree-sitter parse against the evaluated Home Manager runtime; Rime Lua syntax
 and focused tests; and gitleaks secret scanning. CI runs those checks and
@@ -470,9 +485,9 @@ source.
 - tmux enables Ghostty's `extkeys` capability and CSI-u encoding so applications
   can request modified-key reporting. Keep reporting request-driven rather than
   forcing enhanced keys for every application.
-- **`rime/`** creates direct links for Fcitx profile/config/theme files into
-  `~/dotfiles/rime`, then materializes locked schema inputs, the packaged Zhwiki
-  dictionary, and local overrides under
+- **`rime/`** materializes writable Fcitx profile/config files with guarded
+  source snapshots, links the immutable theme set, then materializes locked
+  schema inputs, the packaged Zhwiki dictionary, and local overrides under
   `~/.local/share/fcitx5/rime/.home-manager-static`. This separates managed
   static inputs from writable generated and learned state. A source stamp
   refreshes the static snapshot, clears only generated `build/` data, and

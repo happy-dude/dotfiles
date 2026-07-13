@@ -452,7 +452,9 @@ writable mode-0600 profiles only when templates change or profiles are missing.
 Profiles retain readable multiline instructions and Codex's official
 `config.toml` schema directive. Machine-local project trust, TUI state, and
 other runtime keys survive the merge. Home Manager also live-links the
-independently maintained Kagi Codex TOMLs.
+independently maintained Kagi Codex TOMLs. Activation requires real mode-0700
+`~/.claude` and `~/.codex` directories while leaving their machine-local session
+state and configuration writable.
 
 Vim, Neovim, and their plugins are locked Nix packages. Shared, Vim-only, and
 Neovim-only plugin lists use native package support; there is no vim-plug
@@ -469,7 +471,10 @@ downloaders. `vim/default.nix` builds the managed Tree-sitter runtime, including
 the explicit Org parser omitted by `nvim-treesitter`'s all-grammar set;
 `checks.x86_64-linux.neovim-org` opens and parses a real Org file with the
 evaluated Neovim runtime from both Home Manager profiles. Do not run mutable
-parser update commands.
+parser update commands. Backup, swap, and persistent undo stay enabled for
+ordinary files but are disabled before Vim or Neovim reads known credentials and
+machine-local secret directories. Emacs Custom writes machine-local state to
+`~/.config/emacs/custom.el` rather than its immutable managed init file.
 
 `flake.nix` builds two generic-Linux profiles with
 `mkHome { username, desktop, nixPackage, rimeDeployment }`. Both default to
@@ -477,23 +482,28 @@ Nix-managed Rime and retain `home.stateVersion = "26.11"` as their compatibility
 floor. The personal `schan` profile targets Fedora Kinoite/Plasma and uses
 native Determinate Nix with `nixPackage = null`; `stachan` uses the Nix client
 from the locked Nixpkgs input. Kinoite's native `/nix` store is host-visible.
-Rime still materializes managed static inputs separately from writable generated
-and learned state, claims ownership before mutation, and validates every managed
-link before a Stow release. Zed remains a Home Manager module sourced from
+Rime materializes writable Fcitx host settings with prior-source snapshots under
+`~/.local/state/rime/host-config`, preserves runtime-only changes, and fails on
+concurrent declarative/runtime edits. It materializes managed static inputs
+separately from writable generated and learned state and refuses to discard host
+edits during a Stow release. Zed remains a Home Manager module sourced from
 `~/dotfiles/zed/.config/zed/settings.json`; the yt-dlp bgutil server and plugin
 remain declarative locked-flake builds.
 
 The flake pins registry and `NIX_PATH` resolution to its locked nixpkgs input
-and does not use channels. `nix fmt .` formats supported, non-submodule files
-with the Linux kernel's `.clang-format`, Alejandra, `fish_indent`, `shfmt`,
-Neovim's exact StyLua settings, Prettier, Taplo, and a Nix-built formatter for a
-tracked `.gitmodules` when present. The root `.editorconfig` keeps a four-space
-global fallback plus project-specific overrides.
-`nix flake check --show-trace --no-update-lock-file` covers treefmt output; Bash
-syntax and ShellCheck for `scripts/*.sh`; the focused
+and does not use channels. It optionally includes the untracked
+`~/.config/nix/local.conf` for access tokens and per-machine Nix client
+settings; `nix/local.conf.example` is the non-secret template. `nix fmt .`
+formats supported, non-submodule files with the Linux kernel's `.clang-format`,
+Alejandra, `fish_indent`, `shfmt`, Neovim's exact StyLua settings, Prettier,
+Taplo, and a Nix-built formatter for a tracked `.gitmodules` when present. The
+root `.editorconfig` keeps a four-space global fallback plus project-specific
+overrides. `nix flake check --show-trace --no-update-lock-file` covers treefmt
+output; Bash syntax and ShellCheck for `scripts/*.sh`; the focused
 `scripts/test_update_submodules.sh` regression suite; the Codex profile
 materializer, agent-directory migration, and `.gitmodules` formatter; native
-syntax for managed Fish and Zsh files; Emacs parentheses and Org lint for
+syntax for managed Fish and Zsh files; guarded Rime host-file materialization;
+Vim and Neovim secret-state exclusions; Emacs parentheses and Org lint for
 tracked Org files; a real Neovim Org Tree-sitter parse; workflows and pinned
 Actions; Rime Lua; and secret scanning. CI runs those checks and locked
 evaluation of both Home Manager profiles. Full builds require the manual
