@@ -1,5 +1,11 @@
 ;;; init.el --- Personal Emacs configuration -*- lexical-binding: t; -*-
 
+;; Keep Custom writes out of Home Manager's immutable init.el.
+(setq custom-file
+      (expand-file-name
+       "emacs/custom.el"
+       (or (getenv "XDG_CONFIG_HOME") "~/.config")))
+
 ;; auto-save settings
 ;; create cache directories if they do not exist
 (let ((cache-dir "~/.local/share/emacs")
@@ -55,6 +61,8 @@
   '(rainbow-delimiters-unmatched-face ((t (:background "#D0EA2B"))))
   '(show-paren-match ((t (:foreground "azure" :weight semi-bold))))
   )
+
+(load custom-file 'noerror)
 
 ;; Settings related to visuals, line numbers, fonts, etc.
 ;; UI: show icons with text below
