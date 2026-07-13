@@ -478,6 +478,79 @@
 
         touch "$out"
       '';
+    sortGitmodules = pkgs.writeShellApplication {
+      name = "sort-gitmodules";
+      runtimeInputs = [
+        pkgs.coreutils
+        pkgs.gawk
+        pkgs.gnused
+      ];
+      text = ''
+        sort_one() {
+          local path=$1
+          local temporary
+
+          [[ -f $path ]] || return 0
+          temporary=$(mktemp "$path.tmp.XXXXXX")
+          trap 'rm -f -- "$temporary"' RETURN
+
+          awk '
+            BEGIN { block = 0; line = 0; key = "" }
+            /^\[submodule/ {
+              block += 1
+              line = 1
+              key = $2
+              gsub(/("vendor\/|["\]])/, "", key)
+            }
+            { print key, block, line, $0; line += 1 }
+          ' "$path" \
+            | LC_ALL=C sort -d -f \
+            | awk '{$1 = ""; $2 = ""; $3 = ""; print}' \
+            | sed 's/^ *//g' \
+            | awk '/^\[/ { print; next } { print "\t" $0 }' \
+              >"$temporary"
+
+          chmod --reference="$path" "$temporary"
+          if cmp -s -- "$path" "$temporary"; then
+            rm -f -- "$temporary"
+          else
+            mv -- "$temporary" "$path"
+          fi
+          trap - RETURN
+        }
+
+        if (($# == 0)); then
+          set -- .gitmodules
+        fi
+        for path in "$@"; do
+          sort_one "$path"
+        done
+      '';
+    };
+    sortGitmodulesTest =
+      pkgs.runCommand
+      "sort-gitmodules-test"
+      {nativeBuildInputs = [sortGitmodules];}
+      ''
+        printf '%s\n' \
+          '[submodule "zeta"]' \
+          $'\tpath = modules/zeta' \
+          $'\turl = https://example.invalid/zeta' \
+          '[submodule "alpha"]' \
+          $'\tpath = modules/alpha' \
+          $'\turl = https://example.invalid/alpha' \
+          >.gitmodules
+
+        sort-gitmodules .gitmodules
+        mapfile -t sections < <(grep '^\[submodule' .gitmodules)
+        [[ ''${sections[0]} == '[submodule "alpha"]' ]]
+        [[ ''${sections[1]} == '[submodule "zeta"]' ]]
+        before=$(sha256sum .gitmodules)
+        sort-gitmodules .gitmodules
+        after=$(sha256sum .gitmodules)
+        [[ $before == "$after" ]]
+        touch "$out"
+      '';
     # Build a Home Manager config for a user, desktop, and Rime deployment.
     # The username determines /home/<username>; desktop selects session
     # integration; rimeDeployment selects Nix or legacy Stow file management.
@@ -542,6 +615,7 @@
     # treefmt's Git walk skips them.
     treefmtEval = treefmt-nix.lib.evalModule pkgs {
       projectRootFile = "flake.nix";
+      enableDefaultExcludes = false;
       programs = {
         clang-format = {
           enable = true;
@@ -575,14 +649,26 @@
         };
         taplo.enable = true;
       };
-      settings.global.excludes = [
+      settings.excludes = [
         "agents/prompts/kagi-*.md" # fixed instruction budget; preserve whitespace
         "other/**" # non-managed reference configs
         "karabiner/**" # macOS + generated backups
         "rime/**/*.yaml" # input-method schemas and dictionaries (data, not code)
+        "*.patch"
+        "package-lock.json"
+        "go.mod"
+        "go.sum"
+        ".gitattributes"
+        ".gitignore"
+        ".hgignore"
+        ".svnignore"
         "*.lock"
         "LICENSE"
       ];
+      settings.formatter.gitmodules = {
+        command = lib.getExe sortGitmodules;
+        includes = [".gitmodules"];
+      };
     };
   in {
     homeConfigurations = {
@@ -604,6 +690,7 @@
     checks.${system} = {
       formatting = treefmtEval.config.build.check self;
       codex-profile-materializer = codexProfileMaterializerTest;
+      gitmodules-format = sortGitmodulesTest;
 
       scripts =
         pkgs.runCommand "dotfiles-script-checks"
@@ -632,10 +719,6 @@
             fi
           done
 
-          if [ -f ${self}/.gitmodules ]; then
-            cp ${self}/.gitmodules .gitmodules
-          fi
-          bash ${self}/scripts/sort_gitmodules.sh --check
           bash ${self}/scripts/test_update_submodules.sh
 
           touch "$out"
