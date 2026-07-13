@@ -1,0 +1,3 @@
+# Copy to ~/.config/nix/local.conf and restrict the copy to mode 0600.
+# Keep real tokens outside Git and the Nix store.
+access-tokens = github.com=GITHUB_TOKEN
