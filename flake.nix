@@ -302,6 +302,182 @@
         })
       ];
     };
+    codexProfileMaterializer =
+      pkgs.writers.writePython3Bin
+      "materialize-codex-profile"
+      {libraries = [pkgs.python3Packages.tomlkit];}
+      ''
+        import os
+        import sys
+        import tempfile
+        from pathlib import Path
+
+        import tomlkit
+        from tomlkit.items import AoT, Table
+
+        MANAGED_KEYS = (
+            "developer_instructions",
+            "model_reasoning_effort",
+        )
+
+
+        def load_document(path: Path, description: str):
+            try:
+                return tomlkit.parse(path.read_text(encoding="utf-8"))
+            except (OSError, tomlkit.exceptions.ParseError) as error:
+                message = f"Unable to read {description} {path}: {error}"
+                raise SystemExit(message) from error
+
+
+        def materialize(source: Path, target: Path) -> None:
+            if not source.is_file():
+                message = (
+                    "Generated Codex profile is not a regular file: "
+                    f"{source}"
+                )
+                raise SystemExit(message)
+
+            generated = load_document(source, "generated Codex profile")
+            unexpected = set(generated) - set(MANAGED_KEYS)
+            if unexpected:
+                names = ", ".join(sorted(unexpected))
+                message = f"Generated Codex profile has unmanaged keys: {names}"
+                raise SystemExit(message)
+            if "developer_instructions" not in generated:
+                raise SystemExit(
+                    "Generated Codex profile lacks developer_instructions"
+                )
+
+            if target.is_symlink():
+                raise SystemExit(f"Refusing symlinked Codex profile: {target}")
+            if target.exists() and not target.is_file():
+                raise SystemExit(f"Refusing non-regular Codex profile: {target}")
+
+            if target.exists():
+                runtime = load_document(target, "existing Codex profile")
+            else:
+                runtime = tomlkit.document()
+
+            generated_data = generated.unwrap()
+            merged = {
+                key: generated_data[key]
+                for key in MANAGED_KEYS
+                if key in generated_data
+            }
+            runtime_items = [
+                (key, item, item.unwrap())
+                for key, item in runtime.items()
+                if key not in MANAGED_KEYS
+            ]
+            for key, item, value in runtime_items:
+                if not isinstance(item, (Table, AoT)):
+                    merged[key] = value
+            for key, item, value in runtime_items:
+                if isinstance(item, (Table, AoT)):
+                    merged[key] = value
+
+            target.parent.mkdir(parents=True, exist_ok=True)
+            descriptor, temporary_name = tempfile.mkstemp(
+                dir=target.parent,
+                prefix=f".{target.name}.",
+            )
+            temporary = Path(temporary_name)
+            try:
+                os.fchmod(descriptor, 0o600)
+                with os.fdopen(
+                    descriptor,
+                    "w",
+                    encoding="utf-8",
+                ) as output:
+                    output.write(tomlkit.dumps(merged))
+                    output.flush()
+                    os.fsync(output.fileno())
+                os.replace(temporary, target)
+                directory = os.open(
+                    target.parent,
+                    os.O_RDONLY | os.O_DIRECTORY,
+                )
+                try:
+                    os.fsync(directory)
+                finally:
+                    os.close(directory)
+            finally:
+                temporary.unlink(missing_ok=True)
+
+
+        if len(sys.argv) != 3:
+            raise SystemExit("usage: materialize-codex-profile SOURCE TARGET")
+        materialize(Path(sys.argv[1]), Path(sys.argv[2]))
+      '';
+    codexProfileMaterializerTest =
+      pkgs.runCommand
+      "codex-profile-materializer-test"
+      {
+        nativeBuildInputs = [
+          codexProfileMaterializer
+          pkgs.python3
+        ];
+      }
+      ''
+        mkdir work
+        printf '%s\n' \
+          'developer_instructions = "new instructions"' \
+          'model_reasoning_effort = "medium"' \
+          >work/generated.toml
+        printf '%s\n' \
+          'developer_instructions = "old instructions"' \
+          'model_reasoning_effort = "low"' \
+          'service_tier = "fast"' \
+          "" \
+          '[projects."/tmp/project"]' \
+          'trust_level = "trusted"' \
+          "" \
+          '[tui.model_availability_nux]' \
+          'model = 2' \
+          >work/profile.toml
+
+        materialize-codex-profile work/generated.toml work/profile.toml
+        python3 - work/profile.toml <<'PYTHON'
+        import stat
+        import sys
+        import tomllib
+        from pathlib import Path
+
+        path = Path(sys.argv[1])
+        profile = tomllib.loads(path.read_text(encoding="utf-8"))
+        assert profile["developer_instructions"] == "new instructions"
+        assert profile["model_reasoning_effort"] == "medium"
+        assert profile["service_tier"] == "fast"
+        assert profile["projects"]["/tmp/project"]["trust_level"] == "trusted"
+        assert profile["tui"]["model_availability_nux"]["model"] == 2
+        assert stat.S_IMODE(path.stat().st_mode) == 0o600
+        PYTHON
+
+        before=$(sha256sum work/profile.toml)
+        materialize-codex-profile work/generated.toml work/profile.toml
+        after=$(sha256sum work/profile.toml)
+        [[ $before == "$after" ]]
+
+        printf '%s\n' \
+          'developer_instructions = "language instructions"' \
+          >work/generated.toml
+        materialize-codex-profile work/generated.toml work/profile.toml
+        python3 - work/profile.toml <<'PYTHON'
+        import sys
+        import tomllib
+        from pathlib import Path
+
+        path = Path(sys.argv[1])
+        profile = tomllib.loads(path.read_text(encoding="utf-8"))
+        assert profile["developer_instructions"] == "language instructions"
+        assert "model_reasoning_effort" not in profile
+        assert profile["service_tier"] == "fast"
+        assert profile["projects"]["/tmp/project"]["trust_level"] == "trusted"
+        assert profile["tui"]["model_availability_nux"]["model"] == 2
+        PYTHON
+
+        touch "$out"
+      '';
     # Build a Home Manager config for a user, desktop, and Rime deployment.
     # The username determines /home/<username>; desktop selects session
     # integration; rimeDeployment selects Nix or legacy Stow file management.
@@ -315,6 +491,7 @@
         inherit pkgs;
         extraSpecialArgs = {
           inherit
+            codexProfileMaterializer
             inputs
             username
             desktop
@@ -426,6 +603,7 @@
 
     checks.${system} = {
       formatting = treefmtEval.config.build.check self;
+      codex-profile-materializer = codexProfileMaterializerTest;
 
       scripts =
         pkgs.runCommand "dotfiles-script-checks"
@@ -459,7 +637,6 @@
           fi
           bash ${self}/scripts/sort_gitmodules.sh --check
           bash ${self}/scripts/test_update_submodules.sh
-          bash ${self}/scripts/generate_codex_agents.sh --check
 
           touch "$out"
         '';
