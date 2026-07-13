@@ -574,24 +574,28 @@ structure.
   the intentionally deferred `ssh/.ssh/config`. `gdb/gdbinit` is linked to
   `~/.config/gdb/gdbinit`; the Emacs module links its init file under
   `~/.config/emacs`, links Org directory-local settings, and creates mutable
-  `~/org/Archive` and `~/org/roam` directories. Roswell and SLIME are
-  Nix-installed without copied helpers or a standalone `ros_swank` launcher. The
-  low-priority ncurses runtime supplies standard terminfo entries while
-  Ghostty's package wins terminal-specific collisions. `karabiner/` remains
-  tracked for the macOS branch but is not deployed on Linux. `rime/` retains a
-  guarded Stow fallback, but Home Manager deploys it by default: activation
-  claims ownership, materializes managed static inputs under
+  `~/org/Archive` and `~/org/roam` directories. Emacs Custom writes to the
+  machine-local `~/.config/emacs/custom.el` instead of the immutable init file.
+  Roswell and SLIME are Nix-installed without copied helpers or a standalone
+  `ros_swank` launcher. The low-priority ncurses runtime supplies standard
+  terminfo entries while Ghostty's package wins terminal-specific collisions.
+  `karabiner/` remains tracked for the macOS branch but is not deployed on
+  Linux. `rime/` retains a guarded Stow fallback, but Home Manager deploys it by
+  default: activation claims ownership, materializes writable Fcitx host
+  settings with managed snapshots under `~/.local/state/rime/host-config`,
+  materializes static inputs under
   `~/.local/share/fcitx5/rime/.home-manager-static`, and keeps generated and
-  learned state writable. Selecting `rimeDeployment = "stow"` validates
-  ownership and every managed link before removing only Home Manager-owned
-  paths. `zed/` is sourced from `zed/.config/zed/settings.json`; `schan`
-  materializes it as a mutable Flatpak config at
-  `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`, while `stachan`
-  uses `~/.config/zed/settings.json`. The agent prompts remain live through
-  `mkOutOfStoreSymlink`. The global gitignore is `git/.gitignore_global`;
-  machine identity and signing remain in untracked `~/.config/git/local.config`.
-  Plasma's captured panel declaration remains disabled because enabling
-  high-level panel management deletes and rebuilds
+  learned state writable. Declarative and runtime host-file changes are merged
+  only when one side retains the prior baseline; concurrent changes fail closed.
+  Selecting `rimeDeployment = "stow"` refuses to discard runtime edits before
+  removing Home Manager-owned paths. `zed/` is sourced from
+  `zed/.config/zed/settings.json`; `schan` materializes it as a mutable Flatpak
+  config at `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`, while
+  `stachan` uses `~/.config/zed/settings.json`. The Claude prompt directory
+  remains live through `mkOutOfStoreSymlink`. The global gitignore is
+  `git/.gitignore_global`; machine identity and signing remain in untracked
+  `~/.config/git/local.config`. Plasma's captured panel declaration remains
+  disabled because enabling high-level panel management deletes and rebuilds
   `plasma-org.kde.plasma.desktop-appletsrc` when the declaration changes.
   Display topology, generated IDs, wallpaper, and session history remain
   unmanaged.
@@ -611,40 +615,57 @@ structure.
   set; `checks.x86_64-linux.neovim-org` opens and parses a real Org file with
   the evaluated Neovim runtime from both Home Manager profiles. Do not
   reintroduce ALE, Pathogen, editorconfig-vim, mutable parser downloads, or
-  mutable plugin binary downloaders. The locked `virtme_ng_src` input builds the
-  installed `vng` kernel VM command, while Ghidra comes from locked Nixpkgs.
+  mutable plugin binary downloaders. Backup, swap, and persistent undo remain
+  enabled for ordinary files but are disabled before Vim or Neovim reads known
+  credentials and machine-local secret directories. The locked `virtme_ng_src`
+  input builds the installed `vng` kernel VM command, while Ghidra comes from
+  locked Nixpkgs.
 - **Agent prompt ownership:** `agents/prompts/{kernel,language}.md` are
-  canonical for the generated full agents and profiles. After editing either,
-  run `scripts/generate_codex_agents.sh`; the flake check rejects drift. Home
-  Manager live-links agent definitions and installs generated profile TOMLs as
-  immutable store files. Credentials, provider state, and project trust remain
-  machine-local. Kagi Markdown and Codex TOMLs are independently maintained for
-  their smaller instruction budget; the generator never reads or writes them.
+  canonical for the full agents and profiles. Nix generates the Codex TOML
+  templates directly from their Markdown bodies and frontmatter; there are no
+  checked-in generated artifacts. `agents/codex.nix` owns generation support,
+  profile materialization, guarded agent-directory ownership migration, and
+  their focused checks. Home Manager keeps the immutable templates under
+  `~/.local/share/codex/generated-profiles` and uses the materializer to create
+  missing mode-0600 profiles or refresh generated keys when a template changes.
+  Generated profiles retain readable multiline instructions and Codex's official
+  `config.toml` schema directive. Runtime-owned project trust, TUI state, and
+  other profile keys survive the merge. Kagi Markdown and Codex TOMLs are
+  independently maintained and live-linked for their smaller instruction budget.
+  Activation requires real mode-0700 `~/.claude` and `~/.codex` directories;
+  their session state and configuration remain writable and machine-local.
 - **Machine-local secrets:** Fish may source `~/.config/fish/secrets.fish`, but
   the real file must remain untracked and outside the Nix store. The committed
   example contains placeholders only; install the private copy with mode `0600`.
 - **Locked evaluation:** `flake.lock` is authoritative. `nix/default.nix` pins
   both the `nixpkgs` registry entry and `NIX_PATH` to the locked input; this
-  setup does not use channels. Evaluation and builds outside an intentional
-  update must pass `--no-update-lock-file`; CI uses the same guard. The bgutil
-  yt-dlp provider is also declarative: `yt-dlp/default.nix` builds the locked
-  Node server and native `canvas` dependency with Nix, installs the matching
-  plugin, and points yt-dlp at the store path. Home Manager activation performs
-  no mutable `npm` work.
+  setup does not use channels. It optionally includes the untracked
+  `~/.config/nix/local.conf` for per-machine access tokens and client settings;
+  `nix/local.conf.example` is the non-secret template. Evaluation and builds
+  outside an intentional update must pass `--no-update-lock-file`; CI uses the
+  same guard. The bgutil yt-dlp provider is also declarative:
+  `yt-dlp/default.nix` builds the locked Node server and native `canvas`
+  dependency with Nix, installs the matching plugin, and points yt-dlp at the
+  store path. Home Manager activation performs no mutable `npm` work.
 - **Formatting and checks:** `nix fmt .` runs treefmt over supported,
   non-submodule files with the Linux kernel's `.clang-format` for C/C++,
-  Alejandra for Nix, `fish_indent` for Fish, `shfmt` for shell, Neovim's exact
-  `.stylua.toml` for Lua, Prettier for JSON/Markdown/YAML, and Taplo for TOML.
+  Alejandra for Nix, `fish_indent` for Fish, `shfmt` for shell, Ruff for Python,
+  Neovim's exact `.stylua.toml` for Lua, Prettier for JSON/Markdown/YAML, Taplo
+  for TOML, and a Nix-built formatter for a tracked `.gitmodules` when present.
   The root `.editorconfig` deliberately keeps a four-space global fallback and
   applies project-specific Linux, Neovim, Ghostty, Fish, Org, and Magit
   policies. `nix flake check --show-trace --no-update-lock-file` validates
-  treefmt output; Bash syntax and ShellCheck for `scripts/*.sh`; the focused
-  `scripts/test_update_submodules.sh` regression suite; native syntax for the
-  managed Fish and Zsh files; `.gitmodules` ordering; Emacs parentheses and Org
-  lint for tracked Org files; a real Neovim Org Tree-sitter parse; actionlint
-  and pinned Actions; Rime Lua syntax/tests; and gitleaks. GitHub CI runs those
-  checks and evaluates both Home Manager profiles on pushes and pull requests;
-  full profile builds are opt-in through `workflow_dispatch`.
+  treefmt output; Ruff formatting, lint, and bytecode compilation for Python;
+  Bash syntax and ShellCheck for `scripts/*.sh`; the focused
+  `scripts/test_update_submodules.sh` regression suite; the Codex profile
+  materializer, agent-directory migration, `.gitmodules` formatter, rclone event
+  classification, guarded Rime host-file and ownership-state materialization,
+  Zed settings materialization, and editor secret-state exclusions; native
+  syntax for the managed Fish and Zsh files; Emacs parentheses and Org lint for
+  tracked Org files; a real Neovim Org Tree-sitter parse; actionlint and pinned
+  Actions; Rime Lua syntax/tests; and gitleaks. GitHub CI runs those checks and
+  evaluates both Home Manager profiles on pushes and pull requests; full profile
+  builds are opt-in through `workflow_dispatch`.
 - **Test/verify before recommending or installing anything, the same
   anti-fabrication discipline as everywhere else in this prompt:**
   `nix search nixpkgs <term>` to check a package actually exists (careful:

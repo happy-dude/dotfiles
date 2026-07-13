@@ -28,4 +28,45 @@ set writebackup
 set swapfile
 set undofile
 
+let s:sensitive_files = map([
+      \ '~/.authinfo',
+      \ '~/.authinfo.gpg',
+      \ '~/.claude.json',
+      \ '~/.config/fish/secrets.fish',
+      \ '~/.config/git/local.config',
+      \ '~/.config/nix/local.conf',
+      \ '~/.netrc',
+      \ ], {_, path -> resolve(fnamemodify(expand(path), ':p'))})
+let s:sensitive_dirs = map([
+      \ '~/.aws',
+      \ '~/.claude',
+      \ '~/.codex',
+      \ '~/.config/gh',
+      \ '~/.config/op',
+      \ '~/.config/rclone',
+      \ '~/.gnupg',
+      \ '~/.kube',
+      \ '~/.password-store',
+      \ '~/.ssh',
+      \ ], {_, path -> resolve(fnamemodify(expand(path), ':p')) . '/'})
+
+function! s:disable_sensitive_file_state() abort
+  let l:path = resolve(fnamemodify(expand('%:p'), ':p'))
+  if index(s:sensitive_files, l:path) >= 0
+    setlocal nobackup nowritebackup noswapfile noundofile
+    return
+  endif
+  for l:dir in s:sensitive_dirs
+    if stridx(l:path, l:dir) == 0
+      setlocal nobackup nowritebackup noswapfile noundofile
+      return
+    endif
+  endfor
+endfunction
+
+augroup dotfiles_sensitive_file_state
+  autocmd!
+  autocmd BufReadPre,BufNewFile * call <SID>disable_sensitive_file_state()
+augroup END
+
 unlet s:backup_dir s:dir s:state_dir s:swap_dir s:undo_dir s:view_dir

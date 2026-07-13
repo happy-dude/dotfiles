@@ -1,13 +1,19 @@
 {
+  config,
   inputs,
   lib,
   nixPackage,
   ...
-}: {
+}: let
+  localConfig = "${config.xdg.configHome}/nix/local.conf";
+in {
   nix = {
     nixPath = ["nixpkgs=${inputs.nixpkgs}"];
     package = nixPackage;
     registry.nixpkgs.flake = inputs.nixpkgs;
+    extraOptions = lib.optionalString (nixPackage != null) ''
+      !include ${localConfig}
+    '';
     settings = lib.optionalAttrs (nixPackage != null) {
       experimental-features = [
         "nix-command"
@@ -28,6 +34,7 @@
   xdg.configFile."nix/nix.conf" = lib.mkIf (nixPackage == null) {
     text = ''
       extra-experimental-features = nix-command flakes
+      !include ${localConfig}
     '';
   };
 }
