@@ -132,6 +132,17 @@ in {
       ${lib.escapeShellArg "language=${agentFiles.language}"}
   '';
 
+  home.activation.secureAgentStateDirectories = lib.hm.dag.entryAfter ["linkGeneration"] ''
+    for directory in "$HOME/.claude" "$HOME/.codex"; do
+      if [[ -L $directory || (-e $directory && ! -d $directory) ]]; then
+        echo "Refusing malformed agent state directory: $directory" >&2
+        exit 1
+      fi
+      $DRY_RUN_CMD ${pkgs.coreutils}/bin/mkdir -p -- "$directory"
+      $DRY_RUN_CMD ${pkgs.coreutils}/bin/chmod 0700 -- "$directory"
+    done
+  '';
+
   home.activation.ensureCodexProfiles = lib.hm.dag.entryAfter ["onFilesChange"] (
     lib.concatMapStrings (name: ''
       if [[ ! -e "$HOME/.codex/${name}.config.toml" ]]; then
