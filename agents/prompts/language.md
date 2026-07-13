@@ -495,19 +495,21 @@ and does not use channels. It optionally includes the untracked
 `~/.config/nix/local.conf` for access tokens and per-machine Nix client
 settings; `nix/local.conf.example` is the non-secret template. `nix fmt .`
 formats supported, non-submodule files with the Linux kernel's `.clang-format`,
-Alejandra, `fish_indent`, `shfmt`, Neovim's exact StyLua settings, Prettier,
-Taplo, and a Nix-built formatter for a tracked `.gitmodules` when present. The
-root `.editorconfig` keeps a four-space global fallback plus project-specific
-overrides. `nix flake check --show-trace --no-update-lock-file` covers treefmt
-output; Bash syntax and ShellCheck for `scripts/*.sh`; the focused
+Alejandra, `fish_indent`, `shfmt`, Ruff, Neovim's exact StyLua settings,
+Prettier, Taplo, and a Nix-built formatter for a tracked `.gitmodules` when
+present. The root `.editorconfig` keeps a four-space global fallback plus
+project-specific overrides. `nix flake check --show-trace --no-update-lock-file`
+covers treefmt output; Ruff formatting, lint, and bytecode compilation for
+Python; Bash syntax and ShellCheck for `scripts/*.sh`; the focused
 `scripts/test_update_submodules.sh` regression suite; the Codex profile
 materializer, agent-directory migration, and `.gitmodules` formatter; native
-syntax for managed Fish and Zsh files; guarded Rime host-file materialization;
-Vim and Neovim secret-state exclusions; Emacs parentheses and Org lint for
-tracked Org files; a real Neovim Org Tree-sitter parse; workflows and pinned
-Actions; Rime Lua; and secret scanning. CI runs those checks and locked
-evaluation of both Home Manager profiles. Full builds require the manual
-`workflow_dispatch` `build_homes` input.
+syntax for managed Fish and Zsh files; rclone event classification; guarded Rime
+host-file and ownership-state materialization; Zed settings materialization; Vim
+and Neovim secret-state exclusions; Emacs parentheses and Org lint for tracked
+Org files; a real Neovim Org Tree-sitter parse; workflows and pinned Actions;
+Rime Lua; and secret scanning. CI runs those checks and locked evaluation of
+both Home Manager profiles. Full builds require the manual `workflow_dispatch`
+`build_homes` input.
 
 That enumeration is a quick reference, not the source of truth — it can go stale
 the moment someone edits `home.nix` without updating this file. If you're unsure

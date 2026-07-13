@@ -115,11 +115,13 @@ checkout is the Linux branch.
   with the external nix-flatpak and plasma-manager modules only for `schan`.
 - The formatter is **treefmt** (`treefmt-nix`, run via `nix fmt`): the Linux
   kernel's `.clang-format` for C/C++, Alejandra for Nix, `fish_indent` for Fish,
-  `shfmt` for shell, Neovim's exact StyLua configuration for Lua, Prettier for
-  JSON/Markdown/YAML, and Taplo for TOML. The root `.editorconfig` has a
-  four-space fallback and project-specific Linux, Neovim, Ghostty, Fish, Org,
-  and Magit policies. Treefmt's Git walk skips submodule contents and excludes
-  `other/`, `karabiner/`, Rime YAML data, lock files, and `LICENSE`.
+  `shfmt` for shell, Ruff for Python, Neovim's exact StyLua configuration for
+  Lua, Prettier for JSON/Markdown/YAML, and Taplo for TOML. The root
+  `pyproject.toml` defines the Python formatting and lint policy;
+  `.editorconfig` has a four-space fallback and project-specific Linux, Neovim,
+  Ghostty, Fish, Org, and Magit policies. Treefmt's Git walk skips submodule
+  contents and excludes `other/`, `karabiner/`, Rime YAML data, lock files, and
+  `LICENSE`.
 - `nix/default.nix` pins both the `nixpkgs` registry entry and legacy `NIX_PATH`
   lookup to the locked root input. It optionally includes the untracked
   `~/.config/nix/local.conf` for per-machine access tokens and client settings;
@@ -308,19 +310,20 @@ only after explicit confirmation:
 home-manager switch --flake .#$(whoami) --show-trace --no-update-lock-file
 ```
 
-The flake checks cover treefmt formatting; Bash syntax and ShellCheck for
-`scripts/*.sh`; the focused `scripts/test_update_submodules.sh` regression
-suite; native syntax checks for the managed Fish and Zsh files; focused tests
-for the Codex profile materializer, agent-directory ownership migration,
-`.gitmodules` formatter, guarded Rime host-file materialization, and editor
-secret-state exclusions; Emacs `check-parens` and Org lint for tracked Org
-files; GitHub Actions syntax and pinned action revisions; a real Neovim Org
-Tree-sitter parse against the evaluated Home Manager runtime; Rime Lua syntax
-and focused tests; and gitleaks secret scanning. CI runs those checks and
-evaluates both Home Manager configurations on pushes and pull requests. Full
-builds of both configurations are opt-in through the `workflow_dispatch`
-`build_homes` input because builds are substantially more expensive than
-evaluation.
+The flake checks cover treefmt formatting; Ruff formatting, lint, and bytecode
+compilation for Python; Bash syntax and ShellCheck for `scripts/*.sh`; the
+focused `scripts/test_update_submodules.sh` regression suite; native syntax
+checks for the managed Fish and Zsh files; focused tests for the Codex profile
+materializer, agent-directory ownership migration, `.gitmodules` formatter,
+rclone event classification, guarded Rime host-file and ownership-state
+materialization, Zed settings materialization, and editor secret-state
+exclusions; Emacs `check-parens` and Org lint for tracked Org files; GitHub
+Actions syntax and pinned action revisions; a real Neovim Org Tree-sitter parse
+against the evaluated Home Manager runtime; Rime Lua syntax and focused tests;
+and gitleaks secret scanning. CI runs those checks and evaluates both Home
+Manager configurations on pushes and pull requests. Full builds of both
+configurations are opt-in through the `workflow_dispatch` `build_homes` input
+because builds are substantially more expensive than evaluation.
 
 ### Zed / agent config
 
@@ -449,6 +452,13 @@ source.
   `default.nix`) over installing system-wide. Resolve binary collisions
   explicitly with `lib.hiPrio` / `lib.lowPrio` as already done for `gcc` /
   `clang` / `clang-tools` / `llvm` in `home.nix`.
+- Prefer Nix for declarations, dependency wiring, and derivations. Put
+  nontrivial file or state transformations in typed Python source beside the
+  owning module, package them with `pkgs.writers.writePython3Bin`, and pass
+  store paths explicitly. Repository-wide executable helpers belong in
+  `scripts/`; short Home Manager activation and derivation phases may remain
+  shell glue. Every tracked Python file must pass Ruff formatting, Ruff lint,
+  and bytecode compilation through the flake checks.
 - Python libraries must go through the existing
   `python3.withPackages (ps: [ ... ])` entry in `home.packages`, never as bare
   `python3Packages.*` items. Bare entries only place the library in the Nix

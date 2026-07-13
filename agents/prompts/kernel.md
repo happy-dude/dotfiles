@@ -649,21 +649,23 @@ structure.
   store path. Home Manager activation performs no mutable `npm` work.
 - **Formatting and checks:** `nix fmt .` runs treefmt over supported,
   non-submodule files with the Linux kernel's `.clang-format` for C/C++,
-  Alejandra for Nix, `fish_indent` for Fish, `shfmt` for shell, Neovim's exact
-  `.stylua.toml` for Lua, Prettier for JSON/Markdown/YAML, Taplo for TOML, and a
-  Nix-built formatter for a tracked `.gitmodules` when present. The root
-  `.editorconfig` deliberately keeps a four-space global fallback and applies
-  project-specific Linux, Neovim, Ghostty, Fish, Org, and Magit policies.
-  `nix flake check --show-trace --no-update-lock-file` validates treefmt output;
+  Alejandra for Nix, `fish_indent` for Fish, `shfmt` for shell, Ruff for Python,
+  Neovim's exact `.stylua.toml` for Lua, Prettier for JSON/Markdown/YAML, Taplo
+  for TOML, and a Nix-built formatter for a tracked `.gitmodules` when present.
+  The root `.editorconfig` deliberately keeps a four-space global fallback and
+  applies project-specific Linux, Neovim, Ghostty, Fish, Org, and Magit
+  policies. `nix flake check --show-trace --no-update-lock-file` validates
+  treefmt output; Ruff formatting, lint, and bytecode compilation for Python;
   Bash syntax and ShellCheck for `scripts/*.sh`; the focused
   `scripts/test_update_submodules.sh` regression suite; the Codex profile
-  materializer, agent-directory migration, `.gitmodules` formatter, guarded Rime
-  host-file materialization, and editor secret-state exclusions; native syntax
-  for the managed Fish and Zsh files; Emacs parentheses and Org lint for tracked
-  Org files; a real Neovim Org Tree-sitter parse; actionlint and pinned Actions;
-  Rime Lua syntax/tests; and gitleaks. GitHub CI runs those checks and evaluates
-  both Home Manager profiles on pushes and pull requests; full profile builds
-  are opt-in through `workflow_dispatch`.
+  materializer, agent-directory migration, `.gitmodules` formatter, rclone event
+  classification, guarded Rime host-file and ownership-state materialization,
+  Zed settings materialization, and editor secret-state exclusions; native
+  syntax for the managed Fish and Zsh files; Emacs parentheses and Org lint for
+  tracked Org files; a real Neovim Org Tree-sitter parse; actionlint and pinned
+  Actions; Rime Lua syntax/tests; and gitleaks. GitHub CI runs those checks and
+  evaluates both Home Manager profiles on pushes and pull requests; full profile
+  builds are opt-in through `workflow_dispatch`.
 - **Test/verify before recommending or installing anything, the same
   anti-fabrication discipline as everywhere else in this prompt:**
   `nix search nixpkgs <term>` to check a package actually exists (careful:
