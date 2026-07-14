@@ -312,18 +312,18 @@ home-manager switch --flake .#$(whoami) --show-trace --no-update-lock-file
 
 The flake checks cover treefmt formatting; Ruff formatting, lint, and bytecode
 compilation for Python; Bash syntax and ShellCheck for `scripts/*.sh`; the
-focused `scripts/test_update_submodules.sh` regression suite; native syntax
-checks for the managed Fish and Zsh files; focused tests for the Codex profile
-materializer, agent-directory ownership migration, `.gitmodules` formatter,
-rclone event classification, guarded Rime host-file and ownership-state
-materialization, Zed settings materialization, and editor secret-state
-exclusions; Emacs `check-parens` and Org lint for tracked Org files; GitHub
-Actions syntax and pinned action revisions; a real Neovim Org Tree-sitter parse
-against the evaluated Home Manager runtime; Rime Lua syntax and focused tests;
-and gitleaks secret scanning. CI runs those checks and evaluates both Home
-Manager configurations on pushes and pull requests. Full builds of both
-configurations are opt-in through the `workflow_dispatch` `build_homes` input
-because builds are substantially more expensive than evaluation.
+focused `scripts/test_*.sh` regression suites; native syntax checks for the
+managed Fish and Zsh files; focused tests for the Codex profile materializer,
+agent-directory ownership migration, `.gitmodules` formatter, rclone event
+classification, guarded Rime host-file and ownership-state materialization, Zed
+settings materialization, and editor secret-state exclusions; Emacs
+`check-parens` and Org lint for tracked Org files; GitHub Actions syntax and
+pinned action revisions; a real Neovim Org Tree-sitter parse against the
+evaluated Home Manager runtime; Rime Lua syntax and focused tests; and gitleaks
+secret scanning. CI runs those checks and evaluates both Home Manager
+configurations on pushes and pull requests. Full builds of both configurations
+are opt-in through the `workflow_dispatch` `build_homes` input because builds
+are substantially more expensive than evaluation.
 
 ### Zed / agent config
 
@@ -345,6 +345,7 @@ carry the `config.toml` directive.
 ```bash
 ./scripts/update.sh check                # validate and build the selected locked configuration
 ./scripts/update.sh apply                # validate, build, then activate the existing lock
+./scripts/update.sh apply --show-changes # include the committed or staged Git diff
 ./scripts/update.sh update               # full update; default when the mode is omitted
 ./scripts/update.sh --autostash-submodules --verbose   # retain dirty-submodule stashes for review
 ./scripts/update.sh --rime-source plum --skip-home-manager --skip-nix-flake
@@ -353,8 +354,15 @@ carry the `config.toml` directive.
 `check` does not change the lock file or active profile. `apply` validates and
 builds before activating the existing lock. `update` runs the mutable update
 workflow, validates and builds its result, then activates unless
-`--skip-home-manager` is set. The script is fail-closed: any failed update step,
-flake check, or Home Manager build prevents activation.
+`--skip-home-manager` is set. After a successful activation, both modes compare
+the previous and current Home Manager store closures with
+`nix store diff-closures`. They also print a repository shortlog when the update
+advanced Git HEAD. `--show-changes` adds the full committed diff for that range;
+when HEAD did not advance, it shows the staged diff if one exists. `--verbose`
+implies `--show-changes`. Changelog rendering is informational: a reporting
+failure warns but does not turn a successful activation into a failure. The
+script is fail-closed for state changes: any failed update step, flake check, or
+Home Manager build prevents activation.
 
 Default Rime updates happen through `nix flake update`; `--rime-source nix` is
 implicit. A subsequent Home Manager activation rebuilds generated schemas when
@@ -369,10 +377,11 @@ before using the Plum mode.
 
 Update-mode step order is: optional Plum fallback; repository pull; generic
 submodule handling when `.gitmodules` contains entries; `nix fmt .`;
-`nix flake update`; locked flake validation and Home Manager build; and optional
-activation. The corresponding skip flags are `--skip-pull`, `--skip-submodules`,
-`--skip-status`, `--skip-nix-fmt`, `--skip-nix-flake`, and
-`--skip-home-manager`. `HOME_MANAGER_FLAKE` defaults to `.#$(whoami)`.
+`nix flake update`; locked flake validation and Home Manager build; optional
+activation; and the post-activation generation changelog. The corresponding skip
+flags are `--skip-pull`, `--skip-submodules`, `--skip-status`, `--skip-nix-fmt`,
+`--skip-nix-flake`, and `--skip-home-manager`. `HOME_MANAGER_FLAKE` defaults to
+`.#$(whoami)`.
 
 The script refuses to update dirty submodules unless `--autostash-submodules` is
 passed, and it does **not** auto-pop stashes afterward. The auto-stash scan
