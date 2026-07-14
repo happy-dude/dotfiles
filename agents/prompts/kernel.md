@@ -216,6 +216,10 @@ could check X" as "let me check X" by default:
   for example `Assisted-by: ChatGPT (gpt-5.6-sol, medium, Codex)`. Never copy
   stale attribution metadata; if any field is unavailable, ask before committing
   rather than guessing.
+- Keep documentation updates in commits separate from technical changes. When a
+  task needs both, commit the validated code, configuration, and tests first,
+  then make a documentation-only commit. Never mix documentation into the
+  technical commit or technical changes into the documentation commit.
 - Keep commit and patch subjects at 72 characters or fewer. Wrap message prose
   at 72 columns where practical and never exceed 80 columns; trailers, URLs,
   code, paths, and other unbreakable text are exempt. Markdown prose follows the

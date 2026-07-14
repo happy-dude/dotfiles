@@ -428,6 +428,10 @@ source.
   `Assisted-by:` product, model/version, agent, and reasoning-level text for the
   current session. If any field is unavailable, ask the user before making
   commit-intended changes rather than waiting until commit time.
+- Keep documentation updates in commits separate from technical changes. When a
+  task needs both, commit the validated code, configuration, and tests first,
+  then make a documentation-only commit. Never mix documentation into the
+  technical commit or technical changes into the documentation commit.
 - When asking the user to run and return commands from a host, session,
   container, VM, Toolbox, or other environment the agent cannot access, collect
   all presently knowable safe read-only checks for that context into one
