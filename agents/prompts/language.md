@@ -501,14 +501,14 @@ present. The root `.editorconfig` keeps a four-space global fallback plus
 project-specific overrides. `nix flake check --show-trace --no-update-lock-file`
 covers treefmt output; Ruff formatting, lint, and bytecode compilation for
 Python; Bash syntax and ShellCheck for `scripts/*.sh`; the focused
-`scripts/test_update_submodules.sh` regression suite; the Codex profile
-materializer, agent-directory migration, and `.gitmodules` formatter; native
-syntax for managed Fish and Zsh files; rclone event classification; guarded Rime
-host-file and ownership-state materialization; Zed settings materialization; Vim
-and Neovim secret-state exclusions; Emacs parentheses and Org lint for tracked
-Org files; a real Neovim Org Tree-sitter parse; workflows and pinned Actions;
-Rime Lua; and secret scanning. CI runs those checks and locked evaluation of
-both Home Manager profiles. Full builds require the manual `workflow_dispatch`
+`scripts/test_*.sh` regression suites; the Codex profile materializer,
+agent-directory migration, and `.gitmodules` formatter; native syntax for
+managed Fish and Zsh files; rclone event classification; guarded Rime host-file
+and ownership-state materialization; Zed settings materialization; Vim and
+Neovim secret-state exclusions; Emacs parentheses and Org lint for tracked Org
+files; a real Neovim Org Tree-sitter parse; workflows and pinned Actions; Rime
+Lua; and secret scanning. CI runs those checks and locked evaluation of both
+Home Manager profiles. Full builds require the manual `workflow_dispatch`
 `build_homes` input.
 
 That enumeration is a quick reference, not the source of truth — it can go stale
@@ -540,8 +540,11 @@ block) shows exactly what's declared right now. If the two ever disagree, trust
   `home-manager switch --flake .#$(whoami) --show-trace --no-update-lock-file`,
   because it changes the live profile. `./scripts/update.sh check` is the safe
   locked validation/build path; `apply` activates the existing lock after
-  validation; and `update`, the default mode, intentionally updates sources. Any
-  failed update, validation, or build step prevents activation.
+  validation; and `update`, the default mode, intentionally updates sources.
+  Successful activations report the Home Manager closure delta and any
+  repository shortlog; `--show-changes` also prints the committed range or,
+  without new commits, the staged diff; `--verbose` enables the same diff
+  output. Any failed update, validation, or build step prevents activation.
 - Don't conflate "not installed on this machine right now" with "doesn't exist"
   — check before either claiming a gap is permanent or recommending the user go
   find it elsewhere.

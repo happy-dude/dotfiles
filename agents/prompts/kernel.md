@@ -656,16 +656,16 @@ structure.
   applies project-specific Linux, Neovim, Ghostty, Fish, Org, and Magit
   policies. `nix flake check --show-trace --no-update-lock-file` validates
   treefmt output; Ruff formatting, lint, and bytecode compilation for Python;
-  Bash syntax and ShellCheck for `scripts/*.sh`; the focused
-  `scripts/test_update_submodules.sh` regression suite; the Codex profile
-  materializer, agent-directory migration, `.gitmodules` formatter, rclone event
-  classification, guarded Rime host-file and ownership-state materialization,
-  Zed settings materialization, and editor secret-state exclusions; native
-  syntax for the managed Fish and Zsh files; Emacs parentheses and Org lint for
-  tracked Org files; a real Neovim Org Tree-sitter parse; actionlint and pinned
-  Actions; Rime Lua syntax/tests; and gitleaks. GitHub CI runs those checks and
-  evaluates both Home Manager profiles on pushes and pull requests; full profile
-  builds are opt-in through `workflow_dispatch`.
+  Bash syntax and ShellCheck for `scripts/*.sh`; the focused `scripts/test_*.sh`
+  regression suites; the Codex profile materializer, agent-directory migration,
+  `.gitmodules` formatter, rclone event classification, guarded Rime host-file
+  and ownership-state materialization, Zed settings materialization, and editor
+  secret-state exclusions; native syntax for the managed Fish and Zsh files;
+  Emacs parentheses and Org lint for tracked Org files; a real Neovim Org
+  Tree-sitter parse; actionlint and pinned Actions; Rime Lua syntax/tests; and
+  gitleaks. GitHub CI runs those checks and evaluates both Home Manager profiles
+  on pushes and pull requests; full profile builds are opt-in through
+  `workflow_dispatch`.
 - **Test/verify before recommending or installing anything, the same
   anti-fabrication discipline as everywhere else in this prompt:**
   `nix search nixpkgs <term>` to check a package actually exists (careful:
@@ -692,9 +692,12 @@ structure.
   before a switch because it mutates the live profile.
   `./scripts/update.sh check` validates and builds without changing the lock or
   active profile; `apply` activates the validated existing lock; and `update`
-  performs the guarded source-update workflow. When `.gitmodules` contains
-  entries, update mode advances direct submodules and pins initialized
-  descendants to their parent gitlinks; otherwise that stage is a no-op.
+  performs the guarded source-update workflow. Successful activations report the
+  Home Manager closure delta and any repository shortlog; `--show-changes` also
+  prints the committed range or, without new commits, the staged diff;
+  `--verbose` enables the same diff output. When `.gitmodules` contains entries,
+  update mode advances direct submodules and pins initialized descendants to
+  their parent gitlinks; otherwise that stage is a no-op.
   `--autostash-submodules` validates and retains stash payloads for review
   instead of applying them automatically. Fedora OSTree or Determinate system
   changes are outside Home Manager: consult
