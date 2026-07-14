@@ -21,6 +21,7 @@
 ###     5. Run `nix flake update`
 ###     6. Validate the flake and build the Home Manager configuration
 ###     7. Optionally run `home-manager switch`
+###     8. Report the generation closure changes and repository shortlog
 ###
 ### Usage:
 ###     ./scripts/update.sh [options] [directory]
@@ -56,6 +57,7 @@ SKIP_NIX_FMT=0
 SKIP_NIX_FLAKE=0
 SKIP_HOME_MANAGER=0
 
+SHOW_CHANGES=0
 VERBOSE="${VERBOSE:-0}"
 
 REPO_DIR="."
@@ -71,6 +73,8 @@ SCRIPT_START_TS="$(date '+%Y-%m-%d %I:%M:%S %p %Z')"
 SECTION_LABELS=()
 SECTION_RESULTS=()
 SECTION_TIMES=()
+
+UPDATE_START_GIT_HEAD=""
 
 PLUM_DIR="${PLUM_DIR:-$HOME/plum}"
 RIME_FRONTEND="${RIME_FRONTEND:-fcitx5-rime}"
@@ -119,10 +123,14 @@ Options:
 
   General:
     --verbose
-        Enable verbose script output.
+        Enable verbose script output, including --show-changes.
 
     --quiet
         Reduce script output (default).
+
+    --show-changes
+        After activation, show the committed Git diff when HEAD advanced.
+        If HEAD is unchanged, show the staged diff when one exists.
 
     -h, --help
         Show this help.
@@ -161,7 +169,7 @@ Options:
 
 Environment:
   VERBOSE=1
-      Enable verbose output.
+      Enable verbose output, including --show-changes.
 
   VERBOSE=0
       Quiet output (default).
@@ -192,6 +200,12 @@ msg() {
 vmsg() {
   if [ "${VERBOSE:-0}" -eq 1 ]; then
     printf '%s\n' "$*"
+  fi
+}
+
+resolve_output_options() {
+  if [ "$VERBOSE" -eq 1 ]; then
+    SHOW_CHANGES=1
   fi
 }
 
@@ -359,8 +373,111 @@ run_validation() {
   run_home_manager_build || return
 }
 
+current_home_manager_generation() {
+  local profile
+
+  profile="${XDG_STATE_HOME:-$HOME/.local/state}/nix/profiles/home-manager"
+  [ -L "$profile" ] || return 1
+  readlink -f -- "$profile"
+}
+
+print_git_changes() {
+  local git_before="$1"
+  local git_after="$2"
+  local show_changes="$3"
+
+  [ "$show_changes" -eq 1 ] || return 1
+
+  if [ -n "$git_before" ] &&
+    [ -n "$git_after" ] &&
+    [ "$git_before" != "$git_after" ] &&
+    git cat-file -e "${git_before}^{commit}" 2>/dev/null &&
+    git cat-file -e "${git_after}^{commit}" 2>/dev/null; then
+    msg
+    msg "Committed Git changes:"
+    git --no-pager diff --no-ext-diff "${git_before}..${git_after}" --
+    return 0
+  fi
+
+  if ! git diff --cached --quiet --; then
+    msg
+    msg "Staged Git changes:"
+    git --no-pager diff --cached --no-ext-diff --
+    return 0
+  fi
+
+  msg
+  msg "No committed or staged Git changes to show."
+  return 1
+}
+
+print_generation_changelog() {
+  local generation_before="$1"
+  local generation_after="$2"
+  local git_before="$3"
+  local git_after="$4"
+  local show_changes="$5"
+  local shortlog=""
+  local reported=0
+
+  section_start "Home Manager generation changelog"
+
+  if [ -n "$generation_before" ] &&
+    [ -n "$generation_after" ] &&
+    [ "$generation_before" != "$generation_after" ]; then
+    printf 'Previous: %s\n' "$generation_before"
+    printf 'Current:  %s\n' "$generation_after"
+    msg
+    msg "Nix closure changes:"
+    if have nix; then
+      if ! nix store diff-closures "$generation_before" "$generation_after"; then
+        warn "Could not compare the Home Manager generation closures"
+      fi
+    else
+      warn "Cannot compare Home Manager generations (nix not found)"
+    fi
+    reported=1
+  elif [ -n "$generation_before" ] &&
+    [ "$generation_before" = "$generation_after" ]; then
+    msg "Home Manager generation is unchanged: $generation_after"
+  else
+    warn "Could not resolve both Home Manager generation paths"
+  fi
+
+  if [ -n "$git_before" ] &&
+    [ -n "$git_after" ] &&
+    [ "$git_before" != "$git_after" ] &&
+    git cat-file -e "${git_before}^{commit}" 2>/dev/null &&
+    git cat-file -e "${git_after}^{commit}" 2>/dev/null; then
+    if shortlog="$(
+      git shortlog --format='%h %s' --no-merges \
+        "${git_before}..${git_after}"
+    )" && [ -n "$shortlog" ]; then
+      msg
+      msg "Repository shortlog:"
+      printf '%s\n' "$shortlog"
+      reported=1
+    fi
+  fi
+
+  if print_git_changes "$git_before" "$git_after" "$show_changes"; then
+    reported=1
+  fi
+
+  if [ "$reported" -eq 1 ]; then
+    section_end "done"
+  else
+    section_end "skipped"
+  fi
+}
+
 run_home_manager_switch() {
   local status=0
+  local generation_before
+  local generation_after
+  local git_after
+
+  generation_before="$(current_home_manager_generation || true)"
 
   section_start "Running home-manager switch"
 
@@ -382,6 +499,15 @@ run_home_manager_switch() {
   fi
 
   section_end "done"
+
+  generation_after="$(current_home_manager_generation || true)"
+  git_after="$(git rev-parse --verify HEAD 2>/dev/null || true)"
+  print_generation_changelog \
+    "$generation_before" \
+    "$generation_after" \
+    "$UPDATE_START_GIT_HEAD" \
+    "$git_after" \
+    "$SHOW_CHANGES"
 }
 
 #--------------------------------------------------------------------------------------------------
@@ -776,6 +902,9 @@ while [ $# -gt 0 ]; do
   --quiet)
     VERBOSE=0
     ;;
+  --show-changes)
+    SHOW_CHANGES=1
+    ;;
   -h | --help)
     usage
     exit 0
@@ -820,6 +949,8 @@ while [ $# -gt 0 ]; do
   shift
 done
 
+resolve_output_options
+
 #--------------------------------------------------------------------------------------------------
 case "$RIME_SOURCE" in
 nix | plum)
@@ -853,6 +984,8 @@ fi
 if ! git rev-parse --git-dir >/dev/null 2>&1; then
   die "not a git repository"
 fi
+
+UPDATE_START_GIT_HEAD="$(git rev-parse --verify HEAD)"
 
 msg "=== Dotfiles $MODE ==="
 msg "Started at: $SCRIPT_START_TS"

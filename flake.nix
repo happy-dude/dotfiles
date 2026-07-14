@@ -662,7 +662,9 @@
             fi
           done
 
-          bash ${self}/scripts/test_update_submodules.sh
+          for test_script in ${self}/scripts/test_*.sh; do
+            bash "$test_script"
+          done
 
           touch "$out"
         '';
