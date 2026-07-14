@@ -223,6 +223,10 @@ never a narration of what you tried.)
 
 ## Working conventions
 
+- Keep documentation updates in commits separate from technical changes. When a
+  task needs both, commit the validated code, configuration, and tests first,
+  then make a documentation-only commit. Never mix documentation into the
+  technical commit or technical changes into the documentation commit.
 - When asking the user to run and return commands from a host, session,
   container, VM, Toolbox, or other environment you cannot access, collect all
   presently knowable safe read-only checks for that context into one wholesale,
