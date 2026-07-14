@@ -10,6 +10,41 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # treefmt-nix — one `nix fmt` that formats every language in the repo
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # neovim nightly overlay
+    # https://github.com/nix-community/neovim-nightly-overlay
+    neovim-nightly-overlay = {
+      url = "github:nix-community/neovim-nightly-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # ghostty
+    # https://ghostty.org/docs/install/binary#nix-flake
+    # https://github.com/ghostty-org/ghostty/blob/main/flake.nix
+    ghostty = {
+      url = "github:ghostty-org/ghostty";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Prezto includes Git submodules, which the flake lock records explicitly.
+    prezto = {
+      url = "git+https://github.com/sorin-ionescu/prezto?submodules=1";
+      flake = false;
+    };
+
+    # nixGL
+    # https://nix-community.github.io/home-manager/index.xhtml#sec-usage-gpu-non-nixos
+    # https://github.com/nix-community/nixGL
+    nixgl = {
+      url = "github:nix-community/nixGL";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # User-scoped declarative Flatpak management on worldmind.
     nix-flatpak = {
       url = "github:gmodena/nix-flatpak?ref=v0.7.0";
@@ -22,56 +57,9 @@
       inputs.home-manager.follows = "home-manager";
     };
 
-    # nixGL
-    # https://nix-community.github.io/home-manager/index.xhtml#sec-usage-gpu-non-nixos
-    # https://github.com/nix-community/nixGL
-    nixgl = {
-      url = "github:nix-community/nixGL";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # neovim nightly overlay
-    # https://github.com/nix-community/neovim-nightly-overlay
-    neovim-nightly-overlay = {
-      url = "github:nix-community/neovim-nightly-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # Rust toolchains with rustc-dev, used to build RustOwl.
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # Rolling source inputs consumed by local Nix modules.
-    roswell_src = {
-      url = "github:roswell/roswell";
-      flake = false;
-    };
-    virtme_ng_src = {
-      url = "github:arighi/virtme-ng";
-      flake = false;
-    };
-    bgutil_ytdlp_pot_provider = {
-      url = "github:Brainicism/bgutil-ytdlp-pot-provider";
-      flake = false;
-    };
-
-    rustowl_src = {
-      url = "github:cordx56/rustowl?ref=v0.4.0";
-      flake = false;
-    };
-    # ghostty
-    # https://ghostty.org/docs/install/binary#nix-flake
-    # https://github.com/ghostty-org/ghostty/blob/main/flake.nix
-    ghostty = {
-      url = "github:ghostty-org/ghostty";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # treefmt-nix — one `nix fmt` that formats every language in the repo
-    treefmt-nix = {
-      url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -97,6 +85,10 @@
       url = "github:rime/rime-jyutping";
       flake = false;
     };
+    rime_loengfan = {
+      url = "github:CanCLID/rime-loengfan";
+      flake = false;
+    };
     rime_luna_pinyin = {
       url = "github:rime/rime-luna-pinyin";
       flake = false;
@@ -111,16 +103,6 @@
     };
     rime_terra_pinyin = {
       url = "github:rime/rime-terra-pinyin";
-      flake = false;
-    };
-    rime_loengfan = {
-      url = "github:CanCLID/rime-loengfan";
-      flake = false;
-    };
-
-    # Prezto includes Git submodules, which the flake lock records explicitly.
-    prezto = {
-      url = "git+https://github.com/sorin-ionescu/prezto?submodules=1";
       flake = false;
     };
 
@@ -146,6 +128,12 @@
       flake = false;
     };
 
+    # Rolling source inputs consumed by local Nix modules.
+    bgutil_ytdlp_pot_provider = {
+      url = "github:Brainicism/bgutil-ytdlp-pot-provider";
+      flake = false;
+    };
+
     catppuccin_fcitx5 = {
       url = "github:catppuccin/fcitx5";
       flake = false;
@@ -153,6 +141,21 @@
 
     coc_zuban = {
       url = "github:yaegassy/coc-zuban";
+      flake = false;
+    };
+
+    roswell_src = {
+      url = "github:roswell/roswell";
+      flake = false;
+    };
+
+    virtme_ng_src = {
+      url = "github:arighi/virtme-ng";
+      flake = false;
+    };
+
+    rustowl_src = {
+      url = "github:cordx56/rustowl?ref=v0.4.0";
       flake = false;
     };
   };
