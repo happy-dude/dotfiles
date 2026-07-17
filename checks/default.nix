@@ -15,6 +15,7 @@ in
   // (import ./secrets.nix {inherit pkgs self;})
   // (import ./shell.nix {inherit pkgs self;})
   // (import ./workflow.nix {inherit pkgs self;})
+  // (import ../agents/check.nix {inherit pkgs;})
   // (import ../emacs/check.nix {inherit pkgs self;})
   // (import ../git/check.nix {inherit pkgs;})
   // (import ../rclone/check.nix {inherit pkgs;})
