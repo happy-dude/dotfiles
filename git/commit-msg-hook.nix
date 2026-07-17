@@ -36,6 +36,11 @@ in
         ${pkgs.lib.getExe commitMessageLinter} "$message_path"
       }
 
+      if [[ -x $local_hook && \
+        $(readlink -f "$local_hook") != $(readlink -f "$0") ]]; then
+        "$local_hook" "$message_path"
+      fi
+
       while ! lint_message; do
         if [[ ! -t 0 || ! -t 1 ]]; then
           printf 'correct the preserved message and retry: git commit --edit --file %q\n' \
@@ -45,10 +50,5 @@ in
         editor=$(git var GIT_EDITOR)
         sh -c "$editor \"\$1\"" sh "$message_path"
       done
-
-      if [[ -x $local_hook && \
-        $(readlink -f "$local_hook") != $(readlink -f "$0") ]]; then
-        exec "$local_hook" "$message_path"
-      fi
     '';
   }

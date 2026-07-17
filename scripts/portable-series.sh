@@ -26,6 +26,49 @@ validate_name() {
     die "invalid series name: $1"
 }
 
+reject_merge_commits() {
+  local worktree=$1
+  local base=$2
+  local merge_commits
+
+  merge_commits=$(
+    git -C "$worktree" rev-list --min-parents=2 "$base..HEAD"
+  )
+  [[ -z $merge_commits ]] || die "portable history contains merge commits"
+}
+
+validate_forbidden_pattern() {
+  local pattern=$1
+  local status
+
+  [[ -n $pattern ]] || return 0
+  if grep -Eq -- "$pattern" /dev/null; then
+    return 0
+  else
+    status=$?
+  fi
+  ((status == 1)) || die "invalid portable forbidden-content pattern"
+}
+
+scan_forbidden_content() {
+  local pattern=$1
+  local patch_path=$2
+  local status
+
+  [[ -n $pattern ]] || return 0
+  if grep -Eiq -- "$pattern" "$patch_path"; then
+    rm -f -- "$patch_path"
+    die "forbidden content found in portable patch"
+    return 1
+  else
+    status=$?
+  fi
+  if ((status != 1)); then
+    rm -f -- "$patch_path"
+    die "failed to scan portable patch for forbidden content"
+  fi
+}
+
 worktree_for_branch() {
   local wanted_ref=$1
   local current_worktree=
@@ -129,6 +172,7 @@ export_series() {
     die "portable branch is not based on current origin/main"
   count=$(git -C "$worktree" rev-list --count "$base..HEAD")
   ((count > 0)) || die "portable branch contains no commits"
+  reject_merge_commits "$worktree" "$base"
 
   if git -C "$worktree" log --format='%an <%ae>' "$base..HEAD" |
     grep -Ev '^Portable Dotfiles <portable@localhost>$'; then
@@ -148,13 +192,10 @@ export_series() {
       --no-out-link --no-update-lock-file
   )
 
+  validate_forbidden_pattern "${PORTABLE_FORBIDDEN_PATTERN:-}"
   git -C "$worktree" format-patch --stdout --base="$base" "$base..HEAD" \
     >"$patch_path"
-  if [[ -n ${PORTABLE_FORBIDDEN_PATTERN:-} ]] &&
-    grep -Eiq -- "$PORTABLE_FORBIDDEN_PATTERN" "$patch_path"; then
-    rm -f -- "$patch_path"
-    die "forbidden content found in portable patch"
-  fi
+  scan_forbidden_content "${PORTABLE_FORBIDDEN_PATTERN:-}" "$patch_path"
   patch_sha256=$(sha256sum "$patch_path" | cut -d ' ' -f 1)
 
   cat >"$manifest_path" <<EOF
@@ -180,24 +221,31 @@ EOF
     "Nothing was pushed. Transfer, review, and apply them on the destination computer."
 }
 
-command_name=${1:-}
-case $command_name in
-start)
-  (($# >= 2 && $# <= 3)) || {
+main() {
+  local command_name=${1:-}
+
+  case $command_name in
+  start)
+    (($# >= 2 && $# <= 3)) || {
+      usage
+      return 2
+    }
+    start_series "$2" "${3:-}"
+    ;;
+  export)
+    (($# >= 2 && $# <= 3)) || {
+      usage
+      return 2
+    }
+    export_series "$2" "${3:-}"
+    ;;
+  *)
     usage
-    exit 2
-  }
-  start_series "$2" "${3:-}"
-  ;;
-export)
-  (($# >= 2 && $# <= 3)) || {
-    usage
-    exit 2
-  }
-  export_series "$2" "${3:-}"
-  ;;
-*)
-  usage
-  exit 2
-  ;;
-esac
+    return 2
+    ;;
+  esac
+}
+
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+  main "$@"
+fi

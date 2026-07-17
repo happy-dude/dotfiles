@@ -16,6 +16,9 @@ in {
       git init --quiet
       cat >.git/hooks/commit-msg <<'EOF'
       #!${pkgs.bash}/bin/bash
+      if [[ ''${1##*/} == post-local-rewrite.md ]]; then
+        printf '%s\n' 'Local hook replaced the validated message' >"$1"
+      fi
       touch local-hook-ran
       EOF
       chmod 0755 .git/hooks/commit-msg
@@ -29,6 +32,12 @@ in {
       EOF
       commit-msg valid.md
       test -e local-hook-ran
+
+      cp valid.md post-local-rewrite.md
+      if commit-msg post-local-rewrite.md; then
+        echo "accepted a message invalidated by the repository-local hook" >&2
+        exit 1
+      fi
 
       cat >invalid-agent.md <<'EOF'
       Invalid agent subject
