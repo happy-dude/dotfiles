@@ -377,6 +377,7 @@
             ./gnome
             ./git
             ./nix
+            ./opencode
             ./rclone
             ./rime
             ./rime/gnome.nix
@@ -747,6 +748,52 @@
           test -e ${schanCheck}
           touch "$out"
         '';
+
+      opencode = let
+        stachan = mkHome {
+          username = "stachan";
+          desktop = "gnome";
+        };
+        schan = mkHome {
+          username = "schan";
+          desktop = "plasma";
+          nixPackage = null;
+        };
+        stachanConfig = stachan.config.xdg.configFile."opencode/opencode.json".source;
+        schanConfig = schan.config.xdg.configFile."opencode/opencode.json".source;
+      in
+        assert lib.elem pkgs.opencode stachan.config.home.packages;
+        assert lib.elem pkgs.opencode schan.config.home.packages;
+          pkgs.runCommand "dotfiles-opencode-check"
+          {
+            nativeBuildInputs = [
+              pkgs.jq
+              pkgs.opencode
+            ];
+          }
+          ''
+            export HOME="$PWD/home"
+            export XDG_CACHE_HOME="$HOME/.cache"
+            export XDG_CONFIG_HOME="$HOME/.config"
+            export XDG_DATA_HOME="$HOME/.local/share"
+            export XDG_STATE_HOME="$HOME/.local/state"
+            mkdir -p "$XDG_CONFIG_HOME/opencode"
+            cmp ${stachanConfig} ${schanConfig}
+            cp ${stachanConfig} "$XDG_CONFIG_HOME/opencode/opencode.json"
+
+            opencode debug config >resolved.json
+            jq -e '
+              .share == "disabled" and
+              .autoupdate == false and
+              .permission.bash == "ask" and
+              .permission.external_directory == "ask" and
+              (.model == null) and
+              (.enabled_providers == null) and
+              .agent.kernel.mode == "all" and
+              .agent.language.mode == "all"
+            ' resolved.json >/dev/null
+            touch "$out"
+          '';
 
       workflow =
         pkgs.runCommand "dotfiles-workflow-check"
