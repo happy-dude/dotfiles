@@ -626,10 +626,11 @@ structure.
   locked Nixpkgs.
 - **Agent prompt ownership:** `agents/prompts/{kernel,language}.md` are
   canonical for the full agents and profiles. Nix generates the Codex TOML
-  templates directly from their Markdown bodies and frontmatter; there are no
-  checked-in generated artifacts. `agents/codex.nix` owns generation support,
-  profile materialization, guarded agent-directory ownership migration, and
-  their focused checks. Home Manager keeps the immutable templates under
+  templates and OpenCode agent definitions directly from their Markdown bodies
+  and frontmatter; there are no checked-in generated artifacts.
+  `agents/codex.nix` owns Codex generation support, profile materialization,
+  guarded agent-directory ownership migration, and their focused checks. Home
+  Manager keeps the immutable Codex templates under
   `~/.local/share/codex/generated-profiles` and uses the materializer to create
   missing mode-0600 profiles or refresh generated keys when a template changes.
   Generated profiles retain readable multiline instructions and Codex's official
@@ -638,6 +639,15 @@ structure.
   independently maintained and live-linked for their smaller instruction budget.
   Activation requires real mode-0700 `~/.claude` and `~/.codex` directories;
   their session state and configuration remain writable and machine-local.
+- **OpenCode ownership:** `opencode/default.nix` owns the shared configuration,
+  TUI selection, and Gruvbox Material dark-medium theme; it disables session
+  sharing and telemetry export and loads optional host-only extensions from
+  mode-0600 `~/.config/opencode/local.json`. Private MCP definitions and
+  commands must stay outside Git and the Nix store. OpenCode discovers
+  compatible `~/.claude/skills/*/SKILL.md` files directly; do not copy
+  Codex-only system skills whose tools OpenCode does not provide. Treat OpenCode
+  permissions as approval gates, not process isolation, and never publish
+  resolved configuration because environment substitutions may reveal secrets.
 - **Machine-local secrets:** Fish may source `~/.config/fish/secrets.fish`, but
   the real file must remain untracked and outside the Nix store. The committed
   example contains placeholders only; install the private copy with mode `0600`.

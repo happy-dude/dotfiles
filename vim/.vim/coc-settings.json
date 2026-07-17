@@ -1,4 +1,7 @@
 {
+  "Lua.telemetry.enable": false,
+  "clangd.checkUpdates": false,
+  "clangd.path": "clangd",
   "coc.preferences.formatOnSaveFiletypes": [
     "c",
     "clojure",
@@ -28,16 +31,13 @@
     "yaml",
     "zig"
   ],
-  "clangd.checkUpdates": false,
-  "clangd.path": "clangd",
-  "rust-analyzer.server.path": "rust-analyzer",
-  "rust-analyzer.updates.checkOnStartup": false,
-  "rust-analyzer.updates.prompt": false,
+  "coc.source.around.filetypes": ["codecompanion"],
+  "coc.source.buffer.filetypes": ["codecompanion"],
+  "coc.source.file.filetypes": ["codecompanion"],
   "diagnostic.checkCurrentLine": true,
   "diagnostic.errorSign": ">>",
   "diagnostic.refreshAfterSave": true,
   "diagnostic.warningSign": "--",
-  "inlayHint.enableParameter": false,
   "git.addedSign.text": "++",
   "git.branchCharacter": ".\ue0a0",
   "git.changeRemovedSign.text": "\u2243\u2243",
@@ -48,21 +48,16 @@
   "git.stagedDecorator": "\u25cf\u25cf",
   "git.topRemovedSign.text": "\u203e\u203e",
   "git.untrackedDecorator": "\u2026\u2026",
-  "zuban.path": "zuban",
+  "inlayHint.enableParameter": false,
   "languageserver": {
     "bash-language-server": {
-      "command": "bash-language-server",
       "args": ["start"],
+      "command": "bash-language-server",
       "filetypes": ["sh"]
     },
-    "fish-lsp": {
-      "command": "fish-lsp",
-      "args": ["start"],
-      "filetypes": ["fish"]
-    },
     "clojure-lsp": {
-      "command": "clojure-lsp",
       "args": ["listen"],
+      "command": "clojure-lsp",
       "filetypes": ["clojure"],
       "rootPatterns": [
         "deps.edn",
@@ -73,71 +68,111 @@
         ".git"
       ]
     },
+    "eslint": {
+      "args": ["--stdio"],
+      "command": "vscode-eslint-language-server",
+      "filetypes": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact",
+        "vue"
+      ],
+      "rootPatterns": [
+        "eslint.config.js",
+        "eslint.config.mjs",
+        "eslint.config.cjs",
+        "eslint.config.ts",
+        "eslint.config.mts",
+        "eslint.config.cts",
+        ".eslintrc",
+        ".eslintrc.js",
+        ".eslintrc.cjs",
+        ".eslintrc.json",
+        ".eslintrc.yaml",
+        ".eslintrc.yml"
+      ],
+      "requireRootPattern": true
+    },
     "fennel-ls": {
-      "command": "fennel-ls",
       "args": ["--server"],
+      "command": "fennel-ls",
       "filetypes": ["fennel"],
       "rootPatterns": ["flsproject.fnl", ".git"]
     },
-    "texlab": {
-      "command": "texlab",
-      "filetypes": ["latex", "plaintex"],
-      "rootPatterns": [".latexmkrc", "latexmkrc", ".git"]
-    },
-    "tinymist": {
-      "command": "tinymist",
-      "args": ["lsp"],
-      "filetypes": ["typst"],
-      "rootPatterns": ["typst.toml", ".git"]
-    },
-    "json-language-server": {
-      "command": "vscode-json-language-server",
-      "args": ["--stdio"],
-      "filetypes": ["json", "jsonc"]
-    },
-    "marksman": {
-      "command": "marksman",
-      "args": ["server"],
-      "filetypes": ["markdown"],
-      "rootPatterns": [".marksman.toml", ".git"]
+    "fish-lsp": {
+      "args": ["start"],
+      "command": "fish-lsp",
+      "filetypes": ["fish"]
     },
     "golang": {
       "command": "gopls",
       "filetypes": ["go", "gomod", "gowork", "gotmpl"],
       "rootPatterns": ["go.work", "go.mod", ".git"]
     },
-    "typescript-language-server": {
-      "command": "typescript-language-server",
-      "args": ["--stdio"],
-      "filetypes": [
-        "javascript",
-        "javascriptreact",
-        "typescript",
-        "typescriptreact"
-      ],
-      "rootPatterns": ["package.json", "tsconfig.json", "jsconfig.json", ".git"]
+    "haskell-language-server": {
+      "args": ["--lsp"],
+      "command": "haskell-language-server-wrapper",
+      "filetypes": ["haskell", "lhaskell"],
+      "rootPatterns": [
+        "hie.yaml",
+        "cabal.project",
+        "stack.yaml",
+        "package.yaml",
+        ".git"
+      ]
     },
-    "ruff": {
-      "command": "ruff",
-      "args": ["server"],
-      "filetypes": ["python"],
-      "rootPatterns": ["pyproject.toml", "ruff.toml", ".ruff.toml", ".git"],
-      "disabledFeatures": ["hover"]
+    "json-language-server": {
+      "args": ["--stdio"],
+      "command": "vscode-json-language-server",
+      "filetypes": ["json", "jsonc"]
+    },
+    "kotlin-language-server": {
+      "command": "kotlin-language-server",
+      "filetypes": ["kotlin"],
+      "rootPatterns": [
+        "settings.gradle",
+        "settings.gradle.kts",
+        "build.gradle",
+        "build.gradle.kts",
+        "pom.xml",
+        ".git"
+      ]
     },
     "lua-language-server": {
       "command": "lua-language-server",
       "filetypes": ["lua"],
       "rootPatterns": [".luarc.json", ".luarc.jsonc", ".git"]
     },
-    "perl-navigator": {
-      "command": "perlnavigator",
-      "args": ["--stdio"],
-      "filetypes": ["perl"]
+    "marksman": {
+      "args": ["server"],
+      "command": "marksman",
+      "filetypes": ["markdown"],
+      "rootPatterns": [".marksman.toml", ".git"]
+    },
+    "nixd": {
+      "command": "nixd",
+      "filetypes": ["nix"],
+      "rootPatterns": ["flake.nix", ".git"]
+    },
+    "oxlint": {
+      "args": ["--lsp"],
+      "command": "oxlint",
+      "filetypes": [
+        "astro",
+        "javascript",
+        "javascriptreact",
+        "svelte",
+        "typescript",
+        "typescriptreact",
+        "vue"
+      ],
+      "rootPatterns": [".oxlintrc.json", ".oxlintrc.jsonc"],
+      "requireRootPattern": true
     },
     "perl-language-server": {
-      "command": "perl",
       "args": ["-MPerl::LanguageServer", "-e", "Perl::LanguageServer::run"],
-      "filetypes": ["perl"],
+      "command": "perl",
       "disabledFeatures": [
         "completion",
         "diagnostics",
@@ -148,27 +183,74 @@
         "formatting",
         "documentFormatting",
         "documentRangeFormatting"
-      ]
+      ],
+      "filetypes": ["perl"]
+    },
+    "perl-navigator": {
+      "args": ["--stdio"],
+      "command": "perlnavigator",
+      "filetypes": ["perl"]
+    },
+    "ruff": {
+      "args": ["server"],
+      "command": "ruff",
+      "disabledFeatures": ["hover"],
+      "filetypes": ["python"],
+      "rootPatterns": ["pyproject.toml", "ruff.toml", ".ruff.toml", ".git"]
+    },
+    "terraform-ls": {
+      "args": ["serve"],
+      "command": "terraform-ls",
+      "filetypes": ["terraform"],
+      "rootPatterns": [".terraform", ".git"]
+    },
+    "texlab": {
+      "command": "texlab",
+      "filetypes": ["latex", "plaintex"],
+      "rootPatterns": [".latexmkrc", "latexmkrc", ".git"]
+    },
+    "tinymist": {
+      "args": ["lsp"],
+      "command": "tinymist",
+      "filetypes": ["typst"],
+      "rootPatterns": ["typst.toml", ".git"]
+    },
+    "typescript-language-server": {
+      "args": ["--stdio"],
+      "command": "typescript-language-server",
+      "filetypes": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+      ],
+      "rootPatterns": ["package.json", "tsconfig.json", "jsconfig.json", ".git"]
+    },
+    "vim-language-server": {
+      "args": ["--stdio"],
+      "command": "vim-language-server",
+      "filetypes": ["vim"]
+    },
+    "yaml-language-server": {
+      "args": ["--stdio"],
+      "command": "yaml-language-server",
+      "filetypes": ["yaml"],
+      "rootPatterns": [".git"]
     },
     "zls": {
       "command": "zls",
       "filetypes": ["zig"],
       "rootPatterns": ["build.zig", "build.zig.zon", ".git"]
-    },
-    "vim-language-server": {
-      "command": "vim-language-server",
-      "args": ["--stdio"],
-      "filetypes": ["vim"]
     }
   },
   "markdownlint.onChange": false,
   "markdownlint.onOpen": false,
   "markdownlint.onSave": true,
-  "sumneko-lua.enable": false,
-  "Lua.telemetry.enable": false,
-  "workspace.ignoredFolders": ["$HOME", "$HOME/.cargo/**", "$HOME/.rustup/**"],
+  "rust-analyzer.server.path": "rust-analyzer",
+  "rust-analyzer.updates.checkOnStartup": false,
+  "rust-analyzer.updates.prompt": false,
   "suggest.autoTrigger": "always",
-  "coc.source.around.filetypes": ["codecompanion"],
-  "coc.source.buffer.filetypes": ["codecompanion"],
-  "coc.source.file.filetypes": ["codecompanion"]
+  "sumneko-lua.enable": false,
+  "workspace.ignoredFolders": ["$HOME", "$HOME/.cargo/**", "$HOME/.rustup/**"],
+  "zuban.path": "zuban"
 }

@@ -377,6 +377,7 @@
             ./gnome
             ./git
             ./nix
+            ./opencode
             ./rclone
             ./rime
             ./rime/gnome.nix
@@ -747,6 +748,8 @@
           test -e ${schanCheck}
           touch "$out"
         '';
+
+      opencode = import ./opencode/check.nix {inherit lib mkHome pkgs;};
 
       workflow =
         pkgs.runCommand "dotfiles-workflow-check"
