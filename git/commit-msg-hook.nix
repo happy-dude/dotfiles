@@ -28,9 +28,10 @@ in
       fi
 
       lint_message() {
-        local cleaned_message=
+        local cleaned_message
         local lint_status
-        local lint_target=$message_path
+        local normalized_message
+        local raw_errors
 
         if [[ $agent_assisted == true ]] &&
           ! grep -q '^Assisted-by:' "$message_path"; then
@@ -39,26 +40,46 @@ in
           return 1
         fi
 
+        cleaned_message=$(mktemp)
+        normalized_message=$(mktemp)
+        raw_errors=$(mktemp)
+
         if grep -Fq -- \
           '------------------------ >8 ------------------------' \
           "$message_path"; then
-          cleaned_message=$(mktemp)
           if ! awk \
             'index($0, "------------------------ >8 ------------------------") { exit } { print }' \
             "$message_path" | git stripspace --strip-comments \
             >"$cleaned_message"; then
-            rm -f -- "$cleaned_message"
+            rm -f -- "$cleaned_message" "$normalized_message" "$raw_errors"
             return 1
           fi
-          lint_target=$cleaned_message
+        elif ${pkgs.lib.getExe commitMessageLinter} "$message_path" \
+          >"$raw_errors" 2>&1; then
+          rm -f -- "$cleaned_message" "$normalized_message" "$raw_errors"
+          return 0
+        else
+          lint_status=$?
+          if ! git stripspace <"$message_path" >"$normalized_message" ||
+            ! git stripspace --strip-comments \
+              <"$message_path" >"$cleaned_message"; then
+            cat "$raw_errors" >&2
+            rm -f -- "$cleaned_message" "$normalized_message" "$raw_errors"
+            return "$lint_status"
+          fi
+          if cmp -s "$normalized_message" "$cleaned_message"; then
+            cat "$raw_errors" >&2
+            rm -f -- "$cleaned_message" "$normalized_message" "$raw_errors"
+            return "$lint_status"
+          fi
         fi
 
-        if ${pkgs.lib.getExe commitMessageLinter} "$lint_target"; then
+        if ${pkgs.lib.getExe commitMessageLinter} "$cleaned_message"; then
           lint_status=0
         else
           lint_status=$?
         fi
-        [[ -z $cleaned_message ]] || rm -f -- "$cleaned_message"
+        rm -f -- "$cleaned_message" "$normalized_message" "$raw_errors"
         return "$lint_status"
       }
 

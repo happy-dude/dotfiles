@@ -63,6 +63,29 @@ in {
       EOF
       commit-msg verbose.md
 
+      cat >merge-template.md <<'EOF'
+      Merge branch 'main' into macos
+
+      Signed-off-by: Example User <user@example.invalid>
+      # Please enter a commit message to explain why this merge is necessary,
+      # especially if it merges an updated upstream into a topic branch.
+      #
+      # Lines starting with '#' will be ignored, and an empty message aborts
+      # the commit.
+      EOF
+      commit-msg merge-template.md
+
+      git config core.commentChar ';'
+      cat >custom-comment-template.md <<'EOF'
+      git: clean a custom comment template
+
+      Keep the actual commit message.
+      ; Please enter the commit message for your changes.
+      ; Lines starting with ';' will be ignored.
+      EOF
+      commit-msg custom-comment-template.md
+      git config --unset core.commentChar
+
       cp valid.md post-local-rewrite.md
       if commit-msg post-local-rewrite.md; then
         echo "accepted a message invalidated by the repository-local hook" >&2
