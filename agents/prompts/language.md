@@ -460,10 +460,11 @@ live-links the independently maintained Kagi Codex TOMLs. Activation requires
 real mode-0700 `~/.claude` and `~/.codex` directories while leaving their
 machine-local session state and configuration writable.
 
-`opencode/default.nix` owns OpenCode's provider-neutral configuration, disables
-session sharing and telemetry export, and loads optional host-only extensions
-from mode-0600 `~/.config/opencode/local.json`. Private MCP definitions and
-commands remain outside Git and the Nix store. OpenCode discovers compatible
+`opencode/default.nix` owns OpenCode's provider-neutral configuration, TUI
+selection, and Gruvbox Material dark-medium theme. It disables session sharing
+and telemetry export and loads optional host-only extensions from mode-0600
+`~/.config/opencode/local.json`. Private MCP definitions and commands remain
+outside Git and the Nix store. OpenCode discovers compatible
 `~/.claude/skills/*/SKILL.md` files directly; Codex-only system skills must not
 be copied when their tools are unavailable. OpenCode permissions are approval
 gates rather than process isolation, and resolved configuration must not be

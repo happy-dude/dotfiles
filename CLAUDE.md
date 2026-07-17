@@ -204,9 +204,10 @@ and installs StyLua's config under `~/.config/stylua`.
   only from the OpenCode process, asks before shell commands and
   external-directory access, and reuses the canonical agent prompts. OpenCode
   permissions are approval gates rather than a security sandbox; use process
-  isolation for untrusted repositories. `OPENCODE_CONFIG` points to the optional
-  mode-0600 `~/.config/opencode/local.json` for private MCP definitions and
-  other host-only extensions. Machine-local commands belong under
+  isolation for untrusted repositories. The module also owns `tui.json` and the
+  shared Gruvbox Material dark-medium theme. `OPENCODE_CONFIG` points to the
+  optional mode-0600 `~/.config/opencode/local.json` for private MCP definitions
+  and other host-only extensions. Machine-local commands belong under
   `~/.config/opencode/commands`; OpenCode also discovers compatible skills from
   `~/.claude/skills` without copying them into this repository. Provider
   credentials and client-specific state remain outside generated Nix paths.

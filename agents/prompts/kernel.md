@@ -640,10 +640,11 @@ structure.
   Activation requires real mode-0700 `~/.claude` and `~/.codex` directories;
   their session state and configuration remain writable and machine-local.
 - **OpenCode ownership:** `opencode/default.nix` owns the shared configuration,
-  disables session sharing and telemetry export, and loads optional host-only
-  extensions from mode-0600 `~/.config/opencode/local.json`. Private MCP
-  definitions and commands must stay outside Git and the Nix store. OpenCode
-  discovers compatible `~/.claude/skills/*/SKILL.md` files directly; do not copy
+  TUI selection, and Gruvbox Material dark-medium theme; it disables session
+  sharing and telemetry export and loads optional host-only extensions from
+  mode-0600 `~/.config/opencode/local.json`. Private MCP definitions and
+  commands must stay outside Git and the Nix store. OpenCode discovers
+  compatible `~/.claude/skills/*/SKILL.md` files directly; do not copy
   Codex-only system skills whose tools OpenCode does not provide. Treat OpenCode
   permissions as approval gates, not process isolation, and never publish
   resolved configuration because environment substitutions may reveal secrets.
