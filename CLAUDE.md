@@ -200,10 +200,16 @@ and installs StyLua's config under `~/.config/stylua`.
   to mode `0700` while leaving their contents writable.
 - **`opencode/`** installs the Nix package for both Linux profiles and owns the
   global provider-neutral configuration. It disables self-updates and session
-  sharing, asks before shell commands and external-directory access, and reuses
-  the canonical agent prompts. OpenCode permissions are approval gates rather
-  than a security sandbox; use process isolation for untrusted repositories.
-  Provider credentials remain machine-local and outside generated Nix paths.
+  sharing, disables AI SDK telemetry, strips inherited OTLP exporter variables
+  only from the OpenCode process, asks before shell commands and
+  external-directory access, and reuses the canonical agent prompts. OpenCode
+  permissions are approval gates rather than a security sandbox; use process
+  isolation for untrusted repositories. `OPENCODE_CONFIG` points to the optional
+  mode-0600 `~/.config/opencode/local.json` for private MCP definitions and
+  other host-only extensions. Machine-local commands belong under
+  `~/.config/opencode/commands`; OpenCode also discovers compatible skills from
+  `~/.claude/skills` without copying them into this repository. Provider
+  credentials and client-specific state remain outside generated Nix paths.
   Resolved debug output may contain substituted credentials and must not be
   copied wholesale into logs or bug reports.
 - **`rclone/`** installs the pinned rclone client and schedules guarded bisync

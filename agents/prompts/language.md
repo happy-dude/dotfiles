@@ -446,19 +446,28 @@ Every tool above (`opencc`, `translate-shell`, `sdcv`, `dict`, `tesseract5`,
 `Aspell spellcheck-backed word validation for Esperanto/Italian/Polish/Spanish`.
 That file is the authoritative Home Manager configuration for this machine;
 `~/dotfiles/CLAUDE.md` documents the full repository layout. The full `kernel`
-and `language` Markdown prompts are canonical for their Codex agents and
-profiles; Nix generates the TOML templates directly from their bodies and
-frontmatter without checked-in generated artifacts. `agents/codex.nix` owns the
-supporting materializer, guarded agent-directory ownership migration, and
-focused checks. Home Manager stores immutable templates under
-`~/.local/share/codex/generated-profiles` and merges their generated keys into
-writable mode-0600 profiles only when templates change or profiles are missing.
-Profiles retain readable multiline instructions and Codex's official
-`config.toml` schema directive. Machine-local project trust, TUI state, and
-other runtime keys survive the merge. Home Manager also live-links the
-independently maintained Kagi Codex TOMLs. Activation requires real mode-0700
-`~/.claude` and `~/.codex` directories while leaving their machine-local session
-state and configuration writable.
+and `language` Markdown prompts are canonical for their Codex and OpenCode
+agents; Nix generates the Codex TOML templates and OpenCode definitions directly
+from their bodies and frontmatter without checked-in generated artifacts.
+`agents/codex.nix` owns the supporting Codex materializer, guarded
+agent-directory ownership migration, and focused checks. Home Manager stores
+immutable Codex templates under `~/.local/share/codex/generated-profiles` and
+merges their generated keys into writable mode-0600 profiles only when templates
+change or profiles are missing. Profiles retain readable multiline instructions
+and Codex's official `config.toml` schema directive. Machine-local project
+trust, TUI state, and other runtime keys survive the merge. Home Manager also
+live-links the independently maintained Kagi Codex TOMLs. Activation requires
+real mode-0700 `~/.claude` and `~/.codex` directories while leaving their
+machine-local session state and configuration writable.
+
+`opencode/default.nix` owns OpenCode's provider-neutral configuration, disables
+session sharing and telemetry export, and loads optional host-only extensions
+from mode-0600 `~/.config/opencode/local.json`. Private MCP definitions and
+commands remain outside Git and the Nix store. OpenCode discovers compatible
+`~/.claude/skills/*/SKILL.md` files directly; Codex-only system skills must not
+be copied when their tools are unavailable. OpenCode permissions are approval
+gates rather than process isolation, and resolved configuration must not be
+published because environment substitutions may expose credentials.
 
 Vim, Neovim, and their plugins are locked Nix packages. Shared, Vim-only, and
 Neovim-only plugin lists use native package support; there is no vim-plug
