@@ -6,6 +6,17 @@
 }: let
   prompts = import ../agents/prompts.nix {inherit lib;};
   json = pkgs.formats.json {};
+  opencode = pkgs.symlinkJoin {
+    name = "opencode-no-telemetry-${pkgs.opencode.version}";
+    paths = [pkgs.opencode];
+    nativeBuildInputs = [pkgs.makeWrapper];
+    postBuild = ''
+      wrapProgram "$out/bin/opencode" \
+        --unset OTEL_EXPORTER_OTLP_ENDPOINT \
+        --unset OTEL_EXPORTER_OTLP_HEADERS \
+        --unset OTEL_RESOURCE_ATTRIBUTES
+    '';
+  };
   settings = {
     "$schema" = "https://opencode.ai/config.json";
     autoupdate = false;
@@ -58,6 +69,7 @@
       };
     };
     share = "disabled";
+    experimental.openTelemetry = false;
     permission = {
       bash = "ask";
       edit = "allow";
@@ -73,7 +85,7 @@
       prompts;
   };
 in {
-  home.packages = [pkgs.opencode];
+  home.packages = [opencode];
   home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD = "true";
   home.sessionVariables.OPENCODE_CONFIG = "${config.xdg.configHome}/opencode/local.json";
   xdg.configFile."opencode/opencode.json".source =

@@ -773,37 +773,60 @@
           vscode-langservers-extracted
           yaml-language-server
         ];
+        stachanPackage =
+          lib.findFirst (
+            package: lib.hasPrefix "opencode-no-telemetry-" package.name
+          )
+          null
+          stachan.config.home.packages;
+        schanPackage =
+          lib.findFirst (
+            package: lib.hasPrefix "opencode-no-telemetry-" package.name
+          )
+          null
+          schan.config.home.packages;
       in
-        assert lib.elem pkgs.opencode stachan.config.home.packages;
-        assert lib.elem pkgs.opencode schan.config.home.packages;
         assert lib.all (package: lib.elem package stachan.config.home.packages) languageServerPackages;
         assert lib.all (package: lib.elem package schan.config.home.packages) languageServerPackages;
         assert stachan.config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD == "true";
         assert schan.config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD == "true";
+        assert stachanPackage != null;
+        assert schanPackage != null;
         assert stachan.config.home.sessionVariables.OPENCODE_CONFIG == "/home/stachan/.config/opencode/local.json";
         assert schan.config.home.sessionVariables.OPENCODE_CONFIG == "/home/schan/.config/opencode/local.json";
           pkgs.runCommand "dotfiles-opencode-check"
           {
             nativeBuildInputs = [
               pkgs.jq
-              pkgs.opencode
+              stachanPackage
             ];
           }
           ''
             export HOME="$PWD/home"
             export OPENCODE_CONFIG="$HOME/.config/opencode/local.json"
+            export OTEL_EXPORTER_OTLP_ENDPOINT=https://telemetry.invalid
+            export OTEL_EXPORTER_OTLP_HEADERS=authorization=test-only
+            export OTEL_RESOURCE_ATTRIBUTES=service.namespace=dotfiles-test
             export XDG_CACHE_HOME="$HOME/.cache"
             export XDG_CONFIG_HOME="$HOME/.config"
             export XDG_DATA_HOME="$HOME/.local/share"
             export XDG_STATE_HOME="$HOME/.local/state"
             mkdir -p "$XDG_CONFIG_HOME/opencode"
+            grep -F 'unset OTEL_EXPORTER_OTLP_ENDPOINT' \
+              "$(command -v opencode)"
+            grep -F 'unset OTEL_EXPORTER_OTLP_HEADERS' \
+              "$(command -v opencode)"
+            grep -F 'unset OTEL_RESOURCE_ATTRIBUTES' \
+              "$(command -v opencode)"
             cmp ${stachanConfig} ${schanConfig}
-            cp ${stachanConfig} "$XDG_CONFIG_HOME/opencode/opencode.json"
+            install -m 0600 ${stachanConfig} \
+              "$XDG_CONFIG_HOME/opencode/opencode.json"
 
             opencode debug config >resolved.json
             jq -e '
               .share == "disabled" and
               .autoupdate == false and
+              .experimental.openTelemetry == false and
               .permission.bash == "ask" and
               .permission.external_directory == "ask" and
               .permission.lsp == "allow" and
