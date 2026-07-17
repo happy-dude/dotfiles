@@ -99,11 +99,12 @@ checkout is the Linux branch.
   symlinks for the repo-root `.clang-format`, `.editorconfig`, and
   `.golangci.yml`. The same module installs `.stylua.toml` as
   `~/.config/stylua/stylua.toml` and `gdb/gdbinit` as `~/.config/gdb/gdbinit`.
-  It installs the low-priority ncurses runtime database alongside `ncurses.dev`;
-  Ghostty's terminal-specific entry wins path collisions. Change `stateVersion`
-  only after reviewing and applying every intervening Home Manager migration.
-  The global gitignore is handled in the git module via `programs.git.ignores`,
-  not a `home.file`.
+  Its shared package list includes `lazygit` and the Nix-managed language
+  tooling used by CoC and OpenCode. It installs the low-priority ncurses runtime
+  database alongside `ncurses.dev`; Ghostty's terminal-specific entry wins path
+  collisions. Change `stateVersion` only after reviewing and applying every
+  intervening Home Manager migration. The global gitignore is handled in the git
+  module via `programs.git.ignores`, not a `home.file`.
 - Feature modules live in their own subdirectories, each as a `default.nix`
   imported from `flake.nix`'s `modules` list: `aerc/`, `agents/`, `bat/`,
   `emacs/`, `fish/`, `fonts/`, `fzf/`, `ghostty/`, `gnome/`, `git/`, `nix/`,
@@ -204,15 +205,20 @@ and installs StyLua's config under `~/.config/stylua`.
   only from the OpenCode process, asks before shell commands and
   external-directory access, and reuses the canonical agent prompts. OpenCode
   permissions are approval gates rather than a security sandbox; use process
-  isolation for untrusted repositories. The module also owns `tui.json` and the
+  isolation for untrusted repositories. Its project-aware LSP activation uses
+  Nix-managed commands for explicit server definitions, pins the Nix-managed
+  TypeScript server path, disables overlapping Oxlint diagnostics, and sets
+  `OPENCODE_DISABLE_LSP_DOWNLOAD=true`. The module also owns `tui.json` and the
   shared Gruvbox Material dark-medium theme. `OPENCODE_CONFIG` points to the
   optional mode-0600 `~/.config/opencode/local.json` for private MCP definitions
   and other host-only extensions. Machine-local commands belong under
   `~/.config/opencode/commands`; OpenCode also discovers compatible skills from
   `~/.claude/skills` without copying them into this repository. Provider
   credentials and client-specific state remain outside generated Nix paths.
-  Resolved debug output may contain substituted credentials and must not be
-  copied wholesale into logs or bug reports.
+  `opencode/check.nix` owns the focused package, LSP, schema, theme, and
+  telemetry checks; `flake.nix` only imports that check. Resolved debug output
+  may contain substituted credentials and must not be copied wholesale into logs
+  or bug reports.
 - **`rclone/`** installs the pinned rclone client and schedules guarded bisync
   between `~/org` and `box:org`. A recursive inotify watcher batches local
   changes five minutes after the first event; a 15-minute timer catches remote
@@ -332,14 +338,15 @@ focused `scripts/test_*.sh` regression suites; native syntax checks for the
 managed Fish and Zsh files; focused tests for the Codex profile materializer,
 agent-directory ownership migration, `.gitmodules` formatter, rclone event
 classification, guarded Rime host-file and ownership-state materialization, Zed
-settings materialization, and editor secret-state exclusions; Emacs
-`check-parens` and Org lint for tracked Org files; GitHub Actions syntax and
-pinned action revisions; a real Neovim Org Tree-sitter parse against the
-evaluated Home Manager runtime; Rime Lua syntax and focused tests; and gitleaks
-secret scanning. CI runs those checks and evaluates both Home Manager
-configurations on pushes and pull requests. Full builds of both configurations
-are opt-in through the `workflow_dispatch` `build_homes` input because builds
-are substantially more expensive than evaluation.
+settings materialization, focused OpenCode package/LSP/schema/theme/telemetry
+checks, and editor secret-state exclusions; Emacs `check-parens` and Org lint
+for tracked Org files; GitHub Actions syntax and pinned action revisions; a real
+Neovim Org Tree-sitter parse against the evaluated Home Manager runtime; Rime
+Lua syntax and focused tests; and gitleaks secret scanning. CI runs those checks
+and evaluates both Home Manager configurations on pushes and pull requests. Full
+builds of both configurations are opt-in through the `workflow_dispatch`
+`build_homes` input because builds are substantially more expensive than
+evaluation.
 
 ### Zed / agent config
 
@@ -462,6 +469,12 @@ source.
   not run after an earlier failure. Do not use `exit` in commands intended for
   an interactive shell; use a function with `return`, or another construct that
   reports failure without terminating the user's session.
+- In Zsh, lowercase `path` is a special array tied to scalar `PATH`; never use
+  it as a scratch variable because assigning it changes command lookup. Use a
+  descriptive name such as `candidate_path`. When discovery differs between
+  sessions, reproduce it in a fresh instance of the target shell with matching
+  login and interactive startup behavior before attributing the result to a
+  cache.
 
 - Never ask the user to copy and paste base64-encoded executable content. If a
   script is too large to present normally, write it to a real file in an agreed
@@ -550,8 +563,11 @@ source.
   parsers and queries under `~/.local/share/nvim/site` and owns the stable
   TypeScript SDK link under `~/.local/share/nix-typescript`; Home Manager
   provides every formatter and language-server command.
-  `vim/.vim/coc-settings.json` is the authoritative server and format-on-save
-  matrix, including C/C++, Rust, Go, Zig, Perl, Python, Lua, shell, Fish,
-  Clojure, Fennel, JavaScript, TypeScript, Markdown, LaTeX, and Typst. Do not
-  run `:TSUpdate`, `:GoUpdateBinaries`, `:GoInstallBinaries`, vim-plug, or
-  mutable CoC extension updates.
+  `vim/.vim/coc-settings.json` is the authoritative, sorted language-server and
+  format-on-save matrix. Keep object keys sorted while preserving semantic
+  precedence within lists such as `rootPatterns`. The matrix covers C/C++, Rust,
+  Go, Zig, Perl, Python, Lua, shell, Fish, Clojure, Fennel, Nix, YAML,
+  JavaScript/TypeScript, Kotlin, Haskell, Terraform, Markdown, LaTeX, and Typst,
+  with project-gated ESLint and Oxlint integrations. Do not run `:TSUpdate`,
+  `:GoUpdateBinaries`, `:GoInstallBinaries`, vim-plug, or mutable CoC extension
+  updates.
