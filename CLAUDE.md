@@ -107,10 +107,11 @@ checkout is the Linux branch.
 - Feature modules live in their own subdirectories, each as a `default.nix`
   imported from `flake.nix`'s `modules` list: `aerc/`, `agents/`, `bat/`,
   `emacs/`, `fish/`, `fonts/`, `fzf/`, `ghostty/`, `gnome/`, `git/`, `nix/`,
-  `rclone/`, `rime/`, `rustowl/`, `tldr/`, `tmux/`, `vim/`, `wezterm/`, `xdg/`,
-  `yt-dlp/`, `zed/`, `zsh/`. The desktop-specific `rime/gnome.nix` module is
-  imported separately. Adding a new app otherwise means creating
-  `<app>/default.nix` and adding it to the `modules` list in `flake.nix`.
+  `opencode/`, `rclone/`, `rime/`, `rustowl/`, `tldr/`, `tmux/`, `vim/`,
+  `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`, `zsh/`. The desktop-specific
+  `rime/gnome.nix` module is imported separately. Adding a new app otherwise
+  means creating `<app>/default.nix` and adding it to the `modules` list in
+  `flake.nix`.
 - `flatpak/` and `plasma/` are host-conditional modules: `mkHome` imports them
   with the external nix-flatpak and plasma-manager modules only for `schan`.
 - The formatter is **treefmt** (`treefmt-nix`, run via `nix fmt`): the Linux
@@ -182,8 +183,8 @@ and installs StyLua's config under `~/.config/stylua`.
   while preserving runtime-only keys. On `stachan`, `programs.zed-editor`
   retains the normal host target at `~/.config/zed/settings.json`.
 - **`agents/`** holds canonical `kernel` and `language` prompts. Nix reads their
-  Markdown bodies and frontmatter to generate the corresponding Codex custom
-  agents and profile templates without checked-in generated artifacts.
+  Markdown bodies and frontmatter to generate corresponding Codex and OpenCode
+  agents without checked-in generated artifacts, plus Codex profile templates.
   `agents/codex.nix` owns the profile materializer, the guarded agent-directory
   ownership migration, and their focused checks. Home Manager stores the
   immutable templates under `~/.local/share/codex/generated-profiles` and uses a
@@ -197,6 +198,14 @@ and installs StyLua's config under `~/.config/stylua`.
   project trust remain machine-local and must never be committed. Activation
   requires `~/.claude` and `~/.codex` to be real directories and restricts them
   to mode `0700` while leaving their contents writable.
+- **`opencode/`** installs the Nix package for both Linux profiles and owns the
+  global provider-neutral configuration. It disables self-updates and session
+  sharing, asks before shell commands and external-directory access, and reuses
+  the canonical agent prompts. OpenCode permissions are approval gates rather
+  than a security sandbox; use process isolation for untrusted repositories.
+  Provider credentials remain machine-local and outside generated Nix paths.
+  Resolved debug output may contain substituted credentials and must not be
+  copied wholesale into logs or bug reports.
 - **`rclone/`** installs the pinned rclone client and schedules guarded bisync
   between `~/org` and `box:org`. A recursive inotify watcher batches local
   changes five minutes after the first event; a 15-minute timer catches remote
