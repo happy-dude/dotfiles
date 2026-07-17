@@ -236,8 +236,8 @@ could check X" as "let me check X" by default:
   prose never exceeds 80 characters; trailers, URLs, code, paths, and other
   unbreakable text are exempt. Before committing through Claude Code, Codex, or
   OpenCode, run `scripts/lint_commit_message.py <message-file>`. The managed
-  global `commit-msg` hook applies the same policy to messages containing an
-  `Assisted-by:` trailer. See
+  global `commit-msg` hook applies the same policy to every commit and preserves
+  any initial `Assisted-by:` trailer. See
   <https://www.kernel.org/doc/html/latest/process/submitting-patches.html>.
 
 ## Verification trail
@@ -619,12 +619,12 @@ structure.
   remains live through `mkOutOfStoreSymlink`. The global gitignore is
   `git/.gitignore_global`; machine identity and signing remain in untracked
   `~/.config/git/local.config`. A managed global `commit-msg` dispatcher
-  preserves repository-local hooks and lints messages carrying an `Assisted-by:`
-  trailer. Plasma's captured panel declaration remains disabled because enabling
-  high-level panel management deletes and rebuilds
-  `plasma-org.kde.plasma.desktop-appletsrc` when the declaration changes.
-  Display topology, generated IDs, wallpaper, and session history remain
-  unmanaged.
+  preserves repository-local hooks, lints every commit, and requires an
+  initially present `Assisted-by:` trailer to remain. Plasma's captured panel
+  declaration remains disabled because enabling high-level panel management
+  deletes and rebuilds `plasma-org.kde.plasma.desktop-appletsrc` when the
+  declaration changes. Display topology, generated IDs, wallpaper, and session
+  history remain unmanaged.
 - **Editor ownership:** Vim, Neovim, and their plugins are locked Nix packages;
   shared, Vim-only, and Neovim-only plugin lists live in `vim/default.nix` and
   use native package support. That module also owns source-pinned CoC Zuban and

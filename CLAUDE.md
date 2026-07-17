@@ -169,13 +169,13 @@ and installs StyLua's config under `~/.config/stylua`.
   defines aliases, delta for diffs and bat as its pager, and
   `programs.git.ignores` reading `git/.gitignore_global` (the single global
   gitignore, which also holds repo ignores like `result`, `/.claude/`). A
-  managed global `commit-msg` dispatcher preserves repository-local hooks and
-  lints messages carrying an `Assisted-by:` trailer. Per-machine identity and
-  signing (`user.email`, `signingkey`, `commit`/`tag` `gpgsign`) live in an
-  untracked `~/.config/git/local.config` that the module `include`s — SSH/GPG
-  keys and email differ per box; template in `git/local.config.example`. Home
-  Manager writes `~/.config/git/config`, which an unmanaged `~/.gitconfig`
-  silently overrides (git reads it last).
+  managed global `commit-msg` dispatcher preserves repository-local hooks, lints
+  every commit, and requires an initially present `Assisted-by:` trailer to
+  remain. Per-machine identity and signing (`user.email`, `signingkey`,
+  `commit`/`tag` `gpgsign`) live in an untracked `~/.config/git/local.config`
+  that the module `include`s — SSH/GPG keys and email differ per box; template
+  in `git/local.config.example`. Home Manager writes `~/.config/git/config`,
+  which an unmanaged `~/.gitconfig` silently overrides (git reads it last).
 - **`xdg/`** owns generic-Linux XDG integration plus the nixGL-wrapped Solaar
   package and its `schan`-only autostart entry.
 
@@ -539,8 +539,8 @@ source.
   prose never exceeds 80 characters; trailers, URLs, code, paths, and other
   unbreakable text are exempt. Before committing through Claude Code, Codex, or
   OpenCode, run `scripts/lint_commit_message.py <message-file>`. The managed
-  global `commit-msg` hook enforces this policy whenever an `Assisted-by:`
-  trailer is present. See
+  global `commit-msg` hook enforces this policy for every commit and preserves
+  any initial `Assisted-by:` trailer. See
   <https://www.kernel.org/doc/html/latest/process/submitting-patches.html>.
 - Prefer adding packages to `home.nix`'s `home.packages` list (or to a module's
   `default.nix`) over installing system-wide. Resolve binary collisions

@@ -253,8 +253,8 @@ never a narration of what you tried.)
   prose never exceeds 80 characters; trailers and unbreakable tokens are exempt.
   Before committing through Claude Code, Codex, or OpenCode, run
   `scripts/lint_commit_message.py <message-file>`; the managed global
-  `commit-msg` hook enforces the same policy for messages with an `Assisted-by:`
-  trailer. See
+  `commit-msg` hook enforces the same policy for every commit and preserves any
+  initial `Assisted-by:` trailer. See
   <https://www.kernel.org/doc/html/latest/process/submitting-patches.html>.
 - Never ask the user to copy and paste base64-encoded executable content. If a
   script is too large to present normally, write it to a real file in an agreed
