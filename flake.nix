@@ -179,7 +179,6 @@
         ghostty.overlays.default
       ];
     };
-    codex = import ./agents/codex.nix {inherit pkgs;};
     # Build a Home Manager config for a user, desktop, and Rime deployment.
     # The username determines /home/<username>; desktop selects session
     # integration; rimeDeployment selects Nix or legacy Stow file management.
@@ -254,104 +253,14 @@
     treefmtConfig = import ./treefmt.nix {
       inherit pkgs self treefmt-nix;
     };
-    subsystemChecks =
-      (import ./emacs/check.nix {inherit pkgs self;})
-      // (import ./rclone/check.nix {inherit pkgs;})
-      // (import ./rime/check.nix {inherit pkgs;})
-      // (import ./vim/check.nix {inherit homes pkgs;})
-      // (import ./zed/check.nix {inherit pkgs;})
-      // {
-        opencode = import ./opencode/check.nix {inherit homes lib pkgs;};
-      };
+    checksConfig = import ./checks {
+      inherit homes lib pkgs self;
+    };
   in {
     homeConfigurations = homes;
     packages.${system}.home-manager = home-manager.packages.${system}.home-manager;
     formatter.${system} = treefmtConfig.formatter;
 
-    checks.${system} =
-      treefmtConfig.checks
-      // subsystemChecks
-      // {
-        codex-profile-materializer = codex.checks.profileMaterializer;
-        codex-agent-directory-migration = codex.checks.agentDirectoryMigration;
-        python =
-          pkgs.runCommand "dotfiles-python-checks"
-          {
-            nativeBuildInputs = [
-              pkgs.python3
-              pkgs.ruff
-            ];
-          }
-          ''
-            ruff format --check --no-cache ${self}
-            ruff check --no-cache ${self}
-            PYTHONPYCACHEPREFIX="$TMPDIR/pycache" \
-              python3 -m compileall -q ${self}
-            touch "$out"
-          '';
-        scripts =
-          pkgs.runCommand "dotfiles-script-checks"
-          {
-            nativeBuildInputs = [
-              pkgs.bash
-              pkgs.fish
-              pkgs.git
-              pkgs.shellcheck
-              pkgs.zsh
-            ];
-          }
-          ''
-            for script in ${self}/scripts/*.sh; do
-              bash -n "$script"
-              shellcheck -x -a "$script"
-            done
-
-            for script in ${self}/fish/.config/fish/*.fish ${self}/fish/.config/fish/*.fish.example; do
-              fish --no-execute "$script"
-            done
-
-            for script in ${self}/zsh/.zshenv ${self}/zsh/.config/zsh/.z*; do
-              if [ -f "$script" ]; then
-                zsh -n "$script"
-              fi
-            done
-
-            for test_script in ${self}/scripts/test_*.sh; do
-              bash "$test_script"
-            done
-
-            touch "$out"
-          '';
-
-        workflow =
-          pkgs.runCommand "dotfiles-workflow-check"
-          {
-            nativeBuildInputs = [
-              pkgs.actionlint
-              pkgs.findutils
-              pkgs.pinact
-            ];
-          }
-          ''
-            find ${self}/.github/workflows -type f \
-              \( -name '*.yml' -o -name '*.yaml' \) \
-              -exec actionlint {} +
-
-            cd ${self}
-            pinact run --check
-
-            touch "$out"
-          '';
-
-        secrets =
-          pkgs.runCommand "dotfiles-secret-scan"
-          {
-            nativeBuildInputs = [pkgs.gitleaks];
-          }
-          ''
-            gitleaks dir --no-banner --no-color --redact ${self}
-            touch "$out"
-          '';
-      };
+    checks.${system} = treefmtConfig.checks // checksConfig;
   };
 }
