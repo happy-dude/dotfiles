@@ -100,6 +100,7 @@
       inxi
       jq
       kotlin-language-server
+      lazygit
       less
       libgcc
       libtool
