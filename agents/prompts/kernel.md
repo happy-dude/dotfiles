@@ -226,10 +226,16 @@ could check X" as "let me check X" by default:
   task needs both, commit the validated code, configuration, and tests first,
   then make a documentation-only commit. Never mix documentation into the
   technical commit or technical changes into the documentation commit.
-- Keep commit and patch subjects at 72 characters or fewer. Wrap message prose
-  at 72 columns where practical and never exceed 80 columns; trailers, URLs,
-  code, paths, and other unbreakable text are exempt. Markdown prose follows the
-  repository's `.editorconfig` ceiling.
+- Follow the Linux kernel's commit-message conventions: one logical change per
+  commit, an imperative `subsystem: summary` subject of at most 72 characters,
+  and a self-contained body that explains the problem or ownership constraint
+  before the implementation. Commit messages are valid Markdown and ordinary
+  prose never exceeds 80 characters; trailers, URLs, code, paths, and other
+  unbreakable text are exempt. Before committing through Claude Code, Codex, or
+  OpenCode, run `scripts/lint_commit_message.py <message-file>`. The managed
+  global `commit-msg` hook applies the same policy to messages containing an
+  `Assisted-by:` trailer. See
+  <https://www.kernel.org/doc/html/latest/process/submitting-patches.html>.
 
 ## Verification trail
 
@@ -575,64 +581,71 @@ structure.
   recommend `nixos-rebuild`. `home.nix` holds shared packages; imported modules
   include `aerc/`, `agents/`, `bat/`, `emacs/`, `fish/`, `fonts/`, `fzf/`,
   `ghostty/`, `gnome/`, `git/`, `nix/`, `opencode/`, `rclone/`, `rime/`,
-  `rime/gnome.nix`, `rustowl/`, `tldr/`, `tmux/`, `vim/`, `wezterm/`, `xdg/`,
-  `yt-dlp/`, `zed/`, and `zsh/`. The shared package list includes `lazygit` and
-  the Nix-managed language tooling used by CoC and OpenCode. For `schan` only,
-  `mkHome` also imports the external `nix-flatpak` and `plasma-manager` modules
-  with `flatpak/` and `plasma/`. The shared `home.stateVersion = "26.11"` is a
-  compatibility floor, not the installed Home Manager version.
+  `rime/gnome.nix`, `roswell/`, `rustowl/`, `tldr/`, `tmux/`, `vim/`,
+  `virtme-ng/`, `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`, and `zsh/`. The shared
+  package list includes `lazygit` and the Nix-managed language tooling used by
+  CoC and OpenCode. For `schan` only, `mkHome` also imports the external
+  `nix-flatpak` and `plasma-manager` modules with `flatpak/` and `plasma/`. The
+  shared `home.stateVersion = "26.11"` is a compatibility floor, not the
+  installed Home Manager version. `flake.nix` is composition-only: it declares
+  inputs and external overlays, composes both profiles once, and exposes
+  formatter and check sets imported from `treefmt.nix`, `checks/default.nix`,
+  and focused owner `check.nix` files.
 - **Ownership and sources:** Home Manager owns Linux configuration except for
   the intentionally deferred `ssh/.ssh/config`. `gdb/gdbinit` is linked to
   `~/.config/gdb/gdbinit`; the Emacs module links its init file under
   `~/.config/emacs`, links Org directory-local settings, and creates mutable
   `~/org/Archive` and `~/org/roam` directories. Emacs Custom writes to the
   machine-local `~/.config/emacs/custom.el` instead of the immutable init file.
-  Roswell and SLIME are Nix-installed without copied helpers or a standalone
-  `ros_swank` launcher. The low-priority ncurses runtime supplies standard
-  terminfo entries while Ghostty's package wins terminal-specific collisions.
-  `karabiner/` remains tracked for the macOS branch but is not deployed on
-  Linux. `rime/` retains a guarded Stow fallback, but Home Manager deploys it by
-  default: activation claims ownership, materializes writable Fcitx host
-  settings with managed snapshots under `~/.local/state/rime/host-config`,
-  materializes static inputs under
-  `~/.local/share/fcitx5/rime/.home-manager-static`, and keeps generated and
-  learned state writable. Declarative and runtime host-file changes are merged
-  only when one side retains the prior baseline; concurrent changes fail closed.
-  Selecting `rimeDeployment = "stow"` refuses to discard runtime edits before
-  removing Home Manager-owned paths. `zed/` is sourced from
+  `roswell/default.nix` applies the locked source override and installs Roswell;
+  SLIME starts it without copied helpers or a standalone `ros_swank` launcher.
+  The low-priority ncurses runtime supplies standard terminfo entries while
+  Ghostty's package wins terminal-specific collisions. `karabiner/` remains
+  tracked for the macOS branch but is not deployed on Linux. `rime/` retains a
+  guarded Stow fallback, but Home Manager deploys it by default: activation
+  claims ownership, materializes writable Fcitx host settings with managed
+  snapshots under `~/.local/state/rime/host-config`, materializes static inputs
+  under `~/.local/share/fcitx5/rime/.home-manager-static`, and keeps generated
+  and learned state writable. Declarative and runtime host-file changes are
+  merged only when one side retains the prior baseline; concurrent changes fail
+  closed. Selecting `rimeDeployment = "stow"` refuses to discard runtime edits
+  before removing Home Manager-owned paths. `zed/` is sourced from
   `zed/.config/zed/settings.json`; `schan` materializes it as a mutable Flatpak
   config at `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`, while
   `stachan` uses `~/.config/zed/settings.json`. The Claude prompt directory
   remains live through `mkOutOfStoreSymlink`. The global gitignore is
   `git/.gitignore_global`; machine identity and signing remain in untracked
-  `~/.config/git/local.config`. Plasma's captured panel declaration remains
-  disabled because enabling high-level panel management deletes and rebuilds
+  `~/.config/git/local.config`. A managed global `commit-msg` dispatcher
+  preserves repository-local hooks and lints messages carrying an `Assisted-by:`
+  trailer. Plasma's captured panel declaration remains disabled because enabling
+  high-level panel management deletes and rebuilds
   `plasma-org.kde.plasma.desktop-appletsrc` when the declaration changes.
   Display topology, generated IDs, wallpaper, and session history remain
   unmanaged.
 - **Editor ownership:** Vim, Neovim, and their plugins are locked Nix packages;
   shared, Vim-only, and Neovim-only plugin lists live in `vim/default.nix` and
-  use native package support. Emacs packages are declared exclusively through
-  `programs.emacs.extraPackages`. There are no editor plugin submodules,
-  vim-plug checkout, or mutable plugin updater. CoC loads in both editors and
-  owns LSP, diagnostics, completion, navigation, and format-on-save; vim-go
-  retains non-LSP Go commands. Vim uses bundled EditorConfig and Neovim uses
-  native EditorConfig. `vim/.vim/coc-settings.json` is the authoritative, sorted
-  language-server and format-on-save matrix; preserve semantic precedence within
-  ordered lists such as `rootPatterns`. Home Manager provides every command it
-  names for C/C++, Rust, Go, Zig, Perl, Python, Lua, shell, Fish, Clojure,
-  Fennel, Nix, YAML, JavaScript/TypeScript, Kotlin, Haskell, Terraform,
-  Markdown, LaTeX, and Typst, including project-gated ESLint and Oxlint
-  integrations. `vim/default.nix` also builds the managed Tree-sitter runtime,
-  including the explicit Org parser omitted by `nvim-treesitter`'s all-grammar
-  set; `checks.x86_64-linux.neovim-org` opens and parses a real Org file with
-  the evaluated Neovim runtime from both Home Manager profiles. Do not
-  reintroduce ALE, Pathogen, editorconfig-vim, mutable parser downloads, or
-  mutable plugin binary downloaders. Backup, swap, and persistent undo remain
-  enabled for ordinary files but are disabled before Vim or Neovim reads known
-  credentials and machine-local secret directories. The locked `virtme_ng_src`
-  input builds the installed `vng` kernel VM command, while Ghidra comes from
-  locked Nixpkgs.
+  use native package support. That module also owns source-pinned CoC Zuban and
+  RustOwl client builds plus local plugin metadata overrides. Emacs packages are
+  declared exclusively through `programs.emacs.extraPackages`. There are no
+  editor plugin submodules, vim-plug checkout, or mutable plugin updater. CoC
+  loads in both editors and owns LSP, diagnostics, completion, navigation, and
+  format-on-save; vim-go retains non-LSP Go commands. Vim uses bundled
+  EditorConfig and Neovim uses native EditorConfig. `vim/.vim/coc-settings.json`
+  is the authoritative, sorted language-server and format-on-save matrix;
+  preserve semantic precedence within ordered lists such as `rootPatterns`. Home
+  Manager provides every command it names for C/C++, Rust, Go, Zig, Perl,
+  Python, Lua, shell, Fish, Clojure, Fennel, Nix, YAML, JavaScript/TypeScript,
+  Kotlin, Haskell, Terraform, Markdown, LaTeX, and Typst, including
+  project-gated ESLint and Oxlint integrations. `vim/default.nix` also builds
+  the managed Tree-sitter runtime, including the explicit Org parser omitted by
+  `nvim-treesitter`'s all-grammar set; `checks.x86_64-linux.neovim-org` opens
+  and parses a real Org file with the evaluated Neovim runtime from both Home
+  Manager profiles. Do not reintroduce ALE, Pathogen, editorconfig-vim, mutable
+  parser downloads, or mutable plugin binary downloaders. Backup, swap, and
+  persistent undo remain enabled for ordinary files but are disabled before Vim
+  or Neovim reads known credentials and machine-local secret directories.
+  `virtme-ng/default.nix` builds the locked `virtme_ng_src` input and installs
+  the `vng` kernel VM command, while Ghidra comes from locked Nixpkgs.
 - **Agent prompt ownership:** `agents/prompts/{kernel,language}.md` are
   canonical for the full agents and profiles. Nix generates the Codex TOML
   templates and OpenCode agent definitions directly from their Markdown bodies
@@ -688,12 +701,13 @@ structure.
   regression suites; the Codex profile materializer, agent-directory migration,
   `.gitmodules` formatter, rclone event classification, guarded Rime host-file
   and ownership-state materialization, Zed settings materialization, focused
-  OpenCode package/LSP/schema/theme/telemetry checks, and editor secret-state
-  exclusions; native syntax for the managed Fish and Zsh files; Emacs
-  parentheses and Org lint for tracked Org files; a real Neovim Org Tree-sitter
-  parse; actionlint and pinned Actions; Rime Lua syntax/tests; and gitleaks.
-  GitHub CI runs those checks and evaluates both Home Manager profiles on pushes
-  and pull requests; full profile builds are opt-in through `workflow_dispatch`.
+  OpenCode package/LSP/schema/theme/telemetry checks, Git commit-message hook
+  behavior, and editor secret-state exclusions; native syntax for the managed
+  Fish and Zsh files; Emacs parentheses and Org lint for tracked Org files; a
+  real Neovim Org Tree-sitter parse; actionlint and pinned Actions; Rime Lua
+  syntax/tests; and gitleaks. GitHub CI runs those checks and evaluates both
+  Home Manager profiles on pushes and pull requests; full profile builds are
+  opt-in through `workflow_dispatch`.
 - **Test/verify before recommending or installing anything, the same
   anti-fabrication discipline as everywhere else in this prompt:**
   `nix search nixpkgs <term>` to check a package actually exists (careful:
