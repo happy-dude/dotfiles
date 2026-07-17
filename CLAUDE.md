@@ -397,6 +397,13 @@ push to the user. If `origin/main` moved, update or rebase the isolated series;
 conflicts are unfinished Git state to resolve or abort, never a completed
 export.
 
+After a destination update is available remotely, run
+`scripts/sync-local-branch.sh <local-branch> <profile>` on another system to
+fast-forward its local `main`, rebase the named non-pushing branch, and validate
+the selected profile. The script requires clean worktrees and never pushes. If
+the rebase conflicts, resolve and continue or abort; after a completed manual
+continuation, rerun with `--validate` to perform the skipped validation.
+
 ### Update workflow
 
 `scripts/update.sh` is the one-shot orchestrator with three explicit modes:

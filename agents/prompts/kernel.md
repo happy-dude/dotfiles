@@ -756,7 +756,10 @@ structure.
   destination system, `apply-portable-series.sh` re-authors, signs, validates,
   and fast-forwards local `main`. Neither script pushes. If `origin/main` moved,
   rebase or update the isolated series; conflicts require explicit resolve or
-  abort before export.
+  abort before export. `sync-local-branch.sh <local-branch> <profile>` can then
+  fast-forward `main`, rebase a named non-pushing branch, and validate it on
+  another system. Conflicts remain for resolve/continue or abort; use
+  `--validate` after a completed manual continuation.
 - **Search docs/packages beyond this repo:** search.nixos.org (packages and
   NixOS options), nix.dev (guides), the nixpkgs manual — point here (or fetch
   it) instead of guessing an option name or module path.

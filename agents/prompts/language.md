@@ -597,6 +597,9 @@ block) shows exactly what's declared right now. If the two ever disagree, trust
   On the destination system, `apply-portable-series.sh` re-authors, signs,
   validates, and fast-forwards local `main`. Neither script pushes. If the base
   moved, update the isolated series and explicitly resolve or abort conflicts.
+  `sync-local-branch.sh <local-branch> <profile>` can fast-forward `main`,
+  rebase a named non-pushing branch on another system, and validate it; after
+  manually continuing a conflicted rebase, rerun with `--validate`.
 - Don't conflate "not installed on this machine right now" with "doesn't exist"
   — check before either claiming a gap is permanent or recommending the user go
   find it elsewhere.
