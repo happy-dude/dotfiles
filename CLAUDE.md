@@ -369,6 +369,34 @@ points editors at Codex's current official `config.toml` schema. Standalone
 custom-agent TOMLs use Codex's separate custom-agent schema and therefore do not
 carry the `config.toml` directive.
 
+### Portable series workflow
+
+Portable changes may be prepared on a machine or branch that cannot push the
+destination remote or does not exist on the destination system. Keep that local
+context out of portable history:
+
+```bash
+./scripts/portable-series.sh start <name>
+# Develop and commit in the reported worktree.
+./scripts/portable-series.sh export <name>
+```
+
+`start` creates `replay/<name>` at current `origin/main` with a worktree-local
+placeholder identity. `export` requires a clean unchanged base, lints every
+commit message, validates both Home Manager profiles, and writes a patch,
+manifest, checksum file, and reusable apply script to `~/Downloads` by default.
+Callers may set `PORTABLE_FORBIDDEN_PATTERN` for machine-local content policy;
+the pattern itself does not enter portable configuration.
+
+On the destination computer, verify the checksum file and run the transferred
+`apply-portable-series.sh <manifest> ~/dotfiles`. It requires clean `main` at
+the recorded `origin/main`, re-authors and signs every commit with destination
+identity, validates that profile, and fast-forwards only local `main`. Neither
+script pushes. State explicitly that nothing was pushed and leave review and
+push to the user. If `origin/main` moved, update or rebase the isolated series;
+conflicts are unfinished Git state to resolve or abort, never a completed
+export.
+
 ### Update workflow
 
 `scripts/update.sh` is the one-shot orchestrator with three explicit modes:

@@ -590,6 +590,13 @@ block) shows exactly what's declared right now. If the two ever disagree, trust
   repository shortlog; `--show-changes` also prints the committed range or,
   without new commits, the staged diff; `--verbose` enables the same diff
   output. Any failed update, validation, or build step prevents activation.
+- **Portable series:** changes prepared on a machine or branch that cannot push
+  the destination remote must exclude that local context. Use
+  `scripts/portable-series.sh start <name>` and `export <name>` to create
+  validated patch/manifest/checksum/apply artifacts from current `origin/main`.
+  On the destination system, `apply-portable-series.sh` re-authors, signs,
+  validates, and fast-forwards local `main`. Neither script pushes. If the base
+  moved, update the isolated series and explicitly resolve or abort conflicts.
 - Don't conflate "not installed on this machine right now" with "doesn't exist"
   — check before either claiming a gap is permanent or recommending the user go
   find it elsewhere.
