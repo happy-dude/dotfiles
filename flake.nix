@@ -761,9 +761,25 @@
         };
         stachanConfig = stachan.config.xdg.configFile."opencode/opencode.json".source;
         schanConfig = schan.config.xdg.configFile."opencode/opencode.json".source;
+        languageServerPackages = with pkgs; [
+          eslint
+          haskell-language-server
+          kotlin-language-server
+          nixd
+          oxlint
+          terraform-ls
+          typescript
+          typescript-language-server
+          vscode-langservers-extracted
+          yaml-language-server
+        ];
       in
         assert lib.elem pkgs.opencode stachan.config.home.packages;
         assert lib.elem pkgs.opencode schan.config.home.packages;
+        assert lib.all (package: lib.elem package stachan.config.home.packages) languageServerPackages;
+        assert lib.all (package: lib.elem package schan.config.home.packages) languageServerPackages;
+        assert stachan.config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD == "true";
+        assert schan.config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD == "true";
           pkgs.runCommand "dotfiles-opencode-check"
           {
             nativeBuildInputs = [
@@ -787,6 +803,14 @@
               .autoupdate == false and
               .permission.bash == "ask" and
               .permission.external_directory == "ask" and
+              .permission.lsp == "allow" and
+              .lsp.eslint.command == ["vscode-eslint-language-server", "--stdio"] and
+              .lsp["kotlin-ls"].command == ["kotlin-language-server"] and
+              .lsp.oxlint.disabled == true and
+              .lsp.typescript.initialization.tsserver.path ==
+                "${pkgs.typescript}/lib/node_modules/typescript/lib/tsserver.js" and
+              .lsp["fish-lsp"].command == ["fish-lsp", "start"] and
+              .lsp.zuban.command == ["zuban", "server"] and
               (.model == null) and
               (.enabled_providers == null) and
               .agent.kernel.mode == "all" and
