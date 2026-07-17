@@ -57,9 +57,17 @@ in {
       grep -Fx 'git: repair an invalid interactive message' invalid-agent.md
 
       cat >human.md <<'EOF'
-      Human message with repository-specific style
+      human: use repository-specific style
       EOF
       commit-msg human.md
+
+      cat >invalid-human.md <<'EOF'
+      Human message without a subsystem
+      EOF
+      if commit-msg invalid-human.md; then
+        echo "accepted an invalid human-authored message" >&2
+        exit 1
+      fi
 
       touch "$out"
     '';
