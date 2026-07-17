@@ -66,6 +66,7 @@
       dtc
       dust
       elfutils
+      eslint
       exiftool
       eza
       errcheck
@@ -88,6 +89,7 @@
       gopls
       gotags
       gotools
+      haskell-language-server
       hexyl
       htop
       hyperfine
@@ -97,6 +99,7 @@
       impl
       inxi
       jq
+      kotlin-language-server
       less
       libgcc
       libtool
@@ -111,12 +114,14 @@
       (lib.lowPrio ncurses)
       ncurses.dev
       ninja
+      nixd
       nix-prefetch-github
       nix-zsh-completions
       nixfmt
       nmap
       nodejs
       openssl
+      oxlint
       p7zip
       pahole
       pandoc
@@ -158,6 +163,7 @@
       stow
       strace
       stylua
+      terraform-ls
       texlab
       texliveFull
       tinymist
@@ -165,6 +171,7 @@
       traceroute
       tree
       tree-sitter
+      typescript
       typescript-language-server
       typst
       util-linux
@@ -177,6 +184,7 @@
       xclip
       xdg-utils
       xsel
+      yaml-language-server
       zig
       zls
       zuban
