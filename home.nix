@@ -153,7 +153,6 @@
       reftools
       revive
       ripgrep
-      roswell
       rsync
       ruff
       rust-analyzer
@@ -177,7 +176,6 @@
       typst
       util-linux
       valgrind
-      virtme-ng
       vim-language-server
       whois
       vscode-langservers-extracted
