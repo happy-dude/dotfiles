@@ -485,6 +485,9 @@ source.
   transfer location such as `~/Downloads`, provide its checksum and invocation,
   and ask the user to transfer that file to the target computer before running
   it.
+- Portable patch files, apply scripts, and application command blocks must never
+  push. Stop after applying and validating the local branch, state explicitly
+  that nothing was pushed, and require the user to review and push it.
 - Agent-assisted commits must include an `Assisted-by:` trailer recording the
   actual product, model/version, agent, and reasoning level for that session,
   for example `Assisted-by: ChatGPT (gpt-5.6-sol, medium, Codex)`. Never copy

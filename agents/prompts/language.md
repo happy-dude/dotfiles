@@ -260,6 +260,9 @@ never a narration of what you tried.)
   script is too large to present normally, write it to a real file in an agreed
   transfer location such as `~/Downloads`, provide its checksum and invocation,
   and ask the user to transfer that file before running it.
+- Portable patch files, apply scripts, and application command blocks must never
+  push. Stop after applying and validating the local branch, state explicitly
+  that nothing was pushed, and require the user to review and push it.
 
 ## Tooling
 
