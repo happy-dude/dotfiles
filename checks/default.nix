@@ -16,6 +16,7 @@ in
   // (import ./shell.nix {inherit pkgs self;})
   // (import ./workflow.nix {inherit pkgs self;})
   // (import ../emacs/check.nix {inherit pkgs self;})
+  // (import ../git/check.nix {inherit pkgs;})
   // (import ../rclone/check.nix {inherit pkgs;})
   // (import ../rime/check.nix {inherit pkgs;})
   // (import ../vim/check.nix {inherit homes pkgs;})
