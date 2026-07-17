@@ -14,6 +14,7 @@ in
     name = "commit-msg";
     runtimeInputs = [
       pkgs.coreutils
+      pkgs.gawk
       pkgs.git
       pkgs.gnugrep
     ];
@@ -27,13 +28,38 @@ in
       fi
 
       lint_message() {
+        local cleaned_message=
+        local lint_status
+        local lint_target=$message_path
+
         if [[ $agent_assisted == true ]] &&
           ! grep -q '^Assisted-by:' "$message_path"; then
           printf '%s\n' \
             "agent-assisted messages must retain an Assisted-by trailer" >&2
           return 1
         fi
-        ${pkgs.lib.getExe commitMessageLinter} "$message_path"
+
+        if grep -Fq -- \
+          '------------------------ >8 ------------------------' \
+          "$message_path"; then
+          cleaned_message=$(mktemp)
+          if ! awk \
+            'index($0, "------------------------ >8 ------------------------") { exit } { print }' \
+            "$message_path" | git stripspace --strip-comments \
+            >"$cleaned_message"; then
+            rm -f -- "$cleaned_message"
+            return 1
+          fi
+          lint_target=$cleaned_message
+        fi
+
+        if ${pkgs.lib.getExe commitMessageLinter} "$lint_target"; then
+          lint_status=0
+        else
+          lint_status=$?
+        fi
+        [[ -z $cleaned_message ]] || rm -f -- "$cleaned_message"
+        return "$lint_status"
       }
 
       if [[ -x $local_hook && \

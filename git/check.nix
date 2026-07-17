@@ -33,6 +33,36 @@ in {
       commit-msg valid.md
       test -e local-hook-ran
 
+      generated_subjects=(
+        "Merge branch 'main' into macos"
+        'Revert "git: validate agent-assisted messages"'
+        'Reapply "git: validate agent-assisted messages"'
+        "fixup! git: validate agent-assisted messages"
+        "squash! git: validate agent-assisted messages"
+        "amend! git: validate agent-assisted messages"
+        "Squashed commit of the following:"
+      )
+      for subject in "''${generated_subjects[@]}"; do
+        printf '%s\n' "$subject" >generated.md
+        commit-msg generated.md
+      done
+
+      cat >verbose.md <<'EOF'
+      git: lint the cleaned verbose message
+
+      Ignore Git's status comments and verbose diff during Markdown checks.
+
+      # Please enter the commit message for your changes.
+      # ------------------------ >8 ------------------------
+      # Everything below it will be ignored.
+      diff --git c/file i/file
+      --- c/file
+      +++ i/file
+      @@ -0,0 +1 @@
+      +This deliberately unformatted diff line must not reach Prettier or width checks.
+      EOF
+      commit-msg verbose.md
+
       cp valid.md post-local-rewrite.md
       if commit-msg post-local-rewrite.md; then
         echo "accepted a message invalidated by the repository-local hook" >&2

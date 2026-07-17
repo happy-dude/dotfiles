@@ -28,6 +28,38 @@ Assisted-by: ChatGPT (gpt-5.6-sol, medium, OpenCode)
         )
         assert not lint(valid)
 
+        git_directory = directory / ".git"
+        git_directory.mkdir()
+        commit_editmsg = write_message(
+            git_directory,
+            "COMMIT_EDITMSG",
+            """git: lint commit metadata paths
+
+Prettier must validate this message even though Git stores it under .git.
+
+Assisted-by: ChatGPT (gpt-5, medium, Codex)
+Signed-off-by: Stanley Chan <schan@lostsanctum.dev>
+""",
+        )
+        assert not lint(commit_editmsg)
+
+        generated_subjects = (
+            "Merge branch 'main' into macos",
+            'Revert "checks: validate commit messages"',
+            'Reapply "checks: validate commit messages"',
+            "fixup! checks: validate commit messages",
+            "squash! checks: validate commit messages",
+            "amend! checks: validate commit messages",
+            "Squashed commit of the following:",
+        )
+        for index, subject in enumerate(generated_subjects):
+            generated = write_message(
+                directory,
+                f"generated-{index}.md",
+                f"{subject}\n",
+            )
+            assert not lint(generated), subject
+
         invalid_subject = write_message(
             directory,
             "invalid-subject.md",
@@ -50,6 +82,21 @@ Explain the change.
             f"checks: reject long commit message lines\n\n{overlong_line}\n",
         )
         assert "line 3 exceeds 80 characters" in lint(invalid_width)
+
+        invalid_markdown = write_message(
+            directory,
+            "invalid-markdown.md",
+            "checks: show formatting correction\n\n* item\n",
+        )
+        prettier_error = next(
+            error
+            for error in lint(invalid_markdown)
+            if error.startswith("commit message differs from Prettier output")
+        )
+        assert "--- submitted message" in prettier_error
+        assert "+++ Prettier output" in prettier_error
+        assert "-* item" in prettier_error
+        assert "+- item" in prettier_error
 
 
 if __name__ == "__main__":
