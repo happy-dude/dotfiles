@@ -22,13 +22,30 @@ in
       common_dir=$(git rev-parse --path-format=absolute --git-common-dir)
       local_hook="$common_dir/hooks/commit-msg"
 
-      if [[ -x $local_hook && \
-        $(readlink -f "$local_hook") != $(readlink -f "$0") ]]; then
-        "$local_hook" "$message_path"
-      fi
+      lint_agent_message() {
+        if ! grep -q '^Assisted-by:' "$message_path"; then
+          printf '%s\n' \
+            "agent-assisted messages must retain an Assisted-by trailer" >&2
+          return 1
+        fi
+        ${pkgs.lib.getExe commitMessageLinter} "$message_path"
+      }
 
       if grep -q '^Assisted-by:' "$message_path"; then
-        exec ${pkgs.lib.getExe commitMessageLinter} "$message_path"
+        while ! lint_agent_message; do
+          if [[ ! -t 0 || ! -t 1 ]]; then
+            printf 'correct the preserved message and retry: git commit --edit --file %q\n' \
+              "$message_path" >&2
+            exit 1
+          fi
+          editor=$(git var GIT_EDITOR)
+          sh -c "$editor \"\$1\"" sh "$message_path"
+        done
+      fi
+
+      if [[ -x $local_hook && \
+        $(readlink -f "$local_hook") != $(readlink -f "$0") ]]; then
+        exec "$local_hook" "$message_path"
       fi
     '';
   }

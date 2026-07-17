@@ -7,6 +7,7 @@ in {
       nativeBuildInputs = [
         commitMsgHook
         pkgs.git
+        pkgs.util-linux
       ];
     }
     ''
@@ -38,6 +39,22 @@ in {
         echo "accepted an invalid agent-assisted message" >&2
         exit 1
       fi
+
+      cat >editor <<'EOF'
+      #!${pkgs.bash}/bin/bash
+      cat >"$1" <<'MESSAGE'
+      git: repair an invalid interactive message
+
+      Reopen the preserved message and continue only after validation succeeds.
+
+      Assisted-by: ChatGPT (gpt-5.6-sol, medium, OpenCode)
+      MESSAGE
+      EOF
+      chmod 0755 editor
+      GIT_EDITOR="$PWD/editor" \
+        script --quiet --return --command \
+          "commit-msg invalid-agent.md" /dev/null
+      grep -Fx 'git: repair an invalid interactive message' invalid-agent.md
 
       cat >human.md <<'EOF'
       Human message with repository-specific style
