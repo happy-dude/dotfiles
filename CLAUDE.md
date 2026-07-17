@@ -198,10 +198,13 @@ and installs StyLua's config under `~/.config/stylua`.
   multiline instructions. Runtime-owned project trust, TUI state, and other
   profile keys survive that merge. Independently maintained Kagi Markdown and
   Codex TOMLs remain live-linked because their instruction budget is different.
-  Claude and Codex session state, credentials, provider configuration, and
-  project trust remain machine-local and must never be committed. Activation
-  requires `~/.claude` and `~/.codex` to be real directories and restricts them
-  to mode `0700` while leaving their contents writable.
+  Kagi prompts target a chat interface with optional web search and uploads but
+  no shell, filesystem, or host access; they delegate commands to the user and
+  continue by interpreting returned results. Claude and Codex session state,
+  credentials, provider configuration, and project trust remain machine-local
+  and must never be committed. Activation requires `~/.claude` and `~/.codex` to
+  be real directories and restricts them to mode `0700` while leaving their
+  contents writable.
 - **`opencode/`** installs the Nix package for both Linux profiles and owns the
   global provider-neutral configuration. It disables self-updates and session
   sharing, disables AI SDK telemetry, strips inherited OTLP exporter variables
@@ -343,14 +346,15 @@ managed Fish and Zsh files; focused tests for the Codex profile materializer,
 agent-directory ownership migration, `.gitmodules` formatter, rclone event
 classification, guarded Rime host-file and ownership-state materialization, Zed
 settings materialization, focused OpenCode package/LSP/schema/theme/telemetry
-checks, Git commit-message hook behavior, and editor secret-state exclusions;
-Emacs `check-parens` and Org lint for tracked Org files; GitHub Actions syntax
-and pinned action revisions; a real Neovim Org Tree-sitter parse against the
-evaluated Home Manager runtime; Rime Lua syntax and focused tests; and gitleaks
-secret scanning. CI runs those checks and evaluates both Home Manager
-configurations on pushes and pull requests. Full builds of both configurations
-are opt-in through the `workflow_dispatch` `build_homes` input because builds
-are substantially more expensive than evaluation.
+checks, Git commit-message hook behavior, Kagi prompt character budgets, and
+editor secret-state exclusions; Emacs `check-parens` and Org lint for tracked
+Org files; GitHub Actions syntax and pinned action revisions; a real Neovim Org
+Tree-sitter parse against the evaluated Home Manager runtime; Rime Lua syntax
+and focused tests; and gitleaks secret scanning. CI runs those checks and
+evaluates both Home Manager configurations on pushes and pull requests. Full
+builds of both configurations are opt-in through the `workflow_dispatch`
+`build_homes` input because builds are substantially more expensive than
+evaluation.
 
 ### Zed / agent config
 

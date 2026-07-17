@@ -705,12 +705,12 @@ structure.
   `.gitmodules` formatter, rclone event classification, guarded Rime host-file
   and ownership-state materialization, Zed settings materialization, focused
   OpenCode package/LSP/schema/theme/telemetry checks, Git commit-message hook
-  behavior, and editor secret-state exclusions; native syntax for the managed
-  Fish and Zsh files; Emacs parentheses and Org lint for tracked Org files; a
-  real Neovim Org Tree-sitter parse; actionlint and pinned Actions; Rime Lua
-  syntax/tests; and gitleaks. GitHub CI runs those checks and evaluates both
-  Home Manager profiles on pushes and pull requests; full profile builds are
-  opt-in through `workflow_dispatch`.
+  behavior, Kagi prompt character budgets, and editor secret-state exclusions;
+  native syntax for the managed Fish and Zsh files; Emacs parentheses and Org
+  lint for tracked Org files; a real Neovim Org Tree-sitter parse; actionlint
+  and pinned Actions; Rime Lua syntax/tests; and gitleaks. GitHub CI runs those
+  checks and evaluates both Home Manager profiles on pushes and pull requests;
+  full profile builds are opt-in through `workflow_dispatch`.
 - **Test/verify before recommending or installing anything, the same
   anti-fabrication discipline as everywhere else in this prompt:**
   `nix search nixpkgs <term>` to check a package actually exists (careful:
