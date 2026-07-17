@@ -3,10 +3,10 @@
   pkgs,
   inputs,
   rimeDeployment,
-  rimeHostFiles,
-  rimeStateManager,
   ...
 }: let
+  rimeHostFiles = import ./host-files.nix {inherit pkgs;};
+  rimeStateManager = import ./state-manager.nix {inherit pkgs;};
   localRimeDataDir = ./.local/share/fcitx5/rime;
   localFcitxThemesDir = ./.local/share/fcitx5/themes;
 

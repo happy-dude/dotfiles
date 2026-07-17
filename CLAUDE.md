@@ -88,12 +88,10 @@ checkout is the Linux branch.
 - `fish/.config/fish/config.fish` optionally sources
   `~/.config/fish/secrets.fish`. The committed example contains placeholders
   only; real values remain untracked, per-machine, and outside the Nix store.
-- A small inline overlay in `flake.nix` builds Roswell from the locked
-  `roswell_src` input (a workaround for the upstream package); advance it with
-  `nix flake update`.
-- The same overlay builds `virtme-ng` from `virtme_ng_src` with its runtime
-  helpers on `PATH`; `home.nix` installs its `vng` command. Ghidra comes from
-  the locked Nixpkgs package set rather than a Flatpak or mutable installer.
+- `roswell/default.nix` applies the locked `roswell_src` source override and
+  installs Roswell. `virtme-ng/default.nix` builds `virtme_ng_src` with its
+  runtime helpers on `PATH` and installs `vng`. Ghidra comes from the locked
+  Nixpkgs package set rather than a Flatpak or mutable installer.
 - `home.nix` is the entry module: it lists top-level packages, sets the shared
   `home.stateVersion = "26.11"` compatibility floor, and sets up plain-file
   symlinks for the repo-root `.clang-format`, `.editorconfig`, and
@@ -108,22 +106,25 @@ checkout is the Linux branch.
 - Feature modules live in their own subdirectories, each as a `default.nix`
   imported from `flake.nix`'s `modules` list: `aerc/`, `agents/`, `bat/`,
   `emacs/`, `fish/`, `fonts/`, `fzf/`, `ghostty/`, `gnome/`, `git/`, `nix/`,
-  `opencode/`, `rclone/`, `rime/`, `rustowl/`, `tldr/`, `tmux/`, `vim/`,
-  `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`, `zsh/`. The desktop-specific
-  `rime/gnome.nix` module is imported separately. Adding a new app otherwise
-  means creating `<app>/default.nix` and adding it to the `modules` list in
-  `flake.nix`.
+  `opencode/`, `rclone/`, `rime/`, `roswell/`, `rustowl/`, `tldr/`, `tmux/`,
+  `vim/`, `virtme-ng/`, `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`, `zsh/`. The
+  desktop-specific `rime/gnome.nix` module is imported separately. Adding a new
+  app otherwise means creating `<app>/default.nix` and adding it to the
+  `modules` list in `flake.nix`.
+- `flake.nix` is composition-only: it declares inputs and external overlays,
+  composes the Home Manager profiles once, and exposes imported formatter and
+  check outputs. `treefmt.nix` owns formatter policy; `checks/default.nix`
+  aggregates repository-wide checks and focused `<owner>/check.nix` files.
 - `flatpak/` and `plasma/` are host-conditional modules: `mkHome` imports them
   with the external nix-flatpak and plasma-manager modules only for `schan`.
-- The formatter is **treefmt** (`treefmt-nix`, run via `nix fmt`): the Linux
-  kernel's `.clang-format` for C/C++, Alejandra for Nix, `fish_indent` for Fish,
-  `shfmt` for shell, Ruff for Python, Neovim's exact StyLua configuration for
-  Lua, Prettier for JSON/Markdown/YAML, and Taplo for TOML. The root
-  `pyproject.toml` defines the Python formatting and lint policy;
-  `.editorconfig` has a four-space fallback and project-specific Linux, Neovim,
-  Ghostty, Fish, Org, and Magit policies. Treefmt's Git walk skips submodule
-  contents and excludes `other/`, `karabiner/`, Rime YAML data, lock files, and
-  `LICENSE`.
+- `treefmt.nix` configures **treefmt** (run via `nix fmt`): the Linux kernel's
+  `.clang-format` for C/C++, Alejandra for Nix, `fish_indent` for Fish, `shfmt`
+  for shell, Ruff for Python, Neovim's exact StyLua configuration for Lua,
+  Prettier for JSON/Markdown/YAML, and Taplo for TOML. The root `pyproject.toml`
+  defines the Python formatting and lint policy; `.editorconfig` has a
+  four-space fallback and project-specific Linux, Neovim, Ghostty, Fish, Org,
+  and Magit policies. Treefmt's Git walk skips submodule contents and excludes
+  `other/`, `karabiner/`, Rime YAML data, lock files, and `LICENSE`.
 - `nix/default.nix` pins both the `nixpkgs` registry entry and legacy `NIX_PATH`
   lookup to the locked root input. It optionally includes the untracked
   `~/.config/nix/local.conf` for per-machine access tokens and client settings;
@@ -167,12 +168,14 @@ and installs StyLua's config under `~/.config/stylua`.
   program owns the package, so do not duplicate `git` in `home.packages`. It
   defines aliases, delta for diffs and bat as its pager, and
   `programs.git.ignores` reading `git/.gitignore_global` (the single global
-  gitignore, which also holds repo ignores like `result`, `/.claude/`).
-  Per-machine identity + signing (`user.email`, `signingkey`, `commit`/`tag`
-  `gpgsign`) live in an untracked `~/.config/git/local.config` that the module
-  `include`s — SSH/GPG keys and email differ per box; template in
-  `git/local.config.example`. Home Manager writes `~/.config/git/config`, which
-  an unmanaged `~/.gitconfig` silently overrides (git reads it last).
+  gitignore, which also holds repo ignores like `result`, `/.claude/`). A
+  managed global `commit-msg` dispatcher preserves repository-local hooks, lints
+  every commit, and requires an initially present `Assisted-by:` trailer to
+  remain. Per-machine identity and signing (`user.email`, `signingkey`,
+  `commit`/`tag` `gpgsign`) live in an untracked `~/.config/git/local.config`
+  that the module `include`s — SSH/GPG keys and email differ per box; template
+  in `git/local.config.example`. Home Manager writes `~/.config/git/config`,
+  which an unmanaged `~/.gitconfig` silently overrides (git reads it last).
 - **`xdg/`** owns generic-Linux XDG integration plus the nixGL-wrapped Solaar
   package and its `schan`-only autostart entry.
 
@@ -195,10 +198,13 @@ and installs StyLua's config under `~/.config/stylua`.
   multiline instructions. Runtime-owned project trust, TUI state, and other
   profile keys survive that merge. Independently maintained Kagi Markdown and
   Codex TOMLs remain live-linked because their instruction budget is different.
-  Claude and Codex session state, credentials, provider configuration, and
-  project trust remain machine-local and must never be committed. Activation
-  requires `~/.claude` and `~/.codex` to be real directories and restricts them
-  to mode `0700` while leaving their contents writable.
+  Kagi prompts target a chat interface with optional web search and uploads but
+  no shell, filesystem, or host access; they delegate commands to the user and
+  continue by interpreting returned results. Claude and Codex session state,
+  credentials, provider configuration, and project trust remain machine-local
+  and must never be committed. Activation requires `~/.claude` and `~/.codex` to
+  be real directories and restricts them to mode `0700` while leaving their
+  contents writable.
 - **`opencode/`** installs the Nix package for both Linux profiles and owns the
   global provider-neutral configuration. It disables self-updates and session
   sharing, disables AI SDK telemetry, strips inherited OTLP exporter variables
@@ -278,10 +284,11 @@ guidance detectable.
 
 - `vim/default.nix` composes one shared runtime for Vim and Neovim, then adds
   Neovim's `lua/` runtime. Shared, Vim-only, and Neovim-only plugin lists use
-  `pkgs.vimPlugins`; Home Manager installs them as native packages. The shared
-  `vim/.vim/vimrc` loads ordered file-based settings, while `lua/init.lua` is
-  the Neovim entry point. There is no vim-plug checkout or mutable plugin
-  updater.
+  `pkgs.vimPlugins`; the same module owns source-pinned CoC Zuban and RustOwl
+  client builds plus local plugin metadata overrides. Home Manager installs them
+  as native packages. The shared `vim/.vim/vimrc` loads ordered file-based
+  settings, while `lua/init.lua` is the Neovim entry point. There is no vim-plug
+  checkout or mutable plugin updater.
 - Home Manager builds Tree-sitter parsers and queries in `vim/default.nix`,
   including an explicit `org.so` from `tree-sitter-org-nvim` because
   `nvim-treesitter.withAllGrammars` omits it. The `neovim-org` flake check opens
@@ -339,11 +346,12 @@ managed Fish and Zsh files; focused tests for the Codex profile materializer,
 agent-directory ownership migration, `.gitmodules` formatter, rclone event
 classification, guarded Rime host-file and ownership-state materialization, Zed
 settings materialization, focused OpenCode package/LSP/schema/theme/telemetry
-checks, and editor secret-state exclusions; Emacs `check-parens` and Org lint
-for tracked Org files; GitHub Actions syntax and pinned action revisions; a real
-Neovim Org Tree-sitter parse against the evaluated Home Manager runtime; Rime
-Lua syntax and focused tests; and gitleaks secret scanning. CI runs those checks
-and evaluates both Home Manager configurations on pushes and pull requests. Full
+checks, Git commit-message hook behavior, Kagi prompt character budgets, and
+editor secret-state exclusions; Emacs `check-parens` and Org lint for tracked
+Org files; GitHub Actions syntax and pinned action revisions; a real Neovim Org
+Tree-sitter parse against the evaluated Home Manager runtime; Rime Lua syntax
+and focused tests; and gitleaks secret scanning. CI runs those checks and
+evaluates both Home Manager configurations on pushes and pull requests. Full
 builds of both configurations are opt-in through the `workflow_dispatch`
 `build_homes` input because builds are substantially more expensive than
 evaluation.
@@ -360,6 +368,41 @@ sources; do not edit their generated keys manually. Their schema directive
 points editors at Codex's current official `config.toml` schema. Standalone
 custom-agent TOMLs use Codex's separate custom-agent schema and therefore do not
 carry the `config.toml` directive.
+
+### Portable series workflow
+
+Portable changes may be prepared on a machine or branch that cannot push the
+destination remote or does not exist on the destination system. Keep that local
+context out of portable history:
+
+```bash
+./scripts/portable-series.sh start <name>
+# Develop and commit in the reported worktree.
+./scripts/portable-series.sh export <name>
+```
+
+`start` creates `replay/<name>` at current `origin/main` with a worktree-local
+placeholder identity. `export` requires a clean unchanged base, lints every
+commit message, validates both Home Manager profiles, and writes a patch,
+manifest, checksum file, and reusable apply script to `~/Downloads` by default.
+Callers may set `PORTABLE_FORBIDDEN_PATTERN` for machine-local content policy;
+the pattern itself does not enter portable configuration.
+
+On the destination computer, verify the checksum file and run the transferred
+`apply-portable-series.sh <manifest> ~/dotfiles`. It requires clean `main` at
+the recorded `origin/main`, re-authors and signs every commit with destination
+identity, validates that profile, and fast-forwards only local `main`. Neither
+script pushes. State explicitly that nothing was pushed and leave review and
+push to the user. If `origin/main` moved, update or rebase the isolated series;
+conflicts are unfinished Git state to resolve or abort, never a completed
+export.
+
+After a destination update is available remotely, run
+`scripts/sync-local-branch.sh <local-branch> <profile>` on another system to
+fast-forward its local `main`, rebase the named non-pushing branch, and validate
+the selected profile. The script requires clean worktrees and never pushes. If
+the rebase conflicts, resolve and continue or abort; after a completed manual
+continuation, rerun with `--validate` to perform the skipped validation.
 
 ### Update workflow
 
@@ -481,15 +524,24 @@ source.
   transfer location such as `~/Downloads`, provide its checksum and invocation,
   and ask the user to transfer that file to the target computer before running
   it.
+- Portable patch files, apply scripts, and application command blocks must never
+  push. Stop after applying and validating the local branch, state explicitly
+  that nothing was pushed, and require the user to review and push it.
 - Agent-assisted commits must include an `Assisted-by:` trailer recording the
   actual product, model/version, agent, and reasoning level for that session,
   for example `Assisted-by: ChatGPT (gpt-5.6-sol, medium, Codex)`. Never copy
   stale attribution metadata; if any field is unavailable, ask before committing
   rather than guessing.
-- Keep commit and patch subjects at 72 characters or fewer. Wrap message prose
-  at 72 columns where practical and never exceed 80 columns; trailers, URLs,
-  code, paths, and other unbreakable text are exempt. Markdown prose follows the
-  existing `.editorconfig` 80-column ceiling.
+- Follow the Linux kernel's commit-message conventions: one logical change per
+  commit, an imperative `subsystem: summary` subject of at most 72 characters,
+  and a self-contained body that explains the problem or ownership constraint
+  before the implementation. Commit messages are valid Markdown and ordinary
+  prose never exceeds 80 characters; trailers, URLs, code, paths, and other
+  unbreakable text are exempt. Before committing through Claude Code, Codex, or
+  OpenCode, run `scripts/lint_commit_message.py <message-file>`. The managed
+  global `commit-msg` hook enforces this policy for every commit and preserves
+  any initial `Assisted-by:` trailer. See
+  <https://www.kernel.org/doc/html/latest/process/submitting-patches.html>.
 - Prefer adding packages to `home.nix`'s `home.packages` list (or to a module's
   `default.nix`) over installing system-wide. Resolve binary collisions
   explicitly with `lib.hiPrio` / `lib.lowPrio` as already done for `gcc` /

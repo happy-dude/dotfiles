@@ -1,17 +1,9 @@
 {
+  homes,
   lib,
-  mkHome,
   pkgs,
 }: let
-  stachan = mkHome {
-    username = "stachan";
-    desktop = "gnome";
-  };
-  schan = mkHome {
-    username = "schan";
-    desktop = "plasma";
-    nixPackage = null;
-  };
+  inherit (homes) schan stachan;
   stachanConfig = stachan.config.xdg.configFile."opencode/opencode.json".source;
   schanConfig = schan.config.xdg.configFile."opencode/opencode.json".source;
   languageServerPackages = with pkgs; [

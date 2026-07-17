@@ -3,9 +3,9 @@
   lib,
   pkgs,
   username,
-  zedSettingsMaterializer,
   ...
 }: let
+  zedSettingsMaterializer = import ./materializer.nix {inherit pkgs;};
   managedSettings = builtins.fromJSON (builtins.readFile ./.config/zed/settings.json);
   jsonFormat = pkgs.formats.json {};
   staticSettings = jsonFormat.generate "zed-user-settings" managedSettings;

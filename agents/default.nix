@@ -1,5 +1,4 @@
 {
-  codex,
   config,
   lib,
   pkgs,
@@ -8,6 +7,7 @@
   repo = "${config.home.homeDirectory}/dotfiles";
   liveLink = path: config.lib.file.mkOutOfStoreSymlink "${repo}/${path}";
   toml = pkgs.formats.toml {};
+  codex = import ./codex.nix {inherit pkgs;};
   prompts = import ./prompts.nix {inherit lib;};
   withConfigSchema = name: source:
     pkgs.runCommand "codex-profile-${name}-with-schema.toml" {} ''

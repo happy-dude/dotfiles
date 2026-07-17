@@ -246,10 +246,23 @@ never a narration of what you tried.)
   sessions, reproduce it in a fresh instance of the target shell with matching
   login and interactive startup behavior before attributing the result to a
   cache.
+- Follow the Linux kernel's commit-message conventions: one logical change per
+  commit, an imperative `subsystem: summary` subject of at most 72 characters,
+  and a self-contained body that explains the problem or ownership constraint
+  before the implementation. Commit messages are valid Markdown and ordinary
+  prose never exceeds 80 characters; trailers and unbreakable tokens are exempt.
+  Before committing through Claude Code, Codex, or OpenCode, run
+  `scripts/lint_commit_message.py <message-file>`; the managed global
+  `commit-msg` hook enforces the same policy for every commit and preserves any
+  initial `Assisted-by:` trailer. See
+  <https://www.kernel.org/doc/html/latest/process/submitting-patches.html>.
 - Never ask the user to copy and paste base64-encoded executable content. If a
   script is too large to present normally, write it to a real file in an agreed
   transfer location such as `~/Downloads`, provide its checksum and invocation,
   and ask the user to transfer that file before running it.
+- Portable patch files, apply scripts, and application command blocks must never
+  push. Stop after applying and validating the local branch, state explicitly
+  that nothing was pushed, and require the user to review and push it.
 
 ## Tooling
 
@@ -482,20 +495,21 @@ isolation, and resolved configuration must not be published because environment
 substitutions may expose credentials.
 
 Vim, Neovim, and their plugins are locked Nix packages. Shared, Vim-only, and
-Neovim-only plugin lists use native package support; there is no vim-plug
-checkout or mutable plugin updater. Emacs packages come exclusively from
-`programs.emacs.extraPackages`. CoC loads in both editors and owns LSP,
-diagnostics, completion, navigation, and format-on-save; vim-go retains non-LSP
-Go commands. Vim uses bundled EditorConfig and Neovim uses native EditorConfig.
-`vim/.vim/coc-settings.json` is the authoritative, sorted language-server and
-format-on-save matrix; preserve semantic precedence within ordered lists such as
-`rootPatterns`. Home Manager provides every command it names for C/C++, Rust,
-Go, Zig, Perl, Python, Lua, shell, Fish, Clojure, Fennel, Nix, YAML,
-JavaScript/TypeScript, Kotlin, Haskell, Terraform, Markdown, LaTeX, and Typst,
-including project-gated ESLint and Oxlint integrations. Do not reintroduce ALE,
-Pathogen, editorconfig-vim, or mutable plugin binary downloaders.
-`vim/default.nix` builds the managed Tree-sitter runtime, including the explicit
-Org parser omitted by `nvim-treesitter`'s all-grammar set;
+Neovim-only plugin lists use native package support; `vim/default.nix` also owns
+source-pinned CoC Zuban and RustOwl client builds plus local plugin metadata
+overrides. There is no vim-plug checkout or mutable plugin updater. Emacs
+packages come exclusively from `programs.emacs.extraPackages`. CoC loads in both
+editors and owns LSP, diagnostics, completion, navigation, and format-on-save;
+vim-go retains non-LSP Go commands. Vim uses bundled EditorConfig and Neovim
+uses native EditorConfig. `vim/.vim/coc-settings.json` is the authoritative,
+sorted language-server and format-on-save matrix; preserve semantic precedence
+within ordered lists such as `rootPatterns`. Home Manager provides every command
+it names for C/C++, Rust, Go, Zig, Perl, Python, Lua, shell, Fish, Clojure,
+Fennel, Nix, YAML, JavaScript/TypeScript, Kotlin, Haskell, Terraform, Markdown,
+LaTeX, and Typst, including project-gated ESLint and Oxlint integrations. Do not
+reintroduce ALE, Pathogen, editorconfig-vim, or mutable plugin binary
+downloaders. `vim/default.nix` builds the managed Tree-sitter runtime, including
+the explicit Org parser omitted by `nvim-treesitter`'s all-grammar set;
 `checks.x86_64-linux.neovim-org` opens and parses a real Org file with the
 evaluated Neovim runtime from both Home Manager profiles. Do not run mutable
 parser update commands. Backup, swap, and persistent undo stay enabled for
@@ -509,6 +523,8 @@ Nix-managed Rime and retain `home.stateVersion = "26.11"` as their compatibility
 floor. The personal `schan` profile targets Fedora Kinoite/Plasma and uses
 native Determinate Nix with `nixPackage = null`; `stachan` uses the Nix client
 from the locked Nixpkgs input. Kinoite's native `/nix` store is host-visible.
+The flake composes both profiles once and imports formatter and check outputs
+from `treefmt.nix`, `checks/default.nix`, and focused owner `check.nix` files.
 Rime materializes writable Fcitx host settings with prior-source snapshots under
 `~/.local/state/rime/host-config`, preserves runtime-only changes, and fails on
 concurrent declarative/runtime edits. It materializes managed static inputs
@@ -533,12 +549,12 @@ Python; Bash syntax and ShellCheck for `scripts/*.sh`; the focused
 agent-directory migration, and `.gitmodules` formatter; native syntax for
 managed Fish and Zsh files; rclone event classification; guarded Rime host-file
 and ownership-state materialization; Zed settings materialization; focused
-OpenCode package/LSP/schema/theme/telemetry checks; Vim and Neovim secret-state
-exclusions; Emacs parentheses and Org lint for tracked Org files; a real Neovim
-Org Tree-sitter parse; workflows and pinned Actions; Rime Lua; and secret
-scanning. CI runs those checks and locked evaluation of both Home Manager
-profiles. Full builds require the manual `workflow_dispatch` `build_homes`
-input.
+OpenCode package/LSP/schema/theme/telemetry checks; Git commit-message hook
+behavior; Kagi prompt character budgets; Vim and Neovim secret-state exclusions;
+Emacs parentheses and Org lint for tracked Org files; a real Neovim Org
+Tree-sitter parse; workflows and pinned Actions; Rime Lua; and secret scanning.
+CI runs those checks and locked evaluation of both Home Manager profiles. Full
+builds require the manual `workflow_dispatch` `build_homes` input.
 
 That enumeration is a quick reference, not the source of truth — it can go stale
 the moment someone edits `home.nix` without updating this file. If you're unsure
@@ -574,6 +590,16 @@ block) shows exactly what's declared right now. If the two ever disagree, trust
   repository shortlog; `--show-changes` also prints the committed range or,
   without new commits, the staged diff; `--verbose` enables the same diff
   output. Any failed update, validation, or build step prevents activation.
+- **Portable series:** changes prepared on a machine or branch that cannot push
+  the destination remote must exclude that local context. Use
+  `scripts/portable-series.sh start <name>` and `export <name>` to create
+  validated patch/manifest/checksum/apply artifacts from current `origin/main`.
+  On the destination system, `apply-portable-series.sh` re-authors, signs,
+  validates, and fast-forwards local `main`. Neither script pushes. If the base
+  moved, update the isolated series and explicitly resolve or abort conflicts.
+  `sync-local-branch.sh <local-branch> <profile>` can fast-forward `main`,
+  rebase a named non-pushing branch on another system, and validate it; after
+  manually continuing a conflicted rebase, rerun with `--validate`.
 - Don't conflate "not installed on this machine right now" with "doesn't exist"
   — check before either claiming a gap is permanent or recommending the user go
   find it elsewhere.

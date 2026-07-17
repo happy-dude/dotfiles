@@ -1,8 +1,11 @@
 {
   config,
   lib,
+  pkgs,
   ...
-}: {
+}: let
+  commitMsgHook = import ./commit-msg-hook.nix {inherit pkgs;};
+in {
   # Per-machine identity + signing (user.email, user.signingkey, commit/tag
   # gpgsign) live in an untracked ~/.config/git/local.config, included below —
   # keys and email differ per box (git/local.config.example is the template).
@@ -41,6 +44,7 @@
         fsmonitor = false;
         untrackedCache = true;
         pager = "bat";
+        hooksPath = "${config.xdg.configHome}/git/hooks";
       };
       diff = {
         algorithm = "histogram";
@@ -81,6 +85,8 @@
       url."git@github.com:".insteadOf = "https://github.com/";
     };
   };
+
+  xdg.configFile."git/hooks/commit-msg".source = pkgs.lib.getExe commitMsgHook;
 
   # delta (enableGitIntegration) sets per-command [pager] + interactive.diffFilter,
   # not core.pager, so it coexists with core.pager = bat above.

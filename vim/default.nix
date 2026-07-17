@@ -1,4 +1,82 @@
-{pkgs, ...}: let
+{
+  inputs,
+  pkgs,
+  ...
+}: let
+  cocZubanManifest = builtins.fromJSON (
+    builtins.readFile "${inputs.coc_zuban}/package.json"
+  );
+  cocZubanPackage = pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
+    pname = "coc-zuban";
+    version = cocZubanManifest.version;
+    src = inputs.coc_zuban;
+
+    pnpmDeps = pkgs.fetchPnpmDeps {
+      inherit (finalAttrs) pname version src;
+      pnpm = pkgs.pnpm_10;
+      fetcherVersion = 3;
+      hash = "sha256-M+PGb4bQprGZjm6uZsmy80fKFJQc7lV+WOprCXWmXms=";
+    };
+
+    nativeBuildInputs = [
+      pkgs.nodejs
+      pkgs.pnpmConfigHook
+      pkgs.pnpm_10
+    ];
+
+    buildPhase = ''
+      runHook preBuild
+      pnpm build
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+      mkdir -p "$out/lib/node_modules/@yaegassy/coc-zuban"
+      cp -r lib package.json LICENSE README.md \
+        "$out/lib/node_modules/@yaegassy/coc-zuban/"
+      runHook postInstall
+    '';
+
+    meta = {
+      description = "Zuban language server extension for coc.nvim";
+      homepage = "https://github.com/yaegassy/coc-zuban";
+      license = pkgs.lib.licenses.mit;
+    };
+  });
+  cocZubanPlugin = pkgs.vimUtils.buildVimPlugin {
+    inherit (cocZubanPackage) pname version meta;
+    src = "${cocZubanPackage}/lib/node_modules/@yaegassy/coc-zuban";
+  };
+  rustowlManifest = builtins.fromTOML (
+    builtins.readFile "${inputs.rustowl_src}/Cargo.toml"
+  );
+  rustOwlPlugin = pkgs.vimUtils.buildVimPlugin {
+    pname = "rustowl-nvim";
+    version = rustowlManifest.package.version;
+    src = inputs.rustowl_src;
+
+    postInstall = ''
+      find "$out" -mindepth 1 -maxdepth 1 \
+        ! -name lua ! -name ftplugin -exec rm -rf {} +
+    '';
+  };
+  vimSandwichWithLicense = pkgs.vimPlugins.vim-sandwich.overrideAttrs (old: {
+    meta =
+      old.meta
+      // {
+        license = {
+          free = true;
+          fullName = "NYSL 0.9982";
+          redistributable = true;
+          shortName = "NYSL";
+          url = "https://www.kmonos.net/nysl/index.en.html";
+        };
+      };
+  });
+  vimSolarized8WithLicense = pkgs.vimPlugins.vim-solarized8.overrideAttrs (old: {
+    meta = old.meta // {license = pkgs.lib.licenses.mit;};
+  });
   sharedRuntimeFiles = [
     {
       name = "after";
@@ -37,7 +115,7 @@
     coc-markdownlint
     coc-prettier
     coc-rust-analyzer
-    coc-zuban
+    cocZubanPlugin
   ];
 
   sharedPlugins = with pkgs.vimPlugins; [
@@ -65,11 +143,11 @@
     vim-racket
     vim-repeat
     vim-rsi
-    vim-sandwich
+    vimSandwichWithLicense
     vim-sexp
     vim-sexp-mappings-for-regular-people
     vim-signify
-    vim-solarized8
+    vimSolarized8WithLicense
     vim-speeddating
     vim-toml
     vim-unimpaired
@@ -131,7 +209,7 @@ in {
       ++ neovimOnlyPlugins
       ++ [
         {
-          plugin = pkgs.vimPlugins.rustowl;
+          plugin = rustOwlPlugin;
           optional = true;
         }
       ];

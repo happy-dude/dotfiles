@@ -177,167 +177,8 @@
         inputs.neovim-nightly-overlay.overlays.default
         inputs.rust-overlay.overlays.default
         ghostty.overlays.default
-        (final: prev: let
-          cocZubanManifest = builtins.fromJSON (
-            builtins.readFile "${inputs.coc_zuban}/package.json"
-          );
-          cocZubanPackage = final.stdenvNoCC.mkDerivation (finalAttrs: {
-            pname = "coc-zuban";
-            version = cocZubanManifest.version;
-            src = inputs.coc_zuban;
-
-            pnpmDeps = final.fetchPnpmDeps {
-              inherit (finalAttrs) pname version src;
-              pnpm = final.pnpm_10;
-              fetcherVersion = 3;
-              hash = "sha256-M+PGb4bQprGZjm6uZsmy80fKFJQc7lV+WOprCXWmXms=";
-            };
-
-            nativeBuildInputs = [
-              final.nodejs
-              final.pnpmConfigHook
-              final.pnpm_10
-            ];
-
-            buildPhase = ''
-              runHook preBuild
-              pnpm build
-              runHook postBuild
-            '';
-
-            installPhase = ''
-              runHook preInstall
-              mkdir -p "$out/lib/node_modules/@yaegassy/coc-zuban"
-              cp -r lib package.json LICENSE README.md \
-                "$out/lib/node_modules/@yaegassy/coc-zuban/"
-              runHook postInstall
-            '';
-
-            meta = {
-              description = "Zuban language server extension for coc.nvim";
-              homepage = "https://github.com/yaegassy/coc-zuban";
-              license = final.lib.licenses.mit;
-            };
-          });
-          rustowlManifest = builtins.fromTOML (
-            builtins.readFile "${inputs.rustowl_src}/Cargo.toml"
-          );
-        in {
-          roswell = prev.roswell.overrideAttrs (_: {
-            src = inputs.roswell_src;
-          });
-          virtme-ng = final.python3Packages.buildPythonApplication {
-            pname = "virtme-ng";
-            version = "unstable-${builtins.substring 0 8 inputs.virtme_ng_src.lastModifiedDate}";
-            pyproject = true;
-            src = inputs.virtme_ng_src;
-
-            build-system = with final.python3Packages; [
-              argparse-manpage
-              setuptools
-            ];
-
-            dependencies = with final.python3Packages; [
-              argcomplete
-              requests
-            ];
-
-            makeWrapperArgs = [
-              "--prefix"
-              "PATH"
-              ":"
-              (final.lib.makeBinPath [
-                final.busybox
-                final.openssh
-                final.qemu
-                final.socat
-                final.virtiofsd
-              ])
-            ];
-
-            pythonImportsCheck = [
-              "virtme"
-              "virtme_ng"
-            ];
-
-            meta = {
-              description = "Build and run kernels in a virtualized host filesystem";
-              homepage = "https://github.com/arighi/virtme-ng";
-              license = final.lib.licenses.gpl2Only;
-              mainProgram = "vng";
-              platforms = final.lib.platforms.linux;
-            };
-          };
-          vimPlugins =
-            prev.vimPlugins
-            // {
-              coc-zuban = final.vimUtils.buildVimPlugin {
-                inherit (cocZubanPackage) pname version meta;
-                src = "${cocZubanPackage}/lib/node_modules/@yaegassy/coc-zuban";
-              };
-              rustowl = final.vimUtils.buildVimPlugin {
-                pname = "rustowl-nvim";
-                version = rustowlManifest.package.version;
-                src = inputs.rustowl_src;
-
-                postInstall = ''
-                  find "$out" -mindepth 1 -maxdepth 1 \
-                    ! -name lua ! -name ftplugin -exec rm -rf {} +
-                '';
-              };
-              vim-sandwich = prev.vimPlugins.vim-sandwich.overrideAttrs (old: {
-                meta =
-                  old.meta
-                  // {
-                    license = {
-                      free = true;
-                      fullName = "NYSL 0.9982";
-                      redistributable = true;
-                      shortName = "NYSL";
-                      url = "https://www.kmonos.net/nysl/index.en.html";
-                    };
-                  };
-              });
-              vim-solarized8 = prev.vimPlugins.vim-solarized8.overrideAttrs (old: {
-                meta = old.meta // {license = final.lib.licenses.mit;};
-              });
-            };
-        })
       ];
     };
-    codex = import ./agents/codex.nix {inherit pkgs;};
-    rimeHostFiles = import ./rime/host-files.nix {inherit pkgs;};
-    rimeStateManager = import ./rime/state-manager.nix {inherit pkgs;};
-    zedSettingsMaterializer = import ./zed/materializer.nix {inherit pkgs;};
-    sortGitmodules =
-      pkgs.writers.writePython3Bin
-      "sort-gitmodules"
-      {}
-      (builtins.readFile ./scripts/sort_gitmodules.py);
-    sortGitmodulesTest =
-      pkgs.runCommand
-      "sort-gitmodules-test"
-      {nativeBuildInputs = [sortGitmodules];}
-      ''
-        printf '%s\n' \
-          '[submodule "zeta"]' \
-          $'\tpath = modules/zeta' \
-          $'\turl = https://example.invalid/zeta' \
-          '[submodule "alpha"]' \
-          $'\tpath = modules/alpha' \
-          $'\turl = https://example.invalid/alpha' \
-          >.gitmodules
-
-        sort-gitmodules .gitmodules
-        mapfile -t sections < <(grep '^\[submodule' .gitmodules)
-        [[ ''${sections[0]} == '[submodule "alpha"]' ]]
-        [[ ''${sections[1]} == '[submodule "zeta"]' ]]
-        before=$(sha256sum .gitmodules)
-        sort-gitmodules .gitmodules
-        after=$(sha256sum .gitmodules)
-        [[ $before == "$after" ]]
-        touch "$out"
-      '';
     # Build a Home Manager config for a user, desktop, and Rime deployment.
     # The username determines /home/<username>; desktop selects session
     # integration; rimeDeployment selects Nix or legacy Stow file management.
@@ -351,15 +192,11 @@
         inherit pkgs;
         extraSpecialArgs = {
           inherit
-            codex
             inputs
             username
             desktop
             nixPackage
             rimeDeployment
-            rimeHostFiles
-            rimeStateManager
-            zedSettingsMaterializer
             ;
         };
 
@@ -381,11 +218,13 @@
             ./rclone
             ./rime
             ./rime/gnome.nix
+            ./roswell
             ./rustowl
             ./tldr
             ./tmux
             ./wezterm
             ./vim
+            ./virtme-ng
             ./xdg
             ./yt-dlp
             ./zed
@@ -398,406 +237,30 @@
             ./plasma
           ];
       };
-
-    # One `nix fmt` for the whole repo: clang-format (C/C++), Alejandra (Nix),
-    # fish_indent, shfmt, StyLua, Prettier, and Taplo.
-    # shfmt/prettier honor the root .editorconfig; stylua honors
-    # .stylua.toml. Submodule *contents* aren't tracked by this repo, so
-    # treefmt's Git walk skips them.
-    treefmtEval = treefmt-nix.lib.evalModule pkgs {
-      projectRootFile = "flake.nix";
-      enableDefaultExcludes = false;
-      programs = {
-        clang-format = {
-          enable = true;
-          includes = [
-            "*.c"
-            "*.cc"
-            "*.cpp"
-            "*.cxx"
-            "*.h"
-            "*.hh"
-            "*.hpp"
-            "*.hxx"
-          ];
-        };
-        alejandra.enable = true;
-        fish_indent = {
-          enable = true;
-          includes = [
-            "*.fish"
-            "*.fish.example"
-          ];
-        };
-        shfmt = {
-          enable = true;
-          useEditorConfig = true;
-        };
-        stylua.enable = true;
-        prettier = {
-          enable = true;
-          settings.proseWrap = "always";
-        };
-        ruff-format = {
-          enable = true;
-          lineLength = 79;
-        };
-        taplo.enable = true;
-      };
-      settings.excludes = [
-        "agents/prompts/kagi-*.md" # fixed instruction budget; preserve whitespace
-        "other/**" # non-managed reference configs
-        "karabiner/**" # macOS + generated backups
-        "rime/**/*.yaml" # input-method schemas and dictionaries (data, not code)
-        "*.patch"
-        "package-lock.json"
-        "go.mod"
-        "go.sum"
-        ".gitattributes"
-        ".gitignore"
-        ".hgignore"
-        ".svnignore"
-        "*.lock"
-        "LICENSE"
-      ];
-      settings.formatter.gitmodules = {
-        command = lib.getExe sortGitmodules;
-        includes = [".gitmodules"];
-      };
-    };
-  in {
-    homeConfigurations = {
-      "schan" = mkHome {
+    homes = {
+      schan = mkHome {
         username = "schan";
         desktop = "plasma";
         nixPackage = null;
         rimeDeployment = "nix";
       };
-      "stachan" = mkHome {
+      stachan = mkHome {
         username = "stachan";
         desktop = "gnome";
         rimeDeployment = "nix";
       };
     };
-    packages.${system}.home-manager = home-manager.packages.${system}.home-manager;
-    formatter.${system} = treefmtEval.config.build.wrapper;
-
-    checks.${system} = {
-      formatting = treefmtEval.config.build.check self;
-      codex-profile-materializer = codex.checks.profileMaterializer;
-      codex-agent-directory-migration = codex.checks.agentDirectoryMigration;
-      gitmodules-format = sortGitmodulesTest;
-      python =
-        pkgs.runCommand "dotfiles-python-checks"
-        {
-          nativeBuildInputs = [
-            pkgs.python3
-            pkgs.ruff
-          ];
-        }
-        ''
-          ruff format --check --no-cache ${self}
-          ruff check --no-cache ${self}
-          PYTHONPYCACHEPREFIX="$TMPDIR/pycache" \
-            python3 -m compileall -q ${self}
-          touch "$out"
-        '';
-      rclone-org-watcher =
-        pkgs.runCommand "rclone-org-watcher-test"
-        {nativeBuildInputs = [pkgs.python3];}
-        ''
-          test "$(python3 ${self}/rclone/watch_org.py classify notes.org)" = sync
-          test "$(python3 ${self}/rclone/watch_org.py classify org-roam.db)" = ignore
-          test "$(python3 ${self}/rclone/watch_org.py classify org-roam.bak/note.org)" = ignore
-          test "$(python3 ${self}/rclone/watch_org.py classify .#note.org)" = ignore
-          touch "$out"
-        '';
-      rime-state-manager =
-        pkgs.runCommand "rime-state-manager-test"
-        {nativeBuildInputs = [rimeStateManager];}
-        ''
-          mkdir -p home source/subdir state
-          printf '%s\n' owned >marker
-          printf '%s\n' stamp >stamp
-          printf '%s\n' schema >source/subdir/schema.yaml
-          HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
-            rime-state-manager claim "$PWD/marker"
-          HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
-            rime-state-manager deploy \
-              "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
-              subdir/schema.yaml
-          test -L home/.local/share/fcitx5/rime/subdir/schema.yaml
-          HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
-            rime-state-manager release \
-              "$PWD/marker" ${pkgs.coreutils}/bin/true \
-              "$PWD" "$PWD/source" subdir/schema.yaml
-          test ! -e home/.local/share/fcitx5/rime/subdir/schema.yaml
-          touch "$out"
-        '';
-      rime-host-files = pkgs.runCommand "rime-host-files-test" {nativeBuildInputs = [rimeHostFiles];} ''
-        source_root="$PWD/source"
-        home="$PWD/home"
-        state="$PWD/state"
-        mkdir -p "$source_root/.config/fcitx5/conf" "$source_root/.local/share/fcitx5/themes"
-        printf '%s\n' profile-v1 >"$source_root/.config/fcitx5/profile"
-        printf '%s\n' classic-v1 >"$source_root/.config/fcitx5/conf/classicui.conf"
-        printf '%s\n' rime-v1 >"$source_root/.config/fcitx5/conf/rime.conf"
-
-        HOME="$home" XDG_STATE_HOME="$state" \
-          rime-host-files deploy "$source_root" "$source_root/.local/share/fcitx5/themes"
-        test -f "$home/.config/fcitx5/profile"
-        test ! -L "$home/.config/fcitx5/profile"
-        test "$(stat -c %a "$home/.config/fcitx5/profile")" = 644
-
-        printf '%s\n' runtime-edit >"$home/.config/fcitx5/profile"
-        HOME="$home" XDG_STATE_HOME="$state" \
-          rime-host-files deploy "$source_root" "$source_root/.local/share/fcitx5/themes"
-        grep -qx runtime-edit "$home/.config/fcitx5/profile"
-
-        printf '%s\n' classic-v2 >"$source_root/.config/fcitx5/conf/classicui.conf"
-        HOME="$home" XDG_STATE_HOME="$state" \
-          rime-host-files deploy "$source_root" "$source_root/.local/share/fcitx5/themes"
-        grep -qx classic-v2 "$home/.config/fcitx5/conf/classicui.conf"
-
-        printf '%s\n' profile-v2 >"$source_root/.config/fcitx5/profile"
-        if HOME="$home" XDG_STATE_HOME="$state" \
-          rime-host-files deploy "$source_root" "$source_root/.local/share/fcitx5/themes"; then
-          echo "accepted conflicting Rime host-file updates" >&2
-          exit 1
-        fi
-
-        printf '%s\n' profile-v1 >"$source_root/.config/fcitx5/profile"
-        if HOME="$home" XDG_STATE_HOME="$state" \
-          rime-host-files release "$source_root" "$source_root/.local/share/fcitx5/themes"; then
-          echo "discarded a runtime-modified Rime host file" >&2
-          exit 1
-        fi
-        printf '%s\n' profile-v1 >"$home/.config/fcitx5/profile"
-        HOME="$home" XDG_STATE_HOME="$state" \
-          rime-host-files release "$source_root" "$source_root/.local/share/fcitx5/themes"
-        test ! -e "$home/.config/fcitx5/profile"
-        test ! -e "$home/.local/share/fcitx5/themes"
-        touch "$out"
-      '';
-      zed-settings-materializer =
-        pkgs.runCommand "zed-settings-materializer-test"
-        {
-          nativeBuildInputs = [
-            pkgs.python3
-            zedSettingsMaterializer
-          ];
-        }
-        ''
-          mkdir work
-          printf '%s\n' \
-            '{' \
-            '  "theme": {"mode": "dark"},' \
-            '  "vim_mode": true' \
-            '}' \
-            >work/static.json
-          printf '%s\n' \
-            '{' \
-            '  // Zed accepts JSON5 comments and trailing commas.' \
-            '  theme: {font_size: 14, mode: "light"},' \
-            '  runtime_only: "preserved",' \
-            '}' \
-            >work/settings.json
-
-          materialize-zed-settings work/static.json work/settings.json
-          python3 - work/settings.json <<'PYTHON'
-          import json
-          import stat
-          import sys
-          from pathlib import Path
-
-          path = Path(sys.argv[1])
-          settings = json.loads(path.read_text(encoding="utf-8"))
-          assert settings["theme"] == {"font_size": 14, "mode": "dark"}
-          assert settings["runtime_only"] == "preserved"
-          assert settings["vim_mode"] is True
-          assert stat.S_IMODE(path.stat().st_mode) == 0o600
-          PYTHON
-          touch "$out"
-        '';
-      editor-secret-state =
-        pkgs.runCommand "editor-secret-state-test"
-        {
-          nativeBuildInputs = [
-            pkgs.neovim
-            pkgs.vim
-          ];
-        }
-        ''
-          export HOME="$PWD/home"
-          export DOTFILES_CACHE_VIM=${self}/vim/.vim/vimrc_dir/cache.vim
-          mkdir -p "$HOME/.config/rclone" "$HOME/.config/nix"
-          vim -Nu NONE -i NONE -es -S ${self}/vim/tests/secret-state.vim
-          nvim --headless -u NONE -i NONE -S ${self}/vim/tests/secret-state.vim
-          touch "$out"
-        '';
-
-      scripts =
-        pkgs.runCommand "dotfiles-script-checks"
-        {
-          nativeBuildInputs = [
-            pkgs.bash
-            pkgs.fish
-            pkgs.git
-            pkgs.shellcheck
-            pkgs.zsh
-          ];
-        }
-        ''
-          for script in ${self}/scripts/*.sh; do
-            bash -n "$script"
-            shellcheck -x -a "$script"
-          done
-
-          for script in ${self}/fish/.config/fish/*.fish ${self}/fish/.config/fish/*.fish.example; do
-            fish --no-execute "$script"
-          done
-
-          for script in ${self}/zsh/.zshenv ${self}/zsh/.config/zsh/.z*; do
-            if [ -f "$script" ]; then
-              zsh -n "$script"
-            fi
-          done
-
-          for test_script in ${self}/scripts/test_*.sh; do
-            bash "$test_script"
-          done
-
-          touch "$out"
-        '';
-
-      emacs =
-        pkgs.runCommand "dotfiles-emacs-checks"
-        {
-          nativeBuildInputs = [
-            pkgs.emacs-nox
-            pkgs.findutils
-          ];
-        }
-        ''
-          while IFS= read -r -d ''' file; do
-            emacs --batch --quick "$file" --eval '(check-parens)'
-          done < <(find ${self} -type f -name '*.el' -print0)
-
-          while IFS= read -r -d ''' file; do
-            emacs --batch --quick "$file" \
-              --eval "(require 'org-lint)" \
-              --eval '(let ((reports (org-lint))) (when reports (error "%s: %S" buffer-file-name reports)))'
-          done < <(find ${self} -type f -name '*.org' -print0)
-
-          touch "$out"
-        '';
-
-      neovim-org = let
-        mkProfileCheck = {
-          username,
-          desktop,
-          nixPackage ? pkgs.nixVersions.latest,
-        }: let
-          home = mkHome {
-            inherit username desktop nixPackage;
-            rimeDeployment = "nix";
-          };
-          parserDirectory = home.config.home.file.".local/share/nvim/site/parser".source;
-          queryDirectory = home.config.home.file.".local/share/nvim/site/queries".source;
-          pluginDirectory = home.config.home.file."/home/${username}/.local/share/nvim/site/pack/hm".source;
-          neovim = home.config.programs.neovim.finalPackage;
-          neovimConfig = pkgs.writeText "dotfiles-neovim-${username}-test.vim" ''
-            ${home.config.programs.neovim.extraConfig}
-          '';
-        in
-          pkgs.runCommand "dotfiles-neovim-org-${username}-check"
-          {}
-          ''
-            mkdir -p data/nvim/site/pack home/cache home/state fixture
-            ln -s ${parserDirectory} data/nvim/site/parser
-            ln -s ${queryDirectory} data/nvim/site/queries
-            ln -s ${pluginDirectory} data/nvim/site/pack/hm
-            printf '%s\n' '* Parser check' > fixture/check.org
-
-            HOME="$PWD/home" \
-            XDG_CACHE_HOME="$PWD/home/cache" \
-            XDG_DATA_HOME="$PWD/data" \
-            XDG_STATE_HOME="$PWD/home/state" \
-              ${neovim}/bin/nvim \
-                --headless \
-                -u ${neovimConfig} \
-                fixture/check.org \
-                -l ${self}/vim/tests/org.lua
-
-            touch "$out"
-          '';
-        stachanCheck = mkProfileCheck {
-          username = "stachan";
-          desktop = "gnome";
-        };
-        schanCheck = mkProfileCheck {
-          username = "schan";
-          desktop = "plasma";
-          nixPackage = null;
-        };
-      in
-        pkgs.runCommand "dotfiles-neovim-org-check"
-        {}
-        ''
-          test -e ${stachanCheck}
-          test -e ${schanCheck}
-          touch "$out"
-        '';
-
-      opencode = import ./opencode/check.nix {inherit lib mkHome pkgs;};
-
-      workflow =
-        pkgs.runCommand "dotfiles-workflow-check"
-        {
-          nativeBuildInputs = [
-            pkgs.actionlint
-            pkgs.findutils
-            pkgs.pinact
-          ];
-        }
-        ''
-          find ${self}/.github/workflows -type f \
-            \( -name '*.yml' -o -name '*.yaml' \) \
-            -exec actionlint {} +
-
-          cd ${self}
-          pinact run --check
-
-          touch "$out"
-        '';
-
-      rime-lua =
-        pkgs.runCommand "dotfiles-rime-lua-tests"
-        {
-          nativeBuildInputs = [
-            pkgs.findutils
-            pkgs.lua
-          ];
-        }
-        ''
-          find ${self}/rime -type f -name '*.lua' -exec luac -p {} +
-
-          cd ${self}
-          lua rime/tests/cangjie5_colemak_remap.lua
-          lua rime/tests/romanization.lua
-
-          touch "$out"
-        '';
-
-      secrets =
-        pkgs.runCommand "dotfiles-secret-scan"
-        {
-          nativeBuildInputs = [pkgs.gitleaks];
-        }
-        ''
-          gitleaks dir --no-banner --no-color --redact ${self}
-          touch "$out"
-        '';
+    treefmtConfig = import ./treefmt.nix {
+      inherit pkgs self treefmt-nix;
     };
+    checksConfig = import ./checks {
+      inherit homes lib pkgs self;
+    };
+  in {
+    homeConfigurations = homes;
+    packages.${system}.home-manager = home-manager.packages.${system}.home-manager;
+    formatter.${system} = treefmtConfig.formatter;
+
+    checks.${system} = treefmtConfig.checks // checksConfig;
   };
 }
