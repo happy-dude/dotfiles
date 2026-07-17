@@ -780,6 +780,8 @@
         assert lib.all (package: lib.elem package schan.config.home.packages) languageServerPackages;
         assert stachan.config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD == "true";
         assert schan.config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD == "true";
+        assert stachan.config.home.sessionVariables.OPENCODE_CONFIG == "/home/stachan/.config/opencode/local.json";
+        assert schan.config.home.sessionVariables.OPENCODE_CONFIG == "/home/schan/.config/opencode/local.json";
           pkgs.runCommand "dotfiles-opencode-check"
           {
             nativeBuildInputs = [
@@ -789,6 +791,7 @@
           }
           ''
             export HOME="$PWD/home"
+            export OPENCODE_CONFIG="$HOME/.config/opencode/local.json"
             export XDG_CACHE_HOME="$HOME/.cache"
             export XDG_CONFIG_HOME="$HOME/.config"
             export XDG_DATA_HOME="$HOME/.local/share"

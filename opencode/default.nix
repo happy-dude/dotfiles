@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   ...
@@ -74,6 +75,7 @@
 in {
   home.packages = [pkgs.opencode];
   home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD = "true";
+  home.sessionVariables.OPENCODE_CONFIG = "${config.xdg.configHome}/opencode/local.json";
   xdg.configFile."opencode/opencode.json".source =
     json.generate "opencode.json" settings;
 }
