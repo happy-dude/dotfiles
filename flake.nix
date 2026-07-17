@@ -773,6 +773,10 @@
           vscode-langservers-extracted
           yaml-language-server
         ];
+        stachanTui = stachan.config.xdg.configFile."opencode/tui.json".source;
+        schanTui = schan.config.xdg.configFile."opencode/tui.json".source;
+        stachanTheme = stachan.config.xdg.configFile."opencode/themes/gruvbox-material.json".source;
+        schanTheme = schan.config.xdg.configFile."opencode/themes/gruvbox-material.json".source;
         stachanPackage =
           lib.findFirst (
             package: lib.hasPrefix "opencode-no-telemetry-" package.name
@@ -797,6 +801,7 @@
           pkgs.runCommand "dotfiles-opencode-check"
           {
             nativeBuildInputs = [
+              pkgs.check-jsonschema
               pkgs.jq
               stachanPackage
             ];
@@ -819,6 +824,31 @@
             grep -F 'unset OTEL_RESOURCE_ATTRIBUTES' \
               "$(command -v opencode)"
             cmp ${stachanConfig} ${schanConfig}
+            cmp ${stachanTui} ${schanTui}
+            cmp ${stachanTheme} ${schanTheme}
+            check-jsonschema \
+              --schemafile ${stachanPackage}/share/opencode/tui.json \
+              ${stachanTui}
+            check-jsonschema \
+              --schemafile ${pkgs.opencode.src}/packages/web/public/theme.json \
+              ${stachanTheme}
+            jq -e '
+              .theme == "gruvbox-material"
+            ' ${stachanTui} >/dev/null
+            jq -e '
+              .defs.bg0 == "#282828" and
+              .defs.fg0 == "#d4be98" and
+              .defs.red == "#ea6962" and
+              .defs.green == "#a9b665" and
+              .defs.blue == "#7daea3" and
+              .defs.diffRed == "#402120" and
+              .defs.diffGreen == "#34381b" and
+              .theme.background == "bg0" and
+              .theme.text == "fg0" and
+              .theme.diffAddedBg == "diffGreen" and
+              .theme.diffRemovedBg == "diffRed" and
+              (.theme | length) >= 50
+            ' ${stachanTheme} >/dev/null
             install -m 0600 ${stachanConfig} \
               "$XDG_CONFIG_HOME/opencode/opencode.json"
 
