@@ -240,6 +240,12 @@ never a narration of what you tried.)
   not run after an earlier failure. Do not use `exit` in commands intended for
   an interactive shell; use a function with `return`, or another construct that
   reports failure without terminating the user's session.
+- In Zsh, lowercase `path` is a special array tied to scalar `PATH`; never use
+  it as a scratch variable because assigning it changes command lookup. Use a
+  descriptive name such as `candidate_path`. When discovery differs between
+  sessions, reproduce it in a fresh instance of the target shell with matching
+  login and interactive startup behavior before attributing the result to a
+  cache.
 - Never ask the user to copy and paste base64-encoded executable content. If a
   script is too large to present normally, write it to a real file in an agreed
   transfer location such as `~/Downloads`, provide its checksum and invocation,
@@ -463,12 +469,17 @@ machine-local session state and configuration writable.
 `opencode/default.nix` owns OpenCode's provider-neutral configuration, TUI
 selection, and Gruvbox Material dark-medium theme. It disables session sharing
 and telemetry export and loads optional host-only extensions from mode-0600
-`~/.config/opencode/local.json`. Private MCP definitions and commands remain
-outside Git and the Nix store. OpenCode discovers compatible
-`~/.claude/skills/*/SKILL.md` files directly; Codex-only system skills must not
-be copied when their tools are unavailable. OpenCode permissions are approval
-gates rather than process isolation, and resolved configuration must not be
-published because environment substitutions may expose credentials.
+`~/.config/opencode/local.json`. Its project-aware LSP activation uses
+Nix-managed commands for explicit servers, pins the Nix-managed TypeScript
+server path, disables overlapping Oxlint diagnostics, and sets
+`OPENCODE_DISABLE_LSP_DOWNLOAD=true`. `opencode/check.nix` owns the focused
+package, LSP, schema, theme, and telemetry checks; `flake.nix` only imports the
+check. Private MCP definitions and commands remain outside Git and the Nix
+store. OpenCode discovers compatible `~/.claude/skills/*/SKILL.md` files
+directly; Codex-only system skills must not be copied when their tools are
+unavailable. OpenCode permissions are approval gates rather than process
+isolation, and resolved configuration must not be published because environment
+substitutions may expose credentials.
 
 Vim, Neovim, and their plugins are locked Nix packages. Shared, Vim-only, and
 Neovim-only plugin lists use native package support; there is no vim-plug
@@ -476,13 +487,15 @@ checkout or mutable plugin updater. Emacs packages come exclusively from
 `programs.emacs.extraPackages`. CoC loads in both editors and owns LSP,
 diagnostics, completion, navigation, and format-on-save; vim-go retains non-LSP
 Go commands. Vim uses bundled EditorConfig and Neovim uses native EditorConfig.
-`vim/.vim/coc-settings.json` is the authoritative language-server and
-format-on-save matrix. Home Manager provides every command it names, including
-the C/C++, Rust, Go, Zig, Perl, Python, Lua, shell, Fish, Clojure, Fennel,
-JavaScript, TypeScript, Markdown, LaTeX, and Typst toolchains. Do not
-reintroduce ALE, Pathogen, editorconfig-vim, or mutable plugin binary
-downloaders. `vim/default.nix` builds the managed Tree-sitter runtime, including
-the explicit Org parser omitted by `nvim-treesitter`'s all-grammar set;
+`vim/.vim/coc-settings.json` is the authoritative, sorted language-server and
+format-on-save matrix; preserve semantic precedence within ordered lists such as
+`rootPatterns`. Home Manager provides every command it names for C/C++, Rust,
+Go, Zig, Perl, Python, Lua, shell, Fish, Clojure, Fennel, Nix, YAML,
+JavaScript/TypeScript, Kotlin, Haskell, Terraform, Markdown, LaTeX, and Typst,
+including project-gated ESLint and Oxlint integrations. Do not reintroduce ALE,
+Pathogen, editorconfig-vim, or mutable plugin binary downloaders.
+`vim/default.nix` builds the managed Tree-sitter runtime, including the explicit
+Org parser omitted by `nvim-treesitter`'s all-grammar set;
 `checks.x86_64-linux.neovim-org` opens and parses a real Org file with the
 evaluated Neovim runtime from both Home Manager profiles. Do not run mutable
 parser update commands. Backup, swap, and persistent undo stay enabled for
@@ -502,7 +515,8 @@ concurrent declarative/runtime edits. It materializes managed static inputs
 separately from writable generated and learned state and refuses to discard host
 edits during a Stow release. Zed remains a Home Manager module sourced from
 `~/dotfiles/zed/.config/zed/settings.json`; the yt-dlp bgutil server and plugin
-remain declarative locked-flake builds.
+remain declarative locked-flake builds. The shared `home.nix` profile also
+installs `lazygit` and the language tooling used by CoC and OpenCode.
 
 The flake pins registry and `NIX_PATH` resolution to its locked nixpkgs input
 and does not use channels. It optionally includes the untracked
@@ -518,12 +532,13 @@ Python; Bash syntax and ShellCheck for `scripts/*.sh`; the focused
 `scripts/test_*.sh` regression suites; the Codex profile materializer,
 agent-directory migration, and `.gitmodules` formatter; native syntax for
 managed Fish and Zsh files; rclone event classification; guarded Rime host-file
-and ownership-state materialization; Zed settings materialization; Vim and
-Neovim secret-state exclusions; Emacs parentheses and Org lint for tracked Org
-files; a real Neovim Org Tree-sitter parse; workflows and pinned Actions; Rime
-Lua; and secret scanning. CI runs those checks and locked evaluation of both
-Home Manager profiles. Full builds require the manual `workflow_dispatch`
-`build_homes` input.
+and ownership-state materialization; Zed settings materialization; focused
+OpenCode package/LSP/schema/theme/telemetry checks; Vim and Neovim secret-state
+exclusions; Emacs parentheses and Org lint for tracked Org files; a real Neovim
+Org Tree-sitter parse; workflows and pinned Actions; Rime Lua; and secret
+scanning. CI runs those checks and locked evaluation of both Home Manager
+profiles. Full builds require the manual `workflow_dispatch` `build_homes`
+input.
 
 That enumeration is a quick reference, not the source of truth — it can go stale
 the moment someone edits `home.nix` without updating this file. If you're unsure
