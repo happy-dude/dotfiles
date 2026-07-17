@@ -274,6 +274,19 @@
             ./plasma
           ];
       };
+    homes = {
+      schan = mkHome {
+        username = "schan";
+        desktop = "plasma";
+        nixPackage = null;
+        rimeDeployment = "nix";
+      };
+      stachan = mkHome {
+        username = "stachan";
+        desktop = "gnome";
+        rimeDeployment = "nix";
+      };
+    };
 
     # One `nix fmt` for the whole repo: clang-format (C/C++), Alejandra (Nix),
     # fish_indent, shfmt, StyLua, Prettier, and Taplo.
@@ -342,19 +355,7 @@
       };
     };
   in {
-    homeConfigurations = {
-      "schan" = mkHome {
-        username = "schan";
-        desktop = "plasma";
-        nixPackage = null;
-        rimeDeployment = "nix";
-      };
-      "stachan" = mkHome {
-        username = "stachan";
-        desktop = "gnome";
-        rimeDeployment = "nix";
-      };
-    };
+    homeConfigurations = homes;
     packages.${system}.home-manager = home-manager.packages.${system}.home-manager;
     formatter.${system} = treefmtEval.config.build.wrapper;
 
@@ -569,15 +570,7 @@
         '';
 
       neovim-org = let
-        mkProfileCheck = {
-          username,
-          desktop,
-          nixPackage ? pkgs.nixVersions.latest,
-        }: let
-          home = mkHome {
-            inherit username desktop nixPackage;
-            rimeDeployment = "nix";
-          };
+        mkProfileCheck = username: home: let
           parserDirectory = home.config.home.file.".local/share/nvim/site/parser".source;
           queryDirectory = home.config.home.file.".local/share/nvim/site/queries".source;
           pluginDirectory = home.config.home.file."/home/${username}/.local/share/nvim/site/pack/hm".source;
@@ -607,15 +600,8 @@
 
             touch "$out"
           '';
-        stachanCheck = mkProfileCheck {
-          username = "stachan";
-          desktop = "gnome";
-        };
-        schanCheck = mkProfileCheck {
-          username = "schan";
-          desktop = "plasma";
-          nixPackage = null;
-        };
+        stachanCheck = mkProfileCheck "stachan" homes.stachan;
+        schanCheck = mkProfileCheck "schan" homes.schan;
       in
         pkgs.runCommand "dotfiles-neovim-org-check"
         {}
@@ -625,7 +611,7 @@
           touch "$out"
         '';
 
-      opencode = import ./opencode/check.nix {inherit lib mkHome pkgs;};
+      opencode = import ./opencode/check.nix {inherit homes lib pkgs;};
 
       workflow =
         pkgs.runCommand "dotfiles-workflow-check"
