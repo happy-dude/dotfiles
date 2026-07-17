@@ -225,15 +225,11 @@
         inherit pkgs;
         extraSpecialArgs = {
           inherit
-            codex
             inputs
             username
             desktop
             nixPackage
             rimeDeployment
-            rimeHostFiles
-            rimeStateManager
-            zedSettingsMaterializer
             ;
         };
 
