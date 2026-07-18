@@ -9,7 +9,7 @@ in
   {
     codex-profile-materializer = codex.checks.profileMaterializer;
     codex-agent-directory-migration = codex.checks.agentDirectoryMigration;
-    opencode = import ../opencode/check.nix {inherit homes lib pkgs;};
+    opencode = import ../opencode/check.nix {inherit homes lib pkgs self;};
   }
   // (import ./python.nix {inherit pkgs self;})
   // (import ./secrets.nix {inherit pkgs self;})

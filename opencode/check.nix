@@ -2,21 +2,38 @@
   homes,
   lib,
   pkgs,
+  self,
 }: let
   inherit (homes) schan stachan;
   stachanConfig = stachan.config.xdg.configFile."opencode/opencode.json".source;
   schanConfig = schan.config.xdg.configFile."opencode/opencode.json".source;
   languageServerPackages = with pkgs; [
+    bash-language-server
+    clojure-lsp
     eslint
+    fennel-ls
+    fish-lsp
+    gopls
     haskell-language-server
     kotlin-language-server
+    (lib.lowPrio clang-tools)
+    lua-language-server
+    marksman
     nixd
     oxlint
+    perlnavigator
+    ruff
+    rust-analyzer
     terraform-ls
+    texlab
+    tinymist
     typescript
     typescript-language-server
+    vim-language-server
     vscode-langservers-extracted
     yaml-language-server
+    zls
+    zuban
   ];
   stachanTui = stachan.config.xdg.configFile."opencode/tui.json".source;
   schanTui = schan.config.xdg.configFile."opencode/tui.json".source;
@@ -45,11 +62,13 @@ in
   assert schan.config.home.sessionVariables.OPENCODE_CONFIG == "/home/schan/.config/opencode/local.json";
     pkgs.runCommand "dotfiles-opencode-check"
     {
-      nativeBuildInputs = [
-        pkgs.check-jsonschema
-        pkgs.jq
-        stachanPackage
-      ];
+      nativeBuildInputs =
+        [
+          pkgs.check-jsonschema
+          pkgs.jq
+          stachanPackage
+        ]
+        ++ languageServerPackages;
     }
     ''
       export HOME="$PWD/home"
@@ -62,6 +81,34 @@ in
       export XDG_DATA_HOME="$HOME/.local/share"
       export XDG_STATE_HOME="$HOME/.local/state"
       mkdir -p "$XDG_CONFIG_HOME/opencode"
+      for command in \
+        bash-language-server \
+        clangd \
+        clojure-lsp \
+        fennel-ls \
+        fish-lsp \
+        gopls \
+        haskell-language-server-wrapper \
+        kotlin-language-server \
+        lua-language-server \
+        marksman \
+        nixd \
+        perlnavigator \
+        ruff \
+        rust-analyzer \
+        terraform-ls \
+        texlab \
+        tinymist \
+        typescript-language-server \
+        vim-language-server \
+        vscode-eslint-language-server \
+        vscode-json-language-server \
+        yaml-language-server \
+        zls \
+        zuban
+      do
+        command -v "$command" >/dev/null
+      done
       grep -F 'unset OTEL_EXPORTER_OTLP_ENDPOINT' \
         "$(command -v opencode)"
       grep -F 'unset OTEL_EXPORTER_OTLP_HEADERS' \
@@ -111,5 +158,42 @@ in
         .agent.kernel.mode == "all" and
         .agent.language.mode == "all"
       ' resolved.json >/dev/null
+
+      mkdir project
+      install -m 0600 ${self}/opencode.json project/opencode.json
+      (
+        cd project
+        opencode debug config >../project.json
+      )
+      jq -e --arg home "$HOME" '
+        .lsp.bash.command == ["bash-language-server", "start"] and
+        .lsp.clangd.command == ["clangd", "--background-index", "--clang-tidy"] and
+        .lsp["clojure-lsp"].command == ["clojure-lsp", "listen"] and
+        .lsp.eslint.command == ["vscode-eslint-language-server", "--stdio"] and
+        .lsp["fennel-ls"].command == ["fennel-ls", "--server"] and
+        .lsp["fish-lsp"].command == ["fish-lsp", "start"] and
+        .lsp.gopls.command == ["gopls"] and
+        .lsp["haskell-language-server"].command ==
+          ["haskell-language-server-wrapper", "--lsp"] and
+        .lsp["json-ls"].command == ["vscode-json-language-server", "--stdio"] and
+        .lsp["kotlin-ls"].command == ["kotlin-language-server"] and
+        .lsp["lua-ls"].command == ["lua-language-server"] and
+        .lsp.marksman.command == ["marksman", "server"] and
+        .lsp.nixd.command == ["nixd"] and
+        .lsp.oxlint.disabled == true and
+        .lsp.perlnavigator.command == ["perlnavigator", "--stdio"] and
+        .lsp.ruff.command == ["ruff", "server"] and
+        .lsp.rust.command == ["rust-analyzer"] and
+        .lsp.terraform.command == ["terraform-ls", "serve"] and
+        .lsp.texlab.command == ["texlab"] and
+        .lsp.tinymist.command == ["tinymist", "lsp"] and
+        .lsp.typescript.command == ["typescript-language-server", "--stdio"] and
+        .lsp.typescript.initialization.tsserver.path ==
+          ($home + "/.local/share/nix-typescript/lib/tsserver.js") and
+        .lsp["vim-ls"].command == ["vim-language-server", "--stdio"] and
+        .lsp["yaml-ls"].command == ["yaml-language-server", "--stdio"] and
+        .lsp.zls.command == ["zls"] and
+        .lsp.zuban.command == ["zuban", "server"]
+      ' project.json >/dev/null
       touch "$out"
     ''

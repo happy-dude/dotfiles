@@ -1,0 +1,93 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": {
+    "bash": {
+      "command": ["bash-language-server", "start"]
+    },
+    "clangd": {
+      "command": ["clangd", "--background-index", "--clang-tidy"]
+    },
+    "clojure-lsp": {
+      "command": ["clojure-lsp", "listen"]
+    },
+    "eslint": {
+      "command": ["vscode-eslint-language-server", "--stdio"]
+    },
+    "fennel-ls": {
+      "command": ["fennel-ls", "--server"],
+      "extensions": [".fnl"]
+    },
+    "fish-lsp": {
+      "command": ["fish-lsp", "start"],
+      "extensions": [".fish"]
+    },
+    "gopls": {
+      "command": ["gopls"]
+    },
+    "haskell-language-server": {
+      "command": ["haskell-language-server-wrapper", "--lsp"]
+    },
+    "json-ls": {
+      "command": ["vscode-json-language-server", "--stdio"],
+      "extensions": [".json", ".jsonc"]
+    },
+    "kotlin-ls": {
+      "command": ["kotlin-language-server"]
+    },
+    "lua-ls": {
+      "command": ["lua-language-server"]
+    },
+    "marksman": {
+      "command": ["marksman", "server"],
+      "extensions": [".md", ".markdown"]
+    },
+    "nixd": {
+      "command": ["nixd"]
+    },
+    "oxlint": {
+      "disabled": true
+    },
+    "perlnavigator": {
+      "command": ["perlnavigator", "--stdio"],
+      "extensions": [".pl", ".pm", ".t"]
+    },
+    "ruff": {
+      "command": ["ruff", "server"],
+      "extensions": [".py", ".pyi"]
+    },
+    "rust": {
+      "command": ["rust-analyzer"]
+    },
+    "terraform": {
+      "command": ["terraform-ls", "serve"]
+    },
+    "texlab": {
+      "command": ["texlab"]
+    },
+    "tinymist": {
+      "command": ["tinymist", "lsp"]
+    },
+    "typescript": {
+      "command": ["typescript-language-server", "--stdio"],
+      "initialization": {
+        "tsserver": {
+          "path": "{env:HOME}/.local/share/nix-typescript/lib/tsserver.js"
+        }
+      }
+    },
+    "vim-ls": {
+      "command": ["vim-language-server", "--stdio"],
+      "extensions": [".vim"]
+    },
+    "yaml-ls": {
+      "command": ["yaml-language-server", "--stdio"]
+    },
+    "zls": {
+      "command": ["zls"]
+    },
+    "zuban": {
+      "command": ["zuban", "server"],
+      "extensions": [".py", ".pyi"]
+    }
+  }
+}

@@ -6,8 +6,6 @@
 }: let
   prompts = import ../agents/prompts.nix {inherit lib;};
   json = pkgs.formats.json {};
-  enableLsp = false;
-  lspDefinitions = import ./lsp.nix {inherit pkgs;};
   opencode = pkgs.symlinkJoin {
     name = "opencode-no-telemetry-${pkgs.opencode.version}";
     paths = [pkgs.opencode];
@@ -22,10 +20,7 @@
   settings = {
     "$schema" = "https://opencode.ai/config.json";
     autoupdate = false;
-    lsp =
-      if enableLsp
-      then lspDefinitions
-      else false;
+    lsp = false;
     share = "disabled";
     experimental.openTelemetry = false;
     permission = {
