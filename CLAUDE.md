@@ -211,24 +211,22 @@ and installs StyLua's config under `~/.config/stylua`.
   only from the OpenCode process, asks before shell commands and
   external-directory access, and reuses the canonical agent prompts. OpenCode
   permissions are approval gates rather than a security sandbox; use process
-  isolation for untrusted repositories. Global LSP feedback is disabled in favor
-  of repository format, lint, typecheck, test, and build commands.
-  `opencode/lsp.nix` retains the Nix-managed server definitions for deliberate
-  re-enablement, including the pinned TypeScript server path and disabled
-  overlapping Oxlint diagnostics; the LSP permission and
-  `OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured. Enable LSP when
-  your project benefits from additional language-server feedback. The module
-  also owns `tui.json` and the shared Gruvbox Material dark-medium theme.
+  isolation for untrusted repositories. Global LSP feedback remains disabled.
+  The repository-root `opencode.json` enables LSP feedback only for this
+  checkout, invokes the Nix-managed server commands, uses the stable TypeScript
+  SDK link, and disables overlapping Oxlint diagnostics. The LSP permission and
+  `OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured. The module also
+  owns `tui.json` and the shared Gruvbox Material dark-medium theme.
   `OPENCODE_CONFIG` points to the optional mode-0600
   `~/.config/opencode/local.json` for private MCP definitions and other
   host-only extensions. Machine-local commands belong under
   `~/.config/opencode/commands`; OpenCode also discovers compatible skills from
   `~/.claude/skills` without copying them into this repository. Provider
   credentials and client-specific state remain outside generated Nix paths.
-  `opencode/check.nix` owns the focused package, disabled-LSP, schema, theme,
-  and telemetry checks; `flake.nix` only imports that check. Resolved debug
-  output may contain substituted credentials and must not be copied wholesale
-  into logs or bug reports.
+  `opencode/check.nix` owns the focused package, global and project LSP, schema,
+  theme, and telemetry checks; `flake.nix` only imports that check. Resolved
+  debug output may contain substituted credentials and must not be copied
+  wholesale into logs or bug reports.
 - **`rclone/`** installs the pinned rclone client and schedules guarded bisync
   between `~/org` and `box:org`. A recursive inotify watcher batches local
   changes five minutes after the first event; a 15-minute timer catches remote
