@@ -601,10 +601,11 @@ block) shows exactly what's declared right now. If the two ever disagree, trust
 - **Portable series:** changes prepared on a machine or branch that cannot push
   the destination remote must exclude that local context. Use
   `scripts/portable-series.sh start <name>` and `export <name>` to create
-  validated patch/manifest/checksum/apply artifacts from current `origin/main`.
-  On the destination system, `apply-portable-series.sh` re-authors, signs,
-  validates, and fast-forwards local `main`. Neither script pushes. If the base
-  moved, update the isolated series and explicitly resolve or abort conflicts.
+  validated patch/manifest/checksum artifacts and a series-qualified
+  `apply-dotfiles-<name>.sh` helper from current `origin/main`. On the
+  destination system, that helper re-authors, signs, validates, and
+  fast-forwards local `main`. Neither script pushes. If the base moved, update
+  the isolated series and explicitly resolve or abort conflicts.
   `sync-local-branch.sh <local-branch> <profile>` can fast-forward `main`,
   rebase a named non-pushing branch on another system, and validate it; after
   manually continuing a conflicted rebase, rerun with `--validate`.
