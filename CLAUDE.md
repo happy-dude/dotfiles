@@ -416,12 +416,29 @@ active branch, and any active `git am` operation to abort. If `origin/main`
 moved, update or rebase the isolated series; conflicts are unfinished Git state
 to resolve or abort, never a completed export.
 
-After a destination update is available remotely, run
-`scripts/sync-local-branch.sh <local-branch> <profile>` on another system to
-fast-forward its local `main`, rebase the named non-pushing branch, and validate
-the selected profile. The script requires clean worktrees and never pushes. If
-the rebase conflicts, resolve and continue or abort; after a completed manual
-continuation, rerun with `--validate` to perform the skipped validation.
+After a destination update is available remotely, synchronize another system
+with:
+
+```bash
+scripts/sync-local-branch.sh <local-branch> <profile> [repository]
+scripts/sync-local-branch.sh --validate <local-branch> <profile> [repository]
+```
+
+Sync mode fetches `main` directly into the `origin/main` remote-tracking ref,
+fast-forwards local `main`, rebases the named local-only branch, and validates
+the selected profile. The script requires real clean worktrees, rejects prunable
+registrations and branches with an upstream, and never pushes or activates.
+Formatting, flake checks, and the profile build are reported as separate phases
+without a fixed timeout.
+
+Validate mode performs no fetch or rebase. It requires local `main` to equal the
+cached `origin/main` tip and the local-only branch to descend from that tip. Use
+it after manually completing a conflicted rebase or after an interrupted or
+failed validation phase. A validation failure does not roll back a completed
+fast-forward or rebase; its output identifies the phase and prints the exact
+rerun command. Conflict output uses the branch worktree explicitly for continue
+and abort commands, so it remains correct when the script was invoked from a
+different directory.
 
 ### Update workflow
 
