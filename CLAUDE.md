@@ -211,20 +211,24 @@ and installs StyLua's config under `~/.config/stylua`.
   only from the OpenCode process, asks before shell commands and
   external-directory access, and reuses the canonical agent prompts. OpenCode
   permissions are approval gates rather than a security sandbox; use process
-  isolation for untrusted repositories. Its project-aware LSP activation uses
-  Nix-managed commands for explicit server definitions, pins the Nix-managed
-  TypeScript server path, disables overlapping Oxlint diagnostics, and sets
-  `OPENCODE_DISABLE_LSP_DOWNLOAD=true`. The module also owns `tui.json` and the
-  shared Gruvbox Material dark-medium theme. `OPENCODE_CONFIG` points to the
-  optional mode-0600 `~/.config/opencode/local.json` for private MCP definitions
-  and other host-only extensions. Machine-local commands belong under
+  isolation for untrusted repositories. Global LSP feedback is disabled in favor
+  of repository format, lint, typecheck, test, and build commands.
+  `opencode/lsp.nix` retains the Nix-managed server definitions for deliberate
+  re-enablement, including the pinned TypeScript server path and disabled
+  overlapping Oxlint diagnostics; the LSP permission and
+  `OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured. Enable LSP when
+  your project benefits from additional language-server feedback. The module
+  also owns `tui.json` and the shared Gruvbox Material dark-medium theme.
+  `OPENCODE_CONFIG` points to the optional mode-0600
+  `~/.config/opencode/local.json` for private MCP definitions and other
+  host-only extensions. Machine-local commands belong under
   `~/.config/opencode/commands`; OpenCode also discovers compatible skills from
   `~/.claude/skills` without copying them into this repository. Provider
   credentials and client-specific state remain outside generated Nix paths.
-  `opencode/check.nix` owns the focused package, LSP, schema, theme, and
-  telemetry checks; `flake.nix` only imports that check. Resolved debug output
-  may contain substituted credentials and must not be copied wholesale into logs
-  or bug reports.
+  `opencode/check.nix` owns the focused package, disabled-LSP, schema, theme,
+  and telemetry checks; `flake.nix` only imports that check. Resolved debug
+  output may contain substituted credentials and must not be copied wholesale
+  into logs or bug reports.
 - **`rclone/`** installs the pinned rclone client and schedules guarded bisync
   between `~/org` and `box:org`. A recursive inotify watcher batches local
   changes five minutes after the first event; a 15-minute timer catches remote
@@ -385,17 +389,32 @@ context out of portable history:
 placeholder identity. `export` requires a clean unchanged base, lints every
 commit message, validates both Home Manager profiles, and writes a patch,
 manifest, checksum file, and reusable apply script to `~/Downloads` by default.
+It also writes a checksummed `dotfiles-<name>.tar.gz` containing those files for
+single-file transfer. Export builds every artifact in a temporary directory and
+publishes the checksum markers last, so an incomplete replacement cannot
+validate as current.
+
 Callers may set `PORTABLE_FORBIDDEN_PATTERN` for machine-local content policy;
-the pattern itself does not enter portable configuration.
+the pattern itself does not enter portable configuration. Export scans commit
+metadata and zero-context changed content before expensive validation, then
+scans the generated patch before publication. It reports only the category and
+line numbers of matches so private text is not echoed. Recognized `Assisted-by:`
+commit trailers are omitted from metadata and patch matching because they record
+required session attribution. Attribution-shaped lines in tracked file content
+remain subject to the policy.
 
 On the destination computer, verify the checksum file and run the transferred
 `apply-portable-series.sh <manifest> ~/dotfiles`. It requires clean `main` at
 the recorded `origin/main`, re-authors and signs every commit with destination
 identity, validates that profile, and fast-forwards only local `main`. Neither
-script pushes. State explicitly that nothing was pushed and leave review and
-push to the user. If `origin/main` moved, update or rebase the isolated series;
-conflicts are unfinished Git state to resolve or abort, never a completed
-export.
+script pushes. The archive workflow first verifies
+`dotfiles-<name>.tar.gz.sha256`, extracts its `dotfiles-<name>` directory, and
+runs the included apply script and manifest. State explicitly that nothing was
+pushed and leave review and push to the user. If application stops after
+creating its temporary branch, the failure output identifies that branch, the
+active branch, and any active `git am` operation to abort. If `origin/main`
+moved, update or rebase the isolated series; conflicts are unfinished Git state
+to resolve or abort, never a completed export.
 
 After a destination update is available remotely, run
 `scripts/sync-local-branch.sh <local-branch> <profile>` on another system to

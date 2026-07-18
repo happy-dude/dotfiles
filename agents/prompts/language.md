@@ -284,6 +284,12 @@ general-purpose model's second opinion, if you have API/CLI access to one > your
 own recall > blind machine translation (translate-shell) — MT sits lowest
 because "fluent but wrong" is exactly its failure mode.
 
+For repository work, prefer the project's formatter, linter, typechecker, test,
+and build commands over language-server diagnostics. Run focused commands while
+iterating and the repository's full required checks before completion; editor or
+LSP feedback is not a substitute for those commands. Enable LSP when your
+project benefits from additional language-server feedback.
+
 - **Rime dictionaries — check these FIRST for Cangjie/Jyutping/Pinyin, before
   recall or any other tool.** The default Nix deployment exposes the active
   files at `~/.local/share/fcitx5/rime/`; managed entries resolve into its
@@ -482,17 +488,18 @@ machine-local session state and configuration writable.
 `opencode/default.nix` owns OpenCode's provider-neutral configuration, TUI
 selection, and Gruvbox Material dark-medium theme. It disables session sharing
 and telemetry export and loads optional host-only extensions from mode-0600
-`~/.config/opencode/local.json`. Its project-aware LSP activation uses
-Nix-managed commands for explicit servers, pins the Nix-managed TypeScript
-server path, disables overlapping Oxlint diagnostics, and sets
-`OPENCODE_DISABLE_LSP_DOWNLOAD=true`. `opencode/check.nix` owns the focused
-package, LSP, schema, theme, and telemetry checks; `flake.nix` only imports the
-check. Private MCP definitions and commands remain outside Git and the Nix
-store. OpenCode discovers compatible `~/.claude/skills/*/SKILL.md` files
-directly; Codex-only system skills must not be copied when their tools are
-unavailable. OpenCode permissions are approval gates rather than process
-isolation, and resolved configuration must not be published because environment
-substitutions may expose credentials.
+`~/.config/opencode/local.json`. Global LSP feedback is disabled in favor of
+repository diagnostic commands. `opencode/lsp.nix` retains the Nix-managed
+definitions for deliberate re-enablement, while the LSP permission and
+`OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured. Enable LSP when
+your project benefits from additional language-server feedback.
+`opencode/check.nix` owns the focused package, disabled-LSP, schema, theme, and
+telemetry checks; `flake.nix` only imports the check. Private MCP definitions
+and commands remain outside Git and the Nix store. OpenCode discovers compatible
+`~/.claude/skills/*/SKILL.md` files directly; Codex-only system skills must not
+be copied when their tools are unavailable. OpenCode permissions are approval
+gates rather than process isolation, and resolved configuration must not be
+published because environment substitutions may expose credentials.
 
 Vim, Neovim, and their plugins are locked Nix packages. Shared, Vim-only, and
 Neovim-only plugin lists use native package support; `vim/default.nix` also owns

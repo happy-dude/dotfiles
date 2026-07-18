@@ -105,13 +105,7 @@ in
         .permission.bash == "ask" and
         .permission.external_directory == "ask" and
         .permission.lsp == "allow" and
-        .lsp.eslint.command == ["vscode-eslint-language-server", "--stdio"] and
-        .lsp["kotlin-ls"].command == ["kotlin-language-server"] and
-        .lsp.oxlint.disabled == true and
-        .lsp.typescript.initialization.tsserver.path ==
-          "${pkgs.typescript}/lib/node_modules/typescript/lib/tsserver.js" and
-        .lsp["fish-lsp"].command == ["fish-lsp", "start"] and
-        .lsp.zuban.command == ["zuban", "server"] and
+        .lsp == false and
         (.model == null) and
         (.enabled_providers == null) and
         .agent.kernel.mode == "all" and

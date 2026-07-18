@@ -52,21 +52,118 @@ validate_forbidden_pattern() {
 
 scan_forbidden_content() {
   local pattern=$1
-  local patch_path=$2
+  local category=$2
+  local input_path=$3
+  local matches
   local status
 
   [[ -n $pattern ]] || return 0
-  if grep -Eiq -- "$pattern" "$patch_path"; then
-    rm -f -- "$patch_path"
-    die "forbidden content found in portable patch"
+  if matches=$(grep -Ein -- "$pattern" "$input_path" | cut -d: -f 1); then
+    printf 'error: forbidden content found in %s at line(s): %s\n' \
+      "$category" "$(printf '%s\n' "$matches" | paste -sd, -)" >&2
     return 1
   else
     status=$?
   fi
   if ((status != 1)); then
-    rm -f -- "$patch_path"
-    die "failed to scan portable patch for forbidden content"
+    die "failed to scan portable $category"
   fi
+}
+
+write_scan_inputs() {
+  local worktree=$1
+  local base=$2
+  local metadata_path=$3
+  local content_path=$4
+  local commit
+
+  : >"$metadata_path"
+  while IFS= read -r commit; do
+    git -C "$worktree" show -s --format=%B "$commit" |
+      git interpret-trailers \
+        --if-exists replace \
+        --if-missing doNothing \
+        --trailer 'Assisted-by:' >>"$metadata_path"
+    printf '\n' >>"$metadata_path"
+  done < <(git -C "$worktree" rev-list --reverse "$base..HEAD")
+  git -C "$worktree" diff --binary --full-index --unified=0 \
+    "$base..HEAD" >"$content_path"
+}
+
+scan_series() {
+  local pattern=$1
+  local worktree=$2
+  local base=$3
+  local staging_directory=$4
+  local metadata_path="$staging_directory/commit-metadata.txt"
+  local content_path="$staging_directory/changed-content.diff"
+
+  [[ -n $pattern ]] || return 0
+  write_scan_inputs "$worktree" "$base" "$metadata_path" "$content_path"
+  scan_forbidden_content "$pattern" "commit metadata" "$metadata_path"
+  scan_forbidden_content "$pattern" "changed content" "$content_path"
+}
+
+scan_final_patch() {
+  local pattern=$1
+  local patch_path=$2
+  local staging_directory=$3
+  local scan_path="$staging_directory/final-patch.txt"
+
+  [[ -n $pattern ]] || return 0
+  sed '/^Assisted-by:[[:space:]]/d' "$patch_path" >"$scan_path"
+  scan_forbidden_content "$pattern" "final patch" "$scan_path"
+}
+
+create_bundle() {
+  local staging_directory=$1
+  local bundle_directory=$2
+  local bundle_name=$3
+  local bundle_checksum_name=$4
+  shift 4
+  local artifact_name
+
+  mkdir "$staging_directory/$bundle_directory"
+  for artifact_name in "$@"; do
+    if [[ ! -f $staging_directory/$artifact_name ]]; then
+      die "staged artifact not found: $artifact_name"
+      return 1
+    fi
+    cp -- "$staging_directory/$artifact_name" \
+      "$staging_directory/$bundle_directory/"
+  done
+  tar -C "$staging_directory" -czf "$staging_directory/$bundle_name" \
+    "$bundle_directory"
+  (
+    cd -- "$staging_directory"
+    sha256sum "$bundle_name" >"$bundle_checksum_name"
+  )
+}
+
+publish_artifacts() {
+  local staging_directory=$1
+  local output_directory=$2
+  local checksum_name=$3
+  local bundle_checksum_name=$4
+  shift 4
+  local artifact_name
+
+  for artifact_name in "$@" "$checksum_name" "$bundle_checksum_name"; do
+    if [[ ! -f $staging_directory/$artifact_name ]]; then
+      die "staged artifact not found: $artifact_name"
+      return 1
+    fi
+  done
+
+  rm -f -- \
+    "$output_directory/$checksum_name" \
+    "$output_directory/$bundle_checksum_name"
+  for artifact_name in "$@"; do
+    mv -f -- "$staging_directory/$artifact_name" "$output_directory/"
+  done
+  mv -f -- "$staging_directory/$checksum_name" "$output_directory/"
+  mv -f -- \
+    "$staging_directory/$bundle_checksum_name" "$output_directory/"
 }
 
 worktree_for_branch() {
@@ -153,10 +250,16 @@ export_series() {
   local patch_name="dotfiles-$name.patch"
   local manifest_name="dotfiles-$name.manifest"
   local checksum_name="dotfiles-$name.sha256"
-  local patch_path="$output_directory/$patch_name"
-  local manifest_path="$output_directory/$manifest_name"
+  local bundle_name="dotfiles-$name.tar.gz"
+  local bundle_checksum_name="$bundle_name.sha256"
   local apply_name="apply-portable-series.sh"
+  local staging_directory
+  local staged_patch_path
+  local staged_manifest_path
+  local staged_apply_path
+  local bundle_directory="dotfiles-$name"
   local patch_sha256
+  local forbidden_pattern=${PORTABLE_FORBIDDEN_PATTERN:-}
 
   validate_name "$name"
   worktree=$(worktree_for_branch "$branch_ref") ||
@@ -180,6 +283,11 @@ export_series() {
   fi
   lint_commits "$worktree" "$base"
 
+  validate_forbidden_pattern "$forbidden_pattern"
+  staging_directory=$(mktemp -d "$output_directory/.dotfiles-$name.XXXXXX")
+  trap 'rm -rf -- "$staging_directory"' RETURN
+  scan_series "$forbidden_pattern" "$worktree" "$base" "$staging_directory"
+
   (
     cd -- "$worktree"
     nix fmt .
@@ -192,13 +300,20 @@ export_series() {
       --no-out-link --no-update-lock-file
   )
 
-  validate_forbidden_pattern "${PORTABLE_FORBIDDEN_PATTERN:-}"
+  staged_patch_path="$staging_directory/$patch_name"
+  staged_manifest_path="$staging_directory/$manifest_name"
+  staged_apply_path="$staging_directory/$apply_name"
   git -C "$worktree" format-patch --stdout --base="$base" "$base..HEAD" \
-    >"$patch_path"
-  scan_forbidden_content "${PORTABLE_FORBIDDEN_PATTERN:-}" "$patch_path"
-  patch_sha256=$(sha256sum "$patch_path" | cut -d ' ' -f 1)
+    >"$staged_patch_path"
+  scan_final_patch \
+    "$forbidden_pattern" "$staged_patch_path" "$staging_directory"
+  rm -f -- \
+    "$staging_directory/commit-metadata.txt" \
+    "$staging_directory/changed-content.diff" \
+    "$staging_directory/final-patch.txt"
+  patch_sha256=$(sha256sum "$staged_patch_path" | cut -d ' ' -f 1)
 
-  cat >"$manifest_path" <<EOF
+  cat >"$staged_manifest_path" <<EOF
 version=1
 name=$name
 base=$base
@@ -207,17 +322,39 @@ patch=$patch_name
 sha256=$patch_sha256
 EOF
   cp -- "$repo_root/scripts/apply-portable-series.sh" \
-    "$output_directory/$apply_name"
-  chmod 0755 "$output_directory/$apply_name"
+    "$staged_apply_path"
+  chmod 0755 "$staged_apply_path"
   (
-    cd -- "$output_directory"
+    cd -- "$staging_directory"
     sha256sum "$patch_name" "$manifest_name" "$apply_name" \
       >"$checksum_name"
   )
 
+  create_bundle \
+    "$staging_directory" \
+    "$bundle_directory" \
+    "$bundle_name" \
+    "$bundle_checksum_name" \
+    "$patch_name" \
+    "$manifest_name" \
+    "$checksum_name" \
+    "$apply_name"
+  publish_artifacts \
+    "$staging_directory" \
+    "$output_directory" \
+    "$checksum_name" \
+    "$bundle_checksum_name" \
+    "$patch_name" \
+    "$manifest_name" \
+    "$apply_name" \
+    "$bundle_name"
+  rm -rf -- "$staging_directory"
+  trap - RETURN
+
   printf '%s\n' \
     "Portable artifacts written to $output_directory" \
     "$patch_name" "$manifest_name" "$checksum_name" "$apply_name" \
+    "$bundle_name" "$bundle_checksum_name" \
     "Nothing was pushed. Transfer, review, and apply them on the destination computer."
 }
 
