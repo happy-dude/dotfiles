@@ -150,3 +150,90 @@ if publish_artifacts \
 fi
 test "$(<"$output_directory/series.patch")" = old
 test "$(<"$output_directory/series.sha256")" = old
+
+attached_worktree="$temporary_directory/attached-worktree"
+git branch replay/attached
+git worktree add --quiet "$attached_worktree" replay/attached
+start_error="$temporary_directory/start-error"
+if start_series attached "$temporary_directory/new-attached" \
+  2>"$start_error"; then
+  printf 'reused a replay branch with an attached worktree\n' >&2
+  exit 1
+fi
+grep -Fq \
+  "branch already exists with worktree: replay/attached ($attached_worktree)" \
+  "$start_error"
+git worktree remove --force "$attached_worktree"
+git branch -D replay/attached >/dev/null
+
+git branch replay/unattached
+if start_series unattached "$temporary_directory/new-unattached" \
+  2>"$start_error"; then
+  printf 'reused an unattached replay branch\n' >&2
+  exit 1
+fi
+grep -Fq \
+  'branch already exists without a worktree: replay/unattached' \
+  "$start_error"
+git branch -D replay/unattached >/dev/null
+
+prunable_worktree="$temporary_directory/prunable-worktree"
+git branch replay/prunable
+git worktree add --quiet "$prunable_worktree" replay/prunable
+rm -rf -- "$prunable_worktree"
+if start_series prunable "$temporary_directory/new-prunable" \
+  2>"$start_error"; then
+  printf 'reused a replay branch with a prunable worktree\n' >&2
+  exit 1
+fi
+grep -Fq \
+  'branch already exists with prunable worktree registration: replay/prunable' \
+  "$start_error"
+if export_series prunable "$output_directory" 2>"$start_error"; then
+  printf 'exported from a prunable worktree\n' >&2
+  exit 1
+fi
+grep -Fq \
+  'worktree registration is prunable for branch: replay/prunable' \
+  "$start_error"
+git worktree prune
+git branch -D replay/prunable >/dev/null
+
+existing_path="$temporary_directory/existing-worktree"
+mkdir "$existing_path"
+if start_series existing-path "$existing_path" 2>"$start_error"; then
+  printf 'reused an existing worktree path\n' >&2
+  exit 1
+fi
+grep -Fq "worktree path already exists: $existing_path" "$start_error"
+
+for series_name in one two; do
+  series_staging="$temporary_directory/staging-$series_name"
+  apply_name=$(apply_artifact_name "$series_name")
+  mkdir "$series_staging"
+  printf '%s patch\n' "$series_name" >"$series_staging/$series_name.patch"
+  printf '%s manifest\n' "$series_name" \
+    >"$series_staging/$series_name.manifest"
+  printf '%s apply\n' "$series_name" >"$series_staging/$apply_name"
+  printf '%s bundle\n' "$series_name" \
+    >"$series_staging/$series_name.tar.gz"
+  (
+    cd -- "$series_staging"
+    sha256sum \
+      "$series_name.patch" "$series_name.manifest" "$apply_name" \
+      >"$series_name.sha256"
+    sha256sum "$series_name.tar.gz" >"$series_name.tar.gz.sha256"
+  )
+  publish_artifacts \
+    "$series_staging" "$output_directory" \
+    "$series_name.sha256" "$series_name.tar.gz.sha256" \
+    "$series_name.patch" "$series_name.manifest" "$apply_name" \
+    "$series_name.tar.gz"
+done
+(
+  cd -- "$output_directory"
+  sha256sum -c one.sha256 >/dev/null
+  sha256sum -c two.sha256 >/dev/null
+)
+test -f "$output_directory/apply-dotfiles-one.sh"
+test -f "$output_directory/apply-dotfiles-two.sh"

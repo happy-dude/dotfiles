@@ -63,6 +63,19 @@ format_worktree() {
   fi
 }
 
+require_clean_worktree() {
+  local worktree=$1
+  local label=$2
+  local status
+
+  status=$(git -C "$worktree" status --porcelain=v1 --untracked-files=all)
+  if [[ -n $status ]]; then
+    printf '%s\n' "$status" >&2
+    die "$label worktree is not clean"
+    return 1
+  fi
+}
+
 check_flake() {
   local worktree=$1
 
@@ -191,12 +204,8 @@ main() {
   )
   [[ ! -d $rebase_merge && ! -d $rebase_apply ]] ||
     die "finish or abort the active rebase before running this script"
-  [[ -z $(git -C "$branch_worktree" status \
-    --porcelain=v1 --untracked-files=all) ]] ||
-    die "$local_branch worktree is not clean"
-  [[ -z $(git -C "$main_worktree" status \
-    --porcelain=v1 --untracked-files=all) ]] ||
-    die "main worktree is not clean"
+  require_clean_worktree "$branch_worktree" "$local_branch"
+  require_clean_worktree "$main_worktree" main
 
   if [[ $mode == sync ]]; then
     git -C "$repo" fetch origin \

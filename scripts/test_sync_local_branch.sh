@@ -120,7 +120,20 @@ if run_sync work test-profile "$main_worktree"; then
   exit 1
 fi
 test "$(git -C "$main_worktree" rev-parse origin/main)" = "$old_tracking"
+grep -Fq '?? untracked' "$output"
 grep -Fq 'main worktree is not clean' "$output"
+
+create_fixture dirty-work
+advance_origin shared upstream
+old_tracking=$(git -C "$main_worktree" rev-parse origin/main)
+printf '%s\n' upstream >"$branch_worktree/shared"
+if run_sync work test-profile "$main_worktree"; then
+  printf 'synchronized with a dirty work worktree\n' >&2
+  exit 1
+fi
+test "$(git -C "$main_worktree" rev-parse origin/main)" = "$old_tracking"
+grep -Fq ' M shared' "$output"
+grep -Fq 'work worktree is not clean' "$output"
 
 create_fixture conflict
 commit_work shared local
@@ -135,10 +148,19 @@ test -d "$(git -C "$branch_worktree" rev-parse \
   --path-format=absolute --git-path rebase-merge)"
 printf -v expected_continue 'git -C %q rebase --continue' "$branch_worktree"
 printf -v expected_abort 'git -C %q rebase --abort' "$branch_worktree"
+printf -v expected_validate '  %q --validate %q %q %q' \
+  "$sync_script" work test-profile "$main_worktree"
 grep -Fq "$expected_continue" "$output"
 grep -Fq "$expected_abort" "$output"
-grep -Fq -- '--validate work test-profile' "$output"
-git -C "$branch_worktree" rebase --abort
+grep -Fq "$expected_validate" "$output"
+printf '%s\n' resolved >"$branch_worktree/shared"
+git -C "$branch_worktree" add shared
+GIT_EDITOR=true git -C "$branch_worktree" rebase --continue >/dev/null
+run_sync --validate work test-profile "$main_worktree"
+test "$(git -C "$branch_worktree" merge-base work origin/main)" = \
+  "$remote_head"
+grep -Fq \
+  'Validated local main and work against origin/main.' "$output"
 
 create_fixture validate-only
 advance_origin first first
