@@ -389,17 +389,32 @@ context out of portable history:
 placeholder identity. `export` requires a clean unchanged base, lints every
 commit message, validates both Home Manager profiles, and writes a patch,
 manifest, checksum file, and reusable apply script to `~/Downloads` by default.
+It also writes a checksummed `dotfiles-<name>.tar.gz` containing those files for
+single-file transfer. Export builds every artifact in a temporary directory and
+publishes the checksum markers last, so an incomplete replacement cannot
+validate as current.
+
 Callers may set `PORTABLE_FORBIDDEN_PATTERN` for machine-local content policy;
-the pattern itself does not enter portable configuration.
+the pattern itself does not enter portable configuration. Export scans commit
+metadata and zero-context changed content before expensive validation, then
+scans the generated patch before publication. It reports only the category and
+line numbers of matches so private text is not echoed. Recognized `Assisted-by:`
+commit trailers are omitted from metadata and patch matching because they record
+required session attribution. Attribution-shaped lines in tracked file content
+remain subject to the policy.
 
 On the destination computer, verify the checksum file and run the transferred
 `apply-portable-series.sh <manifest> ~/dotfiles`. It requires clean `main` at
 the recorded `origin/main`, re-authors and signs every commit with destination
 identity, validates that profile, and fast-forwards only local `main`. Neither
-script pushes. State explicitly that nothing was pushed and leave review and
-push to the user. If `origin/main` moved, update or rebase the isolated series;
-conflicts are unfinished Git state to resolve or abort, never a completed
-export.
+script pushes. The archive workflow first verifies
+`dotfiles-<name>.tar.gz.sha256`, extracts its `dotfiles-<name>` directory, and
+runs the included apply script and manifest. State explicitly that nothing was
+pushed and leave review and push to the user. If application stops after
+creating its temporary branch, the failure output identifies that branch, the
+active branch, and any active `git am` operation to abort. If `origin/main`
+moved, update or rebase the isolated series; conflicts are unfinished Git state
+to resolve or abort, never a completed export.
 
 After a destination update is available remotely, run
 `scripts/sync-local-branch.sh <local-branch> <profile>` on another system to
