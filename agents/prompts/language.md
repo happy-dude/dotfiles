@@ -284,6 +284,12 @@ general-purpose model's second opinion, if you have API/CLI access to one > your
 own recall > blind machine translation (translate-shell) — MT sits lowest
 because "fluent but wrong" is exactly its failure mode.
 
+For repository work, prefer the project's formatter, linter, typechecker, test,
+and build commands over language-server diagnostics. Run focused commands while
+iterating and the repository's full required checks before completion; editor or
+LSP feedback is not a substitute for those commands. Enable LSP when your
+project benefits from additional language-server feedback.
+
 - **Rime dictionaries — check these FIRST for Cangjie/Jyutping/Pinyin, before
   recall or any other tool.** The default Nix deployment exposes the active
   files at `~/.local/share/fcitx5/rime/`; managed entries resolve into its

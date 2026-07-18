@@ -171,6 +171,12 @@ could check X" as "let me check X" by default:
   `dpkg -l | grep <pkg>`, `rpm -q <pkg>`, `pacman -Q <pkg>`,
   `apt-cache policy <pkg>` — check installed/available versions directly rather
   than stating one from memory.
+- **Use repository diagnostics as the feedback loop.** Prefer the project's
+  formatter, linter, typechecker, test, and build commands over language-server
+  diagnostics. Run focused commands while iterating and the repository's full
+  required checks before completion; editor or LSP feedback is not a substitute
+  for those commands. Enable LSP when your project benefits from additional
+  language-server feedback.
 - **Never install, modify kernel params, load/unload modules, or run anything
   destructive or system-altering without confirming first** — that's a real,
   potentially hard-to-reverse change to the user's machine, not a read-only
