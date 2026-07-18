@@ -673,17 +673,18 @@ structure.
 - **OpenCode ownership:** `opencode/default.nix` owns the shared configuration,
   TUI selection, and Gruvbox Material dark-medium theme; it disables session
   sharing and telemetry export and loads optional host-only extensions from
-  mode-0600 `~/.config/opencode/local.json`. Its project-aware LSP activation
-  uses Nix-managed commands for explicit servers, pins the Nix-managed
-  TypeScript server path, disables overlapping Oxlint diagnostics, and sets
-  `OPENCODE_DISABLE_LSP_DOWNLOAD=true`. `opencode/check.nix` owns the focused
-  package, LSP, schema, theme, and telemetry checks; `flake.nix` only imports
-  the check. Private MCP definitions and commands must stay outside Git and the
-  Nix store. OpenCode discovers compatible `~/.claude/skills/*/SKILL.md` files
-  directly; do not copy Codex-only system skills whose tools OpenCode does not
-  provide. Treat OpenCode permissions as approval gates, not process isolation,
-  and never publish resolved configuration because environment substitutions may
-  reveal secrets.
+  mode-0600 `~/.config/opencode/local.json`. Global LSP feedback is disabled in
+  favor of repository diagnostic commands. `opencode/lsp.nix` retains the
+  Nix-managed definitions for deliberate re-enablement, while the LSP permission
+  and `OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured. Enable LSP
+  when your project benefits from additional language-server feedback.
+  `opencode/check.nix` owns the focused package, disabled-LSP, schema, theme,
+  and telemetry checks; `flake.nix` only imports the check. Private MCP
+  definitions and commands must stay outside Git and the Nix store. OpenCode
+  discovers compatible `~/.claude/skills/*/SKILL.md` files directly; do not copy
+  Codex-only system skills whose tools OpenCode does not provide. Treat OpenCode
+  permissions as approval gates, not process isolation, and never publish
+  resolved configuration because environment substitutions may reveal secrets.
 - **Machine-local secrets:** Fish may source `~/.config/fish/secrets.fish`, but
   the real file must remain untracked and outside the Nix store. The committed
   example contains placeholders only; install the private copy with mode `0600`.
