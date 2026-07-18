@@ -386,11 +386,11 @@ context out of portable history:
 `start` creates `replay/<name>` at current `origin/main` with a worktree-local
 placeholder identity. `export` requires a clean unchanged base, lints every
 commit message, validates both Home Manager profiles, and writes a patch,
-manifest, checksum file, and reusable apply script to `~/Downloads` by default.
-It also writes a checksummed `dotfiles-<name>.tar.gz` containing those files for
-single-file transfer. Export builds every artifact in a temporary directory and
-publishes the checksum markers last, so an incomplete replacement cannot
-validate as current.
+manifest, checksum file, and series-qualified `apply-dotfiles-<name>.sh` helper
+to `~/Downloads` by default. It also writes a checksummed
+`dotfiles-<name>.tar.gz` containing those files for single-file transfer. Export
+builds every artifact in a temporary directory and publishes the checksum
+markers last, so an incomplete replacement cannot validate as current.
 
 Callers may set `PORTABLE_FORBIDDEN_PATTERN` for machine-local content policy;
 the pattern itself does not enter portable configuration. Export scans commit
@@ -402,7 +402,7 @@ required session attribution. Attribution-shaped lines in tracked file content
 remain subject to the policy.
 
 On the destination computer, verify the checksum file and run the transferred
-`apply-portable-series.sh <manifest> ~/dotfiles`. It requires clean `main` at
+`apply-dotfiles-<name>.sh <manifest> ~/dotfiles`. It requires clean `main` at
 the recorded `origin/main`, re-authors and signs every commit with destination
 identity, validates that profile, and fast-forwards only local `main`. Neither
 script pushes. The archive workflow first verifies

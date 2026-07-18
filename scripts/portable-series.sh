@@ -170,39 +170,68 @@ worktree_for_branch() {
   local wanted_ref=$1
   local current_worktree=
   local current_branch=
+  local current_prunable=false
+  local saw_prunable=false
+  local field
 
-  while IFS= read -r line; do
-    case $line in
-    "worktree "*) current_worktree=${line#worktree } ;;
-    "branch "*) current_branch=${line#branch } ;;
+  while IFS= read -r -d '' field; do
+    case $field in
+    "worktree "*) current_worktree=${field#worktree } ;;
+    "branch "*) current_branch=${field#branch } ;;
+    "prunable"*) current_prunable=true ;;
     "")
       if [[ $current_branch == "$wanted_ref" ]]; then
-        printf '%s\n' "$current_worktree"
-        return 0
+        if [[ $current_prunable == true ]]; then
+          saw_prunable=true
+        elif git -C "$current_worktree" rev-parse --is-inside-work-tree \
+          >/dev/null 2>&1; then
+          printf '%s\n' "$current_worktree"
+          return 0
+        fi
       fi
       current_worktree=
       current_branch=
+      current_prunable=false
       ;;
     esac
-  done < <(
-    git -C "$repo_root" worktree list --porcelain
-    printf '\n'
-  )
+  done < <(git -C "$repo_root" worktree list --porcelain -z)
+
+  [[ $saw_prunable == false ]] || return 2
   return 1
+}
+
+apply_artifact_name() {
+  printf 'apply-dotfiles-%s.sh\n' "$1"
 }
 
 start_series() {
   local name=$1
   local worktree=${2:-"/tmp/dotfiles-portable-$name"}
   local branch="replay/$name"
+  local branch_ref="refs/heads/$branch"
+  local existing_worktree
+  local lookup_status
 
   validate_name "$name"
-  git -C "$repo_root" fetch origin main
-  if git -C "$repo_root" show-ref --verify --quiet "refs/heads/$branch"; then
-    die "branch already exists: $branch"
+  if git -C "$repo_root" show-ref --verify --quiet "$branch_ref"; then
+    if existing_worktree=$(worktree_for_branch "$branch_ref"); then
+      die "branch already exists with worktree: $branch ($existing_worktree)"
+    else
+      lookup_status=$?
+      if ((lookup_status == 2)); then
+        die "branch already exists with prunable worktree registration: $branch"
+      else
+        die "branch already exists without a worktree: $branch"
+      fi
+    fi
+    return 1
   fi
-  [[ ! -e $worktree ]] || die "worktree path already exists: $worktree"
+  if [[ -e $worktree ]]; then
+    die "worktree path already exists: $worktree"
+    return 1
+  fi
 
+  git -C "$repo_root" fetch origin main
   git -C "$repo_root" worktree add -b "$branch" "$worktree" origin/main
   git -C "$repo_root" config extensions.worktreeConfig true
   git -C "$worktree" config --worktree user.name "Portable Dotfiles"
@@ -244,6 +273,7 @@ export_series() {
   local branch="replay/$name"
   local branch_ref="refs/heads/$branch"
   local worktree
+  local lookup_status
   local base
   local merge_base
   local count
@@ -252,7 +282,7 @@ export_series() {
   local checksum_name="dotfiles-$name.sha256"
   local bundle_name="dotfiles-$name.tar.gz"
   local bundle_checksum_name="$bundle_name.sha256"
-  local apply_name="apply-portable-series.sh"
+  local apply_name
   local staging_directory
   local staged_patch_path
   local staged_manifest_path
@@ -262,8 +292,18 @@ export_series() {
   local forbidden_pattern=${PORTABLE_FORBIDDEN_PATTERN:-}
 
   validate_name "$name"
-  worktree=$(worktree_for_branch "$branch_ref") ||
-    die "no worktree found for $branch"
+  apply_name=$(apply_artifact_name "$name")
+  if worktree=$(worktree_for_branch "$branch_ref"); then
+    :
+  else
+    lookup_status=$?
+    if ((lookup_status == 2)); then
+      die "worktree registration is prunable for branch: $branch"
+    else
+      die "no worktree found for $branch"
+    fi
+    return 1
+  fi
   [[ -d $output_directory ]] || die "output directory not found: $output_directory"
   [[ -z $(git -C "$worktree" status --porcelain=v1 --untracked-files=all) ]] ||
     die "portable worktree is not clean"
