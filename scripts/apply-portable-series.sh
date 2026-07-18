@@ -88,11 +88,24 @@ temporary_branch="apply-$series_name-$(date +%Y%m%d%H%M%S)"
 success=false
 
 cleanup() {
+  local active_branch
+  local am_directory
+
   rm -rf -- "$mail_directory"
   if [[ $success != true ]]; then
+    active_branch=$(git -C "$repo" branch --show-current || true)
+    am_directory=$(
+      git -C "$repo" rev-parse --path-format=absolute \
+        --git-path rebase-apply || true
+    )
     printf '%s\n' \
       "Application stopped before main was updated." \
-      "Inspect the temporary branch and abort any active git am." >&2
+      "Temporary branch: $temporary_branch" \
+      "Active branch: ${active_branch:-unknown}" >&2
+    if [[ -n $am_directory && -d $am_directory ]]; then
+      printf 'A git am operation is active; abort it with: git -C %q am --abort\n' \
+        "$repo" >&2
+    fi
   fi
 }
 trap cleanup EXIT
