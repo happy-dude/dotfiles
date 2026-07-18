@@ -673,13 +673,13 @@ structure.
 - **OpenCode ownership:** `opencode/default.nix` owns the shared configuration,
   TUI selection, and Gruvbox Material dark-medium theme; it disables session
   sharing and telemetry export and loads optional host-only extensions from
-  mode-0600 `~/.config/opencode/local.json`. Global LSP feedback is disabled in
-  favor of repository diagnostic commands. `opencode/lsp.nix` retains the
-  Nix-managed definitions for deliberate re-enablement, while the LSP permission
-  and `OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured. Enable LSP
-  when your project benefits from additional language-server feedback.
-  `opencode/check.nix` owns the focused package, disabled-LSP, schema, theme,
-  and telemetry checks; `flake.nix` only imports the check. Private MCP
+  mode-0600 `~/.config/opencode/local.json`. Global LSP feedback remains
+  disabled. The repository-root `opencode.json` enables it only for this
+  checkout, invokes the Nix-managed server commands, uses the stable TypeScript
+  SDK link, and disables overlapping Oxlint diagnostics. The LSP permission and
+  `OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured.
+  `opencode/check.nix` owns the focused package, global and project LSP, schema,
+  theme, and telemetry checks; `flake.nix` only imports the check. Private MCP
   definitions and commands must stay outside Git and the Nix store. OpenCode
   discovers compatible `~/.claude/skills/*/SKILL.md` files directly; do not copy
   Codex-only system skills whose tools OpenCode does not provide. Treat OpenCode
