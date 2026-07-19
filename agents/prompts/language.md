@@ -614,11 +614,15 @@ block) shows exactly what's declared right now. If the two ever disagree, trust
   validated patch/manifest/checksum artifacts and a series-qualified
   `apply-dotfiles-<name>.sh` helper from current `origin/main`. On the
   destination system, that helper re-authors, signs, validates, and
-  fast-forwards local `main`. Neither script pushes. If the base moved, update
-  the isolated series and explicitly resolve or abort conflicts.
+  fast-forwards local `main`. Neither script pushes. Existing series are never
+  reused or removed automatically; collision output gives safe continuation or
+  inspection commands. If the base moved, update the isolated series and
+  explicitly resolve or abort conflicts.
   `sync-local-branch.sh <local-branch> <profile>` can fast-forward `main`,
-  rebase a named non-pushing branch on another system, and validate it; after
-  manually continuing a conflicted rebase, rerun with `--validate`.
+  rebase a named non-pushing branch on another system, and validate it. Only its
+  target worktrees must be clean, and it reports patches already represented
+  upstream before rebase; after manually continuing a conflicted rebase, rerun
+  with `--validate`.
 - Don't conflate "not installed on this machine right now" with "doesn't exist"
   — check before either claiming a gap is permanent or recommending the user go
   find it elsewhere.
