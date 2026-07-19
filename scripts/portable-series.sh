@@ -204,6 +204,22 @@ apply_artifact_name() {
   printf 'apply-dotfiles-%s.sh\n' "$1"
 }
 
+print_existing_series_help() {
+  local name=$1
+  local worktree=$2
+
+  printf '%s\n' \
+    "Continue the existing series in: $worktree" \
+    "Export it when ready with:" >&2
+  printf '  %q export %q\n' \
+    "$repo_root/scripts/portable-series.sh" "$name" >&2
+}
+
+print_worktree_inspection_help() {
+  printf '%s\n' "Inspect worktree registrations with:" >&2
+  printf '  git -C %q worktree list --porcelain\n' "$repo_root" >&2
+}
+
 start_series() {
   local name=$1
   local worktree=${2:-"/tmp/dotfiles-portable-$name"}
@@ -215,12 +231,17 @@ start_series() {
   validate_name "$name"
   if git -C "$repo_root" show-ref --verify --quiet "$branch_ref"; then
     if existing_worktree=$(worktree_for_branch "$branch_ref"); then
+      print_existing_series_help "$name" "$existing_worktree"
       die "branch already exists with worktree: $branch ($existing_worktree)"
     else
       lookup_status=$?
       if ((lookup_status == 2)); then
+        print_worktree_inspection_help
         die "branch already exists with prunable worktree registration: $branch"
       else
+        printf '%s\n' "Attach the existing branch to a reviewed path with:" >&2
+        printf '  git -C %q worktree add <path> %q\n' \
+          "$repo_root" "$branch" >&2
         die "branch already exists without a worktree: $branch"
       fi
     fi

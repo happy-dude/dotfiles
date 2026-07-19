@@ -163,6 +163,11 @@ fi
 grep -Fq \
   "branch already exists with worktree: replay/attached ($attached_worktree)" \
   "$start_error"
+grep -Fq "Continue the existing series in: $attached_worktree" \
+  "$start_error"
+printf -v expected_export '  %q export %q' \
+  "$repo/scripts/portable-series.sh" attached
+grep -Fq "$expected_export" "$start_error"
 git worktree remove --force "$attached_worktree"
 git branch -D replay/attached >/dev/null
 
@@ -175,6 +180,9 @@ fi
 grep -Fq \
   'branch already exists without a worktree: replay/unattached' \
   "$start_error"
+printf -v expected_attach '  git -C %q worktree add <path> %q' \
+  "$repo" replay/unattached
+grep -Fq "$expected_attach" "$start_error"
 git branch -D replay/unattached >/dev/null
 
 prunable_worktree="$temporary_directory/prunable-worktree"
@@ -189,6 +197,8 @@ fi
 grep -Fq \
   'branch already exists with prunable worktree registration: replay/prunable' \
   "$start_error"
+printf -v expected_inspect '  git -C %q worktree list --porcelain' "$repo"
+grep -Fq "$expected_inspect" "$start_error"
 if export_series prunable "$output_directory" 2>"$start_error"; then
   printf 'exported from a prunable worktree\n' >&2
   exit 1

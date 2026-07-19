@@ -92,6 +92,11 @@ run_sync() {
 create_fixture success
 commit_work work-only local
 advance_origin upstream-only upstream
+unrelated_worktree="$fixture_root/unrelated worktree"
+git -C "$main_worktree" branch unrelated
+git -C "$main_worktree" worktree add --quiet \
+  "$unrelated_worktree" unrelated
+touch "$unrelated_worktree/untracked"
 remote_head=$(git -C "$origin" rev-parse refs/heads/main)
 git -C "$main_worktree" config --unset-all remote.origin.fetch
 git -C "$main_worktree" config --add remote.origin.fetch \
@@ -111,6 +116,22 @@ grep -Fq \
   "$log"
 grep -Fq 'Nothing was pushed. The named branch remains local.' "$output"
 
+create_fixture upstream-equivalent
+commit_work equivalent same-change
+equivalent_commit=$(git -C "$branch_worktree" rev-parse HEAD)
+commit_work work-only unique-change
+advance_origin equivalent same-change
+run_sync work test-profile "$main_worktree"
+grep -Fq \
+  'Local commits already represented upstream; rebase is expected to omit:' \
+  "$output"
+equivalent_summary=$(git -C "$branch_worktree" show -s \
+  --format='%h %s' "$equivalent_commit")
+grep -Fq "  $equivalent_summary" "$output"
+test "$(git -C "$branch_worktree" rev-list --count origin/main..work)" = 1
+test "$(<"$branch_worktree/equivalent")" = same-change
+test "$(<"$branch_worktree/work-only")" = unique-change
+
 create_fixture dirty-main
 advance_origin upstream-only upstream
 old_tracking=$(git -C "$main_worktree" rev-parse origin/main)
@@ -122,6 +143,8 @@ fi
 test "$(git -C "$main_worktree" rev-parse origin/main)" = "$old_tracking"
 grep -Fq '?? untracked' "$output"
 grep -Fq 'main worktree is not clean' "$output"
+grep -Fq "Dirty worktree: $main_worktree" "$output"
+grep -Fq 'preflight stopped before fetch or mutation' "$output"
 
 create_fixture dirty-work
 advance_origin shared upstream
@@ -134,6 +157,8 @@ fi
 test "$(git -C "$main_worktree" rev-parse origin/main)" = "$old_tracking"
 grep -Fq ' M shared' "$output"
 grep -Fq 'work worktree is not clean' "$output"
+grep -Fq "Dirty worktree: $branch_worktree" "$output"
+grep -Fq 'preflight stopped before fetch or mutation' "$output"
 
 create_fixture conflict
 commit_work shared local
