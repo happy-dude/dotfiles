@@ -6,14 +6,15 @@
   ...
 }: let
   zedSettingsMaterializer = import ./materializer.nix {inherit pkgs;};
-  managedSettings = builtins.fromJSON (builtins.readFile ./.config/zed/settings.json);
+  managedSettings = import ./settings.nix {inherit lib username;};
   jsonFormat = pkgs.formats.json {};
   staticSettings = jsonFormat.generate "zed-user-settings" managedSettings;
   flatpakConfigHome = "${config.home.homeDirectory}/.var/app/dev.zed.Zed-Preview/config";
 in {
-  # zed/.config/zed/settings.json is the sole declarative source for managed
-  # keys. The schan Flatpak target remains mutable: runtime-only keys survive,
-  # while declared keys are reasserted during activation.
+  # zed/.config/zed/settings.json is the declarative source for managed keys.
+  # settings.nix adapts commands that must cross schan's Flatpak boundary. The
+  # Flatpak target remains mutable: runtime-only keys survive, while declared
+  # keys are reasserted during activation.
   #
   # Keep the upstream module disabled on schan: extension or MCP-derived
   # settings would also reactivate its host-XDG target.
