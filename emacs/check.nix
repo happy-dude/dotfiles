@@ -3,6 +3,11 @@
   pkgs,
   self,
 }: let
+  inherit (homes) schan stachan;
+  schanAgentShellConfig = schan.config.xdg.configFile."emacs/agent-shell.el".source;
+  stachanAgentShellConfig = stachan.config.xdg.configFile."emacs/agent-shell.el".source;
+  schanLspConfig = schan.config.xdg.configFile."emacs/lsp-servers.el".source;
+  stachanLspConfig = stachan.config.xdg.configFile."emacs/lsp-servers.el".source;
   syntaxCheck =
     pkgs.runCommand "dotfiles-emacs-checks"
     {
@@ -97,13 +102,13 @@
       (error "OpenCode's language-server download guard is missing"))
   '';
 
-  runtimeCheck = name: home: let
+  runtimeCheck = home: let
     emacs = home.config.programs.emacs.finalPackage;
     agentShellConfig = home.config.xdg.configFile."emacs/agent-shell.el".source;
     homePath = home.config.home.path;
     lspConfig = home.config.xdg.configFile."emacs/lsp-servers.el".source;
   in
-    pkgs.runCommand "dotfiles-emacs-runtime-${name}"
+    pkgs.runCommand "dotfiles-emacs-runtime"
     {
       nativeBuildInputs = [emacs homePath];
     }
@@ -122,10 +127,11 @@
       touch "$out"
     '';
 in
-  {
+  assert schanAgentShellConfig == stachanAgentShellConfig;
+  assert schanLspConfig == stachanLspConfig;
+  assert schan.config.programs.emacs.finalPackage == stachan.config.programs.emacs.finalPackage;
+  assert schan.config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD == "true";
+  assert stachan.config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD == "true"; {
     emacs = syntaxCheck;
+    emacs-runtime = runtimeCheck stachan;
   }
-  // builtins.listToAttrs (map (name: {
-    name = "emacs-runtime-${name}";
-    value = runtimeCheck name homes.${name};
-  }) (builtins.attrNames homes))
