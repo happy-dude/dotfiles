@@ -55,8 +55,12 @@
       (error "lsp-mode client packages may register downloaders: %S" lsp-client-packages))
     (when lsp-enable-suggest-server-download
       (error "lsp-mode server download suggestions are enabled"))
+    (when lsp-enable-snippet
+      (error "lsp-mode snippets require the undeclared yasnippet package"))
     (when treesit-auto-install
       (error "Tree-sitter grammar downloads are enabled"))
+    (unless (equal (cdr (assq 'lsp-mode minor-mode-alist)) '(" LSP"))
+      (error "lsp-mode retained a nested mode-line indicator"))
 
     (dolist (entry dotfiles-lsp-server-commands)
       (let* ((server-id (car entry))
@@ -88,6 +92,25 @@
       (let ((hook (intern (format "%s-hook" mode))))
         (unless (memq #'dotfiles/lsp-mode-setup (symbol-value hook))
           (error "Missing lsp-mode hook: %s" hook))))
+
+    (let ((lsp-mode t)
+          (lsp-managed-mode nil)
+          (format-calls 0))
+      (cl-letf (((symbol-function 'lsp-feature?) (lambda (_) t))
+                ((symbol-function 'lsp-format-buffer)
+                 (lambda () (setq format-calls (1+ format-calls)))))
+        (dotfiles/lsp-format-buffer-if-supported))
+      (unless (zerop format-calls)
+        (error "Formatter ran before LSP managed the document")))
+
+    (let ((lsp-managed-mode t)
+          (format-calls 0))
+      (cl-letf (((symbol-function 'lsp-feature?) (lambda (_) t))
+                ((symbol-function 'lsp-format-buffer)
+                 (lambda () (setq format-calls (1+ format-calls)))))
+        (dotfiles/lsp-format-buffer-if-supported))
+      (unless (= format-calls 1)
+        (error "Formatter did not run for a managed document")))
 
     (unless (equal agent-shell-preferred-agent-config 'opencode)
       (error "OpenCode is not the preferred ACP agent"))

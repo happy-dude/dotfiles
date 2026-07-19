@@ -69,11 +69,17 @@ in {
     ;; dependency recipes, or downloader prompts implicitly.
     (setq lsp-client-packages nil
           lsp-enable-suggest-server-download nil
+          lsp-enable-snippet nil
           lsp-auto-guess-root t
           lsp-completion-provider :capf)
 
     (require 'lsp-mode)
     (require 'lsp-completion)
+
+    ;; Emacs 30 cannot map lsp-mode's nested workspace lighter back to its
+    ;; owning minor mode when handling mode-line mouse actions. Keep a flat
+    ;; indicator until the core lookup handles nested mode-line constructs.
+    (setcdr (assq 'lsp-mode minor-mode-alist) '(" LSP"))
 
     (setq treesit-extra-load-path '("${treesitGrammars}/lib")
           treesit-auto-install nil)
@@ -253,7 +259,7 @@ in {
         yaml-ts-mode zig-mode zig-ts-mode))
 
     (defun dotfiles/lsp-format-buffer-if-supported ()
-      (when (and (bound-and-true-p lsp-mode)
+      (when (and (bound-and-true-p lsp-managed-mode)
                  (lsp-feature? "textDocument/formatting"))
         (lsp-format-buffer)))
 
