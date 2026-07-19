@@ -70,10 +70,36 @@ require_clean_worktree() {
 
   status=$(git -C "$worktree" status --porcelain=v1 --untracked-files=all)
   if [[ -n $status ]]; then
+    printf 'Dirty worktree: %s\n' "$worktree" >&2
     printf '%s\n' "$status" >&2
-    die "$label worktree is not clean"
+    die "$label worktree is not clean; preflight stopped before fetch or mutation"
     return 1
   fi
+}
+
+report_upstream_equivalent_commits() {
+  local repo=$1
+  local upstream=$2
+  local branch=$3
+  local line
+  local marker
+  local commit
+  local -a equivalent_commits=()
+
+  while IFS= read -r line; do
+    marker=${line%% *}
+    commit=${line#* }
+    if [[ $marker == - ]]; then
+      equivalent_commits+=("$commit")
+    fi
+  done < <(git -C "$repo" cherry "$upstream" "$branch")
+
+  ((${#equivalent_commits[@]} > 0)) || return 0
+  printf '%s\n' \
+    "Local commits already represented upstream; rebase is expected to omit:" >&2
+  for commit in "${equivalent_commits[@]}"; do
+    git -C "$repo" show -s --format='  %h %s' "$commit" >&2
+  done
 }
 
 check_flake() {
@@ -211,6 +237,8 @@ main() {
     git -C "$repo" fetch origin \
       refs/heads/main:refs/remotes/origin/main
     origin_main=$(git -C "$repo" rev-parse refs/remotes/origin/main)
+    report_upstream_equivalent_commits \
+      "$repo" "$origin_main" "$local_branch_ref"
     if ! git -C "$main_worktree" merge --ff-only "$origin_main"; then
       printf '%s\n' \
         "Local main could not fast-forward to origin/main." \

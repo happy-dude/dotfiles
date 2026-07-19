@@ -397,13 +397,16 @@ context out of portable history:
 ```
 
 `start` creates `replay/<name>` at current `origin/main` with a worktree-local
-placeholder identity. `export` requires a clean unchanged base, lints every
-commit message, validates both Home Manager profiles, and writes a patch,
-manifest, checksum file, and series-qualified `apply-dotfiles-<name>.sh` helper
-to `~/Downloads` by default. It also writes a checksummed
-`dotfiles-<name>.tar.gz` containing those files for single-file transfer. Export
-builds every artifact in a temporary directory and publishes the checksum
-markers last, so an incomplete replacement cannot validate as current.
+placeholder identity. If the name already belongs to a branch or worktree,
+`start` refuses to reuse or delete it and prints the existing path plus safe
+continuation, export, attachment, or inspection guidance. `export` requires a
+clean unchanged base, lints every commit message, validates both Home Manager
+profiles, and writes a patch, manifest, checksum file, and series-qualified
+`apply-dotfiles-<name>.sh` helper to `~/Downloads` by default. It also writes a
+checksummed `dotfiles-<name>.tar.gz` containing those files for single-file
+transfer. Export builds every artifact in a temporary directory and publishes
+the checksum markers last, so an incomplete replacement cannot validate as
+current.
 
 Callers may set `PORTABLE_FORBIDDEN_PATTERN` for machine-local content policy;
 the pattern itself does not enter portable configuration. Export scans commit
@@ -437,10 +440,14 @@ scripts/sync-local-branch.sh --validate <local-branch> <profile> [repository]
 
 Sync mode fetches `main` directly into the `origin/main` remote-tracking ref,
 fast-forwards local `main`, rebases the named local-only branch, and validates
-the selected profile. The script requires real clean worktrees, rejects prunable
-registrations and branches with an upstream, and never pushes or activates.
-Formatting, flake checks, and the profile build are reported as separate phases
-without a fixed timeout.
+the selected profile. Before rebasing it reports local commits whose patches are
+already represented upstream and are therefore expected to disappear. Only the
+`main` and named local-branch worktrees must be clean; unrelated linked
+worktrees are intentionally ignored. A dirty target refusal identifies its path
+and occurs before fetch or mutation. The script rejects prunable registrations
+and branches with an upstream, and never pushes or activates. Formatting, flake
+checks, and the profile build are reported as separate phases without a fixed
+timeout.
 
 Validate mode performs no fetch or rebase. It requires local `main` to equal the
 cached `origin/main` tip and the local-only branch to descend from that tip. Use
