@@ -486,8 +486,9 @@ real mode-0700 `~/.claude` and `~/.codex` directories while leaving their
 machine-local session state and configuration writable.
 
 `opencode/default.nix` owns OpenCode's provider-neutral configuration, TUI
-selection, and Gruvbox Material dark-medium theme. It disables session sharing
-and telemetry export and loads optional host-only extensions from mode-0600
+selection, the retained Gruvbox Material material dark-medium theme, and the
+default mix dark-medium variant. It disables session sharing and telemetry
+export and loads optional host-only extensions from mode-0600
 `~/.config/opencode/local.json`. Global LSP feedback remains disabled. The
 repository-root `opencode.json` enables it only for this checkout, invokes the
 Nix-managed server commands, uses the stable TypeScript SDK link, and disables
@@ -514,9 +515,13 @@ ACP but retains its Anthropic HTTP adapter for inline and history background
 work; classic Vim is not an ACP client. `vim/.vim/coc-settings.json` is the
 authoritative, sorted language-server and format-on-save matrix; preserve
 semantic precedence within ordered lists such as `rootPatterns`. Home Manager
-provides every command it names for C/C++, Rust, Go, Zig, Perl, Python, Lua,
-shell, Fish, Clojure, Fennel, Nix, YAML, JavaScript/TypeScript, Kotlin, Haskell,
-Terraform, Markdown, LaTeX, and Typst, including project-gated ESLint and Oxlint
+mirrors that matrix in Emacs with Nix-pinned lsp-mode clients and uses
+agent-shell for provider-neutral `opencode acp`. Absolute store paths, disabled
+client/download discovery, Nix-built Tree-sitter grammars, and profile checks
+prevent mutable server and grammar downloads. Home Manager provides every
+command it names for C/C++, Rust, Go, Zig, Perl, Python, Lua, shell, Fish,
+Clojure, Fennel, Nix, YAML, JavaScript/TypeScript, Kotlin, Haskell, Terraform,
+Markdown, LaTeX, and Typst, including project-gated ESLint and Oxlint
 integrations. Do not reintroduce ALE, Pathogen, editorconfig-vim, or mutable
 plugin binary downloaders. `vim/default.nix` builds the managed Tree-sitter
 runtime, including the explicit Org parser omitted by `nvim-treesitter`'s

@@ -219,7 +219,8 @@ and installs StyLua's config under `~/.config/stylua`.
   checkout, invokes the Nix-managed server commands, uses the stable TypeScript
   SDK link, and disables overlapping Oxlint diagnostics. The LSP permission and
   `OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured. The module also
-  owns `tui.json` and the shared Gruvbox Material dark-medium theme.
+  owns `tui.json`, retains the Gruvbox Material material dark-medium theme, and
+  selects the separately generated mix dark-medium variant by default.
   `OPENCODE_CONFIG` points to the optional mode-0600
   `~/.config/opencode/local.json` for private MCP definitions and other
   host-only extensions. Machine-local commands belong under
@@ -318,9 +319,14 @@ guidance detectable.
 - `emacs/default.nix` installs the active package set exclusively through
   `programs.emacs.extraPackages`, links `emacs/init.el` to
   `~/.config/emacs/init.el`, links the Org directory-local settings, and creates
-  mutable Org directories. Emacs Custom writes to the machine-local
-  `~/.config/emacs/custom.el`. No vendored Emacs plugin or legacy package.el
-  tree remains.
+  mutable Org directories. `emacs/lsp.nix` mirrors the CoC server matrix with
+  lsp-mode clients whose executables and TypeScript SDK are absolute Nix store
+  paths. It disables implicit clients and downloads, provides Nix-built
+  Tree-sitter grammars, and never starts local servers for remote buffers.
+  `agent-shell.el` selects the provider-neutral `opencode acp` client; private
+  provider configuration and credentials remain OpenCode-owned host state. Emacs
+  Custom writes to the machine-local `~/.config/emacs/custom.el`. No vendored
+  Emacs plugin or legacy package.el tree remains.
 
 ### `other/` directory
 

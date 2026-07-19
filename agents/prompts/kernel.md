@@ -646,12 +646,16 @@ structure.
   preserve semantic precedence within ordered lists such as `rootPatterns`. Home
   Manager's Neovim-only CodeCompanion routes chat through OpenCode ACP while
   retaining its Anthropic HTTP adapter for inline and history background work;
-  classic Vim is not an ACP client. Home Manager provides every command it names
-  for C/C++, Rust, Go, Zig, Perl, Python, Lua, shell, Fish, Clojure, Fennel,
-  Nix, YAML, JavaScript/TypeScript, Kotlin, Haskell, Terraform, Markdown, LaTeX,
-  and Typst, including project-gated ESLint and Oxlint integrations.
-  `vim/default.nix` also builds the managed Tree-sitter runtime, including the
-  explicit Org parser omitted by `nvim-treesitter`'s all-grammar set;
+  classic Vim is not an ACP client. Emacs uses Nix-pinned lsp-mode clients for
+  the same server matrix and agent-shell for provider-neutral `opencode acp`.
+  Its absolute store paths, disabled client/download discovery, Nix-built
+  Tree-sitter grammars, and profile checks prevent mutable server or grammar
+  downloads. Home Manager provides every command it names for C/C++, Rust, Go,
+  Zig, Perl, Python, Lua, shell, Fish, Clojure, Fennel, Nix, YAML,
+  JavaScript/TypeScript, Kotlin, Haskell, Terraform, Markdown, LaTeX, and Typst,
+  including project-gated ESLint and Oxlint integrations. `vim/default.nix` also
+  builds the managed Tree-sitter runtime, including the explicit Org parser
+  omitted by `nvim-treesitter`'s all-grammar set;
   `checks.x86_64-linux.neovim-org` opens and parses a real Org file with the
   evaluated Neovim runtime from both Home Manager profiles. Do not reintroduce
   ALE, Pathogen, editorconfig-vim, mutable parser downloads, or mutable plugin
@@ -676,12 +680,13 @@ structure.
   Activation requires real mode-0700 `~/.claude` and `~/.codex` directories;
   their session state and configuration remain writable and machine-local.
 - **OpenCode ownership:** `opencode/default.nix` owns the shared configuration,
-  TUI selection, and Gruvbox Material dark-medium theme; it disables session
-  sharing and telemetry export and loads optional host-only extensions from
-  mode-0600 `~/.config/opencode/local.json`. Global LSP feedback remains
-  disabled. The repository-root `opencode.json` enables it only for this
-  checkout, invokes the Nix-managed server commands, uses the stable TypeScript
-  SDK link, and disables overlapping Oxlint diagnostics. The LSP permission and
+  TUI selection, the retained Gruvbox Material material dark-medium theme, and
+  the default mix dark-medium variant; it disables session sharing and telemetry
+  export and loads optional host-only extensions from mode-0600
+  `~/.config/opencode/local.json`. Global LSP feedback remains disabled. The
+  repository-root `opencode.json` enables it only for this checkout, invokes the
+  Nix-managed server commands, uses the stable TypeScript SDK link, and disables
+  overlapping Oxlint diagnostics. The LSP permission and
   `OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured.
   `opencode/check.nix` owns the focused package, global and project LSP, schema,
   theme, and telemetry checks; `flake.nix` only imports the check. Private MCP
