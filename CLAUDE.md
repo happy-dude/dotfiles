@@ -180,12 +180,15 @@ and installs StyLua's config under `~/.config/stylua`.
   package and its `schan`-only autostart entry.
 
 - **`zed/`** is a Home Manager module. `zed/.config/zed/settings.json` is the
-  sole declarative source for managed keys. Edit the JSON directly; do **not**
-  add a second settings representation. Zed binaries remain externally managed.
-  On `schan`, activation atomically merges declared keys into the mutable
-  Flatpak file at `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`
-  while preserving runtime-only keys. On `stachan`, `programs.zed-editor`
-  retains the normal host target at `~/.config/zed/settings.json`.
+  canonical declarative source for managed keys; `zed/settings.nix` only adapts
+  commands that cross a host boundary. Do **not** add another settings
+  representation. Zed binaries remain externally managed. The custom OpenCode
+  ACP server runs the Nix-managed executable directly on `stachan`; on `schan`,
+  it uses the Flatpak-bundled `host-spawn` to reach that host executable.
+  Activation atomically merges declared keys into the mutable Flatpak file at
+  `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json` while preserving
+  runtime-only keys. `stachan` retains the normal host target at
+  `~/.config/zed/settings.json` through `programs.zed-editor`.
 - **`agents/`** holds canonical `kernel` and `language` prompts. Nix reads their
   Markdown bodies and frontmatter to generate corresponding Codex and OpenCode
   agents without checked-in generated artifacts, plus Codex profile templates.
@@ -308,6 +311,10 @@ guidance detectable.
   and format-on-save. vim-go retains non-LSP Go commands. Vim uses its bundled
   EditorConfig support and Neovim uses native EditorConfig. Do not reintroduce
   ALE, Pathogen, vim-plug, editorconfig-vim, or plugin submodules.
+- CodeCompanion is Neovim-only and routes chat through the Nix-managed OpenCode
+  ACP server. Its inline interaction and history title and summary generation
+  retain the Anthropic HTTP adapter because those background operations do not
+  support ACP. Do not describe classic Vim as an ACP client.
 - `emacs/default.nix` installs the active package set exclusively through
   `programs.emacs.extraPackages`, links `emacs/init.el` to
   `~/.config/emacs/init.el`, links the Org directory-local settings, and creates
