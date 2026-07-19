@@ -115,7 +115,7 @@ require('codecompanion').setup({
           end,
         },
         ---On exiting and entering neovim, loads the last chat on opening chat
-        continue_last_chat = true,
+        continue_last_chat = false,
         ---When chat is cleared with `gx` delete the chat from history
         delete_on_clearing_chat = false,
         ---Directory path to save the chats

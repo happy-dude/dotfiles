@@ -30,6 +30,15 @@
           fixture/check.org \
           -l ${./tests/org.lua}
 
+      HOME="$PWD/home" \
+      XDG_CACHE_HOME="$PWD/home/cache" \
+      XDG_DATA_HOME="$PWD/data" \
+      XDG_STATE_HOME="$PWD/home/state" \
+        ${neovim}/bin/nvim \
+          --headless \
+          -u ${neovimConfig} \
+          -l ${./tests/codecompanion.lua}
+
       touch "$out"
     '';
   stachanCheck = mkProfileCheck "stachan" homes.stachan;
