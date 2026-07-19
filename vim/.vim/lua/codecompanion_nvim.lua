@@ -5,7 +5,8 @@
 -- `codecompanion` module and break require('codecompanion'). Same reason
 -- lua/hop_nvim.lua isn't named hop.lua. Load via require('codecompanion_nvim').
 --
--- Uses CodeCompanion's built-in `anthropic` adapter (reads $ANTHROPIC_API_KEY).
+-- Uses CodeCompanion's built-in `opencode` ACP adapter for chat. Inline and
+-- history background requests stay on the `anthropic` HTTP adapter.
 
 require('render-markdown').setup({
   file_types = { 'codecompanion' },
@@ -51,7 +52,7 @@ require('codecompanion').setup({
   },
   interactions = {
     chat = {
-      adapter = 'anthropic',
+      adapter = { name = 'opencode' },
       opts = { completion_provider = 'coc' },
       roles = {
         llm = function(adapter)
@@ -99,8 +100,8 @@ require('codecompanion').setup({
         ---Automatically generate titles for new chats
         auto_generate_title = true,
         title_generation_opts = {
-          ---Adapter for generating titles (defaults to current chat adapter)
-          --adapter = nil, -- "copilot"
+          ---Adapter for generating titles (ACP adapters are unsupported)
+          adapter = 'anthropic',
           ---Model for generating titles (defaults to current chat model)
           --model = nil, -- "gpt-4o"
           ---Number of user prompts after which to refresh the title (0 to disable)
@@ -130,7 +131,7 @@ require('codecompanion').setup({
           browse_summaries_keymap = 'gbs',
 
           generation_opts = {
-            adapter = nil, -- defaults to current chat adapter
+            adapter = 'anthropic', -- ACP adapters are unsupported
             model = nil, -- defaults to current chat model
             context_size = 90000, -- max tokens that the model supports
             include_references = true, -- include slash command content

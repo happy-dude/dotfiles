@@ -180,12 +180,15 @@ and installs StyLua's config under `~/.config/stylua`.
   package and its `schan`-only autostart entry.
 
 - **`zed/`** is a Home Manager module. `zed/.config/zed/settings.json` is the
-  sole declarative source for managed keys. Edit the JSON directly; do **not**
-  add a second settings representation. Zed binaries remain externally managed.
-  On `schan`, activation atomically merges declared keys into the mutable
-  Flatpak file at `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`
-  while preserving runtime-only keys. On `stachan`, `programs.zed-editor`
-  retains the normal host target at `~/.config/zed/settings.json`.
+  canonical declarative source for managed keys; `zed/settings.nix` only adapts
+  commands that cross a host boundary. Do **not** add another settings
+  representation. Zed binaries remain externally managed. The custom OpenCode
+  ACP server runs the Nix-managed executable directly on `stachan`; on `schan`,
+  it uses the Flatpak-bundled `host-spawn` to reach that host executable.
+  Activation atomically merges declared keys into the mutable Flatpak file at
+  `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json` while preserving
+  runtime-only keys. `stachan` retains the normal host target at
+  `~/.config/zed/settings.json` through `programs.zed-editor`.
 - **`agents/`** holds canonical `kernel` and `language` prompts. Nix reads their
   Markdown bodies and frontmatter to generate corresponding Codex and OpenCode
   agents without checked-in generated artifacts, plus Codex profile templates.
@@ -216,7 +219,8 @@ and installs StyLua's config under `~/.config/stylua`.
   checkout, invokes the Nix-managed server commands, uses the stable TypeScript
   SDK link, and disables overlapping Oxlint diagnostics. The LSP permission and
   `OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured. The module also
-  owns `tui.json` and the shared Gruvbox Material dark-medium theme.
+  owns `tui.json`, retains the Gruvbox Material material dark-medium theme, and
+  selects the separately generated mix dark-medium variant by default.
   `OPENCODE_CONFIG` points to the optional mode-0600
   `~/.config/opencode/local.json` for private MCP definitions and other
   host-only extensions. Machine-local commands belong under
@@ -308,12 +312,21 @@ guidance detectable.
   and format-on-save. vim-go retains non-LSP Go commands. Vim uses its bundled
   EditorConfig support and Neovim uses native EditorConfig. Do not reintroduce
   ALE, Pathogen, vim-plug, editorconfig-vim, or plugin submodules.
+- CodeCompanion is Neovim-only and routes chat through the Nix-managed OpenCode
+  ACP server. Its inline interaction and history title and summary generation
+  retain the Anthropic HTTP adapter because those background operations do not
+  support ACP. Do not describe classic Vim as an ACP client.
 - `emacs/default.nix` installs the active package set exclusively through
   `programs.emacs.extraPackages`, links `emacs/init.el` to
   `~/.config/emacs/init.el`, links the Org directory-local settings, and creates
-  mutable Org directories. Emacs Custom writes to the machine-local
-  `~/.config/emacs/custom.el`. No vendored Emacs plugin or legacy package.el
-  tree remains.
+  mutable Org directories. `emacs/lsp.nix` mirrors the CoC server matrix with
+  lsp-mode clients whose executables and TypeScript SDK are absolute Nix store
+  paths. It disables implicit clients and downloads, provides Nix-built
+  Tree-sitter grammars, and never starts local servers for remote buffers.
+  `agent-shell.el` selects the provider-neutral `opencode acp` client; private
+  provider configuration and credentials remain OpenCode-owned host state. Emacs
+  Custom writes to the machine-local `~/.config/emacs/custom.el`. No vendored
+  Emacs plugin or legacy package.el tree remains.
 
 ### `other/` directory
 

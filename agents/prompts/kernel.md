@@ -621,16 +621,18 @@ structure.
   before removing Home Manager-owned paths. `zed/` is sourced from
   `zed/.config/zed/settings.json`; `schan` materializes it as a mutable Flatpak
   config at `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`, while
-  `stachan` uses `~/.config/zed/settings.json`. The Claude prompt directory
-  remains live through `mkOutOfStoreSymlink`. The global gitignore is
-  `git/.gitignore_global`; machine identity and signing remain in untracked
-  `~/.config/git/local.config`. A managed global `commit-msg` dispatcher
-  preserves repository-local hooks, lints every commit, and requires an
-  initially present `Assisted-by:` trailer to remain. Plasma's captured panel
-  declaration remains disabled because enabling high-level panel management
-  deletes and rebuilds `plasma-org.kde.plasma.desktop-appletsrc` when the
-  declaration changes. Display topology, generated IDs, wallpaper, and session
-  history remain unmanaged.
+  `stachan` uses `~/.config/zed/settings.json`. Zed launches the Nix-managed
+  OpenCode ACP server directly on `stachan` and through Flatpak's `host-spawn`
+  on `schan`. The Claude prompt directory remains live through
+  `mkOutOfStoreSymlink`. The global gitignore is `git/.gitignore_global`;
+  machine identity and signing remain in untracked `~/.config/git/local.config`.
+  A managed global `commit-msg` dispatcher preserves repository-local hooks,
+  lints every commit, and requires an initially present `Assisted-by:` trailer
+  to remain. Plasma's captured panel declaration remains disabled because
+  enabling high-level panel management deletes and rebuilds
+  `plasma-org.kde.plasma.desktop-appletsrc` when the declaration changes.
+  Display topology, generated IDs, wallpaper, and session history remain
+  unmanaged.
 - **Editor ownership:** Vim, Neovim, and their plugins are locked Nix packages;
   shared, Vim-only, and Neovim-only plugin lists live in `vim/default.nix` and
   use native package support. That module also owns source-pinned CoC Zuban and
@@ -642,19 +644,26 @@ structure.
   EditorConfig and Neovim uses native EditorConfig. `vim/.vim/coc-settings.json`
   is the authoritative, sorted language-server and format-on-save matrix;
   preserve semantic precedence within ordered lists such as `rootPatterns`. Home
-  Manager provides every command it names for C/C++, Rust, Go, Zig, Perl,
-  Python, Lua, shell, Fish, Clojure, Fennel, Nix, YAML, JavaScript/TypeScript,
-  Kotlin, Haskell, Terraform, Markdown, LaTeX, and Typst, including
-  project-gated ESLint and Oxlint integrations. `vim/default.nix` also builds
-  the managed Tree-sitter runtime, including the explicit Org parser omitted by
-  `nvim-treesitter`'s all-grammar set; `checks.x86_64-linux.neovim-org` opens
-  and parses a real Org file with the evaluated Neovim runtime from both Home
-  Manager profiles. Do not reintroduce ALE, Pathogen, editorconfig-vim, mutable
-  parser downloads, or mutable plugin binary downloaders. Backup, swap, and
-  persistent undo remain enabled for ordinary files but are disabled before Vim
-  or Neovim reads known credentials and machine-local secret directories.
-  `virtme-ng/default.nix` builds the locked `virtme_ng_src` input and installs
-  the `vng` kernel VM command, while Ghidra comes from locked Nixpkgs.
+  Manager's Neovim-only CodeCompanion routes chat through OpenCode ACP while
+  retaining its Anthropic HTTP adapter for inline and history background work;
+  classic Vim is not an ACP client. Emacs uses Nix-pinned lsp-mode clients for
+  the same server matrix and agent-shell for provider-neutral `opencode acp`.
+  Its absolute store paths, disabled client/download discovery, Nix-built
+  Tree-sitter grammars, and profile checks prevent mutable server or grammar
+  downloads. Home Manager provides every command it names for C/C++, Rust, Go,
+  Zig, Perl, Python, Lua, shell, Fish, Clojure, Fennel, Nix, YAML,
+  JavaScript/TypeScript, Kotlin, Haskell, Terraform, Markdown, LaTeX, and Typst,
+  including project-gated ESLint and Oxlint integrations. `vim/default.nix` also
+  builds the managed Tree-sitter runtime, including the explicit Org parser
+  omitted by `nvim-treesitter`'s all-grammar set;
+  `checks.x86_64-linux.neovim-org` opens and parses a real Org file with the
+  evaluated Neovim runtime from both Home Manager profiles. Do not reintroduce
+  ALE, Pathogen, editorconfig-vim, mutable parser downloads, or mutable plugin
+  binary downloaders. Backup, swap, and persistent undo remain enabled for
+  ordinary files but are disabled before Vim or Neovim reads known credentials
+  and machine-local secret directories. `virtme-ng/default.nix` builds the
+  locked `virtme_ng_src` input and installs the `vng` kernel VM command, while
+  Ghidra comes from locked Nixpkgs.
 - **Agent prompt ownership:** `agents/prompts/{kernel,language}.md` are
   canonical for the full agents and profiles. Nix generates the Codex TOML
   templates and OpenCode agent definitions directly from their Markdown bodies
@@ -671,12 +680,13 @@ structure.
   Activation requires real mode-0700 `~/.claude` and `~/.codex` directories;
   their session state and configuration remain writable and machine-local.
 - **OpenCode ownership:** `opencode/default.nix` owns the shared configuration,
-  TUI selection, and Gruvbox Material dark-medium theme; it disables session
-  sharing and telemetry export and loads optional host-only extensions from
-  mode-0600 `~/.config/opencode/local.json`. Global LSP feedback remains
-  disabled. The repository-root `opencode.json` enables it only for this
-  checkout, invokes the Nix-managed server commands, uses the stable TypeScript
-  SDK link, and disables overlapping Oxlint diagnostics. The LSP permission and
+  TUI selection, the retained Gruvbox Material material dark-medium theme, and
+  the default mix dark-medium variant; it disables session sharing and telemetry
+  export and loads optional host-only extensions from mode-0600
+  `~/.config/opencode/local.json`. Global LSP feedback remains disabled. The
+  repository-root `opencode.json` enables it only for this checkout, invokes the
+  Nix-managed server commands, uses the stable TypeScript SDK link, and disables
+  overlapping Oxlint diagnostics. The LSP permission and
   `OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured.
   `opencode/check.nix` owns the focused package, global and project LSP, schema,
   theme, and telemetry checks; `flake.nix` only imports the check. Private MCP

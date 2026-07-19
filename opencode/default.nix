@@ -39,7 +39,7 @@
   };
   tuiSettings = {
     "$schema" = "https://opencode.ai/tui.json";
-    theme = "gruvbox-material";
+    theme = "gruvbox-material-mix-dark-medium";
   };
   gruvboxMaterialTheme = {
     "$schema" = "https://opencode.ai/theme.json";
@@ -123,6 +123,22 @@
       syntaxPunctuation = "fg0";
     };
   };
+  gruvboxMaterialMixTheme =
+    gruvboxMaterialTheme
+    // {
+      defs =
+        gruvboxMaterialTheme.defs
+        // {
+          fg0 = "#e2cca9";
+          fg1 = "#e2cca9";
+          red = "#f2594b";
+          orange = "#f28534";
+          yellow = "#e9b143";
+          green = "#b0b846";
+          aqua = "#8bba7f";
+          blue = "#80aa9e";
+        };
+    };
 in {
   home.packages = [opencode];
   home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD = "true";
@@ -133,4 +149,6 @@ in {
     json.generate "opencode-tui.json" tuiSettings;
   xdg.configFile."opencode/themes/gruvbox-material.json".source =
     json.generate "opencode-gruvbox-material.json" gruvboxMaterialTheme;
+  xdg.configFile."opencode/themes/gruvbox-material-mix-dark-medium.json".source =
+    json.generate "opencode-gruvbox-material-mix-dark-medium.json" gruvboxMaterialMixTheme;
 }

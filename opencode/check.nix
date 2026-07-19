@@ -39,6 +39,8 @@
   schanTui = schan.config.xdg.configFile."opencode/tui.json".source;
   stachanTheme = stachan.config.xdg.configFile."opencode/themes/gruvbox-material.json".source;
   schanTheme = schan.config.xdg.configFile."opencode/themes/gruvbox-material.json".source;
+  stachanMixTheme = stachan.config.xdg.configFile."opencode/themes/gruvbox-material-mix-dark-medium.json".source;
+  schanMixTheme = schan.config.xdg.configFile."opencode/themes/gruvbox-material-mix-dark-medium.json".source;
   stachanPackage =
     lib.findFirst (
       package: lib.hasPrefix "opencode-no-telemetry-" package.name
@@ -118,14 +120,18 @@ in
       cmp ${stachanConfig} ${schanConfig}
       cmp ${stachanTui} ${schanTui}
       cmp ${stachanTheme} ${schanTheme}
+      cmp ${stachanMixTheme} ${schanMixTheme}
       check-jsonschema \
         --schemafile ${stachanPackage}/share/opencode/tui.json \
         ${stachanTui}
       check-jsonschema \
         --schemafile ${pkgs.opencode.src}/packages/web/public/theme.json \
         ${stachanTheme}
+      check-jsonschema \
+        --schemafile ${pkgs.opencode.src}/packages/web/public/theme.json \
+        ${stachanMixTheme}
       jq -e '
-        .theme == "gruvbox-material"
+        .theme == "gruvbox-material-mix-dark-medium"
       ' ${stachanTui} >/dev/null
       jq -e '
         .defs.bg0 == "#282828" and
@@ -141,6 +147,22 @@ in
         .theme.diffRemovedBg == "diffRed" and
         (.theme | length) >= 50
       ' ${stachanTheme} >/dev/null
+      jq -e '
+        .defs.bg0 == "#282828" and
+        .defs.fg0 == "#e2cca9" and
+        .defs.red == "#f2594b" and
+        .defs.orange == "#f28534" and
+        .defs.yellow == "#e9b143" and
+        .defs.green == "#b0b846" and
+        .defs.aqua == "#8bba7f" and
+        .defs.blue == "#80aa9e" and
+        .defs.purple == "#d3869b" and
+        .defs.diffRed == "#402120" and
+        .defs.diffGreen == "#34381b" and
+        .theme.background == "bg0" and
+        .theme.text == "fg0" and
+        (.theme | length) >= 50
+      ' ${stachanMixTheme} >/dev/null
       install -m 0600 ${stachanConfig} \
         "$XDG_CONFIG_HOME/opencode/opencode.json"
 

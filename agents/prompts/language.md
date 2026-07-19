@@ -486,8 +486,9 @@ real mode-0700 `~/.claude` and `~/.codex` directories while leaving their
 machine-local session state and configuration writable.
 
 `opencode/default.nix` owns OpenCode's provider-neutral configuration, TUI
-selection, and Gruvbox Material dark-medium theme. It disables session sharing
-and telemetry export and loads optional host-only extensions from mode-0600
+selection, the retained Gruvbox Material material dark-medium theme, and the
+default mix dark-medium variant. It disables session sharing and telemetry
+export and loads optional host-only extensions from mode-0600
 `~/.config/opencode/local.json`. Global LSP feedback remains disabled. The
 repository-root `opencode.json` enables it only for this checkout, invokes the
 Nix-managed server commands, uses the stable TypeScript SDK link, and disables
@@ -509,21 +510,28 @@ overrides. There is no vim-plug checkout or mutable plugin updater. Emacs
 packages come exclusively from `programs.emacs.extraPackages`. CoC loads in both
 editors and owns LSP, diagnostics, completion, navigation, and format-on-save;
 vim-go retains non-LSP Go commands. Vim uses bundled EditorConfig and Neovim
-uses native EditorConfig. `vim/.vim/coc-settings.json` is the authoritative,
-sorted language-server and format-on-save matrix; preserve semantic precedence
-within ordered lists such as `rootPatterns`. Home Manager provides every command
-it names for C/C++, Rust, Go, Zig, Perl, Python, Lua, shell, Fish, Clojure,
-Fennel, Nix, YAML, JavaScript/TypeScript, Kotlin, Haskell, Terraform, Markdown,
-LaTeX, and Typst, including project-gated ESLint and Oxlint integrations. Do not
-reintroduce ALE, Pathogen, editorconfig-vim, or mutable plugin binary
-downloaders. `vim/default.nix` builds the managed Tree-sitter runtime, including
-the explicit Org parser omitted by `nvim-treesitter`'s all-grammar set;
-`checks.x86_64-linux.neovim-org` opens and parses a real Org file with the
-evaluated Neovim runtime from both Home Manager profiles. Do not run mutable
-parser update commands. Backup, swap, and persistent undo stay enabled for
-ordinary files but are disabled before Vim or Neovim reads known credentials and
-machine-local secret directories. Emacs Custom writes machine-local state to
-`~/.config/emacs/custom.el` rather than its immutable managed init file.
+uses native EditorConfig. Neovim-only CodeCompanion routes chat through OpenCode
+ACP but retains its Anthropic HTTP adapter for inline and history background
+work; classic Vim is not an ACP client. `vim/.vim/coc-settings.json` is the
+authoritative, sorted language-server and format-on-save matrix; preserve
+semantic precedence within ordered lists such as `rootPatterns`. Home Manager
+mirrors that matrix in Emacs with Nix-pinned lsp-mode clients and uses
+agent-shell for provider-neutral `opencode acp`. Absolute store paths, disabled
+client/download discovery, Nix-built Tree-sitter grammars, and profile checks
+prevent mutable server and grammar downloads. Home Manager provides every
+command it names for C/C++, Rust, Go, Zig, Perl, Python, Lua, shell, Fish,
+Clojure, Fennel, Nix, YAML, JavaScript/TypeScript, Kotlin, Haskell, Terraform,
+Markdown, LaTeX, and Typst, including project-gated ESLint and Oxlint
+integrations. Do not reintroduce ALE, Pathogen, editorconfig-vim, or mutable
+plugin binary downloaders. `vim/default.nix` builds the managed Tree-sitter
+runtime, including the explicit Org parser omitted by `nvim-treesitter`'s
+all-grammar set; `checks.x86_64-linux.neovim-org` opens and parses a real Org
+file with the evaluated Neovim runtime from both Home Manager profiles. Do not
+run mutable parser update commands. Backup, swap, and persistent undo stay
+enabled for ordinary files but are disabled before Vim or Neovim reads known
+credentials and machine-local secret directories. Emacs Custom writes
+machine-local state to `~/.config/emacs/custom.el` rather than its immutable
+managed init file.
 
 `flake.nix` builds two generic-Linux profiles with
 `mkHome { username, desktop, nixPackage, rimeDeployment }`. Both default to
@@ -538,9 +546,11 @@ Rime materializes writable Fcitx host settings with prior-source snapshots under
 concurrent declarative/runtime edits. It materializes managed static inputs
 separately from writable generated and learned state and refuses to discard host
 edits during a Stow release. Zed remains a Home Manager module sourced from
-`~/dotfiles/zed/.config/zed/settings.json`; the yt-dlp bgutil server and plugin
-remain declarative locked-flake builds. The shared `home.nix` profile also
-installs `lazygit` and the language tooling used by CoC and OpenCode.
+`~/dotfiles/zed/.config/zed/settings.json`; its OpenCode ACP command runs
+directly for native Zed and through `host-spawn` for the Zed Preview Flatpak.
+The yt-dlp bgutil server and plugin remain declarative locked-flake builds. The
+shared `home.nix` profile also installs `lazygit` and the language tooling used
+by CoC and OpenCode.
 
 The flake pins registry and `NIX_PATH` resolution to its locked nixpkgs input
 and does not use channels. It optionally includes the untracked
