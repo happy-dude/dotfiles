@@ -8,6 +8,7 @@ in {
   home.file."org/.dir-locals.el".source = ./org-dir-locals.el;
 
   xdg.configFile."emacs/init.el".source = ./init.el;
+  xdg.configFile."emacs/agent-shell.el".source = ./agent-shell.el;
   xdg.configFile."emacs/lsp-servers.el".source = lsp.config;
 
   home.activation = {
@@ -38,6 +39,7 @@ in {
     package = pkgs.emacs-pgtk;
     extraPackages = epkgs:
       (with epkgs; [
+        agent-shell
         annalist
         compat
         dash

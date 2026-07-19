@@ -40,7 +40,11 @@
                (lambda (&rest _) (error "unexpected process start")))
               ((symbol-function 'start-process)
                (lambda (&rest _) (error "unexpected process start"))))
-      (load (getenv "DOTFILES_LSP_CONFIG") nil nil t))
+      (load (getenv "DOTFILES_LSP_CONFIG") nil nil t)
+      (require 'acp)
+      (require 'shell-maker)
+      (load (getenv "DOTFILES_AGENT_SHELL_CONFIG") nil nil t)
+      (require 'agent-shell-opencode))
 
     (unless (null lsp-client-packages)
       (error "lsp-mode client packages may register downloaders: %S" lsp-client-packages))
@@ -76,22 +80,38 @@
       (let ((hook (intern (format "%s-hook" mode))))
         (unless (memq #'dotfiles/lsp-mode-setup (symbol-value hook))
           (error "Missing lsp-mode hook: %s" hook))))
+
+    (unless (equal agent-shell-preferred-agent-config 'opencode)
+      (error "OpenCode is not the preferred ACP agent"))
+    (unless (equal agent-shell-opencode-acp-command '("opencode" "acp"))
+      (error "Unexpected OpenCode ACP command: %S" agent-shell-opencode-acp-command))
+    (unless (commandp 'agent-shell-opencode-start-agent)
+      (error "OpenCode agent-shell command is unavailable"))
+    (let ((opencode (executable-find "opencode")))
+      (unless (and opencode (string-prefix-p "/nix/store/" opencode))
+        (error "Emacs cannot find the Nix-managed OpenCode executable: %S" opencode)))
+    (unless (equal (getenv "OPENCODE_DISABLE_LSP_DOWNLOAD") "true")
+      (error "OpenCode's language-server download guard is missing"))
   '';
 
   runtimeCheck = name: home: let
     emacs = home.config.programs.emacs.finalPackage;
+    agentShellConfig = home.config.xdg.configFile."emacs/agent-shell.el".source;
+    homePath = home.config.home.path;
     lspConfig = home.config.xdg.configFile."emacs/lsp-servers.el".source;
   in
     pkgs.runCommand "dotfiles-emacs-runtime-${name}"
     {
-      nativeBuildInputs = [emacs];
+      nativeBuildInputs = [emacs homePath];
     }
     ''
       export HOME="$TMPDIR/home"
       export XDG_CACHE_HOME="$HOME/.cache"
       export XDG_CONFIG_HOME="$HOME/.config"
       export XDG_DATA_HOME="$HOME/.local/share"
+      export DOTFILES_AGENT_SHELL_CONFIG=${agentShellConfig}
       export DOTFILES_LSP_CONFIG=${lspConfig}
+      export OPENCODE_DISABLE_LSP_DOWNLOAD=${home.config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD}
       mkdir -p "$XDG_CACHE_HOME" "$XDG_CONFIG_HOME" "$XDG_DATA_HOME"
 
       emacs --batch --quick --load ${runtimeTest}

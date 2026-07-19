@@ -67,6 +67,8 @@
 ;; Home Manager generates absolute, Nix-store-pinned LSP and Tree-sitter paths.
 (load (locate-user-emacs-file "lsp-servers.el") nil nil t)
 
+(load (locate-user-emacs-file "agent-shell.el") nil nil t)
+
 ;; Settings related to visuals, line numbers, fonts, etc.
 ;; UI: show icons with text below
 (setq tool-bar-style 'image)
