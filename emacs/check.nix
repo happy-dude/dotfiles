@@ -68,6 +68,9 @@
 
     (unless (equal (length dotfiles-lsp-client-ids) 26)
       (error "Unexpected LSP client count: %s" (length dotfiles-lsp-client-ids)))
+    (unless (and (string-prefix-p "/nix/store/" dotfiles-typescript-sdk)
+                 (file-readable-p dotfiles-typescript-sdk))
+      (error "TypeScript SDK is not pinned in the Nix store: %S" dotfiles-typescript-sdk))
 
     (dolist (language '(bash c clojure cpp css fennel fish go gomod haskell hcl
                              html javascript json kotlin latex lua markdown

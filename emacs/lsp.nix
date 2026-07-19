@@ -114,6 +114,8 @@ in {
         (dotfiles-zuban . ("${pkgs.zuban}/bin/zuban" "server"))))
 
     (defconst dotfiles-lsp-client-ids (mapcar #'car dotfiles-lsp-server-commands))
+    (defconst dotfiles-typescript-sdk
+      "${pkgs.typescript}/lib/node_modules/typescript/lib/tsserver.js")
 
     (defun dotfiles/lsp-command (server-id)
       (or (alist-get server-id dotfiles-lsp-server-commands)
@@ -208,8 +210,8 @@ in {
      'dotfiles-typescript nil
      :activation-fn (lsp-activate-on "javascript" "javascriptreact" "typescript" "typescriptreact")
      :initialization-options
-     '(:disableAutomaticTypingAcquisition t
-       :tsserver (:path "${pkgs.typescript}/lib/node_modules/typescript/lib/tsserver.js")))
+     `(:disableAutomaticTypingAcquisition t
+       :tsserver (:path ,dotfiles-typescript-sdk)))
     (dotfiles/lsp-register 'dotfiles-vim '(vimrc-mode vimscript-ts-mode))
     (dotfiles/lsp-register 'dotfiles-yaml '(yaml-mode yaml-ts-mode))
     (dotfiles/lsp-register 'dotfiles-zls '(zig-mode zig-ts-mode))
