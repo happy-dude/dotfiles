@@ -2,10 +2,13 @@
   config,
   pkgs,
   ...
-}: {
+}: let
+  lsp = import ./lsp.nix {inherit pkgs;};
+in {
   home.file."org/.dir-locals.el".source = ./org-dir-locals.el;
 
   xdg.configFile."emacs/init.el".source = ./init.el;
+  xdg.configFile."emacs/lsp-servers.el".source = lsp.config;
 
   home.activation = {
     createOrgDirectories = config.lib.dag.entryAfter ["writeBoundary"] ''
@@ -34,7 +37,7 @@
     enable = true;
     package = pkgs.emacs-pgtk;
     extraPackages = epkgs:
-      with epkgs; [
+      (with epkgs; [
         annalist
         compat
         dash
@@ -68,7 +71,8 @@
         with-editor
         yaml
         yaml-mode
-      ];
+      ])
+      ++ lsp.packages epkgs;
   };
 
   services.emacs = {
