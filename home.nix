@@ -78,6 +78,7 @@
       fnlfmt
       gdb
       gettext
+      gh
       ghidra
       ghostscript
       glibc
