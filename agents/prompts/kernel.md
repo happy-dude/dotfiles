@@ -705,9 +705,9 @@ structure.
   `nix/local.conf.example` is the non-secret template. Evaluation and builds
   outside an intentional update must pass `--no-update-lock-file`; CI uses the
   same guard. The bgutil yt-dlp provider is also declarative:
-  `yt-dlp/default.nix` builds the locked Node server and native `canvas`
-  dependency with Nix, installs the matching plugin, and points yt-dlp at the
-  store path. Home Manager activation performs no mutable `npm` work.
+  `yt-dlp/default.nix` links the locked Nixpkgs Python plugin, points script
+  mode at its store-resident Node server, and adds a focused integration check.
+  Home Manager activation performs no mutable `npm` work.
 - **Formatting and checks:** `nix fmt .` runs treefmt over supported,
   non-submodule files with the Linux kernel's `.clang-format` for C/C++,
   Alejandra for Nix, `fish_indent` for Fish, `shfmt` for shell, Ruff for Python,
@@ -721,13 +721,14 @@ structure.
   regression suites; the Codex profile materializer, agent-directory migration,
   `.gitmodules` formatter, rclone event classification, guarded Rime host-file
   and ownership-state materialization, Zed settings materialization, focused
-  OpenCode package/LSP/schema/theme/telemetry checks, Git commit-message hook
-  behavior, Kagi prompt character budgets, and editor secret-state exclusions;
-  native syntax for the managed Fish and Zsh files; Emacs parentheses and Org
-  lint for tracked Org files; a real Neovim Org Tree-sitter parse; actionlint
-  and pinned Actions; Rime Lua syntax/tests; and gitleaks. GitHub CI runs those
-  checks and evaluates both Home Manager profiles on pushes and pull requests;
-  full profile builds are opt-in through `workflow_dispatch`.
+  yt-dlp bgutil integration checks, focused OpenCode
+  package/LSP/schema/theme/telemetry checks, Git commit-message hook behavior,
+  Kagi prompt character budgets, and editor secret-state exclusions; native
+  syntax for the managed Fish and Zsh files; Emacs parentheses and Org lint for
+  tracked Org files; a real Neovim Org Tree-sitter parse; actionlint and pinned
+  Actions; Rime Lua syntax/tests; and gitleaks. GitHub CI runs those checks and
+  evaluates both Home Manager profiles on pushes and pull requests; full profile
+  builds are opt-in through `workflow_dispatch`.
 - **Test/verify before recommending or installing anything, the same
   anti-fabrication discipline as everywhere else in this prompt:**
   `nix search nixpkgs <term>` to check a package actually exists (careful:

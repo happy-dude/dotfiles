@@ -77,11 +77,11 @@ checkout is the Linux branch.
   Ghostty removes the wrapper's graphics variables before launching Fish so
   terminal children receive a normal host environment.
 - Source-only inputs also lock Prezto, active Fish plugins, Roswell, RustOwl,
-  virtme-ng, coc-zuban, Catppuccin Fcitx themes, and bgutil-ytdlp-pot-provider.
-  The same locked RustOwl source builds both its server and Neovim client.
-  Ordinary editor plugins come from the locked Nixpkgs `vimPlugins` set;
-  explicit source inputs are reserved for sources that are absent from Nixpkgs
-  or intentionally track upstream independently.
+  virtme-ng, coc-zuban, and Catppuccin Fcitx themes. The same locked RustOwl
+  source builds both its server and Neovim client. Ordinary editor plugins come
+  from the locked Nixpkgs `vimPlugins` set; explicit source inputs are reserved
+  for sources that are absent from Nixpkgs or intentionally track upstream
+  independently.
 - `fish/.config/fish/tide.fish` is the declarative Tide profile, linked by Home
   Manager and sourced by the tracked `config.fish`. It overrides machine-local
   `fish_variables` so fresh profiles have a complete prompt.
@@ -258,11 +258,11 @@ and installs StyLua's config under `~/.config/stylua`.
 - `scripts/update.sh` selects the locked Nix schema sources by default.
   `--rime-source plum --skip-home-manager` is the guarded fallback after
   switching the Rime snapshot back to Stow.
-- **`yt-dlp/`** builds bgutil-ytdlp-pot-provider declaratively with
-  `buildNpmPackage`, including its native canvas dependencies and an install
-  check. Home Manager links the built plugin and points yt-dlp at the
-  store-resident server; activation never runs `npm install` or downloads
-  provider artifacts.
+- **`yt-dlp/`** uses the locked Nixpkgs bgutil-ytdlp-pot-provider package. Home
+  Manager links its Python plugin for yt-dlp discovery and points script mode at
+  the store-resident Node server. A focused check validates both profiles,
+  plugin layout, server version, wrapper startup, and generated configuration;
+  activation performs no mutable npm work.
 
 The active `kernel.md` and `language.md` prompts understand that this repository
 uses Home Manager on generic Linux, not NixOS. Both direct agents to verify

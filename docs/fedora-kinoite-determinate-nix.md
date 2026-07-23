@@ -682,9 +682,11 @@ Before any later simplification:
 ### bgutil yt-dlp provider
 
 No host bridge or listening service is required. Home Manager points yt-dlp at
-the locked plugin, native Node runtime, and one-shot provider script in the
-native store. The validated provider version was 1.3.1. Avoid enabling the
-optional HTTP service: the locked upstream can listen on non-loopback addresses.
+the locked Nixpkgs plugin, native Node runtime, and one-shot provider script in
+the native store. The focused check validates plugin discovery paths, server
+version, wrapper startup, and generated configuration for both profiles. The
+validated provider version was 1.3.1. Avoid enabling the optional HTTP service:
+the packaged upstream can listen on non-loopback addresses.
 
 ### Flatpak and other host integration
 
