@@ -1,21 +1,5 @@
 {
   "nodes": {
-    "catppuccin_fcitx5": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1747425237,
-        "narHash": "sha256-ss0kW+ulvMhxeZKBrjQ7E5Cya+02eJrGsE4OLEkqKks=",
-        "owner": "catppuccin",
-        "repo": "fcitx5",
-        "rev": "393845cf3ed0e0000bfe57fe1b9ad75748e2547f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "catppuccin",
-        "repo": "fcitx5",
-        "type": "github"
-      }
-    },
     "coc_zuban": {
       "flake": false,
       "locked": {
@@ -29,54 +13,6 @@
       "original": {
         "owner": "yaegassy",
         "repo": "coc-zuban",
-        "type": "github"
-      }
-    },
-    "fish_autopair": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1656950411,
-        "narHash": "sha256-qt3t1iKRRNuiLWiVoiAYOu+9E7jsyECyIqZJ/oRIT1A=",
-        "owner": "jorgebucaran",
-        "repo": "autopair.fish",
-        "rev": "4d1752ff5b39819ab58d7337c69220342e9de0e2",
-        "type": "github"
-      },
-      "original": {
-        "owner": "jorgebucaran",
-        "repo": "autopair.fish",
-        "type": "github"
-      }
-    },
-    "fish_puffer": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1763062131,
-        "narHash": "sha256-Dhx5+XRxJvlhdnFyimNxFyFiASrGU4ZwyefsDwtKnSg=",
-        "owner": "nickeb96",
-        "repo": "puffer-fish",
-        "rev": "83174b07de60078be79985ef6123d903329622b8",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nickeb96",
-        "repo": "puffer-fish",
-        "type": "github"
-      }
-    },
-    "fish_spark": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1610775582,
-        "narHash": "sha256-cRSZeqtXSaEKuHeTSk3Kpmwf98mKJ986x1KSxa/HggU=",
-        "owner": "jorgebucaran",
-        "repo": "spark.fish",
-        "rev": "90a60573ec8a8ecb741a861e0bfca2362f297e5f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "jorgebucaran",
-        "repo": "spark.fish",
         "type": "github"
       }
     },
@@ -527,11 +463,7 @@
     },
     "root": {
       "inputs": {
-        "catppuccin_fcitx5": "catppuccin_fcitx5",
         "coc_zuban": "coc_zuban",
-        "fish_autopair": "fish_autopair",
-        "fish_puffer": "fish_puffer",
-        "fish_spark": "fish_spark",
         "fish_tide": "fish_tide",
         "fish_z": "fish_z",
         "ghostty": "ghostty",

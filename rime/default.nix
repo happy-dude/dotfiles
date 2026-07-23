@@ -10,7 +10,7 @@
   localRimeDataDir = ./.local/share/fcitx5/rime;
   localFcitxThemesDir = ./.local/share/fcitx5/themes;
 
-  catppuccinThemeDir = "${inputs.catppuccin_fcitx5}/src";
+  catppuccinThemeDir = "${pkgs.catppuccin-fcitx5}/share/fcitx5/themes";
   catppuccinThemeNames = builtins.attrNames (
     lib.filterAttrs (_: type: type == "directory") (builtins.readDir catppuccinThemeDir)
   );

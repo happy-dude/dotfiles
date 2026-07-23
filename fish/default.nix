@@ -35,15 +35,15 @@
     plugins = [
       {
         name = "autopair.fish";
-        src = inputs.fish_autopair;
+        src = pkgs.fishPlugins.autopair.src;
       }
       {
         name = "puffer-fish";
-        src = inputs.fish_puffer;
+        src = pkgs.fishPlugins.puffer.src;
       }
       {
         name = "spark.fish";
-        src = inputs.fish_spark;
+        src = pkgs.fishPlugins.spark.src;
       }
       {
         name = "tide";
