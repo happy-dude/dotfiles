@@ -76,10 +76,10 @@ checkout is the Linux branch.
   (Ghostty, mesa-demos, solaar) can be wrapped with `config.lib.nixGL.wrap`.
   Ghostty removes the wrapper's graphics variables before launching Fish so
   terminal children receive a normal host environment.
-- Source-only inputs also lock Prezto, Tide, z, Roswell, RustOwl, virtme-ng,
-  and coc-zuban. Nixpkgs supplies bgutil-ytdlp-pot-provider, the Catppuccin
-  Fcitx themes, and the autopair, puffer, and spark Fish plugin sources. The
-  same locked RustOwl source builds both its server and Neovim client. Ordinary
+- Source-only inputs also lock Prezto, Tide, z, Roswell, RustOwl, virtme-ng, and
+  coc-zuban. Nixpkgs supplies bgutil-ytdlp-pot-provider, the Catppuccin Fcitx
+  themes, and the autopair, puffer, and spark Fish plugin sources. The same
+  locked RustOwl source builds both its server and Neovim client. Ordinary
   editor plugins come from the locked Nixpkgs `vimPlugins` set; explicit source
   inputs are reserved for sources that are absent from Nixpkgs or intentionally
   track upstream independently.
