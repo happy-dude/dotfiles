@@ -1,21 +1,5 @@
 {
   "nodes": {
-    "bgutil_ytdlp_pot_provider": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1773346709,
-        "narHash": "sha256-w9QRqc1Ewp75b7OTkD/nRu+gUAIP7Hx6XKc6G7f9eCs=",
-        "owner": "Brainicism",
-        "repo": "bgutil-ytdlp-pot-provider",
-        "rev": "6b497de5a6cbaf106bd94a934c5d2794c3fdf8bb",
-        "type": "github"
-      },
-      "original": {
-        "owner": "Brainicism",
-        "repo": "bgutil-ytdlp-pot-provider",
-        "type": "github"
-      }
-    },
     "catppuccin_fcitx5": {
       "flake": false,
       "locked": {
@@ -543,7 +527,6 @@
     },
     "root": {
       "inputs": {
-        "bgutil_ytdlp_pot_provider": "bgutil_ytdlp_pot_provider",
         "catppuccin_fcitx5": "catppuccin_fcitx5",
         "coc_zuban": "coc_zuban",
         "fish_autopair": "fish_autopair",

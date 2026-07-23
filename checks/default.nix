@@ -21,4 +21,5 @@ in
   // (import ../rclone/check.nix {inherit pkgs;})
   // (import ../rime/check.nix {inherit pkgs;})
   // (import ../vim/check.nix {inherit homes pkgs;})
+  // (import ../yt-dlp/check.nix {inherit homes pkgs;})
   // (import ../zed/check.nix {inherit pkgs;})

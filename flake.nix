@@ -129,11 +129,6 @@
     };
 
     # Rolling source inputs consumed by local Nix modules.
-    bgutil_ytdlp_pot_provider = {
-      url = "github:Brainicism/bgutil-ytdlp-pot-provider";
-      flake = false;
-    };
-
     catppuccin_fcitx5 = {
       url = "github:catppuccin/fcitx5";
       flake = false;
