@@ -106,19 +106,7 @@
       flake = false;
     };
 
-    # Rolling Fish plugin sources.
-    fish_autopair = {
-      url = "github:jorgebucaran/autopair.fish";
-      flake = false;
-    };
-    fish_puffer = {
-      url = "github:nickeb96/puffer-fish";
-      flake = false;
-    };
-    fish_spark = {
-      url = "github:jorgebucaran/spark.fish";
-      flake = false;
-    };
+    # Fish plugin sources not packaged suitably in Nixpkgs.
     fish_tide = {
       url = "github:IlanCosman/tide";
       flake = false;
@@ -129,16 +117,6 @@
     };
 
     # Rolling source inputs consumed by local Nix modules.
-    bgutil_ytdlp_pot_provider = {
-      url = "github:Brainicism/bgutil-ytdlp-pot-provider";
-      flake = false;
-    };
-
-    catppuccin_fcitx5 = {
-      url = "github:catppuccin/fcitx5";
-      flake = false;
-    };
-
     coc_zuban = {
       url = "github:yaegassy/coc-zuban";
       flake = false;

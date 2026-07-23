@@ -548,9 +548,9 @@ separately from writable generated and learned state and refuses to discard host
 edits during a Stow release. Zed remains a Home Manager module sourced from
 `~/dotfiles/zed/.config/zed/settings.json`; its OpenCode ACP command runs
 directly for native Zed and through `host-spawn` for the Zed Preview Flatpak.
-The yt-dlp bgutil server and plugin remain declarative locked-flake builds. The
-shared `home.nix` profile also installs `lazygit` and the language tooling used
-by CoC and OpenCode.
+The yt-dlp bgutil server and plugin come from locked Nixpkgs with focused
+integration checks. The shared `home.nix` profile also installs `lazygit` and
+the language tooling used by CoC and OpenCode.
 
 The flake pins registry and `NIX_PATH` resolution to its locked nixpkgs input
 and does not use channels. It optionally includes the untracked
@@ -567,12 +567,13 @@ Python; Bash syntax and ShellCheck for `scripts/*.sh`; the focused
 agent-directory migration, and `.gitmodules` formatter; native syntax for
 managed Fish and Zsh files; rclone event classification; guarded Rime host-file
 and ownership-state materialization; Zed settings materialization; focused
-OpenCode package/LSP/schema/theme/telemetry checks; Git commit-message hook
-behavior; Kagi prompt character budgets; Vim and Neovim secret-state exclusions;
-Emacs parentheses and Org lint for tracked Org files; a real Neovim Org
-Tree-sitter parse; workflows and pinned Actions; Rime Lua; and secret scanning.
-CI runs those checks and locked evaluation of both Home Manager profiles. Full
-builds require the manual `workflow_dispatch` `build_homes` input.
+yt-dlp bgutil integration checks; focused OpenCode
+package/LSP/schema/theme/telemetry checks; Git commit-message hook behavior;
+Kagi prompt character budgets; Vim and Neovim secret-state exclusions; Emacs
+parentheses and Org lint for tracked Org files; a real Neovim Org Tree-sitter
+parse; workflows and pinned Actions; Rime Lua; and secret scanning. CI runs
+those checks and locked evaluation of both Home Manager profiles. Full builds
+require the manual `workflow_dispatch` `build_homes` input.
 
 That enumeration is a quick reference, not the source of truth — it can go stale
 the moment someone edits `home.nix` without updating this file. If you're unsure
