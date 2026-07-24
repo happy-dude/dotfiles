@@ -10,10 +10,6 @@ def fail(message: str) -> None:
     raise SystemExit(1)
 
 
-def exists(path: Path) -> bool:
-    return os.path.lexists(path)
-
-
 def install_atomic(source: Path, target: Path, mode: int) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary_name = tempfile.mkstemp(
@@ -101,77 +97,35 @@ def materialize(source: Path, target: Path, snapshot: Path) -> None:
         target.chmod(0o644)
 
 
-def validate_release_file(
-    source: Path,
-    target: Path,
-    snapshot: Path,
-) -> None:
-    if target.is_symlink():
-        if target.resolve(strict=False) != source.resolve(strict=False):
-            fail(f"Refusing to release unmanaged Rime link: {target}")
-    elif target.exists():
-        if (
-            not target.is_file()
-            or not snapshot.is_file()
-            or snapshot.is_symlink()
-        ):
-            fail(f"Refusing to release unmanaged Rime path: {target}")
-        if not same_file_content(
-            target,
-            snapshot,
-        ) and not same_file_content(target, source):
-            fail(
-                "Refusing to discard runtime-modified Rime host file: "
-                f"{target}"
-            )
+def migrate_theme_root(marker_source: Path) -> None:
+    if not marker_source.is_file() or marker_source.is_symlink():
+        fail(f"Rime ownership source is not a regular file: {marker_source}")
 
+    home = Path.home()
+    state_home = Path(os.environ.get("XDG_STATE_HOME", home / ".local/state"))
+    marker = state_home / "rime/home-manager-ownership-v1"
+    target = home / ".local/share/fcitx5/themes"
 
-def validate_link(
-    source: Path,
-    target: Path,
-    legacy_source: Path | None = None,
-) -> None:
-    if not source.exists():
-        fail(f"Rime source does not exist: {source}")
+    if marker.is_symlink() or (marker.exists() and not marker.is_file()):
+        fail(f"Refusing malformed Rime ownership marker: {marker}")
+    if marker.is_file() and not same_file_content(marker_source, marker):
+        fail(f"Refusing unrecognized Rime ownership marker: {marker}")
+
     if target.is_symlink():
         actual = target.resolve(strict=False)
-        if actual == source.resolve(strict=False):
-            return
-        if legacy_source is not None and actual == legacy_source.resolve(
-            strict=False
-        ):
-            return
-        fail(f"Refusing to replace unmanaged Rime link: {target}")
-    if target.exists():
-        fail(f"Refusing to replace unmanaged Rime path: {target}")
-
-
-def ensure_link(source: Path, target: Path) -> None:
-    target.parent.mkdir(parents=True, exist_ok=True)
-    if target.is_symlink():
-        if target.resolve(strict=False) == source.resolve(strict=False):
-            return
+        managed_store_link = actual.parent == Path(
+            "/nix/store"
+        ) and actual.name.endswith("-fcitx5-themes")
+        if not marker.is_file() or not managed_store_link:
+            fail(f"Refusing to migrate unmanaged Rime link: {target}")
         target.unlink()
-    target.symlink_to(source)
+    elif target.exists() and not target.is_dir():
+        fail(f"Refusing to migrate unmanaged Rime path: {target}")
+
+    marker.unlink(missing_ok=True)
 
 
-def validate_release_link(source: Path, target: Path) -> None:
-    if target.is_symlink():
-        if target.resolve(strict=False) != source.resolve(strict=False):
-            fail(f"Refusing to release unmanaged Rime link: {target}")
-    elif target.exists():
-        fail(f"Refusing to release unmanaged Rime path: {target}")
-
-
-def main(arguments: list[str]) -> None:
-    if len(arguments) != 3:
-        raise SystemExit(
-            "usage: rime-host-files deploy|release SOURCE_ROOT THEME_SOURCE"
-        )
-
-    operation = arguments[0]
-    source_root = Path(arguments[1])
-    theme_source = Path(arguments[2])
+def deploy(source_root: Path) -> None:
     home = Path.home()
     state_home = Path(os.environ.get("XDG_STATE_HOME", home / ".local/state"))
     state_root = state_home / "rime/host-config"
@@ -192,33 +146,23 @@ def main(arguments: list[str]) -> None:
             state_root / "rime.conf",
         ),
     )
-    theme_target = home / ".local/share/fcitx5/themes"
+    for source, target, snapshot in files:
+        validate_materialize(source, target, snapshot)
+    for source, target, snapshot in files:
+        materialize(source, target, snapshot)
 
-    if operation == "deploy":
-        for source, target, snapshot in files:
-            validate_materialize(source, target, snapshot)
-        validate_link(
-            theme_source,
-            theme_target,
-            source_root / ".local/share/fcitx5/themes",
-        )
-        for source, target, snapshot in files:
-            materialize(source, target, snapshot)
-        ensure_link(theme_source, theme_target)
-    elif operation == "release":
-        for source, target, snapshot in files:
-            validate_release_file(source, target, snapshot)
-        validate_release_link(theme_source, theme_target)
-        for _, target, snapshot in files:
-            if exists(target):
-                target.unlink()
-            snapshot.unlink(missing_ok=True)
-        if exists(theme_target):
-            theme_target.unlink()
-    else:
-        raise SystemExit(
-            "usage: rime-host-files deploy|release SOURCE_ROOT THEME_SOURCE"
-        )
+
+def main(arguments: list[str]) -> None:
+    if len(arguments) == 2 and arguments[0] == "deploy":
+        deploy(Path(arguments[1]))
+        return
+    if len(arguments) == 2 and arguments[0] == "migrate-theme-root":
+        migrate_theme_root(Path(arguments[1]))
+        return
+    raise SystemExit(
+        "usage: rime-host-files "
+        "deploy SOURCE_ROOT | migrate-theme-root MARKER_SOURCE"
+    )
 
 
 if __name__ == "__main__":

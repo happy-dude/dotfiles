@@ -2,7 +2,6 @@
   lib,
   pkgs,
   inputs,
-  rimeDeployment,
   ...
 }: let
   rimeHostFiles = import ./host-files.nix {inherit pkgs;};
@@ -14,22 +13,21 @@
   catppuccinThemeNames = builtins.attrNames (
     lib.filterAttrs (_: type: type == "directory") (builtins.readDir catppuccinThemeDir)
   );
-  fcitxThemes = pkgs.linkFarm "fcitx5-themes" (
+  themeFiles = builtins.listToAttrs (
     map (name: {
-      inherit name;
-      path = "${catppuccinThemeDir}/${name}";
+      name = "fcitx5/themes/${name}";
+      value.source = "${catppuccinThemeDir}/${name}";
     })
     catppuccinThemeNames
     ++ [
       {
-        name = "plasma";
-        path = localFcitxThemesDir + "/plasma";
+        name = "fcitx5/themes/plasma";
+        value.source = localFcitxThemesDir + "/plasma";
       }
     ]
   );
 
-  # Locked schema revisions take precedence over the retained Stow snapshot
-  # when Home Manager deploys this module.
+  # Locked schema revisions take precedence over the retained local snapshot.
   schemaSources = [
     inputs.rime_bopomofo
     inputs.rime_cangjie
@@ -135,7 +133,9 @@
     }
   );
 
-  rimeOwnershipMarker = pkgs.writeText "rime-home-manager-ownership-v1" ''
+  # The prior custom deployment wrote this marker. Keep its exact payload only
+  # to authorize the one-way migration to native Home Manager theme ownership.
+  legacyOwnershipMarker = pkgs.writeText "rime-home-manager-ownership-v1" ''
     home-manager-rime-v1
   '';
   rimeRelativeArguments = lib.concatMapStringsSep " " (entry:
@@ -143,35 +143,25 @@
   rimeDataEntries;
 in
   assert duplicateRimeDataTargetNames == []; {
-    config = lib.mkMerge [
-      (lib.mkIf (rimeDeployment == "nix") {
-        home.activation.rimeClaimOwnership = lib.hm.dag.entryAfter ["linkGeneration"] ''
-          ${lib.getExe rimeStateManager} claim ${lib.escapeShellArg rimeOwnershipMarker}
-        '';
+    xdg.dataFile = themeFiles;
 
-        home.activation.rimeHostFiles = lib.hm.dag.entryAfter ["rimeClaimOwnership"] ''
-          ${lib.getExe rimeHostFiles} deploy \
-            "$HOME/dotfiles/rime" \
-            ${lib.escapeShellArg fcitxThemes}
-        '';
+    # The old activation created the theme root itself, outside Home Manager's
+    # file manifest. Remove only that marked Nix-store link before collision
+    # checks so Home Manager can own the individual immutable theme directories.
+    home.activation.rimeMigrateThemeRoot = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
+      ${lib.getExe rimeHostFiles} migrate-theme-root \
+        ${lib.escapeShellArg legacyOwnershipMarker}
+    '';
 
-        home.activation.rimeSchemaBuild = lib.hm.dag.entryAfter ["rimeHostFiles"] ''
-          ${lib.getExe rimeStateManager} deploy \
-            ${lib.escapeShellArg rimeStaticData} \
-            ${lib.escapeShellArg rimeDataStamp} \
-            ${lib.escapeShellArg "${pkgs.systemd}/bin/busctl"} \
-            ${rimeRelativeArguments}
-        '';
-      })
-      (lib.mkIf (rimeDeployment == "stow") {
-        home.activation.rimeReleaseHomeManagerFiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
-          ${lib.getExe rimeStateManager} release \
-            ${lib.escapeShellArg rimeOwnershipMarker} \
-            ${lib.escapeShellArg (lib.getExe rimeHostFiles)} \
-            "$HOME/dotfiles/rime" \
-            ${lib.escapeShellArg fcitxThemes} \
-            ${rimeRelativeArguments}
-        '';
-      })
-    ];
+    home.activation.rimeHostFiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
+      ${lib.getExe rimeHostFiles} deploy ${lib.escapeShellArg ./.}
+    '';
+
+    home.activation.rimeSchemaBuild = lib.hm.dag.entryAfter ["rimeHostFiles"] ''
+      ${lib.getExe rimeStateManager} deploy \
+        ${lib.escapeShellArg rimeStaticData} \
+        ${lib.escapeShellArg rimeDataStamp} \
+        ${lib.escapeShellArg "${pkgs.systemd}/bin/busctl"} \
+        ${rimeRelativeArguments}
+    '';
   }

@@ -157,14 +157,12 @@
         ghostty.overlays.default
       ];
     };
-    # Build a Home Manager config for a user, desktop, and Rime deployment.
-    # The username determines /home/<username>; desktop selects session
-    # integration; rimeDeployment selects Nix or legacy Stow file management.
+    # Build a Home Manager config for a user and desktop session.
+    # The username determines /home/<username>; desktop selects integration.
     mkHome = {
       username,
       desktop,
       nixPackage ? pkgs.nixVersions.latest,
-      rimeDeployment ? "nix",
     }:
       home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
@@ -174,7 +172,6 @@
             username
             desktop
             nixPackage
-            rimeDeployment
             ;
         };
 
@@ -220,12 +217,10 @@
         username = "schan";
         desktop = "plasma";
         nixPackage = null;
-        rimeDeployment = "nix";
       };
       stachan = mkHome {
         username = "stachan";
         desktop = "gnome";
-        rimeDeployment = "nix";
       };
     };
     treefmtConfig = import ./treefmt.nix {

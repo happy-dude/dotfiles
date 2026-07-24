@@ -1,4 +1,0 @@
-# Home Manager modules are not part of the legacy Stow package.
-^\.gitignore$
-^default\.nix$
-^gnome\.nix$

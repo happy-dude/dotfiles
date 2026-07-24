@@ -16,7 +16,7 @@ def lexists(path: Path) -> bool:
     return os.path.lexists(path)
 
 
-def state_paths() -> tuple[Path, Path, Path, Path, Path]:
+def state_paths() -> tuple[Path, Path, Path, Path]:
     home = Path.home()
     data_home = Path(os.environ.get("XDG_DATA_HOME", home / ".local/share"))
     state_home = Path(os.environ.get("XDG_STATE_HOME", home / ".local/state"))
@@ -27,7 +27,6 @@ def state_paths() -> tuple[Path, Path, Path, Path, Path]:
         data_dir / ".home-manager-static",
         state_dir,
         state_dir / "home-manager-source-stamp",
-        state_dir / "home-manager-ownership-v1",
     )
 
 
@@ -59,19 +58,6 @@ def install_atomic(source: Path, target: Path, mode: int = 0o644) -> None:
             os.close(directory)
     finally:
         temporary.unlink(missing_ok=True)
-
-
-def claim(marker_source: Path) -> None:
-    if not marker_source.is_file():
-        fail(f"Rime ownership source is not a regular file: {marker_source}")
-    *_, state_dir, _, marker = state_paths()
-    validate_regular(marker, "ownership marker")
-    if marker.exists():
-        if not filecmp.cmp(marker_source, marker, shallow=False):
-            fail(f"Refusing unrecognized Rime ownership marker: {marker}")
-        return
-    state_dir.mkdir(parents=True, exist_ok=True)
-    install_atomic(marker_source, marker)
 
 
 def iter_symlinks(root: Path, excluded: Path) -> list[Path]:
@@ -157,7 +143,7 @@ def deploy(
         fail(f"Rime static source is not a directory: {static_source}")
     if not stamp_source.is_file():
         fail(f"Rime stamp source is not a regular file: {stamp_source}")
-    data_dir, static_dir, state_dir, stamp, _ = state_paths()
+    data_dir, static_dir, state_dir, stamp = state_paths()
     if static_dir.is_symlink() or (
         static_dir.exists() and not static_dir.is_dir()
     ):
@@ -221,69 +207,7 @@ def deploy(
             )
 
 
-def release(
-    marker_source: Path,
-    host_helper: str,
-    source_root: Path,
-    theme_source: Path,
-    relatives: list[str],
-) -> None:
-    data_dir, static_dir, _, stamp, marker = state_paths()
-    if static_dir.is_symlink() or (
-        static_dir.exists() and not static_dir.is_dir()
-    ):
-        fail(f"Refusing malformed Rime static path: {static_dir}")
-    validate_regular(stamp, "source stamp")
-    validate_regular(marker, "ownership marker")
-    if marker.exists() and not filecmp.cmp(
-        marker_source, marker, shallow=False
-    ):
-        fail(f"Refusing unrecognized Rime ownership marker: {marker}")
-
-    static_present = static_dir.is_dir()
-    stamp_present = stamp.is_file()
-    owned_links = [
-        link
-        for link in iter_symlinks(data_dir, static_dir)
-        if resolves_below(link, static_dir)
-    ]
-    owned = marker.is_file()
-    if not owned:
-        if (static_present and stamp_present) or owned_links:
-            owned = True
-        elif static_present or stamp_present:
-            fail(
-                "Rime has incomplete Home Manager ownership state; "
-                "refusing automatic cleanup"
-            )
-    if not owned:
-        return
-
-    for relative in relatives:
-        target = data_dir / relative
-        expected = static_dir / relative
-        if target.is_symlink():
-            if target.resolve(strict=False) != expected.resolve(strict=False):
-                fail(f"Refusing to release unmanaged Rime link: {target}")
-        elif target.exists():
-            fail(f"Refusing to release unmanaged Rime path: {target}")
-
-    subprocess.run(
-        [host_helper, "release", str(source_root), str(theme_source)],
-        check=True,
-    )
-    for link in owned_links:
-        link.unlink(missing_ok=True)
-    if static_present:
-        shutil.rmtree(static_dir)
-    stamp.unlink(missing_ok=True)
-    marker.unlink(missing_ok=True)
-
-
 def main(arguments: list[str]) -> None:
-    if len(arguments) == 2 and arguments[0] == "claim":
-        claim(Path(arguments[1]))
-        return
     if len(arguments) >= 5 and arguments[0] == "deploy":
         deploy(
             Path(arguments[1]),
@@ -292,19 +216,8 @@ def main(arguments: list[str]) -> None:
             arguments[4:],
         )
         return
-    if len(arguments) >= 6 and arguments[0] == "release":
-        release(
-            Path(arguments[1]),
-            arguments[2],
-            Path(arguments[3]),
-            Path(arguments[4]),
-            arguments[5:],
-        )
-        return
     raise SystemExit(
-        "usage: rime-state-manager "
-        "claim MARKER | deploy STATIC STAMP BUSCTL RELATIVE... | "
-        "release MARKER HOST_HELPER SOURCE_ROOT THEME RELATIVE..."
+        "usage: rime-state-manager deploy STATIC STAMP BUSCTL RELATIVE..."
     )
 
 
