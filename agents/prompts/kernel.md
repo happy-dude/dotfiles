@@ -578,13 +578,13 @@ rather than guessing conventions; it's kept current and documents the real
 structure.
 
 - **Layout and hosts:** `flake.nix` builds `schan` and `stachan` through
-  `mkHome { username, desktop, nixPackage, rimeDeployment }`. Both are
-  `x86_64-linux` generic-Linux Home Manager configurations with nixGL, not
-  NixOS. `schan` targets Fedora Kinoite/Plasma and deliberately sets
-  `nixPackage = null` to retain native Determinate Nix; `stachan` targets GNOME
-  and uses the Nix package from locked Nixpkgs. Kinoite mounts its persistent
-  native store at host-visible `/nix`. Its former `nix-toolbox-42` container and
-  image are retired; do not recreate them as a fallback. Any remaining
+  `mkHome { username, desktop, nixPackage }`. Both are `x86_64-linux`
+  generic-Linux Home Manager configurations with nixGL, not NixOS. `schan`
+  targets Fedora Kinoite/Plasma and deliberately sets `nixPackage = null` to
+  retain native Determinate Nix; `stachan` targets GNOME and uses the Nix
+  package from locked Nixpkgs. Kinoite mounts its persistent native store at
+  host-visible `/nix`. Its former `nix-toolbox-42` container and image are
+  retired; do not recreate them as a fallback. Any remaining
   `~/.local/share/nix` content is inactive legacy data pending cleanup, not a
   recovery source or executable environment. Do not “fix” `nixPackage = null` or
   recommend `nixos-rebuild`. `home.nix` holds shared packages; imported modules
@@ -610,29 +610,27 @@ structure.
   SLIME starts it without copied helpers or a standalone `ros_swank` launcher.
   The low-priority ncurses runtime supplies standard terminfo entries while
   Ghostty's package wins terminal-specific collisions. `karabiner/` remains
-  tracked for the macOS branch but is not deployed on Linux. `rime/` retains a
-  guarded Stow fallback, but Home Manager deploys it by default: activation
-  claims ownership, materializes writable Fcitx host settings with managed
-  snapshots under `~/.local/state/rime/host-config`, materializes static inputs
-  under `~/.local/share/fcitx5/rime/.home-manager-static`, and keeps generated
-  and learned state writable. Declarative and runtime host-file changes are
-  merged only when one side retains the prior baseline; concurrent changes fail
-  closed. Selecting `rimeDeployment = "stow"` refuses to discard runtime edits
-  before removing Home Manager-owned paths. `zed/` is sourced from
-  `zed/.config/zed/settings.json`; `schan` materializes it as a mutable Flatpak
-  config at `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`, while
-  `stachan` uses `~/.config/zed/settings.json`. Zed launches the Nix-managed
-  OpenCode ACP server directly on `stachan` and through Flatpak's `host-spawn`
-  on `schan`. The Claude prompt directory remains live through
-  `mkOutOfStoreSymlink`. The global gitignore is `git/.gitignore_global`;
-  machine identity and signing remain in untracked `~/.config/git/local.config`.
-  A managed global `commit-msg` dispatcher preserves repository-local hooks,
-  lints every commit, and requires an initially present `Assisted-by:` trailer
-  to remain. Plasma's captured panel declaration remains disabled because
-  enabling high-level panel management deletes and rebuilds
-  `plasma-org.kde.plasma.desktop-appletsrc` when the declaration changes.
-  Display topology, generated IDs, wallpaper, and session history remain
-  unmanaged.
+  tracked for the macOS branch but is not deployed on Linux. `rime/` is native
+  Home Manager configuration: Home Manager owns each immutable theme directory,
+  activation materializes writable Fcitx host settings with managed snapshots
+  under `~/.local/state/rime/host-config`, materializes static inputs under
+  `~/.local/share/fcitx5/rime/.home-manager-static`, and keeps generated and
+  learned state writable. Declarative and runtime host-file changes are merged
+  only when one side retains the prior baseline; concurrent changes fail closed.
+  `zed/` is sourced from `zed/.config/zed/settings.json`; `schan` materializes
+  it as a mutable Flatpak config at
+  `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`, while `stachan`
+  uses `~/.config/zed/settings.json`. Zed launches the Nix-managed OpenCode ACP
+  server directly on `stachan` and through Flatpak's `host-spawn` on `schan`.
+  The Claude prompt directory remains live through `mkOutOfStoreSymlink`. The
+  global gitignore is `git/.gitignore_global`; machine identity and signing
+  remain in untracked `~/.config/git/local.config`. A managed global
+  `commit-msg` dispatcher preserves repository-local hooks, lints every commit,
+  and requires an initially present `Assisted-by:` trailer to remain. Plasma's
+  captured panel declaration remains disabled because enabling high-level panel
+  management deletes and rebuilds `plasma-org.kde.plasma.desktop-appletsrc` when
+  the declaration changes. Display topology, generated IDs, wallpaper, and
+  session history remain unmanaged.
 - **Editor ownership:** Vim, Neovim, and their plugins are locked Nix packages;
   shared, Vim-only, and Neovim-only plugin lists live in `vim/default.nix` and
   use native package support. That module also owns source-pinned CoC Zuban and

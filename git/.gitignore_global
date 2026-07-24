@@ -172,9 +172,6 @@ rime/.local/share/fcitx5/rime/installation.yaml
 # Trash/temp
 rime/.local/share/fcitx5/rime/trash/
 
-# Theme git repos (if cloned)
-rime/.local/share/fcitx5/themes/*/.git/
-
 # Nix build outputs
 result
 result-*

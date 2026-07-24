@@ -14,14 +14,13 @@
 ###     update  Run the update workflow below, validate it, and optionally activate it (default)
 ###
 ### Update workflow:
-###     1. Optionally update a Stow-deployed Rime tree via Plum
-###     2. Update the main dotfiles repository
-###     3. Sync / init / update configured git submodules, if any
-###     4. Run `nix fmt .`
-###     5. Run `nix flake update`
-###     6. Validate the flake and build the Home Manager configuration
-###     7. Optionally run `home-manager switch`
-###     8. Report the generation closure changes and repository shortlog
+###     1. Update the main dotfiles repository
+###     2. Sync / init / update configured git submodules, if any
+###     3. Run `nix fmt .`
+###     4. Run `nix flake update`
+###     5. Validate the flake and build the Home Manager configuration
+###     6. Optionally run `home-manager switch`
+###     7. Report the generation closure changes and repository shortlog
 ###
 ### Usage:
 ###     ./scripts/update.sh [options] [directory]
@@ -47,7 +46,6 @@ set -euo pipefail
 #--------------------------------------------------------------------------------------------------
 
 AUTO_STASH_SUBMODULES=0
-RIME_SOURCE=nix
 MODE=update
 MODE_SET=0
 SKIP_PULL=0
@@ -76,26 +74,9 @@ SECTION_TIMES=()
 
 UPDATE_START_GIT_HEAD=""
 
-PLUM_DIR="${PLUM_DIR:-$HOME/plum}"
-RIME_FRONTEND="${RIME_FRONTEND:-fcitx5-rime}"
 # Default to the flake output matching the current user (schan, stachan, ...),
 # so each machine switches its own config. Override with HOME_MANAGER_FLAKE.
 HOME_MANAGER_FLAKE="${HOME_MANAGER_FLAKE:-.#$(whoami)}"
-
-RIME_PACKAGES=(
-  plum
-  bopomofo
-  cangjie
-  essay
-  luna-pinyin
-  prelude
-  stroke
-  terra-pinyin
-  cantonese
-  jyutping
-  CanCLID/rime-loengfan
-  felixonmars/fcitx5-pinyin-zhwiki
-)
 
 #--------------------------------------------------------------------------------------------------
 # Usage
@@ -135,13 +116,6 @@ Options:
     -h, --help
         Show this help.
 
-  Rime:
-    --rime-source <nix|plum>
-        Select the schema source. Default: nix, whose locked Rime inputs
-        update during the nix flake update step. plum uses the legacy
-        installer and requires a Stow-deployed Rime tree plus
-        --skip-home-manager.
-
   Git / dotfiles:
     --skip-pull
         Skip `git pull --rebase --autostash`.
@@ -173,12 +147,6 @@ Environment:
 
   VERBOSE=0
       Quiet output (default).
-
-  PLUM_DIR=...
-      Path to plum checkout. Default: ~/plum
-
-  RIME_FRONTEND=...
-      Rime frontend passed to rime-install. Default: fcitx5-rime
 
   HOME_MANAGER_FLAKE=...
       Flake target for home-manager. Default: .#<current user> (e.g. .#schan, .#stachan)
@@ -511,39 +479,7 @@ run_home_manager_switch() {
 }
 
 #--------------------------------------------------------------------------------------------------
-# 1. Rime / plum helpers
-#--------------------------------------------------------------------------------------------------
-
-run_rime_install() {
-  (
-    cd "$PLUM_DIR"
-    env rime_frontend="$RIME_FRONTEND" bash ./rime-install "${RIME_PACKAGES[@]}"
-  )
-}
-
-force_refresh_git_tags_in_dir() {
-  local dir="$1"
-  local gitmeta repo
-
-  [ -d "$dir" ] || return 0
-
-  while IFS= read -r -d '' gitmeta; do
-    repo="${gitmeta%/.git}"
-    [ -n "$repo" ] || continue
-
-    vmsg "Force-refreshing tags in: $repo"
-    git -C "$repo" fetch --tags --force || true
-    git -C "$repo" fetch --force origin || true
-  done < <(find "$dir" \( -type d -name .git -o -type f -name .git \) -print0)
-}
-
-recover_rime_git_state() {
-  msg "Rime update failed; trying forced Git tag refresh and one retry..."
-  force_refresh_git_tags_in_dir "$PLUM_DIR"
-}
-
-#--------------------------------------------------------------------------------------------------
-# 2. Git / submodule helpers
+# Git / submodule helpers
 #--------------------------------------------------------------------------------------------------
 
 has_configured_submodules() {
@@ -839,44 +775,6 @@ stash_dirty_submodules() {
   done
 }
 
-#--------------------------------------------------------------------------------------------------
-rime_static_files_are_nix_managed() {
-  local data_dir="${XDG_DATA_HOME:-$HOME/.local/share}/fcitx5/rime"
-  local state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/rime"
-  local marker="$state_dir/home-manager-ownership-v1"
-  local source_stamp="$state_dir/home-manager-source-stamp"
-  local static_dir="$data_dir/.home-manager-static"
-  local link
-  local static_root
-  local target
-
-  if [ -e "$marker" ] || [ -L "$marker" ]; then
-    return 0
-  fi
-
-  if [ -e "$source_stamp" ] || [ -L "$source_stamp" ]; then
-    return 0
-  fi
-
-  if [ -e "$static_dir" ] || [ -L "$static_dir" ]; then
-    return 0
-  fi
-
-  [ -d "$data_dir" ] || return 1
-
-  static_root="$(readlink -m -- "$static_dir" 2>/dev/null || true)"
-  [ -n "$static_root" ] || return 0
-
-  while IFS= read -r -d '' link; do
-    target="$(readlink -m -- "$link" 2>/dev/null || true)"
-    if [[ $target == "$static_root"/* ]]; then
-      return 0
-    fi
-  done < <(find "$data_dir" -type l -print0)
-
-  return 1
-}
-
 if [ "${DOTFILES_UPDATE_SOURCE_ONLY:-0}" -eq 1 ]; then
   if [ "${BASH_SOURCE[0]}" != "$0" ]; then
     return 0
@@ -908,11 +806,6 @@ while [ $# -gt 0 ]; do
   -h | --help)
     usage
     exit 0
-    ;;
-  --rime-source)
-    [ "$#" -ge 2 ] || die "--rime-source requires nix or plum"
-    RIME_SOURCE="$2"
-    shift
     ;;
   --skip-pull)
     SKIP_PULL=1
@@ -950,23 +843,6 @@ while [ $# -gt 0 ]; do
 done
 
 resolve_output_options
-
-#--------------------------------------------------------------------------------------------------
-case "$RIME_SOURCE" in
-nix | plum)
-  ;;
-*)
-  die "invalid Rime source: $RIME_SOURCE (expected nix or plum)"
-  ;;
-esac
-
-if [ "$RIME_SOURCE" = "plum" ] && [ "$SKIP_HOME_MANAGER" -eq 0 ]; then
-  die "--rime-source plum requires --skip-home-manager; use it only after switching Rime to Stow"
-fi
-
-if [ "$RIME_SOURCE" = "plum" ] && [ "$MODE" != "update" ]; then
-  die "--rime-source plum is only valid in update mode"
-fi
 
 if [ "$MODE" = "apply" ] && [ "$SKIP_HOME_MANAGER" -eq 1 ]; then
   die "apply mode cannot be combined with --skip-home-manager; use check mode instead"
@@ -1010,46 +886,7 @@ update)
 esac
 
 #--------------------------------------------------------------------------------------------------
-# 1. Updating Rime schemas with opt-in Plum fallback
-#--------------------------------------------------------------------------------------------------
-
-if [ "$RIME_SOURCE" = "plum" ]; then
-  section_start "Updating Rime schemas with Plum"
-  section_result="done"
-
-  if rime_static_files_are_nix_managed; then
-    warn "Refusing Plum update: Rime schema files are managed by Home Manager"
-    warn "Switch Rime to its Stow deployment before selecting --rime-source plum"
-    section_result="failed"
-  elif [ ! -d "$PLUM_DIR" ]; then
-    warn "Cannot run the requested Plum update ($PLUM_DIR not found)"
-    section_result="failed"
-  elif [ ! -f "$PLUM_DIR/rime-install" ]; then
-    warn "Cannot run the requested Plum update ($PLUM_DIR/rime-install not found)"
-    section_result="failed"
-  else
-    rime_status=0
-    run_rime_install || rime_status=$?
-
-    if [ "$rime_status" -ne 0 ]; then
-      recover_rime_git_state
-      rime_status=0
-      run_rime_install || rime_status=$?
-    fi
-
-    if [ "$rime_status" -ne 0 ]; then
-      warn "Rime update still failed after forced tag refresh (exit code: $rime_status)"
-      section_result="failed"
-    fi
-  fi
-
-  section_end "$section_result"
-
-  abort_failed_section "$section_result"
-fi
-
-#--------------------------------------------------------------------------------------------------
-# 2. Updating the main dotfiles repository
+# 1. Updating the main dotfiles repository
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_PULL" -eq 0 ]; then
@@ -1068,7 +905,7 @@ else
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 3. Sync / init / update git submodules
+# 2. Sync / init / update git submodules
 #--------------------------------------------------------------------------------------------------
 
 if ! has_configured_submodules; then
@@ -1130,7 +967,7 @@ if has_configured_submodules; then
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 4. Run `nix fmt .`
+# 3. Run `nix fmt .`
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_NIX_FMT" -eq 1 ]; then
@@ -1158,7 +995,7 @@ else
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 5. Run `nix flake update`
+# 4. Run `nix flake update`
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_NIX_FLAKE" -eq 1 ]; then
@@ -1186,13 +1023,13 @@ else
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 6. Validate the result without changing the active profile
+# 5. Validate the result without changing the active profile
 #--------------------------------------------------------------------------------------------------
 
 run_validation || exit $?
 
 #--------------------------------------------------------------------------------------------------
-# 7. Optionally activate the validated configuration
+# 6. Optionally activate the validated configuration
 #--------------------------------------------------------------------------------------------------
 
 if [ "$SKIP_HOME_MANAGER" -eq 1 ]; then
@@ -1203,7 +1040,7 @@ else
 fi
 
 #--------------------------------------------------------------------------------------------------
-# 8. Final summary
+# 7. Final summary
 #--------------------------------------------------------------------------------------------------
 
 finish_successfully
