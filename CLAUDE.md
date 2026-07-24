@@ -10,8 +10,7 @@ workflow is **Nix flakes + Home Manager**. Home Manager owns deployment; the
 README's Stow-first instructions are not the active bootstrap and will be
 updated separately. Immutable inputs may be store links, live-editable sources
 may use guarded out-of-store links, and application-mutated configuration must
-be materialized as guarded regular files. Rime retains the only deliberate Stow
-fallback.
+be materialized as guarded regular files.
 
 A separate `macos` branch exists for macOS-specific settings; this repository
 checkout is the Linux branch.
@@ -21,16 +20,14 @@ checkout is the Linux branch.
 ### Home Manager flake
 
 - `flake.nix` declares per-user Home Manager outputs through
-  `mkHome { username, desktop, nixPackage, rimeDeployment }`:
-  `homeConfigurations."schan"` is the personal Fedora Kinoite (KDE Plasma)
-  profile at `/home/schan`, and `homeConfigurations."stachan"` is the work GNOME
-  profile at `/home/stachan`. Both are `x86_64-linux` Home Manager
-  configurations for generic Linux rather than NixOS. `schan` sets
-  `nixPackage = null` so Home Manager retains the host-provided Determinate Nix
-  installation; `stachan` uses the Nix package from the locked Nixpkgs input.
-  `rimeDeployment` selects the default Nix deployment or the deliberate Stow
-  fallback. Each machine switches its own output (`.#schan` / `.#stachan`);
-  `scripts/update.sh` defaults to `.#$(whoami)`.
+  `mkHome { username, desktop, nixPackage }`: `homeConfigurations."schan"` is
+  the personal Fedora Kinoite (KDE Plasma) profile at `/home/schan`, and
+  `homeConfigurations."stachan"` is the work GNOME profile at `/home/stachan`.
+  Both are `x86_64-linux` Home Manager configurations for generic Linux rather
+  than NixOS. `schan` sets `nixPackage = null` so Home Manager retains the
+  host-provided Determinate Nix installation; `stachan` uses the Nix package
+  from the locked Nixpkgs input. Each machine switches its own output (`.#schan`
+  / `.#stachan`); `scripts/update.sh` defaults to `.#$(whoami)`.
 - On Kinoite, Determinate Nix runs natively on the host. Its persistent store at
   `/var/home/nix` is mounted at `/nix` before the daemon starts, while the
   OSTree/composefs root remains read-only. The former `nix-toolbox-42` container
@@ -243,22 +240,20 @@ and installs StyLua's config under `~/.config/stylua`.
   state in `~/.config/rclone/rclone.conf` is machine-local and must never enter
   Git or the Nix store. Setup and recovery are documented in
   `docs/rclone-box-org.md`.
-- **`rime/`** is a Home Manager module (`rime/default.nix`) over a retained
-  Stow-compatible snapshot. Locked schema inputs replace matching snapshot files
-  and `pkgs.rime-zhwiki` supplies Zhwiki. Nix mode claims explicit ownership,
-  materializes the Fcitx profile and host configuration as writable regular
-  files with prior-source snapshots under `~/.local/state/rime/host-config`,
-  rejects malformed or unmanaged conflicts, materializes managed static data
-  under `~/.local/share/fcitx5/rime/.home-manager-static`, and leaves generated
+- **`rime/`** is a native Home Manager module (`rime/default.nix`). Locked
+  schema inputs replace matching snapshot files and `pkgs.rime-zhwiki` supplies
+  Zhwiki. Home Manager owns each immutable Catppuccin and Plasma theme directory
+  while activation materializes the Fcitx profile and host configuration as
+  writable regular files with prior-source snapshots under
+  `~/.local/state/rime/host-config`. It rejects malformed or unmanaged
+  conflicts, materializes managed static data under
+  `~/.local/share/fcitx5/rime/.home-manager-static`, and leaves generated
   schemas, learned user databases, and sync state writable beside it. Host-file
   updates preserve runtime-only edits, replace an unchanged managed baseline,
-  and fail when both sides changed. Stow mode refuses to discard runtime edits
-  before releasing only Home Manager-owned paths. Source changes invalidate only
-  generated build data and reload Rime; if Fcitx is not running, it rebuilds on
-  its next start.
-- `scripts/update.sh` selects the locked Nix schema sources by default.
-  `--rime-source plum --skip-home-manager` is the guarded fallback after
-  switching the Rime snapshot back to Stow.
+  and fail when both sides changed. Source changes invalidate only generated
+  build data and reload Rime; if Fcitx is not running, it rebuilds on its next
+  start.
+- `scripts/update.sh` updates Rime only through the locked flake inputs.
 - **`yt-dlp/`** uses the locked Nixpkgs bgutil-ytdlp-pot-provider package. Home
   Manager links its Python plugin for yt-dlp discovery and points script mode at
   the store-resident Node server. A focused check validates both profiles,
@@ -469,7 +464,6 @@ different directory.
 ./scripts/update.sh apply --show-changes # include the committed or staged Git diff
 ./scripts/update.sh update               # full update; default when the mode is omitted
 ./scripts/update.sh --autostash-submodules --verbose   # retain dirty-submodule stashes for review
-./scripts/update.sh --rime-source plum --skip-home-manager --skip-nix-flake
 ```
 
 `check` does not change the lock file or active profile. `apply` validates and
@@ -485,24 +479,17 @@ failure warns but does not turn a successful activation into a failure. The
 script is fail-closed for state changes: any failed update step, flake check, or
 Home Manager build prevents activation.
 
-Default Rime updates happen through `nix flake update`; `--rime-source nix` is
-implicit. A subsequent Home Manager activation rebuilds generated schemas when
-the static Rime source stamp changes, so no manual deploy is required.
-`--rime-source plum` runs the legacy installer only with `--skip-home-manager`
-and refuses while Home Manager ownership or materialized static state remains.
-Add `--skip-nix-flake` to leave flake inputs locked.
+Rime updates happen through `nix flake update`. A subsequent Home Manager
+activation rebuilds generated schemas when the static Rime source stamp changes,
+so no manual deploy is required. Add `--skip-nix-flake` to leave flake inputs
+locked.
 
-To return to Stow, set the selected output's `rimeDeployment = "stow"` in
-`flake.nix`, run Home Manager once to remove its Rime links, then `stow -R rime`
-before using the Plum mode.
-
-Update-mode step order is: optional Plum fallback; repository pull; generic
-submodule handling when `.gitmodules` contains entries; `nix fmt .`;
-`nix flake update`; locked flake validation and Home Manager build; optional
-activation; and the post-activation generation changelog. The corresponding skip
-flags are `--skip-pull`, `--skip-submodules`, `--skip-status`, `--skip-nix-fmt`,
-`--skip-nix-flake`, and `--skip-home-manager`. `HOME_MANAGER_FLAKE` defaults to
-`.#$(whoami)`.
+Update-mode step order is: repository pull; generic submodule handling when
+`.gitmodules` contains entries; `nix fmt .`; `nix flake update`; locked flake
+validation and Home Manager build; optional activation; and the post-activation
+generation changelog. The corresponding skip flags are `--skip-pull`,
+`--skip-submodules`, `--skip-status`, `--skip-nix-fmt`, `--skip-nix-flake`, and
+`--skip-home-manager`. `HOME_MANAGER_FLAKE` defaults to `.#$(whoami)`.
 
 The script refuses to update dirty submodules unless `--autostash-submodules` is
 passed, and it does **not** auto-pop stashes afterward. The auto-stash scan
@@ -645,13 +632,12 @@ source.
   can request modified-key reporting. Keep reporting request-driven rather than
   forcing enhanced keys for every application.
 - **`rime/`** materializes writable Fcitx profile/config files with guarded
-  source snapshots, links the immutable theme set, then materializes locked
-  schema inputs, the packaged Zhwiki dictionary, and local overrides under
-  `~/.local/share/fcitx5/rime/.home-manager-static`. This separates managed
-  static inputs from writable generated and learned state. A source stamp
-  refreshes the static snapshot, clears only generated `build/` data, and
-  reloads Rime. Stow mode releases only Home Manager-owned links after
-  validating them; keep generated state out of Git.
+  source snapshots, declares immutable theme directories through Home Manager,
+  then materializes locked schema inputs, the packaged Zhwiki dictionary, and
+  local overrides under `~/.local/share/fcitx5/rime/.home-manager-static`. This
+  separates managed static inputs from writable generated and learned state. A
+  source stamp refreshes the static snapshot, clears only generated `build/`
+  data, and reloads Rime; keep generated state out of Git.
 - **`rime/gnome.nix`** enables Fcitx 5 through Home Manager only for
   `desktop = "gnome"`, using its Wayland frontend with the Rime and GTK addons.
   It also sets `QT_IM_MODULE=fcitx`, which Home Manager otherwise omits for that

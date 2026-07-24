@@ -534,23 +534,23 @@ machine-local state to `~/.config/emacs/custom.el` rather than its immutable
 managed init file.
 
 `flake.nix` builds two generic-Linux profiles with
-`mkHome { username, desktop, nixPackage, rimeDeployment }`. Both default to
-Nix-managed Rime and retain `home.stateVersion = "26.11"` as their compatibility
-floor. The personal `schan` profile targets Fedora Kinoite/Plasma and uses
-native Determinate Nix with `nixPackage = null`; `stachan` uses the Nix client
-from the locked Nixpkgs input. Kinoite's native `/nix` store is host-visible.
-The flake composes both profiles once and imports formatter and check outputs
-from `treefmt.nix`, `checks/default.nix`, and focused owner `check.nix` files.
-Rime materializes writable Fcitx host settings with prior-source snapshots under
+`mkHome { username, desktop, nixPackage }`. Both use native Home Manager Rime
+ownership and retain `home.stateVersion = "26.11"` as their compatibility floor.
+The personal `schan` profile targets Fedora Kinoite/Plasma and uses native
+Determinate Nix with `nixPackage = null`; `stachan` uses the Nix client from the
+locked Nixpkgs input. Kinoite's native `/nix` store is host-visible. The flake
+composes both profiles once and imports formatter and check outputs from
+`treefmt.nix`, `checks/default.nix`, and focused owner `check.nix` files. Rime
+declares immutable theme directories through Home Manager, materializes writable
+Fcitx host settings with prior-source snapshots under
 `~/.local/state/rime/host-config`, preserves runtime-only changes, and fails on
 concurrent declarative/runtime edits. It materializes managed static inputs
-separately from writable generated and learned state and refuses to discard host
-edits during a Stow release. Zed remains a Home Manager module sourced from
-`~/dotfiles/zed/.config/zed/settings.json`; its OpenCode ACP command runs
-directly for native Zed and through `host-spawn` for the Zed Preview Flatpak.
-The yt-dlp bgutil server and plugin come from locked Nixpkgs with focused
-integration checks. The shared `home.nix` profile also installs `lazygit` and
-the language tooling used by CoC and OpenCode.
+separately from writable generated and learned state. Zed remains a Home Manager
+module sourced from `~/dotfiles/zed/.config/zed/settings.json`; its OpenCode ACP
+command runs directly for native Zed and through `host-spawn` for the Zed
+Preview Flatpak. The yt-dlp bgutil server and plugin come from locked Nixpkgs
+with focused integration checks. The shared `home.nix` profile also installs
+`lazygit` and the language tooling used by CoC and OpenCode.
 
 The flake pins registry and `NIX_PATH` resolution to its locked nixpkgs input
 and does not use channels. It optionally includes the untracked

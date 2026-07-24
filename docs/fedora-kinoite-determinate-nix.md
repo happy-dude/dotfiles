@@ -670,10 +670,10 @@ immutable managed schemas from writable generated schemas, learned databases,
 and sync state. Preserve that boundary unless a replacement keeps the same
 ownership and persistence guarantees.
 
-Before any later simplification:
+Before any later ownership or persistence simplification:
 
-1. Determine whether the active Rime directory is a real directory or a legacy
-   Stow symlink.
+1. Confirm that the active Rime directory is real and that immutable theme
+   directories are Home Manager links.
 2. Record all `*.userdb`, `sync/`, and `user.yaml` locations.
 3. Type with several active schemas.
 4. Add a harmless learned candidate, restart Fcitx, and confirm it persists.
