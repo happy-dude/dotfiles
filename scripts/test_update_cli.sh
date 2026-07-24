@@ -11,13 +11,13 @@ fail() {
   exit 1
 }
 
-help_output="$("$UPDATE_SCRIPT" --help)"
+help_output="$(bash "$UPDATE_SCRIPT" --help)"
 if grep -F -- '--rime-source' <<<"$help_output" >/dev/null; then
   fail 'retired --rime-source option remains in help output'
 fi
 
 status=0
-legacy_output="$("$UPDATE_SCRIPT" --rime-source nix 2>&1)" || status=$?
+legacy_output="$(bash "$UPDATE_SCRIPT" --rime-source nix 2>&1)" || status=$?
 [ "$status" -ne 0 ] || fail 'retired --rime-source option was accepted'
 grep -F -- 'unknown option: --rime-source' <<<"$legacy_output" >/dev/null ||
   fail 'retired --rime-source option did not use unknown-option rejection'
