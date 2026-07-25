@@ -1,18 +1,5 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
-  # wezterm installed via home-manager errors on Ubuntu 24.10
-  # need to investigate further; until then, install via PPA and only link config
-
+{...}: {
+  # Home Manager's wezterm package fails to build on Ubuntu 24.10, so WezTerm
+  # is installed from its PPA and only the configuration is owned here.
   xdg.configFile."wezterm/wezterm.lua".source = ./.config/wezterm/wezterm.lua;
-
-  programs.wezterm = {
-    enable = false;
-    package = config.lib.nixGL.wrap pkgs.wezterm;
-    extraConfig = ''
-      ${builtins.readFile ./.config/wezterm/wezterm.lua}
-    '';
-  };
 }
