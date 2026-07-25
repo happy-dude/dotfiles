@@ -41,7 +41,7 @@
         primary_email = "schan@lostsanctum.dev";
       };
       new = {
-        tags = "unread;inbox;sent;";
+        tags = "unread;inbox;";
         ignore = "";
       };
       search = {
