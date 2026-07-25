@@ -49,9 +49,7 @@ in {
       diff = {
         algorithm = "histogram";
         colorMoved = "plain";
-        indentHeuristic = true;
         mnemonicPrefix = true;
-        renames = true;
       };
       init.defaultBranch = "main";
       pull.rebase = true;
@@ -61,7 +59,6 @@ in {
       branch.sort = "-committerdate";
       tag.sort = "version:refname";
       push = {
-        default = "simple";
         autoSetupRemote = true;
         followTags = true;
       };
@@ -74,7 +71,10 @@ in {
       commit.verbose = true;
       rerere = {
         enabled = true;
-        autoupdate = true;
+        # autoupdate stages replayed resolutions during rebase; if a recorded
+        # resolution held conflict markers, a scripted rebase --continue would
+        # commit them. Replay, but require manual inspection and staging.
+        autoupdate = false;
       };
       rebase = {
         autoSquash = true;
