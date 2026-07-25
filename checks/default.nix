@@ -27,6 +27,7 @@ in
     (import ./secrets.nix {inherit pkgs self;})
     (import ./shell.nix {inherit lib pkgs self;})
     (import ./workflow.nix {inherit pkgs self;})
+    (import ../aerc/check.nix {inherit homes pkgs self;})
     (import ../agents/check.nix {inherit pkgs;})
     (import ../emacs/check.nix {inherit homes pkgs self;})
     (import ../git/check.nix {inherit pkgs;})

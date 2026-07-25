@@ -14,23 +14,14 @@
   programs.aerc = {
     enable = true;
 
-    extraAccounts = {
-      dev = {
-        source = "notmuch://~/.mail/";
-        maildir-store = "~/.mail/";
-        query-map = "~/.config/aerc/notmuch-map.conf";
-        check-mail-cmd = "mbsync lostsanctum && notmuch new";
-        check-mail-timeout = "90s";
-        default = "Unread";
-        outgoing = "smtps://schan%40lostsanctum.dev@smtp.migadu.com:465";
-        from = "Stanley Chan <schan@lostsanctum.dev>";
-        copy-to = "Sent";
-        cache-headers = true;
-        outgoing-cred-cmd = "pass show email/aerc/schan@lostsanctum.dev";
-        folders-sort = "linux-api,linux-bcachefs,linux-bpf,linux-cgroups,linux-debuggers,linux-io-uring,linux-netdev,linux-next,linux-perf-users,linux-rust,linux-security-module,linux-selinux,linux-toolchains,linux-trace-devel,linux-kernel-announce,INBOX,Unread,Drafts,Sent,Archive,Trash,Junk,ctlug,openbsd-tech,openbsd-announce,freebsd-security,freebsd-announce,dragonfly-commits,dragonfly-users,netbsd-tech-kern,netbsd-announce,ros-diffs,ros-announce,illumos-commits";
-      };
-    };
+    # accounts.conf is read from aerc's own file, which is its only copy.
+    extraAccounts = builtins.readFile ./.config/aerc/accounts.conf;
 
+    # aerc.conf stays an attribute set: Home Manager reads
+    # general.unsafe-accounts-conf from it to decide whether aerc will start
+    # against a store-resident accounts.conf, and cannot see that setting
+    # inside a string. The tracked aerc.conf mirrors this, and the
+    # aerc-config-mirror check fails if the two ever disagree.
     extraConfig = {
       general = {
         unsafe-accounts-conf = true;
