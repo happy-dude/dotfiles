@@ -1,11 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
-  #home.file.".mbsyncrc".source = ./.mbsyncrc;
-  #xdg.configFile."notmuch/default/config".source = ./.notmuch-config;
-
+{...}: {
   #xdg.configFile."aerc/aerc.conf".source = ./.config/aerc/aerc.conf;
   #xdg.configFile."aerc/accounts.conf".source = ./.config/aerc/accounts.conf;
   #xdg.configFile."aerc/binds.conf".source = ./.config/aerc/binds.conf;
@@ -18,71 +11,6 @@
   #xdg.configFile."aerc/stylesets/gruvbox_material_dark_hard".source = ./.config/aerc/stylesets/gruvbox_material_dark_hard;
   #xdg.configFile."aerc/stylesets/gruvbox_material_dark_medium".source = ./.config/aerc/stylesets/gruvbox_material_dark_medium;
   #xdg.configFile."aerc/stylesets/gruvbox_material_dark_soft".source = ./.config/aerc/stylesets/gruvbox_material_dark_soft;
-
-  programs.gpg = {
-    enable = true;
-    settings = {
-      use-agent = true;
-    };
-  };
-  home.file.".gnupg/gpg-agent.conf".text = ''
-    pinentry-program ${pkgs.pinentry-curses}/bin/pinentry-curses
-    allow-loopback-pinentry
-  '';
-
-  programs.mbsync = {
-    enable = true;
-    extraConfig = ''
-      IMAPAccount lostsanctum
-      Host imap.migadu.com
-      User schan@lostsanctum.dev
-      PassCmd "pass show email/aerc/schan@lostsanctum.dev"
-      TLSType IMAPS
-      CertificateFile /etc/ssl/certs/ca-certificates.crt
-
-      IMAPStore lostsanctum-remote
-      Account lostsanctum
-
-      MaildirStore lostsanctum-local
-      Path ~/.mail/
-      Inbox ~/.mail/INBOX
-      SubFolders Verbatim
-
-      Channel lostsanctum
-      Far :lostsanctum-remote:
-      Near :lostsanctum-local:
-      Patterns *
-      Create Both
-      Expunge Both
-      SyncState *
-    '';
-  };
-
-  programs.notmuch = {
-    enable = true;
-    extraConfig = {
-      database = {
-        path = "${config.home.homeDirectory}/.mail";
-      };
-      user = {
-        name = "Stanley Chan";
-        primary_email = "schan@lostsanctum.dev";
-      };
-      new = {
-        tags = "unread;inbox;sent;";
-        ignore = "";
-      };
-      search = {
-        exclude_tags = "deleted;spam;";
-      };
-      maildir = {
-        synchronize_flags = "true";
-      };
-      crypto = {
-        gpg_path = "gpg";
-      };
-    };
-  };
 
   programs.aerc = {
     enable = true;

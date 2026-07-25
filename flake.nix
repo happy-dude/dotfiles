@@ -188,6 +188,8 @@
             ./ghostty
             ./gnome
             ./git
+            ./gpg
+            ./mail
             ./nix
             ./opencode
             ./rclone
