@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   ...
 }: let
@@ -13,14 +14,14 @@ in {
   xdg.configFile."emacs/lsp-paths.el".source = lsp.paths;
 
   home.activation = {
-    createOrgDirectories = config.lib.dag.entryAfter ["writeBoundary"] ''
+    createOrgDirectories = lib.hm.dag.entryAfter ["writeBoundary"] ''
       $DRY_RUN_CMD ${pkgs.coreutils}/bin/mkdir -p \
         "$HOME/org/Archive" \
         "$HOME/org/roam" \
         "${config.xdg.cacheHome}/emacs/undo-tree"
     '';
 
-    registerOrgProtocol = config.lib.dag.entryAfter ["linkGeneration"] ''
+    registerOrgProtocol = lib.hm.dag.entryAfter ["linkGeneration"] ''
       $DRY_RUN_CMD ${pkgs.xdg-utils}/bin/xdg-mime \
         default emacs-org-protocol.desktop x-scheme-handler/org-protocol
     '';

@@ -6,7 +6,7 @@
   username,
   ...
 }: {
-  home.activation.createZshStateDirectory = config.lib.dag.entryAfter ["writeBoundary"] ''
+  home.activation.createZshStateDirectory = lib.hm.dag.entryAfter ["writeBoundary"] ''
     $DRY_RUN_CMD ${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg "${config.xdg.stateHome}/zsh"}
   '';
 
