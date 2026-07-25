@@ -4,8 +4,8 @@
 }: let
   mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
   mkProfileCheck = username: home: let
-    parserDirectory = home.config.home.file.".local/share/nvim/site/parser".source;
-    queryDirectory = home.config.home.file.".local/share/nvim/site/queries".source;
+    parserDirectory = home.config.xdg.dataFile."nvim/site/parser".source;
+    queryDirectory = home.config.xdg.dataFile."nvim/site/queries".source;
     # Home Manager registers the native package directory under an
     # absolute path, unlike the entries this module declares itself.
     pluginDirectory =
