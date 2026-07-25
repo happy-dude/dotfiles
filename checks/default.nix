@@ -25,7 +25,7 @@ in
     }
     (import ./python.nix {inherit pkgs self;})
     (import ./secrets.nix {inherit pkgs self;})
-    (import ./shell.nix {inherit pkgs self;})
+    (import ./shell.nix {inherit lib pkgs self;})
     (import ./workflow.nix {inherit pkgs self;})
     (import ../agents/check.nix {inherit pkgs;})
     (import ../emacs/check.nix {inherit homes pkgs self;})
