@@ -222,9 +222,6 @@
       ".editorconfig".source = ./.editorconfig;
       ".golangci.yml".source = ./.golangci.yml;
     };
-
-    sessionVariables = {
-    };
   };
 
   xdg.configFile = {
