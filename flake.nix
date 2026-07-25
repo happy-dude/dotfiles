@@ -178,6 +178,7 @@
         modules =
           [
             ./home.nix
+            ./lib/profile.nix
             ./aerc
             ./bat
             ./agents

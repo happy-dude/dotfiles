@@ -1,10 +1,10 @@
 {
+  config,
   lib,
   pkgs,
-  desktop,
   ...
 }: {
-  config = lib.mkIf (desktop == "gnome") {
+  config = lib.mkIf (config.dotfiles.profile.desktop == "gnome") {
     i18n.inputMethod = {
       enable = true;
       type = "fcitx5";

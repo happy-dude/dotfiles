@@ -1,15 +1,15 @@
 {
+  config,
   lib,
   pkgs,
   inputs,
-  username,
   ...
 }: {
   #xdg.configFile."fish/config.fish".source = ./.config/fish/config.fish;
   xdg.configFile."fish/tide.fish".source = ./.config/fish/tide.fish;
   xdg.configFile."fish/functions/_tide_item_nohist.fish".source = ./.config/fish/functions/_tide_item_nohist.fish;
   xdg.configFile."fish/completions/nix.fish".source = "${pkgs.nix}/share/fish/vendor_completions.d/nix.fish";
-  xdg.configFile."fish/completions/rustup.fish" = lib.mkIf (username == "schan") {
+  xdg.configFile."fish/completions/rustup.fish" = lib.mkIf config.dotfiles.profile.hasRustup {
     source = "${pkgs.rustup}/share/fish/vendor_completions.d/rustup.fish";
   };
 

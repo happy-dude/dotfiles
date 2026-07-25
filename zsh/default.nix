@@ -3,7 +3,6 @@
   lib,
   pkgs,
   inputs,
-  username,
   ...
 }: {
   home.activation.createZshStateDirectory = lib.hm.dag.entryAfter ["writeBoundary"] ''
@@ -14,7 +13,7 @@
   xdg.configFile."zsh/.zlogin".source = ./.config/zsh/.zlogin;
   xdg.configFile."zsh/.zlogout".source = ./.config/zsh/.zlogout;
   xdg.configFile."zsh/.zpreztorc".source = ./.config/zsh/.zpreztorc;
-  xdg.configFile."zsh/completions/_rustup" = lib.mkIf (username == "schan") {
+  xdg.configFile."zsh/completions/_rustup" = lib.mkIf config.dotfiles.profile.hasRustup {
     source = "${pkgs.rustup}/share/zsh/site-functions/_rustup";
   };
 

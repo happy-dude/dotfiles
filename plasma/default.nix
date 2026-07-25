@@ -1,14 +1,13 @@
 {
   config,
   lib,
-  desktop,
   ...
 }: {
   options.dotfiles.plasma.managePanels = lib.mkEnableOption ''
     Home Manager ownership of the complete Plasma panel layout
   '';
 
-  config = lib.mkIf (desktop == "plasma") {
+  config = lib.mkIf (config.dotfiles.profile.desktop == "plasma") {
     programs.plasma = {
       enable = true;
       overrideConfig = false;

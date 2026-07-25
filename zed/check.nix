@@ -1,22 +1,22 @@
 {pkgs}: let
   zedSettingsMaterializer = import ./materializer.nix {inherit pkgs;};
-  schanSettings = import ./settings.nix {
+  flatpakSettings = import ./settings.nix {
     inherit (pkgs) lib;
-    username = "schan";
+    flatpak = true;
   };
-  stachanSettings = import ./settings.nix {
+  hostSettings = import ./settings.nix {
     inherit (pkgs) lib;
-    username = "stachan";
+    flatpak = false;
   };
 in {
-  zed-settings-materializer = assert stachanSettings.agent_servers.OpenCode
+  zed-settings-materializer = assert hostSettings.agent_servers.OpenCode
   == {
     args = ["acp"];
     command = "opencode";
     env = {};
     type = "custom";
   };
-  assert schanSettings.agent_servers.OpenCode
+  assert flatpakSettings.agent_servers.OpenCode
   == {
     args = ["opencode" "acp"];
     command = "/app/bin/host-spawn";

@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  username,
   ...
 }: let
   solaarWrapped = config.lib.nixGL.wrap pkgs.solaar;
@@ -13,7 +12,7 @@ in {
 
   home.packages = [solaarWrapped];
 
-  xdg.configFile."autostart/solaar.desktop" = lib.mkIf (username == "schan") {
+  xdg.configFile."autostart/solaar.desktop" = lib.mkIf config.dotfiles.profile.hasSolaar {
     text = ''
       [Desktop Entry]
       Type=Application

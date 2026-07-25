@@ -14,7 +14,7 @@
     inherit username;
     homeDirectory = "/home/${username}";
 
-    sessionPath = lib.optionals (username == "schan") [
+    sessionPath = lib.optionals config.dotfiles.profile.hostProvidedNix [
       "$HOME/.nix-profile/bin"
       "$HOME/.cargo/bin"
       "$HOME/go/bin"
