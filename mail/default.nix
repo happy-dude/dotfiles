@@ -3,9 +3,6 @@
   pkgs,
   ...
 }: {
-  #home.file.".mbsyncrc".source = ./.mbsyncrc;
-  #xdg.configFile."notmuch/default/config".source = ./.notmuch-config;
-
   programs.mbsync = {
     enable = true;
     extraConfig = ''
