@@ -1,4 +1,8 @@
-{config, ...}: {
+{
+  config,
+  pkgs,
+  ...
+}: {
   #home.file.".mbsyncrc".source = ./.mbsyncrc;
   #xdg.configFile."notmuch/default/config".source = ./.notmuch-config;
 
@@ -10,7 +14,7 @@
       User schan@lostsanctum.dev
       PassCmd "pass show email/aerc/schan@lostsanctum.dev"
       TLSType IMAPS
-      CertificateFile /etc/ssl/certs/ca-certificates.crt
+      CertificateFile ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
 
       IMAPStore lostsanctum-remote
       Account lostsanctum
