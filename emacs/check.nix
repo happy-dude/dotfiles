@@ -7,7 +7,9 @@
   schanAgentShellConfig = schan.config.xdg.configFile."emacs/agent-shell.el".source;
   stachanAgentShellConfig = stachan.config.xdg.configFile."emacs/agent-shell.el".source;
   schanLspConfig = schan.config.xdg.configFile."emacs/lsp-servers.el".source;
+  schanLspPaths = schan.config.xdg.configFile."emacs/lsp-paths.el".source;
   stachanLspConfig = stachan.config.xdg.configFile."emacs/lsp-servers.el".source;
+  stachanLspPaths = stachan.config.xdg.configFile."emacs/lsp-paths.el".source;
   syntaxCheck =
     pkgs.runCommand "dotfiles-emacs-checks"
     {
@@ -45,6 +47,7 @@
                (lambda (&rest _) (error "unexpected process start")))
               ((symbol-function 'start-process)
                (lambda (&rest _) (error "unexpected process start"))))
+      (load (getenv "DOTFILES_LSP_PATHS") nil nil t)
       (load (getenv "DOTFILES_LSP_CONFIG") nil nil t)
       (require 'acp)
       (require 'shell-maker)
@@ -130,6 +133,7 @@
     agentShellConfig = home.config.xdg.configFile."emacs/agent-shell.el".source;
     homePath = home.config.home.path;
     lspConfig = home.config.xdg.configFile."emacs/lsp-servers.el".source;
+    lspPaths = home.config.xdg.configFile."emacs/lsp-paths.el".source;
   in
     pkgs.runCommand "dotfiles-emacs-runtime"
     {
@@ -142,6 +146,7 @@
       export XDG_DATA_HOME="$HOME/.local/share"
       export DOTFILES_AGENT_SHELL_CONFIG=${agentShellConfig}
       export DOTFILES_LSP_CONFIG=${lspConfig}
+      export DOTFILES_LSP_PATHS=${lspPaths}
       export OPENCODE_DISABLE_LSP_DOWNLOAD=${home.config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD}
       mkdir -p "$XDG_CACHE_HOME" "$XDG_CONFIG_HOME" "$XDG_DATA_HOME"
 
@@ -152,6 +157,7 @@
 in
   assert schanAgentShellConfig == stachanAgentShellConfig;
   assert schanLspConfig == stachanLspConfig;
+  assert schanLspPaths == stachanLspPaths;
   assert schan.config.programs.emacs.finalPackage == stachan.config.programs.emacs.finalPackage;
   assert schan.config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD == "true";
   assert stachan.config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD == "true"; {

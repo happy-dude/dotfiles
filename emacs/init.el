@@ -65,6 +65,9 @@
 (load custom-file 'noerror)
 
 ;; Home Manager generates absolute, Nix-store-pinned LSP and Tree-sitter paths.
+;; lsp-paths.el holds those paths; lsp-servers.el is the Emacs Lisp that uses
+;; them, and it requires the paths to have been loaded first.
+(load (locate-user-emacs-file "lsp-paths.el") nil nil t)
 (load (locate-user-emacs-file "lsp-servers.el") nil nil t)
 
 (load (locate-user-emacs-file "agent-shell.el") nil nil t)

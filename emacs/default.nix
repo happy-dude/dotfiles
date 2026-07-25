@@ -9,7 +9,8 @@ in {
 
   xdg.configFile."emacs/init.el".source = ./init.el;
   xdg.configFile."emacs/agent-shell.el".source = ./agent-shell.el;
-  xdg.configFile."emacs/lsp-servers.el".source = lsp.config;
+  xdg.configFile."emacs/lsp-servers.el".source = ./lsp-servers.el;
+  xdg.configFile."emacs/lsp-paths.el".source = lsp.paths;
 
   home.activation = {
     createOrgDirectories = config.lib.dag.entryAfter ["writeBoundary"] ''
