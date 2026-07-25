@@ -23,9 +23,11 @@ checkout is the Linux branch.
 
 ### Home Manager flake
 
-- `flake.nix` declares per-user Home Manager outputs through
-  `mkHome { username, desktop, nixPackage }`: `homeConfigurations."schan"` is
-  the personal Fedora Kinoite (KDE Plasma) profile at `/home/schan`, and
+- `flake.nix` declares per-user Home Manager outputs through `mkHome`, applied
+  to an explicit per-machine capability record (`username`, `desktop`,
+  `nixPackage`, and the `hasFlatpak` / `usesFlatpakZed` / `hasSolaar` /
+  `hasRustup` facts): `homeConfigurations."schan"` is the personal Fedora
+  Kinoite (KDE Plasma) profile at `/home/schan`, and
   `homeConfigurations."stachan"` is the work GNOME profile at `/home/stachan`.
   Both are `x86_64-linux` Home Manager configurations for generic Linux rather
   than NixOS. `schan` sets `nixPackage = null` so Home Manager retains the
@@ -109,10 +111,10 @@ checkout is the Linux branch.
   imported from `flake.nix`'s `modules` list: `aerc/`, `agents/`, `bat/`,
   `emacs/`, `fish/`, `fonts/`, `fzf/`, `ghostty/`, `git/`, `gnome/`, `gpg/`,
   `mail/`, `nix/`, `opencode/`, `rclone/`, `rime/`, `roswell/`, `rustowl/`,
-  `tldr/`, `tmux/`, `vim/`, `virtme-ng/`, `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`,
-  `zsh/`. The desktop-specific `rime/gnome.nix` module is imported separately.
-  Adding a new app otherwise means creating `<app>/default.nix` and adding it to
-  the `modules` list in `flake.nix`.
+  `tldr/`, `tmux/`, `vim/`, `virtme-ng/`, `xdg/`, `yt-dlp/`, `zed/`, `zsh/`. The
+  desktop-specific `rime/gnome.nix` module is imported separately. Adding a new
+  app otherwise means creating `<app>/default.nix` and adding it to the
+  `modules` list in `flake.nix`.
 - `flake.nix` is composition-only: it declares inputs and external overlays,
   composes the Home Manager profiles once, and exposes imported formatter and
   check outputs. `treefmt.nix` owns formatter policy; `checks/default.nix`
@@ -120,14 +122,16 @@ checkout is the Linux branch.
   merging them through a fold that throws when two sets contribute the same
   check name rather than silently keeping one.
 - `lib/` holds what the modules share. `lib/profile.nix` declares the
-  `dotfiles.profile` options describing what a machine provides, so modules ask
-  for the fact they depend on instead of comparing the username. `lib/python/`
-  holds the durable file replacement the activation helpers use and the builder
-  that packages them; `lib/mkCheck.nix` builds check derivations;
-  `lib/homes.nix` returns a value every profile agrees on and otherwise names
-  the profiles that disagree. `scripts/lib/` holds the same for shell.
-- `flatpak/` and `plasma/` are host-conditional modules: `mkHome` imports them
-  with the external nix-flatpak and plasma-manager modules only for `schan`.
+  `dotfiles.profile` options describing what a machine provides, populated from
+  the per-machine capability records in `flake.nix`, so modules ask for the fact
+  they depend on instead of comparing the username. `lib/python/` holds the
+  durable file replacement the activation helpers use and the builder that
+  packages them; `lib/mkCheck.nix` builds check derivations; `lib/homes.nix`
+  returns a value every profile agrees on and otherwise names the profiles that
+  disagree. `scripts/lib/` holds the same for shell.
+- `flatpak/` and `plasma/` are capability-conditional modules: `mkHome` imports
+  the flatpak modules where `hasFlatpak` holds and the plasma modules where the
+  desktop is Plasma.
 - `treefmt.nix` configures **treefmt** (run via `nix fmt`): the Linux kernel's
   `.clang-format` for C/C++, Alejandra for Nix, `fish_indent` for Fish, `shfmt`
   for shell, Ruff for Python, Neovim's exact StyLua configuration for Lua,
@@ -170,7 +174,7 @@ Manager keeps the first three at the home-directory locations their tools search
 and installs StyLua's config under `~/.config/stylua`.
 
 - **`aerc/`** configures aerc alone. GnuPG lives in `gpg/`, and mbsync and
-  notmuch in `mail/`, beside the mbsyncrc and notmuch files they supersede.
+  notmuch in `mail/`.
 - **`bat/`** is a module (`bat/default.nix`, `programs.bat`); enabling the
   program owns the package, so do not duplicate `bat` in `home.packages`.
 - **`fzf/`** enables Home Manager's FZF package and its Fish and Zsh
