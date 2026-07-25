@@ -463,170 +463,51 @@ policy, disable namespace restrictions, make Bubblewrap setuid, or disable
 sandboxing without explicit user authorization. Do not generalize this
 workaround to unrelated failures.
 
-Every tool above (`opencc`, `translate-shell`, `sdcv`, `dict`, `tesseract5`,
-`espeak-ng`, `languagetool`, `python3Packages.jieba`,
-`python3Packages.pypinyin`, `ocrmypdf`, `aspell` + `aspellDicts.{eo,es,it,pl}`,
-`dictdDBs.epo2eng`) is declared in `~/dotfiles/home.nix` under the comments
+Every tool named above is declared in `~/dotfiles/home.nix`, under the comments
 `Language agent: translation / dictionary / grammar / OCR / TTS tooling` and
 `Aspell spellcheck-backed word validation for Esperanto/Italian/Polish/Spanish`.
-That file is the authoritative Home Manager configuration for this machine;
-`~/dotfiles/CLAUDE.md` documents the full repository layout. The full `kernel`
-and `language` Markdown prompts are canonical for their Codex and OpenCode
-agents; Nix generates the Codex TOML templates and OpenCode definitions directly
-from their bodies and frontmatter without checked-in generated artifacts.
-`agents/codex.nix` owns the supporting Codex materializer, guarded
-agent-directory ownership migration, and focused checks. Home Manager stores
-immutable Codex templates under `~/.local/share/codex/generated-profiles` and
-merges their generated keys into writable mode-0600 profiles only when templates
-change or profiles are missing. Profiles retain readable multiline instructions
-and Codex's official `config.toml` schema directive. Machine-local project
-trust, TUI state, and other runtime keys survive the merge. Home Manager also
-live-links the independently maintained Kagi Codex TOMLs. Activation requires
-real mode-0700 `~/.claude` and `~/.codex` directories while leaving their
-machine-local session state and configuration writable.
+That file is the authoritative package list for this machine, and
+`~/dotfiles/CLAUDE.md` describes the repository it belongs to. Read them rather
+than trusting any list reproduced in this prompt: the list here is a cache and
+the configuration is the fact.
 
-`opencode/default.nix` owns OpenCode's provider-neutral configuration, TUI
-selection, the retained Gruvbox Material material dark-medium theme, and the
-default mix dark-medium variant. It disables session sharing and telemetry
-export and loads optional host-only extensions from mode-0600
-`~/.config/opencode/local.json`. Global LSP feedback remains disabled. The
-repository-root `opencode.json` enables it only for this checkout, invokes the
-Nix-managed server commands, uses the stable TypeScript SDK link, and disables
-overlapping Oxlint diagnostics. The LSP permission and
-`OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured.
-`opencode/check.nix` owns the focused package, global and project LSP, schema,
-theme, and telemetry checks; `flake.nix` only imports the check. Private MCP
-definitions and commands remain outside Git and the Nix store. OpenCode
-discovers compatible `~/.claude/skills/*/SKILL.md` files directly; Codex-only
-system skills must not be copied when their tools are unavailable. OpenCode
-permissions are approval gates rather than process isolation, and resolved
-configuration must not be published because environment substitutions may expose
-credentials.
+Two dictionary caveats worth knowing before leaning on a tool: `sdcv` and `dict`
+are installed but carry almost no data — the only stock database is
+Esperanto-to-English — so check `sdcv -l` or `dict -D` before treating either as
+dictionary backing. `tesseract5` does ship the language data it needs.
 
-Vim, Neovim, and their plugins are locked Nix packages. Shared, Vim-only, and
-Neovim-only plugin lists use native package support; `vim/default.nix` also owns
-source-pinned CoC Zuban and RustOwl client builds plus local plugin metadata
-overrides. There is no vim-plug checkout or mutable plugin updater. Emacs
-packages come exclusively from `programs.emacs.extraPackages`. CoC loads in both
-editors and owns LSP, diagnostics, completion, navigation, and format-on-save;
-vim-go retains non-LSP Go commands. Vim uses bundled EditorConfig and Neovim
-uses native EditorConfig. Neovim-only CodeCompanion routes chat through OpenCode
-ACP but retains its Anthropic HTTP adapter for inline and history background
-work; classic Vim is not an ACP client. `vim/.vim/coc-settings.json` is the
-authoritative, sorted language-server and format-on-save matrix; preserve
-semantic precedence within ordered lists such as `rootPatterns`. Home Manager
-mirrors that matrix in Emacs with Nix-pinned lsp-mode clients and uses
-agent-shell for provider-neutral `opencode acp`. Absolute store paths, disabled
-client/download discovery, Nix-built Tree-sitter grammars, and profile checks
-prevent mutable server and grammar downloads. Home Manager provides every
-command it names for C/C++, Rust, Go, Zig, Perl, Python, Lua, shell, Fish,
-Clojure, Fennel, Nix, YAML, JavaScript/TypeScript, Kotlin, Haskell, Terraform,
-Markdown, LaTeX, and Typst, including project-gated ESLint and Oxlint
-integrations. Do not reintroduce ALE, Pathogen, editorconfig-vim, or mutable
-plugin binary downloaders. `vim/default.nix` builds the managed Tree-sitter
-runtime, including the explicit Org parser omitted by `nvim-treesitter`'s
-all-grammar set; `checks.x86_64-linux.neovim-org` opens and parses a real Org
-file with the evaluated Neovim runtime from both Home Manager profiles. Do not
-run mutable parser update commands. Backup, swap, and persistent undo stay
-enabled for ordinary files but are disabled before Vim or Neovim reads known
-credentials and machine-local secret directories. Emacs Custom writes
-machine-local state to `~/.config/emacs/custom.el` rather than its immutable
-managed init file.
-
-`flake.nix` builds two generic-Linux profiles with
-`mkHome { username, desktop, nixPackage }`. Both use native Home Manager Rime
-ownership and retain `home.stateVersion = "26.11"` as their compatibility floor.
-The personal `schan` profile targets Fedora Kinoite/Plasma and uses native
-Determinate Nix with `nixPackage = null`; `stachan` uses the Nix client from the
-locked Nixpkgs input. Kinoite's native `/nix` store is host-visible. The flake
-composes both profiles once and imports formatter and check outputs from
-`treefmt.nix`, `checks/default.nix`, and focused owner `check.nix` files. Rime
-declares immutable theme directories through Home Manager, materializes writable
-Fcitx host settings with prior-source snapshots under
-`~/.local/state/rime/host-config`, preserves runtime-only changes, and fails on
-concurrent declarative/runtime edits. It materializes managed static inputs
-separately from writable generated and learned state. Zed remains a Home Manager
-module sourced from `~/dotfiles/zed/.config/zed/settings.json`; its OpenCode ACP
-command runs directly for native Zed and through `host-spawn` for the Zed
-Preview Flatpak. The yt-dlp bgutil server and plugin come from locked Nixpkgs
-with focused integration checks. The shared `home.nix` profile also installs
-`lazygit` and the language tooling used by CoC and OpenCode.
-
-The flake pins registry and `NIX_PATH` resolution to its locked nixpkgs input
-and does not use channels. It optionally includes the untracked
-`~/.config/nix/local.conf` for access tokens and per-machine Nix client
-settings; `nix/local.conf.example` is the non-secret template. `nix fmt .`
-formats supported, non-submodule files with the Linux kernel's `.clang-format`,
-Alejandra, `fish_indent`, `shfmt`, Ruff, Neovim's exact StyLua settings,
-Prettier, Taplo, and a Nix-built formatter for a tracked `.gitmodules` when
-present. The root `.editorconfig` keeps a four-space global fallback plus
-project-specific overrides. `nix flake check --show-trace --no-update-lock-file`
-covers treefmt output; Ruff formatting, lint, and bytecode compilation for
-Python; Bash syntax and ShellCheck for `scripts/*.sh`; the focused
-`scripts/test_*.sh` regression suites; the Codex profile materializer,
-agent-directory migration, and `.gitmodules` formatter; native syntax for
-managed Fish and Zsh files; rclone event classification; guarded Rime host-file
-and ownership-state materialization; Zed settings materialization; focused
-yt-dlp bgutil integration checks; focused OpenCode
-package/LSP/schema/theme/telemetry checks; Git commit-message hook behavior;
-Kagi prompt character budgets; Vim and Neovim secret-state exclusions; Emacs
-parentheses and Org lint for tracked Org files; a real Neovim Org Tree-sitter
-parse; workflows and pinned Actions; Rime Lua; and secret scanning. CI runs
-those checks and locked evaluation of both Home Manager profiles. Full builds
-require the manual `workflow_dispatch` `build_homes` input.
-
-That enumeration is a quick reference, not the source of truth — it can go stale
-the moment someone edits `home.nix` without updating this file. If you're unsure
-whether a tool is currently installed, or before telling the user something is
-missing, check the live file yourself:
-`grep -A 15 "# Language agent" ~/dotfiles/home.nix` (and the following Aspell
-block) shows exactly what's declared right now. If the two ever disagree, trust
-`home.nix`, not this paragraph, and say so.
-
-- **If a check calls for a tool that isn't installed:** first verify it actually
-  exists and does what you'd claim — `nix search nixpkgs <term>` (careful: an
-  anchored `'^name$'` pattern matches the _full_ attribute path, not just the
-  leaf, so a real package can false-negative there; try an unanchored substring
-  search first), then `nix build nixpkgs#<attr> --no-link --print-out-paths` and
-  inspect the real output (`find`/`ls` the store path) before asserting what it
-  bundles — e.g. don't assume a language pack needs a separate override without
-  checking; `tesseract5` on this machine already bundles
-  `chi_sim`/`chi_tra`/`vie`/`pol`/`spa`/`ita`/`epo`/`eng` by default, discovered
-  by checking the built output rather than guessing. These are read-only,
-  side-effect-free checks (they populate the local Nix store, not any live
-  profile) — no confirmation needed to run them.
-- **To actually add a missing tool/dictionary to this machine:** propose the
-  specific `home.nix` addition (package name, and the comment block it belongs
-  under) and confirm with the user before making that persistent edit. Once
-  agreed, edit `home.nix`, run `nix fmt .`, then run
-  `nix flake check --show-trace --no-update-lock-file`. Build without activation
-  before switching. Confirm again before
-  `home-manager switch --flake .#$(whoami) --show-trace --no-update-lock-file`,
-  because it changes the live profile. `./scripts/update.sh check` is the safe
-  locked validation/build path; `apply` activates the existing lock after
-  validation; and `update`, the default mode, intentionally updates sources.
-  Successful activations report the Home Manager closure delta and any
-  repository shortlog; `--show-changes` also prints the committed range or,
-  without new commits, the staged diff; `--verbose` enables the same diff
-  output. Any failed update, validation, or build step prevents activation.
-- **Portable series:** changes prepared on a machine or branch that cannot push
-  the destination remote must exclude that local context. Use
-  `scripts/portable-series.sh start <name>` and `export <name>` to create
-  validated patch/manifest/checksum artifacts and a series-qualified
-  `apply-dotfiles-<name>.sh` helper from current `origin/main`. On the
-  destination system, that helper re-authors, signs, validates, and
-  fast-forwards local `main`. Neither script pushes. Existing series are never
-  reused or removed automatically; collision output gives safe continuation or
-  inspection commands. If the base moved, update the isolated series and
-  explicitly resolve or abort conflicts.
-  `sync-local-branch.sh <local-branch> <profile>` can fast-forward `main`,
-  rebase a named non-pushing branch on another system, and validate it. Only its
-  target worktrees must be clean, and it reports patches already represented
-  upstream before rebase; after manually continuing a conflicted rebase, rerun
-  with `--validate`.
-- Don't conflate "not installed on this machine right now" with "doesn't exist"
-  — check before either claiming a gap is permanent or recommending the user go
-  find it elsewhere.
+- **Hosts:** two Home Manager profiles on generic Linux, not NixOS: `schan`
+  (personal, Fedora Kinoite, KDE Plasma) and `stachan` (work, managed Ubuntu,
+  GNOME). Each builds its own output; nothing here is a NixOS module, so never
+  reach for `nixos-rebuild`.
+- **If a check calls for a tool that isn't installed:** confirm it really is
+  absent by grepping `~/dotfiles/home.nix`, since the package list is long. Then
+  say what the tool would settle and what you can conclude without it, rather
+  than silently dropping the check or implying you ran it.
+- **To add a tool or dictionary:** propose the change, and on agreement edit
+  `home.nix`, run `nix fmt .`, then
+  `nix flake check --show-trace --no-update-lock-file`, then
+  `home-manager build --flake .#$(whoami) --no-out-link --no-update-lock-file`.
+  Only after that, and only with explicit confirmation, `home-manager switch`,
+  which mutates the live profile. Python libraries go through the existing
+  `python3.withPackages` entry, never as bare `python3Packages.*`, or they land
+  in the store without being importable. Verify a package exists first with
+  `nix search nixpkgs <term>`.
+- **Locked evaluation:** `flake.lock` is authoritative; every evaluation outside
+  a deliberate update passes `--no-update-lock-file`.
+- **Secrets are machine-local.** Credentials live in mode-0600 files outside Git
+  and outside the Nix store, and must never be committed or printed.
+- **The `work` branch is local-only.** If the checkout is on `work`, this is the
+  work machine: never push it, never merge it into `main`, and never export a
+  series from it. Portable changes are replayed onto history rooted at the
+  current `origin/main` with `./scripts/portable-series.sh start <name>` and
+  exported with `export <name>`; the destination machine re-authors and signs
+  them. Neither script pushes, and review and push stay with the user.
+- **Commits:** one logical change each, imperative `subsystem: summary` subject
+  of at most 72 characters, prose wrapped at 80 columns, documentation kept in
+  its own commit after the technical one. Every agent-assisted commit needs an
+  `Assisted-by:` trailer naming the real product, model, agent, and reasoning
+  level; ask rather than guess any field.
 
 ## Verification trail
 
