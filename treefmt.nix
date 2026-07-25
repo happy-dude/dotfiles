@@ -3,15 +3,15 @@
   self,
   treefmt-nix,
 }: let
+  mkCheck = import ./lib/mkCheck.nix {inherit pkgs;};
   sortGitmodules = import ./lib/python/mkScript.nix {inherit pkgs;} {
     name = "sort-gitmodules";
     source = ./scripts/sort_gitmodules.py;
   };
-  sortGitmodulesTest =
-    pkgs.runCommand
-    "sort-gitmodules-test"
-    {nativeBuildInputs = [sortGitmodules];}
-    ''
+  sortGitmodulesTest = mkCheck {
+    name = "sort-gitmodules-test";
+    tools = [sortGitmodules];
+    script = ''
       printf '%s\n' \
         '[submodule "zeta"]' \
         $'\tpath = modules/zeta' \
@@ -29,8 +29,8 @@
       sort-gitmodules .gitmodules
       after=$(sha256sum .gitmodules)
       [[ $before == "$after" ]]
-      touch "$out"
     '';
+  };
   treefmtEval = treefmt-nix.lib.evalModule pkgs {
     projectRootFile = "flake.nix";
     enableDefaultExcludes = false;

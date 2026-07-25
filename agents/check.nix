@@ -1,8 +1,10 @@
-{pkgs}: {
-  kagi-prompt-budget =
-    pkgs.runCommand "kagi-prompt-budget-check"
-    {nativeBuildInputs = [pkgs.python3];}
-    ''
+{pkgs}: let
+  mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
+in {
+  kagi-prompt-budget = mkCheck {
+    name = "kagi-prompt-budget-check";
+    tools = [pkgs.python3];
+    script = ''
       python3 - \
         ${./prompts/kagi-kernel.md} \
         ${./prompts/kagi-language.md} <<'PYTHON'
@@ -16,6 +18,6 @@
           if length > limit:
               raise SystemExit(f"{path.name}: {length} characters exceeds {limit}")
       PYTHON
-      touch "$out"
     '';
+  };
 }

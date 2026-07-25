@@ -1,19 +1,19 @@
 {
   pkgs,
   self,
-}: {
-  scripts =
-    pkgs.runCommand "dotfiles-script-checks"
-    {
-      nativeBuildInputs = [
-        pkgs.bash
-        pkgs.fish
-        pkgs.git
-        pkgs.shellcheck
-        pkgs.zsh
-      ];
-    }
-    ''
+}: let
+  mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
+in {
+  scripts = mkCheck {
+    name = "dotfiles-script-checks";
+    tools = [
+      pkgs.bash
+      pkgs.fish
+      pkgs.git
+      pkgs.shellcheck
+      pkgs.zsh
+    ];
+    script = ''
       for script in ${self}/scripts/*.sh; do
         bash -n "$script"
         shellcheck -x -a "$script"
@@ -35,7 +35,6 @@
       for test_script in ${self}/scripts/test_*.sh; do
         bash "$test_script"
       done
-
-      touch "$out"
     '';
+  };
 }

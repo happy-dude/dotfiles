@@ -1,16 +1,15 @@
 {pkgs}: let
+  mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
   commitMsgHook = import ./commit-msg-hook.nix {inherit pkgs;};
 in {
-  git-commit-message =
-    pkgs.runCommand "git-commit-message-test"
-    {
-      nativeBuildInputs = [
-        commitMsgHook
-        pkgs.git
-        pkgs.util-linux
-      ];
-    }
-    ''
+  git-commit-message = mkCheck {
+    name = "git-commit-message-test";
+    tools = [
+      commitMsgHook
+      pkgs.git
+      pkgs.util-linux
+    ];
+    script = ''
       mkdir repo
       cd repo
       git init --quiet
@@ -131,6 +130,6 @@ in {
         exit 1
       fi
 
-      touch "$out"
     '';
+  };
 }

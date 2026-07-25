@@ -2,6 +2,7 @@
   homes,
   pkgs,
 }: let
+  mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
   rimeHostFiles = import ./host-files.nix {inherit pkgs;};
   rimeStateManager = import ./state-manager.nix {inherit pkgs;};
   catppuccinThemeDir = "${pkgs.catppuccin-fcitx5}/share/fcitx5/themes";
@@ -24,48 +25,48 @@
 in {
   rime-state-manager = assert ownsThemes homes.schan;
   assert ownsThemes homes.stachan;
-    pkgs.runCommand "rime-state-manager-test"
-    {nativeBuildInputs = [rimeStateManager];}
-    ''
-      mkdir -p home source/subdir state
-      printf '%s\n' stamp-v1 >stamp
-      printf '%s\n' schema-v1 >source/subdir/schema.yaml
-      HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
-        rime-state-manager deploy \
-          "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
-          subdir/schema.yaml
-      test -L home/.local/share/fcitx5/rime/subdir/schema.yaml
+    mkCheck {
+      name = "rime-state-manager-test";
+      tools = [rimeStateManager];
+      script = ''
+        mkdir -p home source/subdir state
+        printf '%s\n' stamp-v1 >stamp
+        printf '%s\n' schema-v1 >source/subdir/schema.yaml
+        HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
+          rime-state-manager deploy \
+            "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
+            subdir/schema.yaml
+        test -L home/.local/share/fcitx5/rime/subdir/schema.yaml
 
-      mkdir -p home/.local/share/fcitx5/rime/build
-      printf '%s\n' generated >home/.local/share/fcitx5/rime/build/schema.bin
-      printf '%s\n' learned >home/.local/share/fcitx5/rime/user.yaml
-      printf '%s\n' stamp-v2 >stamp
-      printf '%s\n' schema-v2 >source/subdir/schema.yaml
-      HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
-        rime-state-manager deploy \
-          "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
-          subdir/schema.yaml
-      test ! -e home/.local/share/fcitx5/rime/build
-      grep -qx learned home/.local/share/fcitx5/rime/user.yaml
-      grep -qx schema-v2 home/.local/share/fcitx5/rime/subdir/schema.yaml
+        mkdir -p home/.local/share/fcitx5/rime/build
+        printf '%s\n' generated >home/.local/share/fcitx5/rime/build/schema.bin
+        printf '%s\n' learned >home/.local/share/fcitx5/rime/user.yaml
+        printf '%s\n' stamp-v2 >stamp
+        printf '%s\n' schema-v2 >source/subdir/schema.yaml
+        HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
+          rime-state-manager deploy \
+            "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
+            subdir/schema.yaml
+        test ! -e home/.local/share/fcitx5/rime/build
+        grep -qx learned home/.local/share/fcitx5/rime/user.yaml
+        grep -qx schema-v2 home/.local/share/fcitx5/rime/subdir/schema.yaml
 
-      rm home/.local/share/fcitx5/rime/subdir/schema.yaml
-      printf '%s\n' unmanaged \
-        >home/.local/share/fcitx5/rime/subdir/schema.yaml
-      if HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
-        rime-state-manager deploy \
-          "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
-          subdir/schema.yaml; then
-        echo "accepted an unmanaged Rime schema target" >&2
-        exit 1
-      fi
-      touch "$out"
-    '';
-  rime-host-files =
-    pkgs.runCommand
-    "rime-host-files-test"
-    {nativeBuildInputs = [rimeHostFiles];}
-    ''
+        rm home/.local/share/fcitx5/rime/subdir/schema.yaml
+        printf '%s\n' unmanaged \
+          >home/.local/share/fcitx5/rime/subdir/schema.yaml
+        if HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
+          rime-state-manager deploy \
+            "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
+            subdir/schema.yaml; then
+          echo "accepted an unmanaged Rime schema target" >&2
+          exit 1
+        fi
+      '';
+    };
+  rime-host-files = mkCheck {
+    name = "rime-host-files-test";
+    tools = [rimeHostFiles];
+    script = ''
       source_root="$PWD/source"
       home="$PWD/home"
       state="$PWD/state"
@@ -155,23 +156,20 @@ in {
         exit 1
       fi
       test -d "$migration_state/rime/home-manager-ownership-v1"
-      touch "$out"
     '';
-  rime-lua =
-    pkgs.runCommand "dotfiles-rime-lua-tests"
-    {
-      nativeBuildInputs = [
-        pkgs.findutils
-        pkgs.lua
-      ];
-    }
-    ''
+  };
+  rime-lua = mkCheck {
+    name = "dotfiles-rime-lua-tests";
+    tools = [
+      pkgs.findutils
+      pkgs.lua
+    ];
+    script = ''
       find ${./.} -type f -name '*.lua' -exec luac -p {} +
 
       cd ${../.}
       lua rime/tests/cangjie5_colemak_remap.lua
       lua rime/tests/romanization.lua
-
-      touch "$out"
     '';
+  };
 }

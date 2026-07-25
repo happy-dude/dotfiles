@@ -1,4 +1,5 @@
 {pkgs}: let
+  mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
   mkPythonScript = import ../lib/python/mkScript.nix {inherit pkgs;};
   configSchemaUrl = "https://developers.openai.com/codex/config-schema.json";
 
@@ -13,11 +14,10 @@
     libraries = [pkgs.python3Packages.tomlkit];
   };
 
-  agentDirectoryMigrationCheck =
-    pkgs.runCommand
-    "codex-agent-directory-migration-test"
-    {nativeBuildInputs = [agentDirectoryMigration];}
-    ''
+  agentDirectoryMigrationCheck = mkCheck {
+    name = "codex-agent-directory-migration-test";
+    tools = [agentDirectoryMigration];
+    script = ''
       mkdir -p \
         work/legacy \
         work/store/old-home-manager-files/.codex/agents
@@ -72,20 +72,16 @@
         echo "Migration accepted an unmanaged legacy agent file" >&2
         exit 1
       fi
-
-      touch "$out"
     '';
+  };
 
-  profileMaterializerCheck =
-    pkgs.runCommand
-    "codex-profile-materializer-test"
-    {
-      nativeBuildInputs = [
-        profileMaterializer
-        pkgs.python3
-      ];
-    }
-    ''
+  profileMaterializerCheck = mkCheck {
+    name = "codex-profile-materializer-test";
+    tools = [
+      profileMaterializer
+      pkgs.python3
+    ];
+    script = ''
       mkdir work
       printf '%s\n' \
         '#:schema ${configSchemaUrl}' \
@@ -160,8 +156,8 @@
       )
       PYTHON
 
-      touch "$out"
     '';
+  };
 in {
   inherit
     agentDirectoryMigration
