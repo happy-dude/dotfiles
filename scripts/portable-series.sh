@@ -2,17 +2,15 @@
 set -euo pipefail
 
 # shellcheck source-path=SCRIPTDIR
+# shellcheck source=lib/report.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib/report.sh"
+# shellcheck source-path=SCRIPTDIR
 # shellcheck source=lib/git-worktree.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib/git-worktree.sh"
 IFS=$'\n\t'
 
 repo_root=$(git rev-parse --show-toplevel)
 readonly repo_root
-
-die() {
-  printf 'error: %s\n' "$*" >&2
-  return 1
-}
 
 usage() {
   cat <<'EOF'

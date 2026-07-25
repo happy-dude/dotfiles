@@ -2,6 +2,9 @@
 set -euo pipefail
 
 # shellcheck source-path=SCRIPTDIR
+# shellcheck source=lib/report.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib/report.sh"
+# shellcheck source-path=SCRIPTDIR
 # shellcheck source=lib/git-worktree.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib/git-worktree.sh"
 IFS=$'\n\t'
@@ -9,11 +12,6 @@ IFS=$'\n\t'
 usage() {
   printf 'Usage: %s [--validate] <local-branch> <profile> [repository]\n' \
     "${0##*/}" >&2
-}
-
-die() {
-  printf 'error: %s\n' "$*" >&2
-  return 1
 }
 
 format_worktree() {

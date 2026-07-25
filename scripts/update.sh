@@ -181,8 +181,10 @@ warn() {
   printf 'Warning: %s\n' "$*" >&2
 }
 
+# Callers here do not test a return value, so a fatal condition has to end
+# the run rather than let a later step proceed on bad state.
 die() {
-  printf 'Error: %s\n' "$*" >&2
+  printf 'error: %s\n' "$*" >&2
   exit 1
 }
 
