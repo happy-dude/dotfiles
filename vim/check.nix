@@ -5,7 +5,10 @@
   mkProfileCheck = username: home: let
     parserDirectory = home.config.home.file.".local/share/nvim/site/parser".source;
     queryDirectory = home.config.home.file.".local/share/nvim/site/queries".source;
-    pluginDirectory = home.config.home.file."/home/${username}/.local/share/nvim/site/pack/hm".source;
+    # Home Manager registers the native package directory under an
+    # absolute path, unlike the entries this module declares itself.
+    pluginDirectory =
+      home.config.home.file."${home.config.home.homeDirectory}/.local/share/nvim/site/pack/hm".source;
     neovim = home.config.programs.neovim.finalPackage;
     neovimConfig = pkgs.writeText "dotfiles-neovim-${username}-test.vim" ''
       ${home.config.programs.neovim.extraConfig}
