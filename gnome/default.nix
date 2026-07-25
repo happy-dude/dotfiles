@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   desktop,
@@ -7,7 +8,7 @@
   cursorTheme = "Yaru";
   cursorSize = 96;
 in {
-  config = lib.mkIf (desktop == "gnome") {
+  config = lib.mkIf (config.dotfiles.profile.desktop == "gnome") {
     # Kimpanel replaces the themed Fcitx candidate window with a GNOME Shell
     # panel. Keep it disabled unless GNOME Shell integration is more important
     # than Classic UI theming. Verify the package metadata supports the host

@@ -1,11 +1,17 @@
 # Repository-local working state
+/.agent-shell/
 /.claude/
 /.direnv/
+/.ruff_cache/
 /.worktrees/
 
 # Nix build outputs
 /result
 /result-*
+
+# Patch and merge leftovers
+*.orig
+*.rej
 
 # Machine-local secrets
 secrets.fish

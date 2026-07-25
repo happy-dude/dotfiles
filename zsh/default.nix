@@ -3,18 +3,17 @@
   lib,
   pkgs,
   inputs,
-  username,
   ...
 }: {
-  home.activation.createZshStateDirectory = config.lib.dag.entryAfter ["writeBoundary"] ''
-    ${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg "${config.xdg.stateHome}/zsh"}
+  home.activation.createZshStateDirectory = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    $DRY_RUN_CMD ${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg "${config.xdg.stateHome}/zsh"}
   '';
 
   xdg.configFile."zsh/.p10k.zsh".source = ./.config/zsh/.p10k.zsh;
   xdg.configFile."zsh/.zlogin".source = ./.config/zsh/.zlogin;
   xdg.configFile."zsh/.zlogout".source = ./.config/zsh/.zlogout;
   xdg.configFile."zsh/.zpreztorc".source = ./.config/zsh/.zpreztorc;
-  xdg.configFile."zsh/completions/_rustup" = lib.mkIf (username == "schan") {
+  xdg.configFile."zsh/completions/_rustup" = lib.mkIf config.dotfiles.profile.hasRustup {
     source = "${pkgs.rustup}/share/zsh/site-functions/_rustup";
   };
 

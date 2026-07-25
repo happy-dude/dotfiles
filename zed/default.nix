@@ -6,7 +6,10 @@
   ...
 }: let
   zedSettingsMaterializer = import ./materializer.nix {inherit pkgs;};
-  managedSettings = import ./settings.nix {inherit lib username;};
+  managedSettings = import ./settings.nix {
+    inherit lib;
+    flatpak = config.dotfiles.profile.usesFlatpakZed;
+  };
   jsonFormat = pkgs.formats.json {};
   staticSettings = jsonFormat.generate "zed-user-settings" managedSettings;
   flatpakConfigHome = "${config.home.homeDirectory}/.var/app/dev.zed.Zed-Preview/config";
@@ -28,10 +31,10 @@ in {
     userSettings = managedSettings;
   };
 
-  home.activation = lib.mkIf (username == "schan") {
+  home.activation = lib.mkIf config.dotfiles.profile.usesFlatpakZed {
     zedFlatpakSettingsActivation = lib.hm.dag.entryAfter ["linkGeneration"] ''
       settings_path=${lib.escapeShellArg "${flatpakConfigHome}/zed/settings.json"}
-      ${zedSettingsMaterializer}/bin/materialize-zed-settings \
+      $DRY_RUN_CMD ${zedSettingsMaterializer}/bin/materialize-zed-settings \
         ${lib.escapeShellArg staticSettings} \
         "$settings_path"
     '';

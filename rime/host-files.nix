@@ -1,5 +1,5 @@
 {pkgs}:
-pkgs.writers.writePython3Bin
-"rime-host-files"
-{}
-(builtins.readFile ./host_files.py)
+import ../lib/python/mkScript.nix {inherit pkgs;} {
+  name = "rime-host-files";
+  source = ./host_files.py;
+}

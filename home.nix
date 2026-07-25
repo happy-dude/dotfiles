@@ -14,7 +14,7 @@
     inherit username;
     homeDirectory = "/home/${username}";
 
-    sessionPath = lib.optionals (username == "schan") [
+    sessionPath = lib.optionals config.dotfiles.profile.hostProvidedNix [
       "$HOME/.nix-profile/bin"
       "$HOME/.cargo/bin"
       "$HOME/go/bin"
@@ -191,7 +191,7 @@
 
       # Language agent: translation / dictionary / grammar / OCR / TTS tooling
       dict # DICT protocol client (needs a configured server/database, see note below)
-      espeak-ng # pronunciation/TTS sanity check - voices confirmed: cmn, cmn-latn-pinyin, eo, es, it, pl, vi, vi-vn-x-south, yue, yue-latn-jyutping
+      espeak-ng # pronunciation/TTS sanity check - voices confirmed: cmn, cmn-latn-pinyin, eo, es, it, pl, vi, vi-vn-x-central, vi-vn-x-south, yue, yue-latn-jyutping
       languagetool # multilingual grammar/style checker - covers eo/es/it/pl; complements aspell's spellcheck-only coverage
       ocrmypdf # OCR-to-searchable-PDF wrapper; needs tesseract5 below on PATH, does not bundle it itself
       opencc # Simplified <-> Traditional Chinese conversion (s2t/t2s/s2hk/hk2s/s2twp configs bundled)
@@ -221,9 +221,6 @@
       ".clang-format".source = ./.clang-format;
       ".editorconfig".source = ./.editorconfig;
       ".golangci.yml".source = ./.golangci.yml;
-    };
-
-    sessionVariables = {
     };
   };
 

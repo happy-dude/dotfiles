@@ -577,229 +577,72 @@ This machine's Nix/Home Manager setup lives at `~/dotfiles` — read
 rather than guessing conventions; it's kept current and documents the real
 structure.
 
-- **Layout and hosts:** `flake.nix` builds `schan` and `stachan` through
-  `mkHome { username, desktop, nixPackage }`. Both are `x86_64-linux`
-  generic-Linux Home Manager configurations with nixGL, not NixOS. `schan`
-  targets Fedora Kinoite/Plasma and deliberately sets `nixPackage = null` to
-  retain native Determinate Nix; `stachan` targets GNOME and uses the Nix
-  package from locked Nixpkgs. Kinoite mounts its persistent native store at
-  host-visible `/nix`. Its former `nix-toolbox-42` container and image are
-  retired; do not recreate them as a fallback. Any remaining
-  `~/.local/share/nix` content is inactive legacy data pending cleanup, not a
-  recovery source or executable environment. Do not “fix” `nixPackage = null` or
-  recommend `nixos-rebuild`. `home.nix` holds shared packages; imported modules
-  include `aerc/`, `agents/`, `bat/`, `emacs/`, `fish/`, `fonts/`, `fzf/`,
-  `ghostty/`, `gnome/`, `git/`, `nix/`, `opencode/`, `rclone/`, `rime/`,
-  `rime/gnome.nix`, `roswell/`, `rustowl/`, `tldr/`, `tmux/`, `vim/`,
-  `virtme-ng/`, `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`, and `zsh/`. The shared
-  package list includes `lazygit` and the Nix-managed language tooling used by
-  CoC and OpenCode. For `schan` only, `mkHome` also imports the external
-  `nix-flatpak` and `plasma-manager` modules with `flatpak/` and `plasma/`. The
-  shared `home.stateVersion = "26.11"` is a compatibility floor, not the
-  installed Home Manager version. `flake.nix` is composition-only: it declares
-  inputs and external overlays, composes both profiles once, and exposes
-  formatter and check sets imported from `treefmt.nix`, `checks/default.nix`,
-  and focused owner `check.nix` files.
-- **Ownership and sources:** Home Manager owns Linux configuration except for
-  the intentionally deferred `ssh/.ssh/config`. `gdb/gdbinit` is linked to
-  `~/.config/gdb/gdbinit`; the Emacs module links its init file under
-  `~/.config/emacs`, links Org directory-local settings, and creates mutable
-  `~/org/Archive` and `~/org/roam` directories. Emacs Custom writes to the
-  machine-local `~/.config/emacs/custom.el` instead of the immutable init file.
-  `roswell/default.nix` applies the locked source override and installs Roswell;
-  SLIME starts it without copied helpers or a standalone `ros_swank` launcher.
-  The low-priority ncurses runtime supplies standard terminfo entries while
-  Ghostty's package wins terminal-specific collisions. `karabiner/` remains
-  tracked for the macOS branch but is not deployed on Linux. `rime/` is native
-  Home Manager configuration: Home Manager owns each immutable theme directory,
-  activation materializes writable Fcitx host settings with managed snapshots
-  under `~/.local/state/rime/host-config`, materializes static inputs under
-  `~/.local/share/fcitx5/rime/.home-manager-static`, and keeps generated and
-  learned state writable. Declarative and runtime host-file changes are merged
-  only when one side retains the prior baseline; concurrent changes fail closed.
-  `zed/` is sourced from `zed/.config/zed/settings.json`; `schan` materializes
-  it as a mutable Flatpak config at
-  `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`, while `stachan`
-  uses `~/.config/zed/settings.json`. Zed launches the Nix-managed OpenCode ACP
-  server directly on `stachan` and through Flatpak's `host-spawn` on `schan`.
-  The Claude prompt directory remains live through `mkOutOfStoreSymlink`. The
-  global gitignore is `git/.gitignore_global`; machine identity and signing
-  remain in untracked `~/.config/git/local.config`. A managed global
-  `commit-msg` dispatcher preserves repository-local hooks, lints every commit,
-  and requires an initially present `Assisted-by:` trailer to remain. Plasma's
-  captured panel declaration remains disabled because enabling high-level panel
-  management deletes and rebuilds `plasma-org.kde.plasma.desktop-appletsrc` when
-  the declaration changes. Display topology, generated IDs, wallpaper, and
-  session history remain unmanaged.
-- **Editor ownership:** Vim, Neovim, and their plugins are locked Nix packages;
-  shared, Vim-only, and Neovim-only plugin lists live in `vim/default.nix` and
-  use native package support. That module also owns source-pinned CoC Zuban and
-  RustOwl client builds plus local plugin metadata overrides. Emacs packages are
-  declared exclusively through `programs.emacs.extraPackages`. There are no
-  editor plugin submodules, vim-plug checkout, or mutable plugin updater. CoC
-  loads in both editors and owns LSP, diagnostics, completion, navigation, and
-  format-on-save; vim-go retains non-LSP Go commands. Vim uses bundled
-  EditorConfig and Neovim uses native EditorConfig. `vim/.vim/coc-settings.json`
-  is the authoritative, sorted language-server and format-on-save matrix;
-  preserve semantic precedence within ordered lists such as `rootPatterns`. Home
-  Manager's Neovim-only CodeCompanion routes chat through OpenCode ACP while
-  retaining its Anthropic HTTP adapter for inline and history background work;
-  classic Vim is not an ACP client. Emacs uses Nix-pinned lsp-mode clients for
-  the same server matrix and agent-shell for provider-neutral `opencode acp`.
-  Its absolute store paths, disabled client/download discovery, Nix-built
-  Tree-sitter grammars, and profile checks prevent mutable server or grammar
-  downloads. Home Manager provides every command it names for C/C++, Rust, Go,
-  Zig, Perl, Python, Lua, shell, Fish, Clojure, Fennel, Nix, YAML,
-  JavaScript/TypeScript, Kotlin, Haskell, Terraform, Markdown, LaTeX, and Typst,
-  including project-gated ESLint and Oxlint integrations. `vim/default.nix` also
-  builds the managed Tree-sitter runtime, including the explicit Org parser
-  omitted by `nvim-treesitter`'s all-grammar set;
-  `checks.x86_64-linux.neovim-org` opens and parses a real Org file with the
-  evaluated Neovim runtime from both Home Manager profiles. Do not reintroduce
-  ALE, Pathogen, editorconfig-vim, mutable parser downloads, or mutable plugin
-  binary downloaders. Backup, swap, and persistent undo remain enabled for
-  ordinary files but are disabled before Vim or Neovim reads known credentials
-  and machine-local secret directories. `virtme-ng/default.nix` builds the
-  locked `virtme_ng_src` input and installs the `vng` kernel VM command, while
-  Ghidra comes from locked Nixpkgs.
-- **Agent prompt ownership:** `agents/prompts/{kernel,language}.md` are
-  canonical for the full agents and profiles. Nix generates the Codex TOML
-  templates and OpenCode agent definitions directly from their Markdown bodies
-  and frontmatter; there are no checked-in generated artifacts.
-  `agents/codex.nix` owns Codex generation support, profile materialization,
-  guarded agent-directory ownership migration, and their focused checks. Home
-  Manager keeps the immutable Codex templates under
-  `~/.local/share/codex/generated-profiles` and uses the materializer to create
-  missing mode-0600 profiles or refresh generated keys when a template changes.
-  Generated profiles retain readable multiline instructions and Codex's official
-  `config.toml` schema directive. Runtime-owned project trust, TUI state, and
-  other profile keys survive the merge. Kagi Markdown and Codex TOMLs are
-  independently maintained and live-linked for their smaller instruction budget.
-  Activation requires real mode-0700 `~/.claude` and `~/.codex` directories;
-  their session state and configuration remain writable and machine-local.
-- **OpenCode ownership:** `opencode/default.nix` owns the shared configuration,
-  TUI selection, the retained Gruvbox Material material dark-medium theme, and
-  the default mix dark-medium variant; it disables session sharing and telemetry
-  export and loads optional host-only extensions from mode-0600
-  `~/.config/opencode/local.json`. Global LSP feedback remains disabled. The
-  repository-root `opencode.json` enables it only for this checkout, invokes the
-  Nix-managed server commands, uses the stable TypeScript SDK link, and disables
-  overlapping Oxlint diagnostics. The LSP permission and
-  `OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured.
-  `opencode/check.nix` owns the focused package, global and project LSP, schema,
-  theme, and telemetry checks; `flake.nix` only imports the check. Private MCP
-  definitions and commands must stay outside Git and the Nix store. OpenCode
-  discovers compatible `~/.claude/skills/*/SKILL.md` files directly; do not copy
-  Codex-only system skills whose tools OpenCode does not provide. Treat OpenCode
-  permissions as approval gates, not process isolation, and never publish
-  resolved configuration because environment substitutions may reveal secrets.
-- **Machine-local secrets:** Fish may source `~/.config/fish/secrets.fish`, but
-  the real file must remain untracked and outside the Nix store. The committed
-  example contains placeholders only; install the private copy with mode `0600`.
-- **Locked evaluation:** `flake.lock` is authoritative. `nix/default.nix` pins
-  both the `nixpkgs` registry entry and `NIX_PATH` to the locked input; this
-  setup does not use channels. It optionally includes the untracked
-  `~/.config/nix/local.conf` for per-machine access tokens and client settings;
-  `nix/local.conf.example` is the non-secret template. Evaluation and builds
-  outside an intentional update must pass `--no-update-lock-file`; CI uses the
-  same guard. The bgutil yt-dlp provider is also declarative:
-  `yt-dlp/default.nix` links the locked Nixpkgs Python plugin, points script
-  mode at its store-resident Node server, and adds a focused integration check.
-  Home Manager activation performs no mutable `npm` work.
-- **Formatting and checks:** `nix fmt .` runs treefmt over supported,
-  non-submodule files with the Linux kernel's `.clang-format` for C/C++,
-  Alejandra for Nix, `fish_indent` for Fish, `shfmt` for shell, Ruff for Python,
-  Neovim's exact `.stylua.toml` for Lua, Prettier for JSON/Markdown/YAML, Taplo
-  for TOML, and a Nix-built formatter for a tracked `.gitmodules` when present.
-  The root `.editorconfig` deliberately keeps a four-space global fallback and
-  applies project-specific Linux, Neovim, Ghostty, Fish, Org, and Magit
-  policies. `nix flake check --show-trace --no-update-lock-file` validates
-  treefmt output; Ruff formatting, lint, and bytecode compilation for Python;
-  Bash syntax and ShellCheck for `scripts/*.sh`; the focused `scripts/test_*.sh`
-  regression suites; the Codex profile materializer, agent-directory migration,
-  `.gitmodules` formatter, rclone event classification, guarded Rime host-file
-  and ownership-state materialization, Zed settings materialization, focused
-  yt-dlp bgutil integration checks, focused OpenCode
-  package/LSP/schema/theme/telemetry checks, Git commit-message hook behavior,
-  Kagi prompt character budgets, and editor secret-state exclusions; native
-  syntax for the managed Fish and Zsh files; Emacs parentheses and Org lint for
-  tracked Org files; a real Neovim Org Tree-sitter parse; actionlint and pinned
-  Actions; Rime Lua syntax/tests; and gitleaks. GitHub CI runs those checks and
-  evaluates both Home Manager profiles on pushes and pull requests; full profile
-  builds are opt-in through `workflow_dispatch`.
-- **Test/verify before recommending or installing anything, the same
-  anti-fabrication discipline as everywhere else in this prompt:**
-  `nix search nixpkgs <term>` to check a package actually exists (careful:
-  `'^name$'` anchors against the _full_ attribute path like
-  `legacyPackages.x86_64-linux.name`, not the leaf — an anchored search can
-  false-negative on a real package; prefer an unanchored substring search
-  first), `nix build nixpkgs#<attr> --no-link --print-out-paths` to build it and
-  inspect the real output (`find`/`ls` the resulting store path) before claiming
-  what it bundles, `nix-instantiate --eval -E 'with import <nixpkgs> {}; ...'`
-  to introspect a derivation's attributes/options. These are read-only and
-  side-effect-free (they populate the local store, not any live profile) — no
-  confirmation needed. Don't trust an `.override { someArg = ...; }` just
-  because it evaluated without error: many nixpkgs functions use a permissive
-  pattern that silently swallows unrecognized keys, so verify the override
-  actually changed something (diff `buildInputs`, output file listing, etc.)
-  before stating it works.
-- **To actually add or change something persistently on this machine:** edit
-  `home.nix` or the relevant module, run `nix fmt .`, then run
-  `nix flake check --show-trace --no-update-lock-file`. Build the selected
-  profile without activation before switching. A fresh profile bootstraps
-  through
-  `nix --extra-experimental-features 'nix-command flakes' run .#home-manager -- build --flake .#$(whoami) --show-trace --no-out-link --no-update-lock-file`;
-  an activated profile can call `home-manager` directly. Confirm with the user
-  before a switch because it mutates the live profile.
-  `./scripts/update.sh check` validates and builds without changing the lock or
-  active profile; `apply` activates the validated existing lock; and `update`
-  performs the guarded source-update workflow. Successful activations report the
-  Home Manager closure delta and any repository shortlog; `--show-changes` also
-  prints the committed range or, without new commits, the staged diff;
-  `--verbose` enables the same diff output. When `.gitmodules` contains entries,
-  update mode advances direct submodules and pins initialized descendants to
-  their parent gitlinks; otherwise that stage is a no-op.
-  `--autostash-submodules` validates and retains stash payloads for review
-  instead of applying them automatically. Fedora OSTree or Determinate system
-  changes are outside Home Manager: consult
-  `docs/fedora-kinoite-determinate-nix.md` and obtain explicit confirmation
-  before changing them.
-- **Portable series:** changes prepared on a machine or branch that cannot push
-  the destination remote must exclude that local context. Use
-  `scripts/portable-series.sh start <name>` to create a placeholder-authored
-  `replay/<name>` at current `origin/main`, then `export <name>` to lint,
-  validate, and create patch/manifest/checksum artifacts plus a series-qualified
-  `apply-dotfiles-<name>.sh` helper. On the destination system, that helper
-  re-authors, signs, validates, and fast-forwards local `main`. Neither script
-  pushes. Existing series are never reused or removed automatically; collision
-  output identifies the worktree and safe next commands. If `origin/main` moved,
-  rebase or update the isolated series; conflicts require explicit resolve or
-  abort before export. `sync-local-branch.sh <local-branch> <profile>` can then
-  fast-forward `main`, rebase a named non-pushing branch, and validate it on
-  another system. It requires only the target `main` and named branch worktrees
-  to be clean and reports upstream-equivalent commits before rebase. Conflicts
-  remain for resolve/continue or abort; use `--validate` after a completed
-  manual continuation.
-- **Search docs/packages beyond this repo:** search.nixos.org (packages and
-  NixOS options), nix.dev (guides), the nixpkgs manual — point here (or fetch
-  it) instead of guessing an option name or module path.
-- **Before assuming a tool isn't installed on this machine, check what's already
-  declared:** `grep -n <term> ~/dotfiles/home.nix` against the flat
-  `home.packages` list — cheaper and more reliable than searching nixpkgs from
-  scratch for something that may already be there, and avoids recommending a
-  redundant install. Notably, the workflow-artifact tools above (`bear`,
-  `cscope`, `ctags`) are already declared there — no install needed before
-  proposing a compile database or symbol index.
-- **If Claude Code itself is configured to reach a custom model gateway or
-  proxy** (e.g. via `ANTHROPIC_BASE_URL`/`ANTHROPIC_MODEL`), don't assume an
-  unfamiliar model ID works just because it's configured — verify it against
-  whatever the gateway's own model-listing endpoint is before trusting it, and
-  check specifically whether it's reachable via the API shape Claude Code
-  actually speaks (the Anthropic Messages API) rather than just some other shape
-  (e.g. an OpenAI-compatible chat/completions route) the gateway also happens to
-  expose. A model registered on one shape and not the other will fail with a
-  generic "model may not exist or you may not have access to it," which is a
-  routing problem, not a syntax problem.
+- **Hosts:** two Home Manager profiles on generic Linux, not NixOS: `schan`
+  (personal, Fedora Kinoite, KDE Plasma, host-provided Determinate Nix) and
+  `stachan` (work, managed Ubuntu, GNOME, Nix from the locked inputs). Each
+  machine builds its own output; `home-manager switch --flake .#$(whoami)`.
+  Nothing here is a NixOS module, so never reach for `nixos-rebuild`, and treat
+  the differences between the two as declared facts under
+  `config.dotfiles.profile` rather than tests against the username.
+- **Layout:** `flake.nix` is composition only. Each application owns a directory
+  with a `default.nix`, its native configuration files beside it, and an
+  optional `check.nix`. `lib/` holds what modules share; `scripts/` holds the
+  repository's own tooling. `CLAUDE.md` in that repository is the current,
+  authoritative description — read it before making a persistent change, and
+  trust it over anything remembered here.
+- **Native formats stay native:** editor and application configuration lives in
+  the format its program documents — Emacs Lisp, JSON, Lua, INI, shell — and Nix
+  reads those files in. Do not translate a configuration into Nix attributes
+  when the program's own format will do; the point is that a file can be copied
+  straight out of upstream documentation and back.
+- **Persistent changes:** propose first, then edit, then `nix fmt .`, then
+  `nix flake check --show-trace --no-update-lock-file`, then
+  `home-manager build --flake .#$(whoami) --no-out-link --no-update-lock-file`.
+  Only after that, and only with explicit confirmation, `home-manager switch`. A
+  switch mutates the live profile; a build does not.
+- **`nix flake check` is the only authority.** Evaluating a profile, building
+  the checks, and running the shell suites fail independently: each module's
+  `check.nix` imports internals directly, so a changed signature can evaluate
+  cleanly and still break the checks, and the suites run against a read-only
+  store with an empty home under Nix that a direct run does not have. Run the
+  full check after changing any signature, argument list, or fixture.
+- **Verify before recommending or installing:** `nix search nixpkgs <term>` to
+  confirm a package exists (an anchored search matches the full attribute path,
+  so try an unanchored one first),
+  `nix build nixpkgs#<attr> --no-link --print-out-paths` then inspect the store
+  path before claiming what it ships, `nix-instantiate --eval` to introspect.
+  These are read-only and need no confirmation. Do not trust an `.override` that
+  merely evaluated: many nixpkgs functions swallow unknown arguments, so confirm
+  the output actually changed.
+- **Before assuming a tool is missing,** grep the repository's `home.nix`
+  package list; it is long and already includes most build, debug, and
+  language-server tooling.
+- **Locked evaluation:** `flake.lock` is authoritative and the registry and
+  `NIX_PATH` are pinned to it. Every evaluation outside a deliberate update
+  passes `--no-update-lock-file`. `./scripts/update.sh` has three modes: `check`
+  validates and builds without touching the lock or the profile, `apply`
+  activates the existing lock, and `update` advances inputs. It is fail-closed:
+  any failed step prevents activation.
+- **Secrets are machine-local.** Credentials live in mode-0600 files outside Git
+  and outside the Nix store, and must never be committed, printed, or copied
+  into a bug report. Resolved configuration dumps can contain substituted
+  secrets.
+- **The `work` branch is local-only.** If the checkout is on `work`, this is the
+  work machine. Never push it, never merge it into `main`, and never export a
+  series from it. Portable changes are replayed onto history rooted at the
+  current `origin/main` with `./scripts/portable-series.sh start <name>`,
+  developed in the worktree it reports, and exported with `export <name>`. The
+  export validates both profiles and writes a patch, manifest, checksum, and an
+  apply script. Applying happens on the destination machine, which re-authors
+  and signs the commits; neither script pushes, and review and push stay with
+  the user.
+- **Commits:** one logical change each, imperative `subsystem: summary` subject
+  of at most 72 characters, body explaining the problem before the
+  implementation, prose wrapped at 80 columns. Keep documentation changes in
+  their own commit, after the technical one. Every agent-assisted commit needs
+  an `Assisted-by:` trailer naming the real product, model, agent, and reasoning
+  level; ask rather than guess any field. Run
+  `scripts/lint_commit_message.py <file>` before committing.
 
 ## Output shape
 

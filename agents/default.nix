@@ -47,14 +47,17 @@
   '';
   legacyAgentDirectory = "${repo}/agents/generated/codex-agents";
 in {
+  # Claude Code registers a subagent only from a prompt carrying YAML
+  # frontmatter, so link the generated prompts individually rather than the
+  # directory, which also holds the frontmatterless Kagi chat prompts.
   home.file =
-    {
-      ".claude/agents".source = liveLink "agents/prompts";
-      ".codex/agents/kagi-kernel.toml".source =
-        liveLink "agents/generated/codex-agents/kagi-kernel.toml";
-      ".codex/agents/kagi-language.toml".source =
-        liveLink "agents/generated/codex-agents/kagi-language.toml";
-    }
+    lib.mapAttrs' (
+      name: _:
+        lib.nameValuePair ".claude/agents/${name}.md" {
+          source = liveLink "agents/prompts/${name}.md";
+        }
+    )
+    prompts
     // lib.mapAttrs' (
       name: source:
         lib.nameValuePair ".codex/agents/${name}.toml" {inherit source;}

@@ -1,4 +1,4 @@
-{
+{...}: {
   services.flatpak = {
     enable = true;
 
@@ -21,14 +21,6 @@
         sha256 = "sha256-qVbNliiJTrjVxUDMjq6QS4ZIcXrSFx7Gc9P/NR4rc9U=";
       }
     ];
-
-    uninstallUnmanaged = false;
-    uninstallUnused = false;
-
-    update = {
-      onActivation = false;
-      auto.enable = false;
-    };
 
     # nix-flatpak v0.7.0 can introduce leading empty permissions while merging
     # externally managed list entries, so keep overrides outside this module.

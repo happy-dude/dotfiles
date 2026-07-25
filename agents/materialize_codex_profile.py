@@ -1,10 +1,10 @@
-import os
 import sys
-import tempfile
 from pathlib import Path
 
 import tomlkit
 from tomlkit.items import AoT, Table
+
+from dotfiles_files import write_text
 
 CONFIG_SCHEMA_URL = "https://developers.openai.com/codex/config-schema.json"
 MANAGED_KEYS = (
@@ -64,27 +64,7 @@ def materialize(source: Path, target: Path) -> None:
         if isinstance(item, (Table, AoT)):
             merged[key] = value
 
-    target.parent.mkdir(parents=True, exist_ok=True)
-    descriptor, temporary_name = tempfile.mkstemp(
-        dir=target.parent,
-        prefix=f".{target.name}.",
-    )
-    temporary = Path(temporary_name)
-    try:
-        os.fchmod(descriptor, 0o600)
-        with os.fdopen(descriptor, "w", encoding="utf-8") as output:
-            output.write(SCHEMA_DIRECTIVE + "\n")
-            output.write(tomlkit.dumps(merged))
-            output.flush()
-            os.fsync(output.fileno())
-        os.replace(temporary, target)
-        directory = os.open(target.parent, os.O_RDONLY | os.O_DIRECTORY)
-        try:
-            os.fsync(directory)
-        finally:
-            os.close(directory)
-    finally:
-        temporary.unlink(missing_ok=True)
+    write_text(target, SCHEMA_DIRECTIVE + "\n" + tomlkit.dumps(merged), 0o600)
 
 
 def main(arguments: list[str]) -> None:

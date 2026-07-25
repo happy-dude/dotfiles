@@ -1,8 +1,8 @@
-import os
 import re
 import sys
-import tempfile
 from pathlib import Path
+
+from dotfiles_files import PRESERVE, write_text
 
 HEADER = re.compile(r'^\[submodule\s+"([^"]+)"\]$')
 
@@ -41,28 +41,7 @@ def sort_one(path: Path) -> None:
     if output == current:
         return
 
-    descriptor, temporary_name = tempfile.mkstemp(
-        dir=path.parent,
-        prefix=f"{path.name}.tmp.",
-    )
-    temporary = Path(temporary_name)
-    try:
-        with os.fdopen(descriptor, "w", encoding="utf-8") as file:
-            file.write(output)
-            os.fchmod(file.fileno(), path.stat().st_mode & 0o777)
-            file.flush()
-            os.fsync(file.fileno())
-        os.replace(temporary, path)
-        directory = os.open(
-            path.parent,
-            os.O_RDONLY | os.O_DIRECTORY,
-        )
-        try:
-            os.fsync(directory)
-        finally:
-            os.close(directory)
-    finally:
-        temporary.unlink(missing_ok=True)
+    write_text(path, output, PRESERVE)
 
 
 def main(arguments: list[str]) -> None:

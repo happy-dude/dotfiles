@@ -2,12 +2,21 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+# Neutralise the user's global Git configuration: the managed commit-msg
+# hook lints every commit, so a suite that creates them must not depend on
+# whether that hook is installed on the machine running it.
+export GIT_CONFIG_GLOBAL=/dev/null
+
 source_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 temporary_directory=$(mktemp -d)
 trap 'rm -rf -- "$temporary_directory"' EXIT
 repo="$temporary_directory/repo"
 mkdir -p "$repo/scripts"
 cp -- "$source_root/scripts/portable-series.sh" "$repo/scripts/"
+cp -R -- "$source_root/scripts/lib" "$repo/scripts/"
+# The source tree may be a read-only Nix store path; the fixture is removed
+# on exit, so its copy has to stay writable.
+chmod -R u+w "$repo/scripts/lib"
 
 cd -- "$repo"
 git init --quiet --initial-branch=main

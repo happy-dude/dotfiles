@@ -1,5 +1,5 @@
 {pkgs}:
-pkgs.writers.writePython3Bin
-"rime-state-manager"
-{}
-(builtins.readFile ./state_manager.py)
+import ../lib/python/mkScript.nix {inherit pkgs;} {
+  name = "rime-state-manager";
+  source = ./state_manager.py;
+}

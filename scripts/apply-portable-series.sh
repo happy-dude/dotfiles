@@ -2,6 +2,8 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+# This script is transferred to the destination computer on its own, so it
+# must not source anything from this repository.
 die() {
   printf 'error: %s\n' "$*" >&2
   return 1

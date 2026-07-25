@@ -7,9 +7,8 @@ import sys
 import tempfile
 from pathlib import Path
 
-
-def fail(message: str) -> None:
-    raise SystemExit(message)
+import dotfiles_files
+from dotfiles_files import copy_file, fail
 
 
 def lexists(path: Path) -> bool:
@@ -17,11 +16,8 @@ def lexists(path: Path) -> bool:
 
 
 def state_paths() -> tuple[Path, Path, Path, Path]:
-    home = Path.home()
-    data_home = Path(os.environ.get("XDG_DATA_HOME", home / ".local/share"))
-    state_home = Path(os.environ.get("XDG_STATE_HOME", home / ".local/state"))
-    data_dir = data_home / "fcitx5/rime"
-    state_dir = state_home / "rime"
+    data_dir = dotfiles_files.data_home() / "fcitx5/rime"
+    state_dir = dotfiles_files.state_home() / "rime"
     return (
         data_dir,
         data_dir / ".home-manager-static",
@@ -33,31 +29,6 @@ def state_paths() -> tuple[Path, Path, Path, Path]:
 def validate_regular(path: Path, description: str) -> None:
     if path.is_symlink() or (path.exists() and not path.is_file()):
         fail(f"Refusing malformed Rime {description}: {path}")
-
-
-def install_atomic(source: Path, target: Path, mode: int = 0o644) -> None:
-    target.parent.mkdir(parents=True, exist_ok=True)
-    descriptor, temporary_name = tempfile.mkstemp(
-        dir=target.parent, prefix=f".{target.name}."
-    )
-    temporary = Path(temporary_name)
-    try:
-        with (
-            os.fdopen(descriptor, "wb") as output,
-            source.open("rb") as input_file,
-        ):
-            shutil.copyfileobj(input_file, output)
-            os.fchmod(output.fileno(), mode)
-            output.flush()
-            os.fsync(output.fileno())
-        os.replace(temporary, target)
-        directory = os.open(target.parent, os.O_RDONLY | os.O_DIRECTORY)
-        try:
-            os.fsync(directory)
-        finally:
-            os.close(directory)
-    finally:
-        temporary.unlink(missing_ok=True)
 
 
 def iter_symlinks(root: Path, excluded: Path) -> list[Path]:
@@ -173,7 +144,7 @@ def deploy(
         elif build.is_dir():
             shutil.rmtree(build)
         state_dir.mkdir(parents=True, exist_ok=True)
-        install_atomic(stamp_source, stamp)
+        copy_file(stamp_source, stamp, 0o644)
 
     for relative in relatives:
         source = static_dir / relative

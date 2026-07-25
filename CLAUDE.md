@@ -10,7 +10,11 @@ workflow is **Nix flakes + Home Manager**. Home Manager owns deployment; the
 README's Stow-first instructions are not the active bootstrap and will be
 updated separately. Immutable inputs may be store links, live-editable sources
 may use guarded out-of-store links, and application-mutated configuration must
-be materialized as guarded regular files.
+be materialized as writable regular files. Those materialisers do not all guard
+alike, and the difference is deliberate: the Rime host files carry a snapshot
+and refuse to write when the declaration and the runtime file both changed,
+while the Zed and Codex profiles are expected to be rewritten by the programs
+that own them and reassert only the declared keys.
 
 A separate `macos` branch exists for macOS-specific settings; this repository
 checkout is the Linux branch.
@@ -103,16 +107,25 @@ checkout is the Linux branch.
   module via `programs.git.ignores`, not a `home.file`.
 - Feature modules live in their own subdirectories, each as a `default.nix`
   imported from `flake.nix`'s `modules` list: `aerc/`, `agents/`, `bat/`,
-  `emacs/`, `fish/`, `fonts/`, `fzf/`, `ghostty/`, `gnome/`, `git/`, `nix/`,
-  `opencode/`, `rclone/`, `rime/`, `roswell/`, `rustowl/`, `tldr/`, `tmux/`,
-  `vim/`, `virtme-ng/`, `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`, `zsh/`. The
-  desktop-specific `rime/gnome.nix` module is imported separately. Adding a new
-  app otherwise means creating `<app>/default.nix` and adding it to the
-  `modules` list in `flake.nix`.
+  `emacs/`, `fish/`, `fonts/`, `fzf/`, `ghostty/`, `git/`, `gnome/`, `gpg/`,
+  `mail/`, `nix/`, `opencode/`, `rclone/`, `rime/`, `roswell/`, `rustowl/`,
+  `tldr/`, `tmux/`, `vim/`, `virtme-ng/`, `wezterm/`, `xdg/`, `yt-dlp/`, `zed/`,
+  `zsh/`. The desktop-specific `rime/gnome.nix` module is imported separately.
+  Adding a new app otherwise means creating `<app>/default.nix` and adding it to
+  the `modules` list in `flake.nix`.
 - `flake.nix` is composition-only: it declares inputs and external overlays,
   composes the Home Manager profiles once, and exposes imported formatter and
   check outputs. `treefmt.nix` owns formatter policy; `checks/default.nix`
-  aggregates repository-wide checks and focused `<owner>/check.nix` files.
+  aggregates repository-wide checks and focused `<owner>/check.nix` files,
+  merging them through a fold that throws when two sets contribute the same
+  check name rather than silently keeping one.
+- `lib/` holds what the modules share. `lib/profile.nix` declares the
+  `dotfiles.profile` options describing what a machine provides, so modules ask
+  for the fact they depend on instead of comparing the username. `lib/python/`
+  holds the durable file replacement the activation helpers use and the builder
+  that packages them; `lib/mkCheck.nix` builds check derivations;
+  `lib/homes.nix` returns a value every profile agrees on and otherwise names
+  the profiles that disagree. `scripts/lib/` holds the same for shell.
 - `flatpak/` and `plasma/` are host-conditional modules: `mkHome` imports them
   with the external nix-flatpak and plasma-manager modules only for `schan`.
 - `treefmt.nix` configures **treefmt** (run via `nix fmt`): the Linux kernel's
@@ -122,7 +135,9 @@ checkout is the Linux branch.
   defines the Python formatting and lint policy; `.editorconfig` has a
   four-space fallback and project-specific Linux, Neovim, Ghostty, Fish, Org,
   and Magit policies. Treefmt's Git walk skips submodule contents and excludes
-  `other/`, `karabiner/`, Rime YAML data, lock files, and `LICENSE`.
+  `other/`, `karabiner/`, Rime YAML data, lock files, `LICENSE`, and
+  `agents/prompts/kagi-*.md`, whose whitespace is preserved because the
+  `kagi-prompt-budget` check measures those files against a fixed budget.
 - `nix/default.nix` pins both the `nixpkgs` registry entry and legacy `NIX_PATH`
   lookup to the locked root input. It optionally includes the untracked
   `~/.config/nix/local.conf` for per-machine access tokens and client settings;
@@ -154,6 +169,8 @@ The style and lint configs (`.clang-format`, `.editorconfig`, `.golangci.yml`,
 Manager keeps the first three at the home-directory locations their tools search
 and installs StyLua's config under `~/.config/stylua`.
 
+- **`aerc/`** configures aerc alone. GnuPG lives in `gpg/`, and mbsync and
+  notmuch in `mail/`, beside the mbsyncrc and notmuch files they supersede.
 - **`bat/`** is a module (`bat/default.nix`, `programs.bat`); enabling the
   program owns the package, so do not duplicate `bat` in `home.packages`.
 - **`fzf/`** enables Home Manager's FZF package and its Fish and Zsh
@@ -165,15 +182,17 @@ and installs StyLua's config under `~/.config/stylua`.
 - **`git/`** is a module (`git/default.nix`, `programs.git`); enabling the
   program owns the package, so do not duplicate `git` in `home.packages`. It
   defines aliases, delta for diffs and bat as its pager, and
-  `programs.git.ignores` reading `git/.gitignore_global` (the single global
-  gitignore, which also holds repo ignores like `result`, `/.claude/`). A
-  managed global `commit-msg` dispatcher preserves repository-local hooks, lints
-  every commit, and requires an initially present `Assisted-by:` trailer to
-  remain. Per-machine identity and signing (`user.email`, `signingkey`,
-  `commit`/`tag` `gpgsign`) live in an untracked `~/.config/git/local.config`
-  that the module `include`s — SSH/GPG keys and email differ per box; template
-  in `git/local.config.example`. Home Manager writes `~/.config/git/config`,
-  which an unmanaged `~/.gitconfig` silently overrides (git reads it last).
+  `programs.git.ignores` reading `git/.gitignore_global`, the user-global ignore
+  file. The repository also tracks its own root `.gitignore`, which covers this
+  checkout's working state so that a fresh clone hides it before the first
+  activation deploys the global file. A managed global `commit-msg` dispatcher
+  preserves repository-local hooks, lints every commit, and requires an
+  initially present `Assisted-by:` trailer to remain. Per-machine identity and
+  signing (`user.email`, `signingkey`, `commit`/`tag` `gpgsign`) live in an
+  untracked `~/.config/git/local.config` that the module `include`s — SSH/GPG
+  keys and email differ per box; template in `git/local.config.example`. Home
+  Manager writes `~/.config/git/config`, which an unmanaged `~/.gitconfig`
+  silently overrides (git reads it last).
 - **`xdg/`** owns generic-Linux XDG integration plus the nixGL-wrapped Solaar
   package and its `schan`-only autostart entry.
 
@@ -327,8 +346,8 @@ guidance detectable.
 ### `other/` directory
 
 `other/` collects non-stowable, non-Nix configs (iptables, slim, x11, xmonad,
-alacritty, feh, firefox, macOS, themes, udev). These are case-by-case
-references, not part of any automated install path on this branch.
+alacritty, feh, firefox, macOS, udev). These are case-by-case references, not
+part of any automated install path on this branch.
 
 ## Common commands
 
@@ -350,16 +369,33 @@ only after explicit confirmation:
 home-manager switch --flake .#$(whoami) --show-trace --no-update-lock-file
 ```
 
+`nix flake check` is the only authority on whether a change is sound. This
+repository has three validation layers that fail independently: evaluating a
+profile, building the check derivations, and running the shell suites. Passing
+one implies nothing about the others, because each `<owner>/check.nix` imports
+module internals directly, so a changed function signature can evaluate both
+profiles and still break the checks; and the suites run against a read-only
+store path with an empty home under Nix, where a direct run has neither. Run the
+full check after changing any signature, argument list, or test fixture.
+
+Two scripts resist the obvious testing approach and should not be forced into
+it. `scripts/update.sh` defaults to its update mode, so removing any guard from
+it leads to a path that acts on the checkout rather than one that refuses; never
+test it by weakening a guard. `scripts/apply-portable-series.sh` is transferred
+to the destination computer on its own and must not source anything from this
+repository.
+
 The flake checks cover treefmt formatting; Ruff formatting, lint, and bytecode
-compilation for Python; Bash syntax and ShellCheck for `scripts/*.sh`; the
-focused `scripts/test_*.sh` regression suites; native syntax checks for the
-managed Fish and Zsh files; focused tests for the Codex profile materializer,
-agent-directory ownership migration, `.gitmodules` formatter, rclone event
-classification, guarded Rime host-file and ownership-state materialization, Zed
-settings materialization, focused OpenCode package/LSP/schema/theme/telemetry
-checks, Git commit-message hook behavior, Kagi prompt character budgets, and
-editor secret-state exclusions; Emacs `check-parens` and Org lint for tracked
-Org files; GitHub Actions syntax and pinned action revisions; a real Neovim Org
+compilation for Python; Bash syntax and ShellCheck for `scripts/*.sh` and
+`scripts/lib/*.sh`; one derivation per `scripts/test_*.sh` suite, discovered
+from the directory rather than listed; native syntax checks for the managed Fish
+and Zsh files; focused tests for the Codex profile materializer, agent-directory
+ownership migration, `.gitmodules` formatter, rclone event classification,
+guarded Rime host-file and ownership-state materialization, Zed settings
+materialization, focused OpenCode package/LSP/schema/theme/telemetry checks, Git
+commit-message hook behavior, Kagi prompt character budgets, and editor
+secret-state exclusions; Emacs `check-parens` and Org lint for tracked Org
+files; GitHub Actions syntax and pinned action revisions; a real Neovim Org
 Tree-sitter parse against the evaluated Home Manager runtime; Rime Lua syntax
 and focused tests; and gitleaks secret scanning. CI runs those checks and
 evaluates both Home Manager configurations on pushes and pull requests. Full
@@ -647,20 +683,21 @@ source.
   DConf values remain writable during the session and return to the declared
   baseline on a later Home Manager activation.
 - **`plasma/`** manages stable Plasma preferences for `schan` through the pinned
-  plasma-manager module. Its captured panel declaration is disabled by default:
+  plasma-manager module. The captured panel layout lives in `plasma/panels.nix`
+  behind the `dotfiles.plasma.managePanels` option and is off by default:
   enabling high-level panel management deletes and rebuilds
-  `plasma-org.kde.plasma.desktop-appletsrc` when the declaration changes. Enable
-  it only when Home Manager should own the complete panel layout; leave display
-  topology, generated IDs, wallpaper, and session history unmanaged.
+  `plasma-org.kde.plasma.desktop-appletsrc` when the declaration changes,
+  discarding panel edits made in the session. Enable it only when Home Manager
+  should own the complete panel layout; leave display topology, generated IDs,
+  wallpaper, and session history unmanaged.
 - **Vim runtime artifacts** are declarative: Home Manager links Tree-sitter
-  parsers and queries under `~/.local/share/nvim/site` and owns the stable
-  TypeScript SDK link under `~/.local/share/nix-typescript`; Home Manager
-  provides every formatter and language-server command.
-  `vim/.vim/coc-settings.json` is the authoritative, sorted language-server and
-  format-on-save matrix. Keep object keys sorted while preserving semantic
-  precedence within lists such as `rootPatterns`. The matrix covers C/C++, Rust,
-  Go, Zig, Perl, Python, Lua, shell, Fish, Clojure, Fennel, Nix, YAML,
-  JavaScript/TypeScript, Kotlin, Haskell, Terraform, Markdown, LaTeX, and Typst,
-  with project-gated ESLint and Oxlint integrations. Do not run `:TSUpdate`,
-  `:GoUpdateBinaries`, `:GoInstallBinaries`, vim-plug, or mutable CoC extension
-  updates.
+  parsers and queries under the XDG data directory through `xdg.dataFile`, and
+  owns the stable TypeScript SDK link there too; Home Manager provides every
+  formatter and language-server command. `vim/.vim/coc-settings.json` is the
+  authoritative, sorted language-server and format-on-save matrix. Keep object
+  keys sorted while preserving semantic precedence within lists such as
+  `rootPatterns`. The matrix covers C/C++, Rust, Go, Zig, Perl, Python, Lua,
+  shell, Fish, Clojure, Fennel, Nix, YAML, JavaScript/TypeScript, Kotlin,
+  Haskell, Terraform, Markdown, LaTeX, and Typst, with project-gated ESLint and
+  Oxlint integrations. Do not run `:TSUpdate`, `:GoUpdateBinaries`,
+  `:GoInstallBinaries`, vim-plug, or mutable CoC extension updates.

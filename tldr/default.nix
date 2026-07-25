@@ -1,8 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
+{config, ...}: {
   programs.tealdeer = {
     enable = true;
     enableAutoUpdates = false;

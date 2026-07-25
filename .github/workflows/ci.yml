@@ -2,7 +2,11 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+  schedule:
+    # Exercise the full builds that pushes only evaluate.
+    - cron: "0 5 * * 1"
   workflow_dispatch:
     inputs:
       build_homes:
@@ -36,6 +40,19 @@ jobs:
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Restore the Nix store
+        uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7.0.2
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          # The closure exceeds the 10 GB per-repository cache limit, so trim
+          # it on save and keep only the newest entry for this prefix.
+          gc-max-store-size-linux: 8G
+          purge: true
+          purge-prefixes: nix-${{ runner.os }}-
+          purge-created: 0
+          purge-primary-key: never
+
       - name: Run flake checks
         run: nix flake check --show-trace --no-update-lock-file
 
@@ -48,7 +65,8 @@ jobs:
 
       - name: Build Home Manager configurations
         if:
-          ${{ github.event_name == 'workflow_dispatch' && inputs.build_homes }}
+          ${{ github.event_name == 'schedule' || (github.event_name ==
+          'workflow_dispatch' && inputs.build_homes) }}
         run: |
           nix build --no-link --print-build-logs \
             --no-update-lock-file \

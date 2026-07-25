@@ -1,12 +1,14 @@
 {
   pkgs,
   self,
-}: {
-  secrets =
-    pkgs.runCommand "dotfiles-secret-scan"
-    {nativeBuildInputs = [pkgs.gitleaks];}
-    ''
+}: let
+  mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
+in {
+  secrets = mkCheck {
+    name = "dotfiles-secret-scan";
+    tools = [pkgs.gitleaks];
+    script = ''
       gitleaks dir --no-banner --no-color --redact ${self}
-      touch "$out"
     '';
+  };
 }
