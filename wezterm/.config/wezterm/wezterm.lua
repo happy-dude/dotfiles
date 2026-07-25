@@ -23,9 +23,6 @@ config.automatically_reload_config = true
 config.default_prog =
   { '/usr/bin/zsh', '--login', '-c', 'tmux attach -t "mux" || tmux new -s "mux"' }
 -- config.default_prog = { '/usr/bin/zsh', '--login' }
-wezterm.action.SpawnCommandInNewWindow({
-  args = { 'zsh' },
-})
 
 config.window_padding = {
   left = '0.25cell',
