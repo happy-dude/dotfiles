@@ -10,7 +10,9 @@ in {
   xdg.mime.enable = true;
   targets.genericLinux.enable = true;
 
-  home.packages = [solaarWrapped];
+  # Solaar only manages a Logitech receiver; install it only where one is
+  # attached, matching the autostart entry below.
+  home.packages = lib.optionals config.dotfiles.profile.hasSolaar [solaarWrapped];
 
   xdg.configFile."autostart/solaar.desktop" = lib.mkIf config.dotfiles.profile.hasSolaar {
     text = ''

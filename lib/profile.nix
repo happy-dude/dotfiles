@@ -5,16 +5,15 @@
 # every comparison against a username.
 {
   lib,
-  username,
   desktop,
   nixPackage,
+  hasRustup,
+  hasFlatpak,
+  usesFlatpakZed,
+  hasSolaar,
   ...
 }: let
   inherit (lib) mkOption types;
-
-  # schan is the personal Fedora Kinoite machine; stachan is the managed
-  # work host. Every difference below follows from that.
-  personal = username == "schan";
 in {
   options.dotfiles.profile = {
     desktop = mkOption {
@@ -60,11 +59,7 @@ in {
   };
 
   config.dotfiles.profile = {
-    inherit desktop;
+    inherit desktop hasRustup hasFlatpak usesFlatpakZed hasSolaar;
     hostProvidedNix = nixPackage == null;
-    hasRustup = personal;
-    hasFlatpak = personal;
-    usesFlatpakZed = personal;
-    hasSolaar = personal;
   };
 }

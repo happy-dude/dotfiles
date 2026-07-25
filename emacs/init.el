@@ -12,9 +12,11 @@
       (backup-dir "~/.local/share/emacs/backup")
       (auto-save-dir "~/.local/share/emacs/autosave"))
   (dolist (dir (list cache-dir backup-dir auto-save-dir))
-    (when (not (file-directory-p dir))
-      (make-directory dir t)))
-  )
+    (unless (file-directory-p dir)
+      (make-directory dir t))
+    ;; Backups and auto-saves can hold verbatim buffer contents; keep the
+    ;; directories owner-only so a stray copy is not world-readable.
+    (set-file-modes dir #o700)))
 
 (setq backup-directory-alist `((".*" . ,"~/.local/share/emacs/backup"))
       make-backup-files t               ; backup of a file the first time it is saved.
@@ -30,6 +32,43 @@
       auto-save-interval 300            ; number of keystrokes between auto-saves (default: 300)
       auto-save-timeout 30              ; number of seconds idle time before auto-save (default: 30)
       )
+
+;; Never write backups, auto-saves, or persisted undo history for credential
+;; and secret files. Vim already refuses these paths; without the same guard
+;; Emacs would drop plaintext copies of SSH keys, GnuPG data, password-store
+;; entries, rclone tokens, and local API-key files into its state directories.
+(defvar dotfiles/sensitive-file-regexp
+  (mapconcat
+   #'identity
+   '("/\\.ssh/"
+     "/\\.gnupg/"
+     "/\\.password-store/"
+     "/\\.config/rclone/"
+     "/\\.config/git/local\\.config\\'"
+     "/\\.config/fish/secrets\\.fish\\'"
+     "/\\.config/nix/local\\.conf\\'"
+     "/\\.authinfo\\(?:\\.gpg\\)?\\'"
+     "/\\.netrc\\'")
+   "\\|")
+  "Paths whose contents must never be copied into Emacs state.")
+
+(defun dotfiles/sensitive-file-p (name)
+  "Return non-nil when NAME is a credential or secret file."
+  (and name (string-match-p dotfiles/sensitive-file-regexp name)))
+
+;; Suppress numbered/backup copies of secrets.
+(setq backup-enable-predicate
+      (lambda (name)
+        (and (normal-backup-enable-predicate name)
+             (not (dotfiles/sensitive-file-p name)))))
+
+;; Suppress the auto-save file and any persisted undo-tree history per buffer.
+(defun dotfiles/harden-sensitive-buffer ()
+  "Disable on-disk copies for the current buffer when it visits a secret."
+  (when (dotfiles/sensitive-file-p buffer-file-name)
+    (auto-save-mode -1)
+    (setq-local undo-tree-auto-save-history nil)))
+(add-hook 'find-file-hook #'dotfiles/harden-sensitive-buffer)
 
 ;; Values added by Custom
 (custom-set-variables
