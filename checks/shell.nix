@@ -25,7 +25,8 @@
         fish --no-execute "$script"
       done
 
-      for script in ${self}/zsh/.zshenv ${self}/zsh/.config/zsh/.z*; do
+      for script in ${self}/zsh/.zshenv ${self}/zsh/.config/zsh/.*.zsh \
+        ${self}/zsh/.config/zsh/.z*; do
         if [ -f "$script" ]; then
           zsh -n "$script"
         fi
