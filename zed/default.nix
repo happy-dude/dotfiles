@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  username,
   ...
 }: let
   zedSettingsMaterializer = import ./materializer.nix {inherit pkgs;};
@@ -19,9 +18,10 @@ in {
   # Flatpak target remains mutable: runtime-only keys survive, while declared
   # keys are reasserted during activation.
   #
-  # Keep the upstream module disabled on schan: extension or MCP-derived
-  # settings would also reactivate its host-XDG target.
-  programs.zed-editor = lib.mkIf (username != "schan") {
+  # Keep the upstream module disabled where Zed is the Flatpak build:
+  # extension or MCP-derived settings would also reactivate its host-XDG
+  # target.
+  programs.zed-editor = lib.mkIf (!config.dotfiles.profile.usesFlatpakZed) {
     enable = true;
 
     # The Zed binary is externally managed; Home Manager owns only its settings.

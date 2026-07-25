@@ -157,23 +157,35 @@
         ghostty.overlays.default
       ];
     };
-    # Build a Home Manager config for a user and desktop session.
-    # The username determines /home/<username>; desktop selects integration.
-    mkHome = {
-      username,
-      desktop,
-      nixPackage ? pkgs.nixVersions.latest,
-    }:
+    # Explicit per-machine capability facts. Modules read these through
+    # config.dotfiles.profile instead of comparing the username; flake-level
+    # composition (module imports below) reads them here directly. Adding a
+    # machine means stating its facts here.
+    profiles = {
+      schan = {
+        username = "schan";
+        desktop = "plasma";
+        nixPackage = null;
+        hasRustup = true;
+        hasFlatpak = true;
+        usesFlatpakZed = true;
+        hasSolaar = true;
+      };
+      stachan = {
+        username = "stachan";
+        desktop = "gnome";
+        nixPackage = pkgs.nixVersions.latest;
+        hasRustup = false;
+        hasFlatpak = false;
+        usesFlatpakZed = false;
+        hasSolaar = false;
+      };
+    };
+    # Build a Home Manager config from a machine's capability record.
+    mkHome = profile:
       home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        extraSpecialArgs = {
-          inherit
-            inputs
-            username
-            desktop
-            nixPackage
-            ;
-        };
+        extraSpecialArgs = {inherit inputs;} // profile;
 
         modules =
           [
@@ -207,24 +219,16 @@
             ./zed
             ./zsh
           ]
-          ++ lib.optionals (username == "schan") [
+          ++ lib.optionals profile.hasFlatpak [
             inputs.nix-flatpak.homeManagerModules.nix-flatpak
-            inputs.plasma-manager.homeModules.plasma-manager
             ./flatpak
+          ]
+          ++ lib.optionals (profile.desktop == "plasma") [
+            inputs.plasma-manager.homeModules.plasma-manager
             ./plasma
           ];
       };
-    homes = {
-      schan = mkHome {
-        username = "schan";
-        desktop = "plasma";
-        nixPackage = null;
-      };
-      stachan = mkHome {
-        username = "stachan";
-        desktop = "gnome";
-      };
-    };
+    homes = lib.mapAttrs (_: mkHome) profiles;
     treefmtConfig = import ./treefmt.nix {
       inherit pkgs self treefmt-nix;
     };
