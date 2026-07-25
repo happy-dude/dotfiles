@@ -51,6 +51,23 @@ in {
         grep -qx learned home/.local/share/fcitx5/rime/user.yaml
         grep -qx schema-v2 home/.local/share/fcitx5/rime/subdir/schema.yaml
 
+        # A run killed mid-swap renames the live static tree aside without
+        # installing the replacement; the next deploy must restore it rather
+        # than leave Rime without its managed data.
+        staticdir="home/.local/share/fcitx5/rime/.home-manager-static"
+        test -d "$staticdir"
+        mv "$staticdir" "$staticdir.home-manager-old"
+        printf '%s\n' stamp-v3 >stamp
+        printf '%s\n' schema-v3 >source/subdir/schema.yaml
+        HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
+          rime-state-manager deploy \
+            "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
+            subdir/schema.yaml
+        test -d "$staticdir"
+        test ! -e "$staticdir.home-manager-old"
+        grep -qx schema-v3 home/.local/share/fcitx5/rime/subdir/schema.yaml
+        grep -qx learned home/.local/share/fcitx5/rime/user.yaml
+
         rm home/.local/share/fcitx5/rime/subdir/schema.yaml
         printf '%s\n' unmanaged \
           >home/.local/share/fcitx5/rime/subdir/schema.yaml

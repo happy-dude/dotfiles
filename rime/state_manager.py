@@ -85,9 +85,20 @@ def make_user_writable(root: Path) -> None:
 
 
 def refresh_static(static_source: Path, static_dir: Path) -> None:
+    backup = static_dir.with_name(static_dir.name + ".home-manager-old")
+    # Recover from a previous run that was killed mid-swap: the live tree was
+    # moved aside but the replacement was never installed. Restore the backup
+    # if the live tree is gone, otherwise discard a stale backup.
+    if lexists(backup):
+        if lexists(static_dir):
+            shutil.rmtree(backup)
+        else:
+            os.replace(backup, static_dir)
+
     temporary = Path(
         tempfile.mkdtemp(dir=static_dir.parent, prefix=".home-manager-static.")
     )
+    moved = False
     try:
         shutil.copytree(
             static_source,
@@ -97,11 +108,23 @@ def refresh_static(static_source: Path, static_dir: Path) -> None:
         )
         make_user_writable(temporary)
         if lexists(static_dir):
-            shutil.rmtree(static_dir)
-        os.replace(temporary, static_dir)
+            # Move the live tree aside before installing the replacement so a
+            # failure between the two never leaves Rime without its managed
+            # data; the rename is atomic and the old tree can be rolled back.
+            os.replace(static_dir, backup)
+            moved = True
+        try:
+            os.replace(temporary, static_dir)
+        except OSError:
+            if moved and not lexists(static_dir):
+                os.replace(backup, static_dir)
+                moved = False
+            raise
     finally:
         if temporary.exists():
             shutil.rmtree(temporary)
+        if moved and lexists(backup):
+            shutil.rmtree(backup)
 
 
 def deploy(
