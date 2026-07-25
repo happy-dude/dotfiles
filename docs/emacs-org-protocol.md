@@ -19,7 +19,7 @@ missing spaces, periods, or regular-expression delimiters make it invalid:
 
 <!-- prettier-ignore -->
 ```javascript
-javascript:(()=>{const canonical=document.querySelector('link[rel="canonical"]')?.href;const ref=new URL(canonical||location.href,document.baseURI);for(const key of [...ref.searchParams.keys()]){if(/^utm_/i.test(key)||/^(fbclid|gclid|dclid|mc_cid|mc_eid)$/i.test(key))ref.searchParams.delete(key)}ref.hash='';location.href='org-protocol://roam-ref?'+new URLSearchParams({template:'r',ref:ref.href,title:document.title.replace(/\s+/g,' ').trim(),body:String(getSelection()).trim()});void 0})()
+javascript:(()=>{let ref;try{ref=new URL(document.querySelector('link[rel="canonical"]')?.href||location.href);if(!/^https?:$/.test(ref.protocol))ref=new URL(location.href)}catch{ref=new URL(location.href)}for(const key of [...ref.searchParams.keys()]){if(/^utm_/i.test(key)||/^(fbclid|gclid|dclid|gbraid|wbraid|msclkid|yclid|twclid|ttclid|igshid|mc_cid|mc_eid|mkt_tok|_hsenc|_hsmi|vero_id|oly_enc_id|oly_anon_id)$/i.test(key))ref.searchParams.delete(key)}ref.hash='';location.href='org-protocol://roam-ref?'+new URLSearchParams({template:'r',ref:ref.href,title:document.title.replace(/\s+/g,' ').trim(),body:String(getSelection()).trim().slice(0,8000)});void 0})()
 ```
 
 Optionally assign the Firefox bookmark the keyword `org`. Typing `org` in the
@@ -33,12 +33,21 @@ The same code expanded for readability is:
 
 ```javascript
 (() => {
-  // Prefer the publisher's stable page identity over the current navigated URL.
-  const canonical = document.querySelector('link[rel="canonical"]')?.href;
-
-  // Fall back to the current URL and resolve relative canonical references
-  // against the document base before modifying the URL components.
-  const ref = new URL(canonical || location.href, document.baseURI);
+  // Prefer the publisher's stable page identity, but trust it only when it is a
+  // well-formed http(s) URL. A blank or relative canonical must not silently
+  // replace the page, and a javascript: canonical must never reach ROAM_REFS.
+  let ref;
+  try {
+    ref = new URL(
+      document.querySelector('link[rel="canonical"]')?.href || location.href,
+    );
+    if (!/^https?:$/.test(ref.protocol)) {
+      ref = new URL(location.href);
+    }
+  } catch {
+    // A malformed canonical falls back to the current, always-parseable URL.
+    ref = new URL(location.href);
+  }
 
   // Copy the keys because deleting entries while iterating a live URLSearchParams
   // iterator can otherwise skip subsequent parameters.
@@ -47,7 +56,9 @@ The same code expanded for readability is:
     // parameters such as article, issue, or search IDs.
     if (
       /^utm_/i.test(key) ||
-      /^(fbclid|gclid|dclid|mc_cid|mc_eid)$/i.test(key)
+      /^(fbclid|gclid|dclid|gbraid|wbraid|msclkid|yclid|twclid|ttclid|igshid|mc_cid|mc_eid|mkt_tok|_hsenc|_hsmi|vero_id|oly_enc_id|oly_anon_id)$/i.test(
+        key,
+      )
     ) {
       ref.searchParams.delete(key);
     }
@@ -70,8 +81,10 @@ The same code expanded for readability is:
       // Collapse tabs, newlines, and repeated spaces in browser-generated titles.
       title: document.title.replace(/\s+/g, " ").trim(),
 
-      // Seed the capture with selected page text, excluding surrounding whitespace.
-      body: String(getSelection()).trim(),
+      // Seed the capture with selected page text, excluding surrounding
+      // whitespace and capped so a large selection cannot overrun the length
+      // limit of the desktop handoff and drop the capture.
+      body: String(getSelection()).trim().slice(0, 8000),
     });
 
   // Ensure the bookmarklet itself does not return a renderable string.
@@ -80,11 +93,16 @@ The same code expanded for readability is:
 ```
 
 1. `link[rel="canonical"]` uses the publisher's canonical URL when the page
-   provides one. Otherwise, the current browser URL is used.
-2. `new URL(..., document.baseURI)` resolves absolute and relative canonical
-   references before their query parameters and fragments are normalized.
-3. Common advertising and campaign identifiers are removed. Meaningful query
-   parameters, such as an article ID, remain intact.
+   provides one. The value is accepted only when it parses as an `http` or
+   `https` URL; a blank, relative, or `javascript:` canonical falls back to the
+   current browser URL so a broken tag never replaces the page or stores an
+   unsafe scheme in `ROAM_REFS`.
+2. Any parse failure also falls back to the current URL, which is always
+   well-formed.
+3. Common advertising and campaign identifiers are removed, covering the `utm_`
+   family and the click and campaign tokens of the major ad, social, and
+   marketing platforms. Meaningful query parameters, such as an article ID,
+   remain intact.
 4. The fragment is removed so links to different sections of one page resolve to
    the same Org Roam reference.
 5. `URLSearchParams` encodes the capture parameters:
@@ -102,8 +120,10 @@ The same code expanded for readability is:
 
 Canonical URLs are occasionally incorrect, and removing fragments deliberately
 collapses section-level links into one page-level reference. Use the current
-page URL and retain `ref.hash` if either behavior is undesirable. Avoid very
-large selections because the selected text is transported inside the URL.
+page URL and retain `ref.hash` if either behavior is undesirable. The selected
+text is transported inside the URL, so it is capped at 8000 characters; a longer
+selection is truncated rather than risking a length overrun that silently drops
+the capture, and the `%?` insertion point remains for adding more by hand.
 
 Firefox normally hands the external scheme to the desktop handler without
 replacing the source page. Opening the protocol URL through `window.open()` may
@@ -128,10 +148,11 @@ javascript:location.href =
 That form correctly percent-encodes the current URL, page title, and selection.
 The canonical dotfiles bookmarklet additionally:
 
-- prefers the publisher's canonical URL and resolves relative canonical
-  references against `document.baseURI`;
-- removes common campaign and click identifiers while retaining meaningful query
-  parameters;
+- prefers the publisher's canonical URL, but only when it is a well-formed
+  http(s) URL, and otherwise falls back to the current page;
+- removes the `utm_` family and the click and campaign tokens of the major ad,
+  social, and marketing platforms while retaining meaningful query parameters;
+- caps the transported selection so a large one cannot overrun the handoff;
 - removes the fragment so sections of one page share an Org Roam reference;
 - normalizes title whitespace and trims the selected text;
 - uses `URLSearchParams` to encode the complete parameter map rather than
