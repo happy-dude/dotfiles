@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=lib/git-worktree.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib/git-worktree.sh"
 IFS=$'\n\t'
 
 repo_root=$(git rev-parse --show-toplevel)
@@ -166,40 +170,6 @@ publish_artifacts() {
     "$staging_directory/$bundle_checksum_name" "$output_directory/"
 }
 
-worktree_for_branch() {
-  local wanted_ref=$1
-  local current_worktree=
-  local current_branch=
-  local current_prunable=false
-  local saw_prunable=false
-  local field
-
-  while IFS= read -r -d '' field; do
-    case $field in
-    "worktree "*) current_worktree=${field#worktree } ;;
-    "branch "*) current_branch=${field#branch } ;;
-    "prunable"*) current_prunable=true ;;
-    "")
-      if [[ $current_branch == "$wanted_ref" ]]; then
-        if [[ $current_prunable == true ]]; then
-          saw_prunable=true
-        elif git -C "$current_worktree" rev-parse --is-inside-work-tree \
-          >/dev/null 2>&1; then
-          printf '%s\n' "$current_worktree"
-          return 0
-        fi
-      fi
-      current_worktree=
-      current_branch=
-      current_prunable=false
-      ;;
-    esac
-  done < <(git -C "$repo_root" worktree list --porcelain -z)
-
-  [[ $saw_prunable == false ]] || return 2
-  return 1
-}
-
 apply_artifact_name() {
   printf 'apply-dotfiles-%s.sh\n' "$1"
 }
@@ -230,7 +200,7 @@ start_series() {
 
   validate_name "$name"
   if git -C "$repo_root" show-ref --verify --quiet "$branch_ref"; then
-    if existing_worktree=$(worktree_for_branch "$branch_ref"); then
+    if existing_worktree=$(worktree_for_branch "$repo_root" "$branch_ref"); then
       print_existing_series_help "$name" "$existing_worktree"
       die "branch already exists with worktree: $branch ($existing_worktree)"
     else
@@ -314,7 +284,7 @@ export_series() {
 
   validate_name "$name"
   apply_name=$(apply_artifact_name "$name")
-  if worktree=$(worktree_for_branch "$branch_ref"); then
+  if worktree=$(worktree_for_branch "$repo_root" "$branch_ref"); then
     :
   else
     lookup_status=$?

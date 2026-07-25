@@ -14,7 +14,7 @@ in {
       pkgs.zsh
     ];
     script = ''
-      for script in ${self}/scripts/*.sh; do
+      for script in ${self}/scripts/*.sh ${self}/scripts/lib/*.sh; do
         bash -n "$script"
         shellcheck -x -a "$script"
       done

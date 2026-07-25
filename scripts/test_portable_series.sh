@@ -8,6 +8,10 @@ trap 'rm -rf -- "$temporary_directory"' EXIT
 repo="$temporary_directory/repo"
 mkdir -p "$repo/scripts"
 cp -- "$source_root/scripts/portable-series.sh" "$repo/scripts/"
+cp -R -- "$source_root/scripts/lib" "$repo/scripts/"
+# The source tree may be a read-only Nix store path; the fixture is removed
+# on exit, so its copy has to stay writable.
+chmod -R u+w "$repo/scripts/lib"
 
 cd -- "$repo"
 git init --quiet --initial-branch=main
