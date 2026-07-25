@@ -50,10 +50,6 @@ in {
   home.file =
     {
       ".claude/agents".source = liveLink "agents/prompts";
-      ".codex/agents/kagi-kernel.toml".source =
-        liveLink "agents/generated/codex-agents/kagi-kernel.toml";
-      ".codex/agents/kagi-language.toml".source =
-        liveLink "agents/generated/codex-agents/kagi-language.toml";
     }
     // lib.mapAttrs' (
       name: source:
