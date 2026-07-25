@@ -44,6 +44,6 @@ endif
 if has('nvim')
   augroup highlight_yank
     autocmd!
-    autocmd TextYankPost * silent! lua vim.hl.hl_op { higroup = 'IncSearch', timeout = 150, on_visual = false }
+    autocmd TextYankPost * silent! lua vim.hl.on_yank { higroup = 'IncSearch', timeout = 150, on_visual = false }
   augroup end
 endif

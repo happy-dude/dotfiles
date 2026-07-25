@@ -26,8 +26,6 @@
       kept-new-versions 9               ; newest versions to keep when a new numbered backup is made (default: 2)
       )
 (setq auto-save-file-name-transforms `((".*" ,(expand-file-name "~/.local/share/emacs/autosave/") t))
-      auto-save-directory-fallback "/tmp/"
-      auto-save-hash-p nil
       auto-save-default t               ; auto-save every buffer that visits a file
       auto-save-interval 300            ; number of keystrokes between auto-saves (default: 300)
       auto-save-timeout 30              ; number of seconds idle time before auto-save (default: 30)
@@ -82,8 +80,7 @@
 ;; Highlight current line
 (global-hl-line-mode +1)
 
-;; Always show matching parentheses
-(show-paren-mode t)
+;; Show matching parentheses instantly (show-paren-mode is on by default).
 (setq show-paren-delay 0)
 
 ;; Line numbers
@@ -388,9 +385,7 @@
 ;      org-roam-ui-open-on-start t)
 ;; org-babel settings
 
-(setq org-confirm-babel-evaluate nil
-      org-src-fontify-natively t
-      org-src-tab-acts-natively t)
+(setq org-confirm-babel-evaluate nil)
 
 ;; ref: https://orgmode.org/manual/Languages.html
 ;; https://orgmode.org/worg/org-contrib/babel/languages.html

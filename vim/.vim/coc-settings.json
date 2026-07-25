@@ -19,10 +19,8 @@
     "perl",
     "plaintex",
     "python",
-    "ruby",
     "rust",
     "sh",
-    "sql",
     "terraform",
     "tex",
     "typescript",
@@ -194,7 +192,6 @@
     "ruff": {
       "args": ["server"],
       "command": "ruff",
-      "disabledFeatures": ["hover"],
       "filetypes": ["python"],
       "rootPatterns": ["pyproject.toml", "ruff.toml", ".ruff.toml", ".git"]
     },
@@ -206,7 +203,7 @@
     },
     "texlab": {
       "command": "texlab",
-      "filetypes": ["latex", "plaintex"],
+      "filetypes": ["tex", "plaintex"],
       "rootPatterns": [".latexmkrc", "latexmkrc", ".git"]
     },
     "tinymist": {
@@ -249,7 +246,6 @@
   "rust-analyzer.server.path": "rust-analyzer",
   "rust-analyzer.updates.checkOnStartup": false,
   "rust-analyzer.updates.prompt": false,
-  "suggest.autoTrigger": "always",
   "sumneko-lua.enable": false,
   "workspace.ignoredFolders": ["$HOME", "$HOME/.cargo/**", "$HOME/.rustup/**"],
   "zuban.path": "zuban"
