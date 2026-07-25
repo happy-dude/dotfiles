@@ -41,7 +41,7 @@ create_repo() {
 }
 
 # shellcheck disable=SC1091 # Intentionally sources the repository script.
-DOTFILES_UPDATE_SOURCE_ONLY=1 source "$REPO_DIR/scripts/update.sh"
+source "$REPO_DIR/scripts/update.sh"
 
 VERBOSE=1
 SHOW_CHANGES=0

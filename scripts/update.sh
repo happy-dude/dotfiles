@@ -777,272 +777,274 @@ stash_dirty_submodules() {
   done
 }
 
-if [ "${DOTFILES_UPDATE_SOURCE_ONLY:-0}" -eq 1 ]; then
-  if [ "${BASH_SOURCE[0]}" != "$0" ]; then
-    return 0
+# Everything below runs only when this file is executed. The test suites
+# source it to exercise the functions above without performing an update.
+main() {
+
+  # Argument parsing
+  #--------------------------------------------------------------------------------------------------
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+    check | apply | update)
+      if [ "$MODE_SET" -eq 1 ]; then
+        die "multiple modes specified: $MODE and $1"
+      fi
+      MODE="$1"
+      MODE_SET=1
+      ;;
+    --verbose)
+      VERBOSE=1
+      ;;
+    --quiet)
+      VERBOSE=0
+      ;;
+    --show-changes)
+      SHOW_CHANGES=1
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    --skip-pull)
+      SKIP_PULL=1
+      ;;
+    --skip-submodules)
+      SKIP_SUBMODULES=1
+      ;;
+    --skip-status)
+      SKIP_STATUS=1
+      ;;
+    --autostash-submodules)
+      AUTO_STASH_SUBMODULES=1
+      ;;
+    --skip-nix-fmt)
+      SKIP_NIX_FMT=1
+      ;;
+    --skip-nix-flake)
+      SKIP_NIX_FLAKE=1
+      ;;
+    --skip-home-manager)
+      SKIP_HOME_MANAGER=1
+      ;;
+    -*)
+      die "unknown option: $1"
+      ;;
+    *)
+      if [ "$REPO_DIR_SET" -eq 1 ]; then
+        die "multiple repository directories specified: $REPO_DIR and $1"
+      fi
+      REPO_DIR="$1"
+      REPO_DIR_SET=1
+      ;;
+    esac
+    shift
+  done
+
+  resolve_output_options
+
+  if [ "$MODE" = "apply" ] && [ "$SKIP_HOME_MANAGER" -eq 1 ]; then
+    die "apply mode cannot be combined with --skip-home-manager; use check mode instead"
   fi
-  exit 0
-fi
 
-# Argument parsing
-#--------------------------------------------------------------------------------------------------
+  # Basic checks
+  #--------------------------------------------------------------------------------------------------
 
-while [ $# -gt 0 ]; do
-  case "$1" in
-  check | apply | update)
-    if [ "$MODE_SET" -eq 1 ]; then
-      die "multiple modes specified: $MODE and $1"
-    fi
-    MODE="$1"
-    MODE_SET=1
-    ;;
-  --verbose)
-    VERBOSE=1
-    ;;
-  --quiet)
-    VERBOSE=0
-    ;;
-  --show-changes)
-    SHOW_CHANGES=1
-    ;;
-  -h | --help)
-    usage
+  cd "$REPO_DIR"
+
+  if ! have git; then
+    die "git not found in PATH"
+  fi
+
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    die "not a git repository"
+  fi
+
+  UPDATE_START_GIT_HEAD="$(git rev-parse --verify HEAD)"
+
+  msg "=== Dotfiles $MODE ==="
+  msg "Started at: $SCRIPT_START_TS"
+
+  case "$MODE" in
+  check)
+    run_validation || exit $?
+    finish_successfully
     exit 0
     ;;
-  --skip-pull)
-    SKIP_PULL=1
+  apply)
+    run_validation || exit $?
+    run_home_manager_switch || exit $?
+    finish_successfully
+    exit 0
     ;;
-  --skip-submodules)
-    SKIP_SUBMODULES=1
-    ;;
-  --skip-status)
-    SKIP_STATUS=1
-    ;;
-  --autostash-submodules)
-    AUTO_STASH_SUBMODULES=1
-    ;;
-  --skip-nix-fmt)
-    SKIP_NIX_FMT=1
-    ;;
-  --skip-nix-flake)
-    SKIP_NIX_FLAKE=1
-    ;;
-  --skip-home-manager)
-    SKIP_HOME_MANAGER=1
-    ;;
-  -*)
-    die "unknown option: $1"
+  update)
     ;;
   *)
-    if [ "$REPO_DIR_SET" -eq 1 ]; then
-      die "multiple repository directories specified: $REPO_DIR and $1"
-    fi
-    REPO_DIR="$1"
-    REPO_DIR_SET=1
+    die "internal error: unsupported mode $MODE"
     ;;
   esac
-  shift
-done
 
-resolve_output_options
+  #--------------------------------------------------------------------------------------------------
+  # 1. Updating the main dotfiles repository
+  #--------------------------------------------------------------------------------------------------
 
-if [ "$MODE" = "apply" ] && [ "$SKIP_HOME_MANAGER" -eq 1 ]; then
-  die "apply mode cannot be combined with --skip-home-manager; use check mode instead"
-fi
-
-# Basic checks
-#--------------------------------------------------------------------------------------------------
-
-cd "$REPO_DIR"
-
-if ! have git; then
-  die "git not found in PATH"
-fi
-
-if ! git rev-parse --git-dir >/dev/null 2>&1; then
-  die "not a git repository"
-fi
-
-UPDATE_START_GIT_HEAD="$(git rev-parse --verify HEAD)"
-
-msg "=== Dotfiles $MODE ==="
-msg "Started at: $SCRIPT_START_TS"
-
-case "$MODE" in
-check)
-  run_validation || exit $?
-  finish_successfully
-  exit 0
-  ;;
-apply)
-  run_validation || exit $?
-  run_home_manager_switch || exit $?
-  finish_successfully
-  exit 0
-  ;;
-update)
-  ;;
-*)
-  die "internal error: unsupported mode $MODE"
-  ;;
-esac
-
-#--------------------------------------------------------------------------------------------------
-# 1. Updating the main dotfiles repository
-#--------------------------------------------------------------------------------------------------
-
-if [ "$SKIP_PULL" -eq 0 ]; then
-  section_start "Pulling latest changes for main repo"
-  if git rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; then
-    vmsg "Dirty top-level worktree is allowed here via --autostash."
-    git pull --rebase --autostash
-    section_end "done"
-  else
-    warn "No upstream tracking branch configured; skipping pull (use --skip-pull to suppress this warning)"
-    section_end "skipped"
-  fi
-else
-  section_start "Skipping main repo pull (--skip-pull)"
-  section_end "skipped"
-fi
-
-#--------------------------------------------------------------------------------------------------
-# 2. Sync / init / update git submodules
-#--------------------------------------------------------------------------------------------------
-
-if ! has_configured_submodules; then
-  section_start "Skipping submodule operations (none configured)"
-  section_end "skipped"
-elif [ "$SKIP_SUBMODULES" -eq 0 ]; then
-  section_start "Syncing submodule URLs"
-  git submodule sync --recursive
-  section_end "done"
-
-  section_start "Initializing submodules"
-  git submodule update --init --recursive
-  section_end "done"
-
-  section_start "Checking submodules for local changes"
-
-  if ! collect_dirty_submodules; then
-    die "failed to collect dirty submodules"
-  fi
-
-  if [ "${#DIRTY_SUBMODULES[@]}" -gt 0 ]; then
-    if [ "$AUTO_STASH_SUBMODULES" -eq 1 ]; then
-      msg "Dirty submodules detected; auto-stashing them now..."
-      stash_dirty_submodules "${DIRTY_SUBMODULES[@]}"
+  if [ "$SKIP_PULL" -eq 0 ]; then
+    section_start "Pulling latest changes for main repo"
+    if git rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; then
+      vmsg "Dirty top-level worktree is allowed here via --autostash."
+      git pull --rebase --autostash
+      section_end "done"
     else
-      warn "dirty submodules detected:"
-      for path in "${DIRTY_SUBMODULES[@]}"; do
-        printf '  - %s\n' "$path" >&2
-      done
-      printf '\n' >&2
-      warn "top-level repo pull is allowed when dirty"
-      warn "but dirty submodules must be committed, stashed, or reset first"
-      warn "rerun with: --autostash-submodules"
-      exit 1
+      warn "No upstream tracking branch configured; skipping pull (use --skip-pull to suppress this warning)"
+      section_end "skipped"
     fi
   else
-    vmsg "No dirty submodules found."
+    section_start "Skipping main repo pull (--skip-pull)"
+    section_end "skipped"
   fi
 
-  section_end "done"
+  #--------------------------------------------------------------------------------------------------
+  # 2. Sync / init / update git submodules
+  #--------------------------------------------------------------------------------------------------
 
-  section_start "Updating direct submodules and pinning descendants"
-  update_submodule_graph
-  section_end "done"
-else
-  section_start "Skipping submodule operations (--skip-submodules)"
-  section_end "skipped"
-fi
+  if ! has_configured_submodules; then
+    section_start "Skipping submodule operations (none configured)"
+    section_end "skipped"
+  elif [ "$SKIP_SUBMODULES" -eq 0 ]; then
+    section_start "Syncing submodule URLs"
+    git submodule sync --recursive
+    section_end "done"
 
-if has_configured_submodules; then
-  if [ "$SKIP_STATUS" -eq 1 ]; then
-    section_start "Skipping submodule status (--skip-status)"
+    section_start "Initializing submodules"
+    git submodule update --init --recursive
+    section_end "done"
+
+    section_start "Checking submodules for local changes"
+
+    if ! collect_dirty_submodules; then
+      die "failed to collect dirty submodules"
+    fi
+
+    if [ "${#DIRTY_SUBMODULES[@]}" -gt 0 ]; then
+      if [ "$AUTO_STASH_SUBMODULES" -eq 1 ]; then
+        msg "Dirty submodules detected; auto-stashing them now..."
+        stash_dirty_submodules "${DIRTY_SUBMODULES[@]}"
+      else
+        warn "dirty submodules detected:"
+        for path in "${DIRTY_SUBMODULES[@]}"; do
+          printf '  - %s\n' "$path" >&2
+        done
+        printf '\n' >&2
+        warn "top-level repo pull is allowed when dirty"
+        warn "but dirty submodules must be committed, stashed, or reset first"
+        warn "rerun with: --autostash-submodules"
+        exit 1
+      fi
+    else
+      vmsg "No dirty submodules found."
+    fi
+
+    section_end "done"
+
+    section_start "Updating direct submodules and pinning descendants"
+    update_submodule_graph
+    section_end "done"
+  else
+    section_start "Skipping submodule operations (--skip-submodules)"
+    section_end "skipped"
+  fi
+
+  if has_configured_submodules; then
+    if [ "$SKIP_STATUS" -eq 1 ]; then
+      section_start "Skipping submodule status (--skip-status)"
+      section_end "skipped"
+    else
+      section_start "Submodule status"
+      git submodule status --recursive
+      section_end "done"
+    fi
+  fi
+
+  #--------------------------------------------------------------------------------------------------
+  # 3. Run `nix fmt .`
+  #--------------------------------------------------------------------------------------------------
+
+  if [ "$SKIP_NIX_FMT" -eq 1 ]; then
+    section_start "Skipping nix fmt (--skip-nix-fmt)"
     section_end "skipped"
   else
-    section_start "Submodule status"
-    git submodule status --recursive
-    section_end "done"
-  fi
-fi
+    section_start "Formatting flake with nix fmt"
 
-#--------------------------------------------------------------------------------------------------
-# 3. Run `nix fmt .`
-#--------------------------------------------------------------------------------------------------
+    section_result="done"
+    if have nix; then
+      status=0
+      nix fmt . || status=$?
 
-if [ "$SKIP_NIX_FMT" -eq 1 ]; then
-  section_start "Skipping nix fmt (--skip-nix-fmt)"
-  section_end "skipped"
-else
-  section_start "Formatting flake with nix fmt"
-
-  section_result="done"
-  if have nix; then
-    status=0
-    nix fmt . || status=$?
-
-    if [ "$status" -ne 0 ]; then
-      warn "nix fmt failed (exit code: $status)"
+      if [ "$status" -ne 0 ]; then
+        warn "nix fmt failed (exit code: $status)"
+        section_result="failed"
+      fi
+    else
+      warn "Cannot format the flake (nix not found)"
       section_result="failed"
     fi
-  else
-    warn "Cannot format the flake (nix not found)"
-    section_result="failed"
+
+    section_end "$section_result"
+    abort_failed_section "$section_result"
   fi
 
-  section_end "$section_result"
-  abort_failed_section "$section_result"
-fi
+  #--------------------------------------------------------------------------------------------------
+  # 4. Run `nix flake update`
+  #--------------------------------------------------------------------------------------------------
 
-#--------------------------------------------------------------------------------------------------
-# 4. Run `nix flake update`
-#--------------------------------------------------------------------------------------------------
+  if [ "$SKIP_NIX_FLAKE" -eq 1 ]; then
+    section_start "Skipping nix flake update (--skip-nix-flake)"
+    section_end "skipped"
+  else
+    section_start "Updating flake inputs"
 
-if [ "$SKIP_NIX_FLAKE" -eq 1 ]; then
-  section_start "Skipping nix flake update (--skip-nix-flake)"
-  section_end "skipped"
-else
-  section_start "Updating flake inputs"
+    section_result="done"
+    if have nix; then
+      status=0
+      nix flake update || status=$?
 
-  section_result="done"
-  if have nix; then
-    status=0
-    nix flake update || status=$?
-
-    if [ "$status" -ne 0 ]; then
-      warn "nix flake update failed (exit code: $status)"
+      if [ "$status" -ne 0 ]; then
+        warn "nix flake update failed (exit code: $status)"
+        section_result="failed"
+      fi
+    else
+      warn "Cannot update flake inputs (nix not found)"
       section_result="failed"
     fi
-  else
-    warn "Cannot update flake inputs (nix not found)"
-    section_result="failed"
+
+    section_end "$section_result"
+    abort_failed_section "$section_result"
   fi
 
-  section_end "$section_result"
-  abort_failed_section "$section_result"
+  #--------------------------------------------------------------------------------------------------
+  # 5. Validate the result without changing the active profile
+  #--------------------------------------------------------------------------------------------------
+
+  run_validation || exit $?
+
+  #--------------------------------------------------------------------------------------------------
+  # 6. Optionally activate the validated configuration
+  #--------------------------------------------------------------------------------------------------
+
+  if [ "$SKIP_HOME_MANAGER" -eq 1 ]; then
+    section_start "Skipping home-manager switch (--skip-home-manager)"
+    section_end "skipped"
+  else
+    run_home_manager_switch || exit $?
+  fi
+
+  #--------------------------------------------------------------------------------------------------
+  # 7. Final summary
+  #--------------------------------------------------------------------------------------------------
+
+  finish_successfully
+}
+
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+  main "$@"
 fi
-
-#--------------------------------------------------------------------------------------------------
-# 5. Validate the result without changing the active profile
-#--------------------------------------------------------------------------------------------------
-
-run_validation || exit $?
-
-#--------------------------------------------------------------------------------------------------
-# 6. Optionally activate the validated configuration
-#--------------------------------------------------------------------------------------------------
-
-if [ "$SKIP_HOME_MANAGER" -eq 1 ]; then
-  section_start "Skipping home-manager switch (--skip-home-manager)"
-  section_end "skipped"
-else
-  run_home_manager_switch || exit $?
-fi
-
-#--------------------------------------------------------------------------------------------------
-# 7. Final summary
-#--------------------------------------------------------------------------------------------------
-
-finish_successfully
