@@ -180,15 +180,15 @@
             ./home.nix
             ./lib/profile.nix
             ./aerc
-            ./bat
             ./agents
+            ./bat
             ./emacs
             ./fish
             ./fonts
             ./fzf
             ./ghostty
-            ./gnome
             ./git
+            ./gnome
             ./gpg
             ./mail
             ./nix
@@ -200,9 +200,9 @@
             ./rustowl
             ./tldr
             ./tmux
-            ./wezterm
             ./vim
             ./virtme-ng
+            ./wezterm
             ./xdg
             ./yt-dlp
             ./zed
