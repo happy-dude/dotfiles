@@ -1,18 +1,21 @@
 {
   homes,
+  lib,
   pkgs,
 }: let
   mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
+  inherit (import ../lib/homes.nix {inherit lib;}) shared;
   provider = pkgs.python3Packages.bgutil-ytdlp-pot-provider;
   pluginRoot = "${provider}/${pkgs.python3.sitePackages}";
   serverHome = "${provider}/share/bgutil-ytdlp-pot-provider";
-  schanConfig = homes.schan.config.xdg.configFile."yt-dlp/config".source;
-  stachanConfig = homes.stachan.config.xdg.configFile."yt-dlp/config".source;
-  schanPlugin = homes.schan.config.xdg.configFile."yt-dlp/plugins/bgutil".source;
-  stachanPlugin = homes.stachan.config.xdg.configFile."yt-dlp/plugins/bgutil".source;
+  config = shared homes "the yt-dlp configuration" (
+    home: home.config.xdg.configFile."yt-dlp/config".source
+  );
+  plugin = shared homes "the bgutil plugin directory" (
+    home: home.config.xdg.configFile."yt-dlp/plugins/bgutil".source
+  );
 in {
-  yt-dlp-bgutil = assert schanPlugin == pluginRoot;
-  assert stachanPlugin == pluginRoot;
+  yt-dlp-bgutil = assert plugin == pluginRoot;
     mkCheck {
       name = "yt-dlp-bgutil-check";
       tools = [pkgs.nodejs];
@@ -24,13 +27,12 @@ in {
         )" = ${provider.version}
         ${provider}/bin/bgutil-ytdlp-pot-provider --help >/dev/null
 
-        cmp ${schanConfig} ${stachanConfig}
-        grep -F -- '--no-js-runtimes' ${stachanConfig}
+        grep -F -- '--no-js-runtimes' ${config}
         grep -F -- '--js-runtimes "node:${pkgs.nodejs}/bin/node"' \
-          ${stachanConfig}
+          ${config}
         grep -F -- \
           '--extractor-args "youtubepot-bgutilscript:server_home=${serverHome}"' \
-          ${stachanConfig}
+          ${config}
       '';
     };
 }

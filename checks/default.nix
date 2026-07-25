@@ -33,6 +33,6 @@ in
     (import ../rclone/check.nix {inherit pkgs;})
     (import ../rime/check.nix {inherit homes pkgs;})
     (import ../vim/check.nix {inherit homes pkgs;})
-    (import ../yt-dlp/check.nix {inherit homes pkgs;})
+    (import ../yt-dlp/check.nix {inherit homes lib pkgs;})
     (import ../zed/check.nix {inherit pkgs;})
   ]
