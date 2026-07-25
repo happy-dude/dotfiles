@@ -152,11 +152,6 @@ alias gl="git log --date=relative --abbrev=12 -n 160 \
     --pretty='format:%C(dim blue)%h%C(auto)%d %s %>|(68,trunc)%C(8)- %C(dim magenta)%an%C(8), %ad' --graph --all"
 alias gits="git --no-pager show --no-patch --format='commit %h (\"%s\")%n'"
 
-
-# emacsclient
-alias et='TERM=xterm-256color emacsclient -nw'
-alias ef='emacsclient -nc'
-
 # Run the current kernel tree with the usual AMD debugging defaults.
 function vmeamd() {
     command vng \
