@@ -281,7 +281,7 @@
 
     stylesets = {
       gruvbox = ''
-        ${builtins.readFile .config/aerc/stylesets/gruvbox}
+        ${builtins.readFile ./.config/aerc/stylesets/gruvbox}
       '';
       gruvbox_material_dark_hard = ''
         ${builtins.readFile ./.config/aerc/stylesets/gruvbox_material_dark_hard}
