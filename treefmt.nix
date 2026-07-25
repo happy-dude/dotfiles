@@ -3,10 +3,11 @@
   self,
   treefmt-nix,
 }: let
+  dotfilesFiles = import ./lib/python {inherit pkgs;};
   sortGitmodules =
     pkgs.writers.writePython3Bin
     "sort-gitmodules"
-    {}
+    {libraries = [dotfilesFiles];}
     (builtins.readFile ./scripts/sort_gitmodules.py);
   sortGitmodulesTest =
     pkgs.runCommand

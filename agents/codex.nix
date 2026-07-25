@@ -1,4 +1,5 @@
 {pkgs}: let
+  dotfilesFiles = import ../lib/python {inherit pkgs;};
   configSchemaUrl = "https://developers.openai.com/codex/config-schema.json";
 
   agentDirectoryMigration =
@@ -10,7 +11,7 @@
   profileMaterializer =
     pkgs.writers.writePython3Bin
     "materialize-codex-profile"
-    {libraries = [pkgs.python3Packages.tomlkit];}
+    {libraries = [dotfilesFiles pkgs.python3Packages.tomlkit];}
     (builtins.readFile ./materialize_codex_profile.py);
 
   agentDirectoryMigrationCheck =

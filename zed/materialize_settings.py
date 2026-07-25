@@ -1,11 +1,11 @@
 import json
-import os
 import sys
-import tempfile
 from pathlib import Path
 from typing import TypeAlias, cast
 
 import json5
+
+from dotfiles_files import write_text
 
 JsonValue: TypeAlias = (
     None
@@ -60,27 +60,8 @@ def materialize(static_path: Path, target: Path) -> None:
         else {}
     )
     merged = merge(dynamic, static)
-    target.parent.mkdir(parents=True, exist_ok=True)
-    descriptor, temporary_name = tempfile.mkstemp(
-        dir=target.parent,
-        prefix=f".{target.name}.",
-    )
-    temporary = Path(temporary_name)
-    try:
-        with os.fdopen(descriptor, "w", encoding="utf-8") as output:
-            json.dump(merged, output, ensure_ascii=False, indent=2)
-            output.write("\n")
-            os.fchmod(output.fileno(), 0o600)
-            output.flush()
-            os.fsync(output.fileno())
-        os.replace(temporary, target)
-        directory = os.open(target.parent, os.O_RDONLY | os.O_DIRECTORY)
-        try:
-            os.fsync(directory)
-        finally:
-            os.close(directory)
-    finally:
-        temporary.unlink(missing_ok=True)
+    rendered = json.dumps(merged, ensure_ascii=False, indent=2)
+    write_text(target, rendered + "\n", 0o600)
 
 
 def main(arguments: list[str]) -> None:

@@ -15,7 +15,8 @@
       ruff check --no-cache ${self}
       PYTHONPYCACHEPREFIX="$TMPDIR/pycache" \
         python3 -m compileall -q \
-          ${self}/agents ${self}/rclone ${self}/rime ${self}/scripts ${self}/zed
+          ${self}/agents ${self}/lib ${self}/rclone ${self}/rime \
+          ${self}/scripts ${self}/zed
       python3 ${self}/scripts/test_commit_message_lint.py
       touch "$out"
     '';
