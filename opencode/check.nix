@@ -60,8 +60,10 @@ in
   assert schan.config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD == "true";
   assert stachanPackage != null;
   assert schanPackage != null;
-  assert stachan.config.home.sessionVariables.OPENCODE_CONFIG == "/home/stachan/.config/opencode/local.json";
-  assert schan.config.home.sessionVariables.OPENCODE_CONFIG == "/home/schan/.config/opencode/local.json";
+  assert stachan.config.home.sessionVariables.OPENCODE_CONFIG
+  == "${stachan.config.home.homeDirectory}/.config/opencode/local.json";
+  assert schan.config.home.sessionVariables.OPENCODE_CONFIG
+  == "${schan.config.home.homeDirectory}/.config/opencode/local.json";
     pkgs.runCommand "dotfiles-opencode-check"
     {
       nativeBuildInputs =
@@ -187,35 +189,28 @@ in
         cd project
         opencode debug config >../project.json
       )
+      # opencode.json is the source of truth for this project's language
+      # servers. Assert that every executable it names is provided, rather
+      # than restating the table and asserting the file equals itself.
+      missing=$(
+        jq -r '
+          .lsp | to_entries[]
+          | select(.value.disabled != true)
+          | .value.command[0]
+        ' project.json | sort -u | while read -r executable; do
+          command -v "$executable" >/dev/null || echo "$executable"
+        done
+      )
+      if [ -n "$missing" ]; then
+        echo "no package provides: $missing" >&2
+        exit 1
+      fi
+
+      # Policy that the file alone does not explain.
       jq -e --arg home "$HOME" '
-        .lsp.bash.command == ["bash-language-server", "start"] and
-        .lsp.clangd.command == ["clangd", "--background-index", "--clang-tidy"] and
-        .lsp["clojure-lsp"].command == ["clojure-lsp", "listen"] and
-        .lsp.eslint.command == ["vscode-eslint-language-server", "--stdio"] and
-        .lsp["fennel-ls"].command == ["fennel-ls", "--server"] and
-        .lsp["fish-lsp"].command == ["fish-lsp", "start"] and
-        .lsp.gopls.command == ["gopls"] and
-        .lsp["haskell-language-server"].command ==
-          ["haskell-language-server-wrapper", "--lsp"] and
-        .lsp["json-ls"].command == ["vscode-json-language-server", "--stdio"] and
-        .lsp["kotlin-ls"].command == ["kotlin-language-server"] and
-        .lsp["lua-ls"].command == ["lua-language-server"] and
-        .lsp.marksman.command == ["marksman", "server"] and
-        .lsp.nixd.command == ["nixd"] and
-        .lsp.oxlint.disabled == true and
-        .lsp.perlnavigator.command == ["perlnavigator", "--stdio"] and
-        .lsp.ruff.command == ["ruff", "server"] and
-        .lsp.rust.command == ["rust-analyzer"] and
-        .lsp.terraform.command == ["terraform-ls", "serve"] and
-        .lsp.texlab.command == ["texlab"] and
-        .lsp.tinymist.command == ["tinymist", "lsp"] and
-        .lsp.typescript.command == ["typescript-language-server", "--stdio"] and
-        .lsp.typescript.initialization.tsserver.path ==
-          ($home + "/.local/share/nix-typescript/lib/tsserver.js") and
-        .lsp["vim-ls"].command == ["vim-language-server", "--stdio"] and
-        .lsp["yaml-ls"].command == ["yaml-language-server", "--stdio"] and
-        .lsp.zls.command == ["zls"] and
-        .lsp.zuban.command == ["zuban", "server"]
+        (.lsp.oxlint.disabled == true) and
+        (.lsp.typescript.initialization.tsserver.path ==
+          ($home + "/.local/share/nix-typescript/lib/tsserver.js"))
       ' project.json >/dev/null
       touch "$out"
     ''
