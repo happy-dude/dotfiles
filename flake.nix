@@ -202,7 +202,6 @@
             ./tmux
             ./vim
             ./virtme-ng
-            ./wezterm
             ./xdg
             ./yt-dlp
             ./zed
