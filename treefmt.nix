@@ -66,10 +66,7 @@
         enable = true;
         settings.proseWrap = "always";
       };
-      ruff-format = {
-        enable = true;
-        lineLength = 79;
-      };
+      ruff-format.enable = true;
       taplo.enable = true;
     };
     settings.excludes = [
