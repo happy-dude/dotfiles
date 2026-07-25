@@ -14,7 +14,7 @@ in {
 
   home.activation = {
     createOrgDirectories = config.lib.dag.entryAfter ["writeBoundary"] ''
-      ${pkgs.coreutils}/bin/mkdir -p \
+      $DRY_RUN_CMD ${pkgs.coreutils}/bin/mkdir -p \
         "$HOME/org/Archive" \
         "$HOME/org/roam" \
         "${config.xdg.cacheHome}/emacs/undo-tree"

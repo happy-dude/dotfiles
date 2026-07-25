@@ -31,7 +31,7 @@ in {
   home.activation = lib.mkIf (username == "schan") {
     zedFlatpakSettingsActivation = lib.hm.dag.entryAfter ["linkGeneration"] ''
       settings_path=${lib.escapeShellArg "${flatpakConfigHome}/zed/settings.json"}
-      ${zedSettingsMaterializer}/bin/materialize-zed-settings \
+      $DRY_RUN_CMD ${zedSettingsMaterializer}/bin/materialize-zed-settings \
         ${lib.escapeShellArg staticSettings} \
         "$settings_path"
     '';

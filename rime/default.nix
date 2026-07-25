@@ -149,16 +149,16 @@ in
     # file manifest. Remove only that marked Nix-store link before collision
     # checks so Home Manager can own the individual immutable theme directories.
     home.activation.rimeMigrateThemeRoot = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
-      ${lib.getExe rimeHostFiles} migrate-theme-root \
+      $DRY_RUN_CMD ${lib.getExe rimeHostFiles} migrate-theme-root \
         ${lib.escapeShellArg legacyOwnershipMarker}
     '';
 
     home.activation.rimeHostFiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
-      ${lib.getExe rimeHostFiles} deploy ${lib.escapeShellArg ./.}
+      $DRY_RUN_CMD ${lib.getExe rimeHostFiles} deploy ${lib.escapeShellArg ./.}
     '';
 
     home.activation.rimeSchemaBuild = lib.hm.dag.entryAfter ["rimeHostFiles"] ''
-      ${lib.getExe rimeStateManager} deploy \
+      $DRY_RUN_CMD ${lib.getExe rimeStateManager} deploy \
         ${lib.escapeShellArg rimeStaticData} \
         ${lib.escapeShellArg rimeDataStamp} \
         ${lib.escapeShellArg "${pkgs.systemd}/bin/busctl"} \

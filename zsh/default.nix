@@ -7,7 +7,7 @@
   ...
 }: {
   home.activation.createZshStateDirectory = config.lib.dag.entryAfter ["writeBoundary"] ''
-    ${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg "${config.xdg.stateHome}/zsh"}
+    $DRY_RUN_CMD ${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg "${config.xdg.stateHome}/zsh"}
   '';
 
   xdg.configFile."zsh/.p10k.zsh".source = ./.config/zsh/.p10k.zsh;
