@@ -7,11 +7,10 @@
   filterFile = "${config.xdg.configHome}/rclone/org-bisync.filter";
   readyMarker = "${config.xdg.stateHome}/rclone/org-bisync-ready";
   workDir = "${config.xdg.cacheHome}/rclone/bisync";
-  changeWatcher =
-    pkgs.writers.writePython3Bin
-    "rclone-box-org-watch"
-    {}
-    (builtins.readFile ./watch_org.py);
+  changeWatcher = import ../lib/python/mkScript.nix {inherit pkgs;} {
+    name = "rclone-box-org-watch";
+    source = ./watch_org.py;
+  };
   watcherCommand = lib.concatStringsSep " " [
     (lib.getExe changeWatcher)
     "watch"

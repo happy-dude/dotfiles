@@ -1,7 +1,6 @@
-{pkgs}: let
-  dotfilesFiles = import ../lib/python {inherit pkgs;};
-in
-  pkgs.writers.writePython3Bin
-  "materialize-zed-settings"
-  {libraries = [dotfilesFiles pkgs.python3Packages.json5];}
-  (builtins.readFile ./materialize_settings.py)
+{pkgs}:
+import ../lib/python/mkScript.nix {inherit pkgs;} {
+  name = "materialize-zed-settings";
+  source = ./materialize_settings.py;
+  libraries = [pkgs.python3Packages.json5];
+}
