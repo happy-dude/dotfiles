@@ -11,12 +11,23 @@ in {
       import sys
       from pathlib import Path
 
+      # The Kagi assistant field accepts this many characters. Report every
+      # prompt that overruns, and how much room the rest have left, so that a
+      # prompt approaching the limit is visible before it crosses it.
       limit = 20_000
+      report = []
+      over = []
       for name in sys.argv[1:]:
           path = Path(name)
+          # Store paths carry a hash prefix that obscures the file name.
+          label = path.name.split("-", 1)[-1]
           length = len(path.read_text(encoding="utf-8"))
+          report.append(f"{label}: {length} of {limit} characters")
           if length > limit:
-              raise SystemExit(f"{path.name}: {length} characters exceeds {limit}")
+              over.append(f"{label}: {length - limit} characters over")
+      print("\n".join(report))
+      if over:
+          raise SystemExit("\n".join(over))
       PYTHON
     '';
   };
