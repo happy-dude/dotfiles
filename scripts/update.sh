@@ -489,6 +489,12 @@ has_configured_submodules() {
     git config -f .gitmodules --get-regexp '^submodule\..*\.path$' >/dev/null 2>&1
 }
 
+# `git diff --quiet` exits 0 when there is no difference, 1 when there is one,
+# and 2 or more when the comparison itself failed. The functions below keep
+# those apart deliberately: collapsing them into `if ! git diff --quiet` would
+# report a failed comparison as a dirty tree, or a broken repository as a clean
+# one, and both mislead the stash guard that decides whether to move a user's
+# uncommitted work.
 is_submodule_dirty() {
   local path="$1"
   local status
@@ -650,6 +656,7 @@ stash_has_expected_graph() {
   [ -z "$untracked_parents" ] || return 1
 }
 
+# Exit codes here mean the same as in is_submodule_dirty above.
 stash_contains_changes() {
   local path="$1"
   local stash="$2"
