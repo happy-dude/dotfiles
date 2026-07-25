@@ -1,76 +1,20 @@
 {
+  config,
   lib,
   desktop,
   ...
-}: let
-  managePanel = false;
-in {
+}: {
+  options.dotfiles.plasma.managePanels = lib.mkEnableOption ''
+    Home Manager ownership of the complete Plasma panel layout
+  '';
+
   config = lib.mkIf (desktop == "plasma") {
     programs.plasma = {
       enable = true;
       overrideConfig = false;
       immutableByDefault = false;
 
-      panels = lib.optionals managePanel [
-        {
-          location = "bottom";
-          floating = true;
-          hiding = "none";
-          lengthMode = "fill";
-          height = 36;
-          widgets = [
-            {
-              kickoff = {
-                compactDisplayStyle = true;
-                sortAlphabetically = true;
-              };
-            }
-            "org.kde.plasma.pager"
-            {
-              panelSpacer = {
-                expanding = false;
-                length = 120;
-              };
-            }
-            {
-              iconTasks = {
-                launchers = [
-                  "preferred://filemanager"
-                  "applications:com.mitchellh.ghostty.desktop"
-                  "preferred://browser"
-                  "applications:org.mozilla.thunderbird.desktop"
-                ];
-                behavior.showTasks.onlyInCurrentDesktop = false;
-              };
-            }
-            {
-              panelSpacer = {
-                expanding = false;
-                length = 120;
-              };
-            }
-            "org.kde.plasma.marginsseparator"
-            {
-              systemTray = {
-                items = {
-                  hidden = ["org.kde.plasma.addons.katesessions"];
-                  shown = [
-                    "org.kde.plasma.battery"
-                    "org.kde.plasma.bluetooth"
-                    "org.kde.plasma.volume"
-                    "org.kde.plasma.mediacontroller"
-                    "Fcitx"
-                    "org.kde.plasma.brightness"
-                  ];
-                  configs.battery.showPercentage = true;
-                };
-              };
-            }
-            "org.kde.plasma.digitalclock"
-            "org.kde.plasma.showdesktop"
-          ];
-        }
-      ];
+      panels = lib.optionals config.dotfiles.plasma.managePanels (import ./panels.nix);
 
       workspace = {
         lookAndFeel = "org.kde.breezedark.desktop";
