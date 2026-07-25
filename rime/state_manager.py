@@ -7,6 +7,7 @@ import sys
 import tempfile
 from pathlib import Path
 
+import dotfiles_files
 from dotfiles_files import copy_file, fail
 
 
@@ -15,11 +16,8 @@ def lexists(path: Path) -> bool:
 
 
 def state_paths() -> tuple[Path, Path, Path, Path]:
-    home = Path.home()
-    data_home = Path(os.environ.get("XDG_DATA_HOME", home / ".local/share"))
-    state_home = Path(os.environ.get("XDG_STATE_HOME", home / ".local/state"))
-    data_dir = data_home / "fcitx5/rime"
-    state_dir = state_home / "rime"
+    data_dir = dotfiles_files.data_home() / "fcitx5/rime"
+    state_dir = dotfiles_files.state_home() / "rime"
     return (
         data_dir,
         data_dir / ".home-manager-static",

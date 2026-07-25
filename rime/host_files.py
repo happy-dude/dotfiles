@@ -1,7 +1,7 @@
-import os
 import sys
 from pathlib import Path
 
+import dotfiles_files
 from dotfiles_files import copy_file, fail, same_content
 
 
@@ -59,10 +59,8 @@ def migrate_theme_root(marker_source: Path) -> None:
     if not marker_source.is_file() or marker_source.is_symlink():
         fail(f"Rime ownership source is not a regular file: {marker_source}")
 
-    home = Path.home()
-    state_home = Path(os.environ.get("XDG_STATE_HOME", home / ".local/state"))
-    marker = state_home / "rime/home-manager-ownership-v1"
-    target = home / ".local/share/fcitx5/themes"
+    marker = dotfiles_files.state_home() / "rime/home-manager-ownership-v1"
+    target = dotfiles_files.data_home() / "fcitx5/themes"
 
     if marker.is_symlink() or (marker.exists() and not marker.is_file()):
         fail(f"Refusing malformed Rime ownership marker: {marker}")
@@ -85,8 +83,7 @@ def migrate_theme_root(marker_source: Path) -> None:
 
 def deploy(source_root: Path) -> None:
     home = Path.home()
-    state_home = Path(os.environ.get("XDG_STATE_HOME", home / ".local/state"))
-    state_root = state_home / "rime/host-config"
+    state_root = dotfiles_files.state_home() / "rime/host-config"
     files = (
         (
             source_root / ".config/fcitx5/profile",

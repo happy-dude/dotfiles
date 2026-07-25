@@ -32,6 +32,13 @@ def state_home() -> Path:
     return Path.home() / ".local" / "state"
 
 
+def data_home() -> Path:
+    value = os.environ.get("XDG_DATA_HOME")
+    if value:
+        return Path(value)
+    return Path.home() / ".local" / "share"
+
+
 def same_content(left: Path, right: Path) -> bool:
     """Compare two files without holding either wholly in memory.
 
