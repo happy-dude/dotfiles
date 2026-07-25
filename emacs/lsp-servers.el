@@ -45,7 +45,8 @@
 
 (cl-defun dotfiles/lsp-register (server-id major-modes
                                            &key add-on activation-fn
-                                           initialization-options priority)
+                                           initialization-options initialized-fn
+                                           priority)
   (lsp-register-client
    (make-lsp-client
     :new-connection (lsp-stdio-connection (dotfiles/lsp-command server-id))
@@ -55,7 +56,27 @@
     :priority (or priority 0)
     :add-on? add-on
     :multi-root t
+    :initialized-fn initialized-fn
     :initialization-options initialization-options)))
+
+(defun dotfiles/perl-language-server-trim (workspace)
+  "Keep Perl::LanguageServer to the features perl-navigator does not provide.
+Navigator is faster and, as the primary Perl client, owns hover, completion,
+definition, document symbols, and formatting.  lsp-mode sends a request to
+every workspace that advertises the capability, so leaving Perl::LanguageServer
+advertising definition and document symbols would query the slower server on
+every jump.  Drop those two capabilities, leaving it the signature help and
+references that navigator lacks, mirroring the CoC configuration."
+  (let ((caps (lsp--workspace-server-capabilities workspace)))
+    (cond
+     ((hash-table-p caps)
+      (remhash "definitionProvider" caps)
+      (remhash "documentSymbolProvider" caps))
+     ((listp caps)
+      (setf (lsp--workspace-server-capabilities workspace)
+            (cl-loop for (k v) on caps by #'cddr
+                     unless (memq k '(:definitionProvider :documentSymbolProvider))
+                     append (list k v)))))))
 
 (defun dotfiles/lsp-rooted-p (file-name markers)
   (and file-name
@@ -123,7 +144,9 @@
 (dotfiles/lsp-register 'dotfiles-marksman '(markdown-mode gfm-mode))
 (dotfiles/lsp-register 'dotfiles-nixd '(nix-mode nix-ts-mode))
 (dotfiles/lsp-register 'dotfiles-perl-navigator '(perl-mode cperl-mode) :priority 1)
-(dotfiles/lsp-register 'dotfiles-perl-language-server '(perl-mode cperl-mode) :add-on t)
+(dotfiles/lsp-register 'dotfiles-perl-language-server '(perl-mode cperl-mode)
+                       :add-on t
+                       :initialized-fn #'dotfiles/perl-language-server-trim)
 (dotfiles/lsp-register 'dotfiles-rust-analyzer '(rust-mode rust-ts-mode))
 (dotfiles/lsp-register 'dotfiles-terraform '(terraform-mode hcl-mode))
 (dotfiles/lsp-register 'dotfiles-texlab '(LaTeX-mode latex-mode plain-tex-mode))
