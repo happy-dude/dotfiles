@@ -45,12 +45,15 @@ in
     fish-syntax = mkCheck {
       name = "dotfiles-fish-syntax";
       tools = [pkgs.fish];
+      # Discover every tracked Fish file recursively; a top-level glob misses
+      # functions/, conf.d/, and completions/ under fish/.config/fish.
       script = ''
-        for script in \
-          ${self}/fish/.config/fish/*.fish \
-          ${self}/fish/.config/fish/*.fish.example; do
+        while IFS= read -r -d "" script; do
           fish --no-execute "$script"
-        done
+        done < <(
+          find ${self}/fish -type f \
+            \( -name '*.fish' -o -name '*.fish.example' \) -print0
+        )
       '';
     };
 
