@@ -24,6 +24,7 @@ in
       dictionaries = import ../dictionaries/check.nix {inherit pkgs;};
       opencode = import ../opencode/check.nix {inherit homes lib pkgs self;};
     }
+    (import ./profiles.nix {inherit homes lib pkgs;})
     (import ./python.nix {inherit pkgs self;})
     (import ./secrets.nix {inherit pkgs self;})
     (import ./shell.nix {inherit lib pkgs self;})
