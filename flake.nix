@@ -194,6 +194,7 @@
             ./aerc
             ./agents
             ./bat
+            ./dictionaries
             ./emacs
             ./fish
             ./fonts

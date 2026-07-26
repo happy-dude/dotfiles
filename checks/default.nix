@@ -21,6 +21,7 @@ in
     {
       codex-profile-materializer = codex.checks.profileMaterializer;
       codex-agent-directory-migration = codex.checks.agentDirectoryMigration;
+      dictionaries = import ../dictionaries/check.nix {inherit pkgs;};
       opencode = import ../opencode/check.nix {inherit homes lib pkgs self;};
     }
     (import ./python.nix {inherit pkgs self;})
