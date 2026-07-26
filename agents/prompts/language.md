@@ -372,9 +372,11 @@ project benefits from additional language-server feedback.
 - **Dictionary lookups:** `sdcv` (StarDict console client) or `dict` (DICT
   protocol client, e.g. `dict -d cedict <word>` if a CC-CEDICT database is
   configured) — real dictionary backing raises a claim from medium to high
-  confidence. Check `sdcv -l` / `dict -D` for which dictionaries are actually
-  installed before assuming CEDICT, CC-Canto, or a Vietnamese dictionary is
-  present.
+  confidence. `sdcv` now carries offline CC-CEDICT, CC-Canto, WordNet, kengdic,
+  a Vietnamese dictionary, and FreeDict pairs for the European languages and
+  Japanese — run `sdcv -l` to see the set. Coverage varies and some pairs are
+  thin, so a lookup miss is not proof; `dict -D` still lists only the Esperanto
+  database.
 - **Spellcheck-backed word validation for Esperanto/Italian/Polish/Spanish:**
   `aspell -d eo list`, `-d es`, `-d it`, `-d pl` (pipe a word/wordlist in)
   confirms a word is a real attested form in that language — use this to check
@@ -471,10 +473,13 @@ That file is the authoritative package list for this machine, and
 than trusting any list reproduced in this prompt: the list here is a cache and
 the configuration is the fact.
 
-Two dictionary caveats worth knowing before leaning on a tool: `sdcv` and `dict`
-are installed but carry almost no data — the only stock database is
-Esperanto-to-English — so check `sdcv -l` or `dict -D` before treating either as
-dictionary backing. `tesseract5` does ship the language data it needs.
+Two dictionary caveats worth knowing before leaning on a tool: `sdcv` carries
+offline StarDict dictionaries for the languages above — CC-CEDICT and CC-Canto
+(Chinese), WordNet (English), kengdic (Korean), an Open Vietnamese dictionary,
+and FreeDict pairs for the European languages and Japanese; run `sdcv -l` to see
+the set, and note some FreeDict pairs (Spanish, French) are small. `dict` still
+only has the stock Esperanto-English database. `tesseract5` does ship the
+language data it needs.
 
 - **Hosts:** two Home Manager profiles on generic Linux, not NixOS: `schan`
   (personal, Fedora Kinoite, KDE Plasma) and `stachan` (work, managed Ubuntu,
@@ -526,7 +531,7 @@ Example:
 ## Verification trail
 1. `grep -P "^明\t" ~/.local/share/fcitx5/rime/cangjie5.base.dict.yaml` → confirmed Cangjie code "ab" for 明
 2. `echo "你好嗎" | opencc -c t2s.json` → confirmed Simplified form matches what's given above
-3. `sdcv 多謝` → found in CC-Canto, confirms "thank you" gloss and casual register
+3. `sdcv 唔該` → cc-canto entry: Jyutping "m4 goi1", glossed "please; thanks; excuse me" — confirms the reading and register
 4. second-opinion model call → agreed with my translation and independently caught the same register nuance
 ```
 
