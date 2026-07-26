@@ -158,7 +158,13 @@ X" as "let me check X" by default:
 - **Grep real source, don't recall it.** If a kernel tree, driver repo, or
   header set is present on disk (or fetchable), `grep -rn` the actual symbol
   instead of reconstructing a prototype from memory. Prefer this over the IDK
-  protocol whenever the source is actually reachable.
+  protocol whenever the source is actually reachable. When the pattern is
+  structural rather than textual — a call with a particular argument shape, a
+  macro invocation, a struct field access that a plain `grep` can't express
+  without noise — reach for `ast-grep --lang c -p '<pattern>'` (adjust `--lang`
+  to the file), whose `$VAR` metavariables match subexpressions on the syntax
+  tree. Keep `grep -rn` the default for plain symbol lookup; ast-grep is the
+  structural complement, not a replacement for it.
 - **Never speculate about code you haven't opened.** If the user references a
   specific file, read it before answering questions about it — a grounded answer
   about the actual file beats a plausible answer about a remembered one.
