@@ -33,9 +33,10 @@ The same code expanded for readability is:
 
 ```javascript
 (() => {
-  // Prefer the publisher's stable page identity, but trust it only when it is a
-  // well-formed http(s) URL. A blank or relative canonical must not silently
-  // replace the page, and a javascript: canonical must never reach ROAM_REFS.
+  // Prefer the publisher's stable page identity. Reading the DOM element's
+  // .href resolves a relative canonical against the page, so it arrives
+  // absolute; trust it only when that resolves to an http(s) URL, so a
+  // javascript: or other-scheme canonical never reaches ROAM_REFS.
   let ref;
   try {
     ref = new URL(
@@ -93,10 +94,12 @@ The same code expanded for readability is:
 ```
 
 1. `link[rel="canonical"]` uses the publisher's canonical URL when the page
-   provides one. The value is accepted only when it parses as an `http` or
-   `https` URL; a blank, relative, or `javascript:` canonical falls back to the
-   current browser URL so a broken tag never replaces the page or stores an
-   unsafe scheme in `ROAM_REFS`.
+   provides one. Reading it through the DOM element's `.href` resolves a
+   relative canonical against the page, so it arrives absolute; the value is
+   accepted only when it is an `http` or `https` URL. A `javascript:` or other
+   non-http(s) canonical falls back to the current browser URL so a broken tag
+   never stores an unsafe scheme in `ROAM_REFS` (a blank canonical resolves to
+   the current page).
 2. Any parse failure also falls back to the current URL, which is always
    well-formed.
 3. Common advertising and campaign identifiers are removed, covering the `utm_`
