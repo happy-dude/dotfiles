@@ -44,6 +44,7 @@
     packages = with pkgs; [
       asmfmt
       asciinema
+      ast-grep
       autoconf
       automake
       babelfish
