@@ -59,8 +59,10 @@ bounded without relying on inotify.
 
 ## Initial synchronization
 
-Create a matching access-check file on both sides, then inspect the initial
-resync without changing either side:
+Create a matching access-check file on both sides. Creating this sentinel is a
+deliberate prerequisite mutation: `touch` and `rclone copyto` write
+`RCLONE_TEST` to each side. The bisync itself then runs with `--dry-run`, so it
+reports its planned resync without synchronizing either side:
 
 ```bash
 touch ~/org/RCLONE_TEST

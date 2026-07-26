@@ -74,15 +74,11 @@ in {
     )
     profileFiles;
 
-  home.activation.migrateCodexAgentDirectory = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
-    $DRY_RUN_CMD ${lib.getExe codex.agentDirectoryMigration} \
-      ${lib.escapeShellArg legacyAgentDirectory} \
-      "$HOME/.codex/agents" \
-      ${lib.escapeShellArg "kernel=${agentFiles.kernel}"} \
-      ${lib.escapeShellArg "language=${agentFiles.language}"}
-  '';
-
-  home.activation.secureAgentStateDirectories = lib.hm.dag.entryAfter ["linkGeneration"] ''
+  # Validate the agent state parents before anything writes through them. A
+  # symlinked or non-directory ~/.claude or ~/.codex must be rejected before the
+  # migration moves files into it and before linkGeneration creates links inside
+  # it, otherwise a redirected parent is followed before activation refuses it.
+  home.activation.secureAgentStateDirectories = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
     for directory in "$HOME/.claude" "$HOME/.codex"; do
       if [[ -L $directory || (-e $directory && ! -d $directory) ]]; then
         echo "Refusing malformed agent state directory: $directory" >&2
@@ -91,6 +87,14 @@ in {
       $DRY_RUN_CMD ${pkgs.coreutils}/bin/mkdir -p -- "$directory"
       $DRY_RUN_CMD ${pkgs.coreutils}/bin/chmod 0700 -- "$directory"
     done
+  '';
+
+  home.activation.migrateCodexAgentDirectory = lib.hm.dag.entryBetween ["checkLinkTargets"] ["secureAgentStateDirectories"] ''
+    $DRY_RUN_CMD ${lib.getExe codex.agentDirectoryMigration} \
+      ${lib.escapeShellArg legacyAgentDirectory} \
+      "$HOME/.codex/agents" \
+      ${lib.escapeShellArg "kernel=${agentFiles.kernel}"} \
+      ${lib.escapeShellArg "language=${agentFiles.language}"}
   '';
 
   home.activation.ensureCodexProfiles = lib.hm.dag.entryAfter ["onFilesChange"] (

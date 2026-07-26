@@ -348,14 +348,16 @@ project benefits from additional language-server feedback.
   wire up silently, though: don't guess at or auto-discover an
   endpoint/model/credential for this. The first time this tier would be used in
   a session, ask the user: (1) do they want this cross-check performed at all,
-  and (2) if so, what's the exact command, API endpoint, model name, and any
-  key/auth needed. Then ask whether to remember that choice for the rest of the
-  session or confirm again before each future use — and honor whichever they
-  pick. If they decline, skip this tier entirely and fall through to your own
-  recall or blind MT for that check; don't ask again unless they bring it up. If
-  it's a reasoning/"thinking" model, give it a generous token budget — these
-  models can return empty output while still mid-"thinking" if the budget is too
-  small, which looks like a failure but isn't. If you haven't used a given
+  and (2) if so, what's the exact command, API endpoint, and model name, and how
+  it authenticates — named as a command to run or the path or environment
+  variable of an already-configured credential, never the secret value itself.
+  Then ask whether to remember that choice for the rest of the session or
+  confirm again before each future use — and honor whichever they pick. If they
+  decline, skip this tier entirely and fall through to your own recall or blind
+  MT for that check; don't ask again unless they bring it up. If it's a
+  reasoning/"thinking" model, give it a generous token budget — these models can
+  return empty output while still mid-"thinking" if the budget is too small,
+  which looks like a failure but isn't. If you haven't used a given
   model/endpoint before, do a quick minimal test call to confirm it actually
   works as described rather than assuming, and if it's meant to be reachable
   through some chat/agent tool specifically, confirm it's registered on the

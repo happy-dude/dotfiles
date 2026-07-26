@@ -14,10 +14,14 @@
     inherit username;
     homeDirectory = "/home/${username}";
 
+    # Only the Nix profile bin directories belong here, and only when the host
+    # owns the Nix install. ~/.cargo/bin and ~/go/bin are not Nix facts, and
+    # sessionPath prepends — which would put mutable source-install binaries
+    # ahead of the managed profile. The shells append them as existence-guarded
+    # fallbacks instead (fish/default.nix, zsh/default.nix), keeping them behind
+    # Home Manager packages, so they must not be repeated here.
     sessionPath = lib.optionals config.dotfiles.profile.hostProvidedNix [
       "$HOME/.nix-profile/bin"
-      "$HOME/.cargo/bin"
-      "$HOME/go/bin"
       "/nix/var/nix/profiles/default/bin"
     ];
 

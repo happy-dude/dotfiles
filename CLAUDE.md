@@ -40,9 +40,11 @@ checkout is the Linux branch.
   and `ghcr.io/thrix/nix-toolbox:42` image are retired and are not a rollback
   path. Any remaining `~/.local/share/nix` content is inactive legacy data
   pending cleanup, not a recovery source or executable environment. The
-  mountpoint helper, system bootstrap, rollback, and major-upgrade checks are
-  documented in `docs/fedora-kinoite-determinate-nix.md`; they are host state
-  rather than Home Manager resources.
+  mountpoint helper and system bootstrap are documented in
+  `docs/fedora-kinoite-determinate-nix.md`, with rollback and the major-upgrade
+  checklist in `docs/fedora-kinoite-upgrade-rollback.md` and the dated
+  deployment record in `docs/fedora-kinoite-migration-history.md`; they are host
+  state rather than Home Manager resources.
 - User Flatpaks on `schan` are declared through the stable `nix-flatpak` v0.7.0
   Home Manager module in `flatpak/default.nix`. The module is deliberately not
   imported for `stachan`: that managed Ubuntu host has no Flatpak installation,
@@ -109,12 +111,13 @@ checkout is the Linux branch.
   module via `programs.git.ignores`, not a `home.file`.
 - Feature modules live in their own subdirectories, each as a `default.nix`
   imported from `flake.nix`'s `modules` list: `aerc/`, `agents/`, `bat/`,
-  `emacs/`, `fish/`, `fonts/`, `fzf/`, `ghostty/`, `git/`, `gnome/`, `gpg/`,
-  `mail/`, `nix/`, `opencode/`, `rclone/`, `rime/`, `roswell/`, `rustowl/`,
-  `tldr/`, `tmux/`, `vim/`, `virtme-ng/`, `xdg/`, `yt-dlp/`, `zed/`, `zsh/`. The
-  desktop-specific `rime/gnome.nix` module is imported separately. Adding a new
-  app otherwise means creating `<app>/default.nix` and adding it to the
-  `modules` list in `flake.nix`.
+  `dictionaries/`, `emacs/`, `fish/`, `fonts/`, `fzf/`, `ghostty/`, `git/`,
+  `gnome/`, `gpg/`, `mail/`, `nix/`, `opencode/`, `rclone/`, `rime/`,
+  `roswell/`, `rustowl/`, `tldr/`, `tmux/`, `vim/`, `virtme-ng/`, `xdg/`,
+  `yt-dlp/`, `zed/`, `zsh/`. The desktop-specific `rime/gnome.nix` module is
+  imported separately. The `modules` list in `flake.nix` is authoritative; this
+  inventory is a convenience copy. Adding a new app means creating
+  `<app>/default.nix` and adding it to that list.
 - `flake.nix` is composition-only: it declares inputs and external overlays,
   composes the Home Manager profiles once, and exposes imported formatter and
   check outputs. `treefmt.nix` owns formatter policy; `checks/default.nix`
@@ -220,15 +223,18 @@ and installs StyLua's config under `~/.config/stylua`.
   refresh generator-owned keys when a template changes. Generated profiles carry
   Codex's official `config.toml` schema directive and preserve readable
   multiline instructions. Runtime-owned project trust, TUI state, and other
-  profile keys survive that merge. Independently maintained Kagi Markdown and
-  Codex TOMLs remain live-linked because their instruction budget is different.
-  Kagi prompts target a chat interface with optional web search and uploads but
-  no shell, filesystem, or host access; they delegate commands to the user and
-  continue by interpreting returned results. Claude and Codex session state,
-  credentials, provider configuration, and project trust remain machine-local
-  and must never be committed. Activation requires `~/.claude` and `~/.codex` to
-  be real directories and restricts them to mode `0700` while leaving their
-  contents writable.
+  profile keys survive that merge. The independently maintained Kagi Markdown
+  prompts (`agents/prompts/kagi-*.md`) carry a different, fixed instruction
+  budget, so they are kept verbatim in the repo — whitespace preserved and
+  measured by the `kagi-prompt-budget` check — rather than generated from the
+  canonical agent prompts or deployed as client agents. Kagi prompts target a
+  chat interface with optional web search and uploads but no shell, filesystem,
+  or host access; they delegate commands to the user and continue by
+  interpreting returned results. Claude and Codex session state, credentials,
+  provider configuration, and project trust remain machine-local and must never
+  be committed. Activation requires `~/.claude` and `~/.codex` to be real
+  directories and restricts them to mode `0700` while leaving their contents
+  writable.
 - **`opencode/`** installs the Nix package for both Linux profiles and owns the
   global provider-neutral configuration. It disables self-updates and session
   sharing, disables AI SDK telemetry, strips inherited OTLP exporter variables
@@ -285,18 +291,18 @@ and installs StyLua's config under `~/.config/stylua`.
 
 The active `kernel.md` and `language.md` prompts understand that this repository
 uses Home Manager on generic Linux, not NixOS. Both direct agents to verify
-packages with `nix search`/`nix build --no-link`/`nix-instantiate --eval` and to
-follow the propose → confirm → edit → `nix fmt .` → locked checks/build →
-`home-manager switch --flake .#$(whoami)` workflow for persistent changes.
-`language.md` also names the exact `home.nix` comment headings
+packages before installing — `kernel.md` with
+`nix search`/`nix build --no-link`/`nix-instantiate --eval`, `language.md` with
+`nix search` — and to follow the propose → confirm → edit → `nix fmt .` → locked
+checks/build → `home-manager switch --flake .#$(whoami)` workflow for persistent
+changes. `language.md` also names the exact `home.nix` comment headings
 (`Language agent: translation / dictionary / grammar / OCR / TTS tooling` and
-`Aspell spellcheck-backed word validation for Esperanto/Italian/Polish/Spanish`),
-the static Rime source tree (`rime/.local/share/fcitx5/rime/`), and the Zed
-configuration (`zed/.config/zed/settings.json`). Update both prompts when those
-headings, package names, or paths change; they are maintained documentation, not
-generated files. The canonical Markdown is the only source to update: Nix
-generates Codex agents and profile templates during evaluation, so there is no
-manual regeneration step or generated-file drift to commit.
+`Aspell spellcheck-backed word validation for Esperanto/Italian/Polish/Spanish`)
+and the static Rime source tree (`rime/.local/share/fcitx5/rime/`). Update both
+prompts when those headings, package names, or paths change; they are maintained
+documentation, not generated files. The canonical Markdown is the only source to
+update: Nix generates Codex agents and profile templates during evaluation, so
+there is no manual regeneration step or generated-file drift to commit.
 
 The package lists embedded in those prompts are caches, not sources of truth.
 Each prompt tells the agent to inspect `home.nix` before deciding whether a tool
