@@ -19,7 +19,7 @@ missing spaces, periods, or regular-expression delimiters make it invalid:
 
 <!-- prettier-ignore -->
 ```javascript
-javascript:(()=>{let ref;try{ref=new URL(document.querySelector('link[rel="canonical"]')?.href||location.href);if(!/^https?:$/.test(ref.protocol))ref=new URL(location.href)}catch{ref=new URL(location.href)}for(const key of [...ref.searchParams.keys()]){if(/^utm_/i.test(key)||/^(fbclid|gclid|dclid|gbraid|wbraid|msclkid|yclid|twclid|ttclid|igshid|mc_cid|mc_eid|mkt_tok|_hsenc|_hsmi|vero_id|oly_enc_id|oly_anon_id)$/i.test(key))ref.searchParams.delete(key)}ref.hash='';location.href='org-protocol://roam-ref?'+new URLSearchParams({template:'r',ref:ref.href,title:document.title.replace(/\s+/g,' ').trim(),body:String(getSelection()).trim().slice(0,8000)});void 0})()
+javascript:(()=>{const MAX_ENCODED_URL_CHARS=8000;let ref;try{ref=new URL(document.querySelector('link[rel~="canonical" i][href]')?.href||location.href);if(!/^https?:$/.test(ref.protocol))ref=new URL(location.href)}catch{ref=new URL(location.href)}ref.username='';ref.password='';for(const key of [...ref.searchParams.keys()]){if(/^utm_/i.test(key)||/^(fbclid|gclid|dclid|gbraid|wbraid|msclkid|yclid|twclid|ttclid|igshid|mc_cid|mc_eid|mkt_tok|_hsenc|_hsmi|vero_id|oly_enc_id|oly_anon_id)$/i.test(key))ref.searchParams.delete(key)}ref.hash='';const title=document.title.replace(/\s+/g,' ').trim()||ref.hostname;let selection;const active=document.activeElement;const isTextarea=!!active&&active.tagName==='TEXTAREA';const isTextInput=!!active&&active.tagName==='INPUT'&&active.type!=='password';if((isTextarea||isTextInput)&&typeof active.selectionStart==='number'&&typeof active.selectionEnd==='number'){selection=active.value.slice(active.selectionStart,active.selectionEnd)}else{selection=window.getSelection().toString()}const buildUrl=(bodyText)=>'org-protocol://roam-ref?'+new URLSearchParams({template:'r',ref:ref.href,title,body:bodyText}).toString();let body=selection.trim();if(buildUrl(body).length>MAX_ENCODED_URL_CHARS){const points=Array.from(body);let lo=0;let hi=points.length;while(lo<hi){const mid=Math.ceil((lo+hi)/2);if(buildUrl(points.slice(0,mid).join('')).length<=MAX_ENCODED_URL_CHARS){lo=mid}else{hi=mid-1}}body=points.slice(0,lo).join('')}location.href=buildUrl(body);void 0})()
 ```
 
 Optionally assign the Firefox bookmark the keyword `org`. Typing `org` in the
@@ -33,14 +33,22 @@ The same code expanded for readability is:
 
 ```javascript
 (() => {
-  // Prefer the publisher's stable page identity. Reading the DOM element's
-  // .href resolves a relative canonical against the page, so it arrives
-  // absolute; trust it only when that resolves to an http(s) URL, so a
+  // Cap the whole encoded org-protocol URL, not just the raw body, so the
+  // desktop handoff never receives a string longer than it accepts and then
+  // silently drops the capture. Measured in characters of the encoded URI.
+  const MAX_ENCODED_URL_CHARS = 8000;
+
+  // Prefer the publisher's stable page identity. The token- and
+  // case-insensitive selector matches rel="canonical" even inside a
+  // multi-token rel value and requires an href to be present. Reading the DOM
+  // element's .href resolves a relative canonical against the page, so it
+  // arrives absolute; trust it only when that resolves to an http(s) URL, so a
   // javascript: or other-scheme canonical never reaches ROAM_REFS.
   let ref;
   try {
     ref = new URL(
-      document.querySelector('link[rel="canonical"]')?.href || location.href,
+      document.querySelector('link[rel~="canonical" i][href]')?.href ||
+        location.href,
     );
     if (!/^https?:$/.test(ref.protocol)) {
       ref = new URL(location.href);
@@ -49,6 +57,10 @@ The same code expanded for readability is:
     // A malformed canonical falls back to the current, always-parseable URL.
     ref = new URL(location.href);
   }
+
+  // Clear any embedded basic-auth so credentials never enter ROAM_REFS.
+  ref.username = "";
+  ref.password = "";
 
   // Copy the keys because deleting entries while iterating a live URLSearchParams
   // iterator can otherwise skip subsequent parameters.
@@ -68,65 +80,124 @@ The same code expanded for readability is:
   // Treat section links as references to the page rather than separate nodes.
   ref.hash = "";
 
-  // Navigating to the custom scheme delegates the encoded values to the desktop
-  // handler, which forwards them to org-roam-protocol through emacsclient.
-  location.href =
+  // Collapse tabs, newlines, and repeated spaces in browser-generated titles,
+  // and fall back to the host when the page has no usable title.
+  const title = document.title.replace(/\s+/g, " ").trim() || ref.hostname;
+
+  // getSelection() misses text highlighted inside form controls, so read the
+  // focused textarea or textual input directly. Exclude password inputs and
+  // require the selection offsets to exist; otherwise use the window selection.
+  let selection;
+  const active = document.activeElement;
+  const isTextarea = !!active && active.tagName === "TEXTAREA";
+  const isTextInput =
+    !!active && active.tagName === "INPUT" && active.type !== "password";
+  if (
+    (isTextarea || isTextInput) &&
+    typeof active.selectionStart === "number" &&
+    typeof active.selectionEnd === "number"
+  ) {
+    selection = active.value.slice(active.selectionStart, active.selectionEnd);
+  } else {
+    selection = window.getSelection().toString();
+  }
+
+  // Build the final org-protocol URL for a candidate body so the length check
+  // measures the encoded whole rather than the raw selection.
+  const buildUrl = (bodyText) =>
     "org-protocol://roam-ref?" +
     new URLSearchParams({
       // Select the matching key in org-roam-capture-ref-templates.
       template: "r",
-
       // Store the normalized page identity in the node's ROAM_REFS property.
       ref: ref.href,
+      // Supply the node title after whitespace normalization.
+      title,
+      // Seed the capture with the selected page text.
+      body: bodyText,
+    }).toString();
 
-      // Collapse tabs, newlines, and repeated spaces in browser-generated titles.
-      title: document.title.replace(/\s+/g, " ").trim(),
+  // Trim surrounding whitespace, then truncate by Unicode code point so a large
+  // selection cannot overrun the handoff. Array.from iterates code points, so a
+  // surrogate pair is never split. Binary-search the longest prefix that keeps
+  // the whole encoded URL within budget.
+  let body = selection.trim();
+  if (buildUrl(body).length > MAX_ENCODED_URL_CHARS) {
+    const points = Array.from(body);
+    let lo = 0;
+    let hi = points.length;
+    while (lo < hi) {
+      const mid = Math.ceil((lo + hi) / 2);
+      if (
+        buildUrl(points.slice(0, mid).join("")).length <= MAX_ENCODED_URL_CHARS
+      ) {
+        lo = mid;
+      } else {
+        hi = mid - 1;
+      }
+    }
+    body = points.slice(0, lo).join("");
+  }
 
-      // Seed the capture with selected page text, excluding surrounding
-      // whitespace and capped so a large selection cannot overrun the length
-      // limit of the desktop handoff and drop the capture.
-      body: String(getSelection()).trim().slice(0, 8000),
-    });
+  // Navigating to the custom scheme delegates the encoded values to the desktop
+  // handler, which forwards them to org-roam-protocol through emacsclient.
+  location.href = buildUrl(body);
 
   // Ensure the bookmarklet itself does not return a renderable string.
   void 0;
 })();
 ```
 
-1. `link[rel="canonical"]` uses the publisher's canonical URL when the page
-   provides one. Reading it through the DOM element's `.href` resolves a
-   relative canonical against the page, so it arrives absolute; the value is
-   accepted only when it is an `http` or `https` URL. A `javascript:` or other
-   non-http(s) canonical falls back to the current browser URL so a broken tag
-   never stores an unsafe scheme in `ROAM_REFS` (a blank canonical resolves to
-   the current page).
+1. The `link[rel~="canonical" i][href]` selector uses the publisher's canonical
+   URL when the page provides one. It matches `rel="canonical"` token- and
+   case-insensitively, so a multi-token `rel` value still qualifies, and it
+   requires an `href` to be present. Reading it through the DOM element's
+   `.href` resolves a relative canonical against the page, so it arrives
+   absolute; the value is accepted only when it is an `http` or `https` URL. A
+   `javascript:` or other non-http(s) canonical falls back to the current
+   browser URL so a broken tag never stores an unsafe scheme in `ROAM_REFS` (a
+   blank canonical resolves to the current page).
 2. Any parse failure also falls back to the current URL, which is always
    well-formed.
-3. Common advertising and campaign identifiers are removed, covering the `utm_`
+3. Any embedded basic-auth credentials are cleared from the reference URL so a
+   username or password never enters `ROAM_REFS`.
+4. Common advertising and campaign identifiers are removed, covering the `utm_`
    family and the click and campaign tokens of the major ad, social, and
    marketing platforms. Meaningful query parameters, such as an article ID,
    remain intact.
-4. The fragment is removed so links to different sections of one page resolve to
+5. The fragment is removed so links to different sections of one page resolve to
    the same Org Roam reference.
-5. `URLSearchParams` encodes the capture parameters:
+6. The title is normalized by collapsing whitespace and, when it is then empty,
+   falls back to the reference host so the node always has a title.
+7. The selected text is taken from the focused `<textarea>` or textual `<input>`
+   (excluding `type="password"`, and only when its selection offsets exist)
+   because `getSelection()` misses text highlighted inside form controls;
+   otherwise it uses `window.getSelection()`.
+8. `URLSearchParams` encodes the capture parameters:
    - `template=r` selects the `r` entry in `org-roam-capture-ref-templates`.
    - `ref` becomes the node's `ROAM_REFS` value.
    - `title` supplies the node title after whitespace normalization.
    - `body` supplies the selected page text as the capture's initial content.
      The reference template expands it with `%i` inside an Org quote block and
      places `%?` afterward for additional notes.
-6. Assigning the resulting URL to `location.href` asks Firefox to dispatch it
-   through the desktop's registered `org-protocol` handler.
-7. `void 0` prevents a returned string from replacing the current page in
-   browsers that render bookmarklet return values. It does not cancel the
-   explicit assignment to `location.href`.
+9. The body is truncated by Unicode code point so that the whole encoded
+   org-protocol URL stays within `MAX_ENCODED_URL_CHARS` (8000 characters of
+   encoded URI). Iterating code points with `Array.from` never splits a
+   surrogate pair, and a binary search keeps the longest prefix that fits.
+10. Assigning the resulting URL to `location.href` asks Firefox to dispatch it
+    through the desktop's registered `org-protocol` handler.
+11. `void 0` prevents a returned string from replacing the current page in
+    browsers that render bookmarklet return values. It does not cancel the
+    explicit assignment to `location.href`.
 
 Canonical URLs are occasionally incorrect, and removing fragments deliberately
 collapses section-level links into one page-level reference. Use the current
 page URL and retain `ref.hash` if either behavior is undesirable. The selected
-text is transported inside the URL, so it is capped at 8000 characters; a longer
-selection is truncated rather than risking a length overrun that silently drops
-the capture, and the `%?` insertion point remains for adding more by hand.
+text is transported inside the URL, so the body is truncated by Unicode code
+point until the whole encoded org-protocol URL fits `MAX_ENCODED_URL_CHARS`
+(8000 characters of encoded URI); a longer selection is shortened rather than
+risking a length overrun that silently drops the capture, a surrogate pair is
+never split, and the `%?` insertion point remains for adding more by hand.
 
 Firefox normally hands the external scheme to the desktop handler without
 replacing the source page. Opening the protocol URL through `window.open()` may
@@ -153,11 +224,16 @@ The canonical dotfiles bookmarklet additionally:
 
 - prefers the publisher's canonical URL, but only when it is a well-formed
   http(s) URL, and otherwise falls back to the current page;
+- clears any embedded basic-auth credentials so they never enter `ROAM_REFS`;
 - removes the `utm_` family and the click and campaign tokens of the major ad,
   social, and marketing platforms while retaining meaningful query parameters;
-- caps the transported selection so a large one cannot overrun the handoff;
+- caps the whole encoded URL, truncating the selection by Unicode code point so
+  a large one cannot overrun the handoff or split a surrogate pair;
 - removes the fragment so sections of one page share an Org Roam reference;
-- normalizes title whitespace and trims the selected text;
+- normalizes title whitespace, falls back to the host for an empty title, and
+  trims the selected text;
+- also captures selections made inside a `<textarea>` or textual `<input>`,
+  which `getSelection()` alone would miss;
 - uses `URLSearchParams` to encode the complete parameter map rather than
   manually interleaving field names and encoded values; and
 - returns `undefined` explicitly so the bookmarklet has no renderable result.
