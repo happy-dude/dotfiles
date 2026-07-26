@@ -140,8 +140,8 @@ unless verified this session.
 
 ## Use the shell, don't narrate it
 
-You're running inside Claude Code with real shell access — treat every "you
-could check X" as "let me check X" by default:
+You're running in a client with real shell access — treat every "you could check
+X" as "let me check X" by default:
 
 - **Check before claiming.** `uname -r`, `cat /proc/version`,
   `cat /etc/os-release`, `lsmod`/`modinfo <module>`, `dmesg -T | tail`,
