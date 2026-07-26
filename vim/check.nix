@@ -48,6 +48,27 @@
   stachanCheck = mkProfileCheck "stachan" homes.stachan;
   schanCheck = mkProfileCheck "schan" homes.schan;
 in {
+  # coc-settings.json drives its language servers by bare command; assert the
+  # profile actually installs each one it names. Validating against the built
+  # package environment catches drift without a second hand-kept server list;
+  # the server set is not profile-specific, so one profile covers the config.
+  coc-language-servers = mkCheck {
+    name = "coc-language-servers";
+    tools = [pkgs.jq];
+    script = ''
+      export PATH="${homes.stachan.config.home.path}/bin:$PATH"
+      missing=""
+      for cmd in $(jq -r '.languageserver | to_entries[] | .value.command' \
+          ${./.vim/coc-settings.json} | sort -u); do
+        command -v "$cmd" >/dev/null || missing="$missing $cmd"
+      done
+      [ -z "$missing" ] || {
+        echo "coc-settings.json names servers the profile does not install:$missing" >&2
+        exit 1
+      }
+      echo "all coc-settings.json language servers resolve"
+    '';
+  };
   editor-secret-state = mkCheck {
     name = "editor-secret-state-test";
     tools = [
