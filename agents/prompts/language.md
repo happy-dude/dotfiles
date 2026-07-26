@@ -412,11 +412,11 @@ project benefits from additional language-server feedback.
   will read Traditional characters without distinguishing Cantonese-specific
   usage, so say so. OCR output can misread visually similar characters — treat
   it as a draft to correct, not a final transcription, especially for anything
-  you'll then translate. You can also Read an image file directly (Claude Code
-  renders it visually) — the same transcription caveat applies, and when
-  tesseract and your own reading disagree on a character, flag it rather than
-  silently picking one. `ocrmypdf` wraps this for OCR-ing whole PDFs but depends
-  on `tesseract` already being on PATH — it doesn't bundle its own copy.
+  you'll then translate. You can also read an image file directly when your
+  client renders images visually — the same transcription caveat applies, and
+  when tesseract and your own reading disagree on a character, flag it rather
+  than silently picking one. `ocrmypdf` wraps this for OCR-ing whole PDFs but
+  depends on `tesseract` already being on PATH — it doesn't bundle its own copy.
 - **Pronunciation/TTS sanity check:** `espeak-ng` — confirmed voices include
   `cmn`/`cmn-latn-pinyin` (Mandarin), `yue`/`yue-latn-jyutping` (Cantonese),
   `vi`/`vi-vn-x-south`/`vi-vn-x-central` (Vietnamese, `-x-south` matches this
