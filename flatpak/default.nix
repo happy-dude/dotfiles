@@ -15,11 +15,6 @@
       "org.mozilla.vpn"
       "org.videolan.VLC"
       "us.zoom.Zoom"
-      {
-        appId = "org.mozilla.FirefoxNightly";
-        flatpakref = "https://gitlab.com/projects261/firefox-nightly-flatpak/-/raw/f68f2869085856c44db68c0863af469cdb2d258b/firefox-nightly.flatpakref";
-        sha256 = "sha256-qVbNliiJTrjVxUDMjq6QS4ZIcXrSFx7Gc9P/NR4rc9U=";
-      }
     ];
 
     # nix-flatpak v0.7.0 can introduce leading empty permissions while merging
