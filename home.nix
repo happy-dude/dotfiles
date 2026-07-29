@@ -86,6 +86,7 @@
       gh
       ghidra
       ghostscript
+      glab
       glibc
       gnumake
       go
