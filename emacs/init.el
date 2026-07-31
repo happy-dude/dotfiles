@@ -213,6 +213,7 @@
   org-startup-indented t
   org-directory "~/org"
   org-default-notes-file (concat org-directory "/notes.org")
+  org-archive-location (concat org-directory "/Archive/%s_archive::")
   )
 (setq org-agenda-files (append (list "~/org/notes.org"
                                      "~/org/work.org"
