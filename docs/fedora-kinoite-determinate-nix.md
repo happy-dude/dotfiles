@@ -703,33 +703,32 @@ list entries, which Flatpak 1.18 cannot parse safely. Keep global Fcitx,
 filesystem, and session-bus overrides host-managed, and isolate wrapped
 application graphics state at the launcher boundary instead.
 
-qView is declared from Flathub. Firefox Nightly is declared through the
-commit-pinned upstream `firefox-nightly.flatpakref`, which records its `master`
-branch, `firefoxnightly-origin` remote, repository URL, and signing key. Do not
-replace that descriptor with a raw remote URL or a nonexistent nix-flatpak
-`branch` option. Stable Firefox uses the different `org.mozilla.firefox` ID and
-is not a substitute for `org.mozilla.FirefoxNightly`.
+qView is declared from Flathub. Firefox Nightly is no longer a Flatpak: its
+upstream community flatpakref (the `projects261` GitLab project and its
+`firefoxnightly-origin` Pages remote) was archived and taken behind
+authentication, so the ref stopped resolving. It is now installed from Mozilla's
+official RPM repository (`https://packages.mozilla.org/rpm/firefox`, package
+`firefox-nightly`) layered on the host with `rpm-ostree` — host state rather
+than a Home Manager or Flatpak resource. Stable Firefox on Flathub uses the
+different `org.mozilla.firefox` ID and is not a substitute for Nightly.
 
 Zed Preview is declared as `dev.zed.Zed-Preview`. Flatpak gives it an app-scoped
 XDG config home, so `zed/default.nix` merges the repository settings into the
 mutable file at `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`. The
 host `~/.config/zed/settings.json` is not the active worldmind target.
 
-If duplicate system qView or Firefox Nightly refs exist, migrate them as
-follows:
+If a duplicate system qView ref exists, migrate it as follows:
 
-1. Close both applications and back up their existing `~/.var/app` directories.
-2. Record system and user refs, remotes, overrides, permissions, and commits.
-3. Activate Home Manager while retaining the system refs.
-4. Test the new copies explicitly with
-   `flatpak run --user com.interversehq.qView` and
-   `flatpak run --user org.mozilla.FirefoxNightly`. Do not run both Firefox
-   Nightly scopes simultaneously against the shared profile.
-5. Confirm qView preferences and Firefox bookmarks, extensions, and
-   `about:profiles` state. Both scopes use the same application-ID-keyed paths
-   below `~/.var/app`; no profile copy is expected when the ID is unchanged.
-6. Only after validation, explicitly uninstall each system ref without
-   `--delete-data`. Keep remote and unused-runtime cleanup as a separate audit.
+1. Close the application and back up its existing `~/.var/app` directory.
+2. Record the system and user refs, remotes, overrides, permissions, and
+   commits.
+3. Activate Home Manager while retaining the system ref.
+4. Test the new user copy explicitly with
+   `flatpak run --user com.interversehq.qView`.
+5. Confirm qView preferences. The user and system scopes share the same
+   application-ID-keyed paths below `~/.var/app`; no data copy is expected when
+   the ID is unchanged.
+6. Only after validation, explicitly uninstall the system ref without
 
 While both scopes exist, unqualified `flatpak run` selects the user ref first.
 Always pass `--user` or `--system` during migration, and never use
