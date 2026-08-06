@@ -8,13 +8,13 @@ import json5
 from dotfiles_files import write_text
 
 JsonValue: TypeAlias = (
-    None
-    | bool
+    bool
     | int
     | float
     | str
     | list["JsonValue"]
     | dict[str, "JsonValue"]
+    | None
 )
 
 

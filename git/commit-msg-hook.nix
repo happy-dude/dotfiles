@@ -90,7 +90,7 @@ in
 
       while ! lint_message; do
         if [[ ! -t 0 || ! -t 1 ]]; then
-          printf 'correct the preserved message and retry: git commit --edit --file %q\n' \
+          printf 'correct the preserved message and retry:\ngit commit --amend --edit --file %q\n' \
             "$message_path" >&2
           exit 1
         fi

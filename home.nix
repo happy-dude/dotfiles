@@ -184,8 +184,8 @@
       util-linux
       valgrind
       vim-language-server
-      whois
       vscode-langservers-extracted
+      whois
       wl-clipboard
       xclip
       xdg-utils
@@ -215,6 +215,7 @@
 
       # graphical packages
       (config.lib.nixGL.wrap mesa-demos)
+      (config.lib.nixGL.wrap wine)
 
       # resolve collisions for generic binaries (cc, c++, ld, etc.)
       (lib.hiPrio gcc) # gcc, g++

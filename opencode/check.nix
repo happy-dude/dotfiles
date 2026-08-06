@@ -123,8 +123,10 @@ in
         cmp ${stachanTui} ${schanTui}
         cmp ${stachanTheme} ${schanTheme}
         cmp ${stachanMixTheme} ${schanMixTheme}
+        tui_schema=${stachanPackage}/share/tui.json
+        [ -e "$tui_schema" ] || tui_schema=${stachanPackage}/share/opencode/tui.json
         check-jsonschema \
-          --schemafile ${stachanPackage}/share/opencode/tui.json \
+          --schemafile "$tui_schema" \
           ${stachanTui}
         check-jsonschema \
           --schemafile ${pkgs.opencode.src}/packages/web/public/theme.json \
