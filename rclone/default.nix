@@ -71,6 +71,7 @@ in {
       Description = "Schedule Box synchronization after local Org changes";
       ConditionPathExists = [
         "%h/.config/rclone/rclone.conf"
+        "%h/org"
         readyMarker
       ];
     };
