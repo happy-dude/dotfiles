@@ -83,6 +83,90 @@ Explain the change.
         )
         assert "line 3 exceeds 80 characters" in lint(invalid_width)
 
+        long_url = "https://example.invalid/" + "documentation" * 6
+        unbreakable = write_message(
+            directory,
+            "unbreakable.md",
+            "checks: allow unbreakable body lines\n\n"
+            f"{long_url}\n"
+            "\n"
+            "Prose around it still wraps normally.\n",
+        )
+        assert not lint(unbreakable)
+
+        fenced_code = write_message(
+            directory,
+            "fenced-code.md",
+            "checks: allow long fenced code lines\n\n```\n"
+            f"{'long_code_line' * 8}\n"
+            "```\n",
+        )
+        assert not lint(fenced_code)
+
+        long_fence = write_message(
+            directory,
+            "long-fence.md",
+            "checks: reject Prettier-rewritten four-backtick fences\n\n"
+            "````\n"
+            "code\n"
+            "````\n",
+        )
+        assert any(
+            error.startswith("commit message differs from Prettier output")
+            for error in lint(long_fence)
+        )
+
+        indented_fence = write_message(
+            directory,
+            "indented-fence.md",
+            "checks: treat a four-space-indented fence as code\n\n"
+            f"    ```\n    {('long code line ' * 6).rstrip()}\n",
+        )
+        assert not lint(indented_fence)
+
+        tilde_fenced = write_message(
+            directory,
+            "tilde-fenced.md",
+            "checks: reject Prettier-rewritten tilde fences\n\n~~~\n"
+            "code\n"
+            "~~~\n",
+        )
+        assert any(
+            error.startswith("commit message differs from Prettier output")
+            for error in lint(tilde_fenced)
+        )
+
+        indented_code = write_message(
+            directory,
+            "indented-code.md",
+            "checks: allow long indented code lines\n\n"
+            f"    {('long code line ' * 6).rstrip()}\n",
+        )
+        assert not lint(indented_code)
+
+        inline_span = write_message(
+            directory,
+            "inline-span.md",
+            "checks: reject long lines opening with an inline span\n\n"
+            f"{('```code``` with more words ' * 5).rstrip()}\n",
+        )
+        assert "line 3 exceeds 80 characters" in lint(inline_span)
+
+        unterminated = write_message(
+            directory,
+            "unterminated.md",
+            "checks: reject unterminated fences\n\n```\ncode\n",
+        )
+        assert "fenced code block is never closed" in lint(unterminated)
+
+        unfenced_code = write_message(
+            directory,
+            "unfenced-code.md",
+            "checks: reject rewrappable code lines\n\n"
+            f"{('long code line ' * 6).rstrip()}\n",
+        )
+        assert "line 3 exceeds 80 characters" in lint(unfenced_code)
+
         invalid_markdown = write_message(
             directory,
             "invalid-markdown.md",
