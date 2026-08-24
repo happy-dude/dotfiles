@@ -1,5 +1,6 @@
 {
   homes,
+  lib,
   pkgs,
 }: let
   mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
@@ -23,8 +24,7 @@
     == toString ./.local/share/fcitx5/themes/plasma
     && !builtins.hasAttr "fcitx5/themes" home.config.xdg.dataFile;
 in {
-  rime-state-manager = assert ownsThemes homes.schan;
-  assert ownsThemes homes.stachan;
+  rime-state-manager = assert lib.all ownsThemes (lib.attrValues homes);
     mkCheck {
       name = "rime-state-manager-test";
       tools = [rimeStateManager];

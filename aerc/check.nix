@@ -1,11 +1,20 @@
 {
   homes,
+  lib,
   pkgs,
   self,
 }: let
   mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
 
-  deployed = homes.stachan.config.home.file."${homes.stachan.config.home.homeDirectory}/.config/aerc/aerc.conf".source;
+  # The generated file's derivation name embeds the home directory, so
+  # profiles legitimately build distinct store paths; compare the contents
+  # per profile instead of requiring one shared path.
+  deployed =
+    lib.mapAttrsToList (
+      _: home:
+        home.config.home.file."${home.config.home.homeDirectory}/.config/aerc/aerc.conf".source
+    )
+    homes;
 in {
   # aerc.conf exists twice: as the attribute set Home Manager deploys, because
   # it must read general.unsafe-accounts-conf from there, and as the file in
@@ -15,7 +24,8 @@ in {
     name = "aerc-config-mirror";
     tools = [pkgs.python3];
     script = ''
-      python3 - ${deployed} ${self}/aerc/.config/aerc/aerc.conf <<'PYTHON'
+      python3 - ${self}/aerc/.config/aerc/aerc.conf \
+          ${lib.concatMapStringsSep " " toString deployed} <<'PYTHON'
       import sys
       from pathlib import Path
 
@@ -43,24 +53,26 @@ in {
           return found
 
 
-      deployed = settings(sys.argv[1])
-      tracked = settings(sys.argv[2])
-
+      tracked = settings(sys.argv[1])
+      if len(sys.argv) < 3:
+          raise SystemExit("no profile deploys aerc.conf")
       problems = []
-      for key in sorted(set(deployed) | set(tracked)):
-          if deployed.get(key) != tracked.get(key):
-              problems.append(
-                  f"{key}\n"
-                  f"    deployed: {deployed.get(key)!r}\n"
-                  f"    tracked : {tracked.get(key)!r}"
-              )
+      for path in sys.argv[2:]:
+          deployed = settings(path)
+          for key in sorted(set(deployed) | set(tracked)):
+              if deployed.get(key) != tracked.get(key):
+                  problems.append(
+                      f"{path}: {key}\n"
+                      f"    deployed: {deployed.get(key)!r}\n"
+                      f"    tracked : {tracked.get(key)!r}"
+                  )
 
       if problems:
           raise SystemExit(
               "aerc/default.nix and aerc/.config/aerc/aerc.conf disagree:\n"
               + "\n".join(problems)
           )
-      print(f"aerc.conf: {len(deployed)} settings match")
+      print(f"aerc.conf: {len(tracked)} settings match across {len(sys.argv) - 2} profiles")
       PYTHON
     '';
   };
