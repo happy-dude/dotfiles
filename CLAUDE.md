@@ -129,9 +129,10 @@ checkout is the Linux branch.
   the per-machine capability records in `flake.nix`, so modules ask for the fact
   they depend on instead of comparing the username. `lib/python/` holds the
   durable file replacement the activation helpers use and the builder that
-  packages them; `lib/mkCheck.nix` builds check derivations; `lib/homes.nix`
-  returns a value every profile agrees on and otherwise names the profiles that
-  disagree. `scripts/lib/` holds the same for shell.
+  packages them; `lib/mkCheck.nix` builds check derivations;
+  `lib/less-flags.nix` holds the less options shared by the pager integrations;
+  `lib/homes.nix` returns a value every profile agrees on and otherwise names
+  the profiles that disagree. `scripts/lib/` holds the same for shell.
 - `flatpak/` and `plasma/` are capability-conditional modules: `mkHome` imports
   the flatpak modules where `hasFlatpak` holds and the plasma modules where the
   desktop is Plasma.
@@ -403,15 +404,18 @@ and Zsh files; focused tests for the Codex profile materializer, agent-directory
 ownership migration, `.gitmodules` formatter, rclone event classification,
 guarded Rime host-file and ownership-state materialization, Zed settings
 materialization, focused OpenCode package/LSP/schema/theme/telemetry checks, Git
-commit-message hook behavior, Kagi prompt character budgets, and editor
-secret-state exclusions; Emacs `check-parens` and Org lint for tracked Org
-files; GitHub Actions syntax and pinned action revisions; a real Neovim Org
+commit-message hook behavior, Kagi prompt character budgets, the aerc
+deployed/tracked configuration mirror, CoC language-server package resolution,
+the sdcv dictionary lookup, the CurSearch highlight link, and editor
+secret-state exclusions; Emacs `check-parens` and Org lint for tracked Org files
+plus a runtime load of the evaluated Emacs configuration; GitHub Actions syntax,
+pinned action revisions, and Dependabot config parsing; a real Neovim Org
 Tree-sitter parse against the evaluated Home Manager runtime; Rime Lua syntax
-and focused tests; and gitleaks secret scanning. CI runs those checks and
-evaluates both Home Manager configurations on pushes and pull requests. Full
-builds of both configurations are opt-in through the `workflow_dispatch`
-`build_homes` input because builds are substantially more expensive than
-evaluation.
+and focused tests; profile-capability invariants; and gitleaks secret scanning.
+CI runs those checks and evaluates both Home Manager configurations on pushes
+and pull requests. Full builds of both configurations run weekly on a schedule
+and are opt-in through the `workflow_dispatch` `build_homes` input because
+builds are substantially more expensive than evaluation.
 
 ### Zed / agent config
 
@@ -708,6 +712,7 @@ source.
   keys sorted while preserving semantic precedence within lists such as
   `rootPatterns`. The matrix covers C/C++, Rust, Go, Zig, Perl, Python, Lua,
   shell, Fish, Clojure, Fennel, Nix, YAML, JavaScript/TypeScript, Kotlin,
-  Haskell, Terraform, Markdown, LaTeX, and Typst, with project-gated ESLint and
-  Oxlint integrations. Do not run `:TSUpdate`, `:GoUpdateBinaries`,
-  `:GoInstallBinaries`, vim-plug, or mutable CoC extension updates.
+  Haskell, Terraform, Markdown, LaTeX, Typst, Vim script, and JSON, with
+  project-gated ESLint and Oxlint integrations. Do not run `:TSUpdate`,
+  `:GoUpdateBinaries`, `:GoInstallBinaries`, vim-plug, or mutable CoC extension
+  updates.
