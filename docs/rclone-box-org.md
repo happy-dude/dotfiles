@@ -77,6 +77,7 @@ rclone bisync ~/org box:org \
   --create-empty-src-dirs \
   --resilient \
   --recover \
+  --max-delete 50 \
   --max-lock 30m \
   --resync \
   --resync-mode newer \
@@ -120,15 +121,18 @@ rclone bisync ~/org box:org \
   --create-empty-src-dirs \
   --resilient \
   --recover \
+  --max-delete 50 \
   --max-lock 30m \
   --dry-run \
   --verbose
 ```
 
-If a run reports that resync is required, inspect both sides and perform a
-manual `--resync --resync-mode newer --dry-run` before allowing changes. Never
-bypass access checks or deletion limits merely to make a failed scheduled run
-pass.
+Scheduled and manual runs cap deletions with `--max-delete 50`: a run that would
+delete more than that — a remote-side wipe, a bad filter after a manual resync —
+aborts before touching either tree. If a run reports that resync is required,
+inspect both sides and perform a manual `--resync --resync-mode newer --dry-run`
+before allowing changes. Never bypass access checks or raise the deletion limit
+merely to make a failed scheduled run pass.
 
 See the [rclone Box backend](https://rclone.org/box/) and
 [bisync documentation](https://rclone.org/bisync/) for backend limitations and
