@@ -6,11 +6,16 @@
        "emacs/custom.el"
        (or (getenv "XDG_CONFIG_HOME") "~/.config")))
 
+;; Emacs state lives under XDG_DATA_HOME like the rest of the profile.
+(defvar dotfiles/data-home
+  (expand-file-name "emacs" (or (getenv "XDG_DATA_HOME") "~/.local/share"))
+  "Base directory for Emacs backups, auto-saves, and related state.")
+
 ;; auto-save settings
 ;; create cache directories if they do not exist
-(let ((cache-dir "~/.local/share/emacs")
-      (backup-dir "~/.local/share/emacs/backup")
-      (auto-save-dir "~/.local/share/emacs/autosave"))
+(let ((cache-dir dotfiles/data-home)
+      (backup-dir (expand-file-name "backup" dotfiles/data-home))
+      (auto-save-dir (expand-file-name "autosave" dotfiles/data-home)))
   (dolist (dir (list cache-dir backup-dir auto-save-dir))
     (unless (file-directory-p dir)
       (make-directory dir t))
@@ -18,7 +23,7 @@
     ;; directories owner-only so a stray copy is not world-readable.
     (set-file-modes dir #o700)))
 
-(setq backup-directory-alist `((".*" . ,"~/.local/share/emacs/backup"))
+(setq backup-directory-alist `((".*" . ,(expand-file-name "backup" dotfiles/data-home)))
       make-backup-files t               ; backup of a file the first time it is saved.
       backup-by-copying t               ; don't clobber symlinks
       version-control t                 ; version numbers for backup files
@@ -27,7 +32,7 @@
       kept-old-versions 6               ; oldest versions to keep when a new numbered backup is made (default: 2)
       kept-new-versions 9               ; newest versions to keep when a new numbered backup is made (default: 2)
       )
-(setq auto-save-file-name-transforms `((".*" ,(expand-file-name "~/.local/share/emacs/autosave/") t))
+(setq auto-save-file-name-transforms `((".*" ,(expand-file-name "autosave/" dotfiles/data-home) t))
       auto-save-default t               ; auto-save every buffer that visits a file
       auto-save-interval 300            ; number of keystrokes between auto-saves (default: 300)
       auto-save-timeout 30              ; number of seconds idle time before auto-save (default: 30)
@@ -40,13 +45,21 @@
 (defvar dotfiles/sensitive-file-regexp
   (mapconcat
    #'identity
-   '("/\\.ssh/"
+   '("/\\.aws/"
+     "/\\.claude/"
+     "/\\.claude\\.json\\'"
+     "/\\.codex/"
      "/\\.gnupg/"
+     "/\\.kube/"
      "/\\.password-store/"
+     "/\\.ssh/"
+     "/\\.config/gh/"
+     "/\\.config/op/"
      "/\\.config/rclone/"
      "/\\.config/git/local\\.config\\'"
      "/\\.config/fish/secrets\\.fish\\'"
      "/\\.config/nix/local\\.conf\\'"
+     "/\\.config/opencode/"
      "/\\.authinfo\\(?:\\.gpg\\)?\\'"
      "/\\.netrc\\'")
    "\\|")

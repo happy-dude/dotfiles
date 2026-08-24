@@ -43,6 +43,7 @@ let s:sensitive_dirs = map([
       \ '~/.codex',
       \ '~/.config/gh',
       \ '~/.config/op',
+      \ '~/.config/opencode',
       \ '~/.config/rclone',
       \ '~/.gnupg',
       \ '~/.kube',
