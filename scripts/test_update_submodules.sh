@@ -1,45 +1,15 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2329 # cleanup is invoked by the EXIT trap.
 
 set -euo pipefail
 IFS=$'\n\t'
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
-TMPDIR_TEST="$(mktemp -d)"
+# shellcheck disable=SC1091 # Sourced from the repository.
+source "$REPO_DIR/scripts/lib/test-helpers.sh"
+test_setup
 
-export GIT_CONFIG_GLOBAL=/dev/null
 export XDG_CONFIG_HOME="$TMPDIR_TEST/xdg"
-
-cleanup() {
-  rm -rf -- "$TMPDIR_TEST"
-}
-trap cleanup EXIT
-
-fail() {
-  printf 'FAIL: %s\n' "$*" >&2
-  exit 1
-}
-
-commit_all() {
-  local repo="$1"
-  local message="$2"
-
-  git -C "$repo" add -A
-  git -C "$repo" \
-    -c user.name='Update Test' \
-    -c user.email='update-test@example.invalid' \
-    commit -q -m "$message"
-}
-
-create_repo() {
-  local repo="$1"
-
-  mkdir -p -- "$repo"
-  git -C "$repo" init -q
-  printf 'initial\n' >"$repo/tracked"
-  commit_all "$repo" initial
-}
 
 # shellcheck disable=SC1091 # Intentionally sources the repository script.
 source "$REPO_DIR/scripts/update.sh"
@@ -116,6 +86,7 @@ printf 'retained\n' >>"$child_repo/tracked"
 retention_log="$TMPDIR_TEST/retention.log"
 stash_count_before="$(git -C "$child_repo" stash list --format='%H' | wc -l)"
 if (
+  # shellcheck disable=SC2329 # Mock invoked by the sourced script under test.
   stash_contains_changes() {
     return 1
   }

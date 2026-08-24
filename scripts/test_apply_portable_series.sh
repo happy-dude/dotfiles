@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2329 # cleanup is invoked by the EXIT trap.
 
 # The apply script is the only thing in this repository that rewrites main on
 # the destination computer, and it runs there from a transferred copy with no
@@ -14,19 +13,10 @@ REPO_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 # Invoked through bash throughout: the check sandbox has no /usr/bin/env,
 # so the script's shebang cannot be relied on there.
 APPLY_SCRIPT="$REPO_DIR/scripts/apply-portable-series.sh"
-TMPDIR_TEST="$(mktemp -d)"
 
-export GIT_CONFIG_GLOBAL=/dev/null
-
-cleanup() {
-  rm -rf -- "$TMPDIR_TEST"
-}
-trap cleanup EXIT
-
-fail() {
-  printf 'FAIL: %s\n' "$*" >&2
-  exit 1
-}
+# shellcheck disable=SC1091 # Sourced from the repository.
+source "$REPO_DIR/scripts/lib/test-helpers.sh"
+test_setup
 
 git_as() {
   local repo=$1
