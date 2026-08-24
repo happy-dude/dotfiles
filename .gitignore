@@ -1,9 +1,18 @@
 # Repository-local working state
+*.pyc
 /.agent-shell/
+/.agents/
 /.claude/
+/.codex/
 /.direnv/
 /.ruff_cache/
 /.worktrees/
+.vscode/
+__pycache__/
+nvim.log
+
+# Legacy agent-generation state (see agents/default.nix legacyAgentDirectory)
+/agents/generated/
 
 # Nix build outputs
 /result
