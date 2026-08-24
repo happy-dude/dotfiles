@@ -6,17 +6,7 @@
 }: let
   prompts = import ../agents/prompts.nix {inherit lib;};
   json = pkgs.formats.json {};
-  opencode = pkgs.symlinkJoin {
-    name = "opencode-no-telemetry-${pkgs.opencode.version}";
-    paths = [pkgs.opencode];
-    nativeBuildInputs = [pkgs.makeWrapper];
-    postBuild = ''
-      wrapProgram "$out/bin/opencode" \
-        --unset OTEL_EXPORTER_OTLP_ENDPOINT \
-        --unset OTEL_EXPORTER_OTLP_HEADERS \
-        --unset OTEL_RESOURCE_ATTRIBUTES
-    '';
-  };
+  opencode = import ./package.nix {inherit pkgs;};
   settings = {
     "$schema" = "https://opencode.ai/config.json";
     autoupdate = false;

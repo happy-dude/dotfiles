@@ -11,6 +11,7 @@
   schanLspPaths = schan.config.xdg.configFile."emacs/lsp-paths.el".source;
   stachanLspConfig = stachan.config.xdg.configFile."emacs/lsp-servers.el".source;
   stachanLspPaths = stachan.config.xdg.configFile."emacs/lsp-paths.el".source;
+  opencode = import ../opencode/package.nix {inherit pkgs;};
   syntaxCheck = mkCheck {
     name = "dotfiles-emacs-checks";
     tools = [
@@ -35,13 +36,12 @@
   runtimeCheck = home: let
     emacs = home.config.programs.emacs.finalPackage;
     agentShellConfig = home.config.xdg.configFile."emacs/agent-shell.el".source;
-    homePath = home.config.home.path;
     lspConfig = home.config.xdg.configFile."emacs/lsp-servers.el".source;
     lspPaths = home.config.xdg.configFile."emacs/lsp-paths.el".source;
   in
     mkCheck {
       name = "dotfiles-emacs-runtime";
-      tools = [emacs homePath];
+      tools = [emacs opencode];
       script = ''
         export HOME="$TMPDIR/home"
         export XDG_CACHE_HOME="$HOME/.cache"
