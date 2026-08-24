@@ -5,7 +5,9 @@
   inputs,
   username,
   ...
-}: {
+}: let
+  lessFlags = import ./lib/less-flags.nix;
+in {
   targets.genericLinux.nixGL.packages = inputs.nixgl.packages;
   targets.genericLinux.nixGL.defaultWrapper = "mesa";
   targets.genericLinux.nixGL.installScripts = ["mesa"];
@@ -30,7 +32,7 @@
       DOCKER_BUILDKIT = "1";
       EDITOR = "nvim";
       FZF_DEFAULT_COMMAND = "rg --files --hidden --follow --glob '!.git'";
-      LESS = "--mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --CLEAR-SCREEN";
+      LESS = lessFlags;
       MANPAGER = "nvim +Man!";
       MANWIDTH = "80";
       PAGER = "less";

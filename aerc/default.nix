@@ -1,4 +1,6 @@
-{...}: {
+{...}: let
+  lessFlags = import ../lib/less-flags.nix;
+in {
   # The commented-out xdg.configFile blocks are kept as the native-format
   # reference; the programs.aerc attributes below are the live configuration.
   #xdg.configFile."aerc/aerc.conf".source = ./.config/aerc/aerc.conf;
@@ -43,7 +45,7 @@
       };
 
       viewer = {
-        pager = ''bat -p --pager="less --mouse --RAW-CONTROL-CHARS --quit-if-one-screen --hilite-search --ignore-case --LONG-PROMPT --chop-long-lines --CLEAR-SCREEN"'';
+        pager = ''bat -p --pager="less ${lessFlags}"'';
       };
 
       compose = {
