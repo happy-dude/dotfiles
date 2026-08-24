@@ -3,6 +3,7 @@
   lib,
   pkgs,
   self,
+  treefmtChecks,
 }: let
   codex = import ../agents/codex.nix {inherit pkgs;};
 
@@ -18,6 +19,7 @@
   ) {};
 in
   mergeDisjoint [
+    treefmtChecks
     {
       codex-profile-materializer = codex.checks.profileMaterializer;
       codex-agent-directory-migration = codex.checks.agentDirectoryMigration;
