@@ -105,8 +105,9 @@ fi
 
 echo
 echo "=== Disk usage summary ==="
-du -sh .git
-git submodule foreach --recursive 'du -sh .git 2>/dev/null || true'
+du -sh "$(git rev-parse --git-common-dir)"
+# shellcheck disable=SC2016 # Expanded by git submodule foreach's shell.
+git submodule foreach --recursive 'du -sh "$(git rev-parse --git-common-dir)" 2>/dev/null || true'
 
 echo
 echo "Done! Git's configured reflog and object grace periods were preserved."
