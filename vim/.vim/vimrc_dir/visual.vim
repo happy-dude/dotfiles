@@ -9,7 +9,7 @@ set more                " Use more prompt -- pausing screen when too many items 
 
 set title               " Show title in console title bar
 set showtabline=2       " Display tab line even if single file opened
-set tm=500              " Set tooltip menu
+set tm=500              " Mapping and key-code timeout (timeoutlen, ms)
 
 if has("gui_running")
   set guioptions=em       " e ensures tab bar is displayed in GUI; m ensures menu bar is displayed
