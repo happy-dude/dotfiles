@@ -54,6 +54,8 @@ in {
         "--create-empty-src-dirs"
         "--resilient"
         "--recover"
+        "--max-delete"
+        "50"
         "--max-lock"
         "30m"
         "--log-level"
