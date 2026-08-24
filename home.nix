@@ -196,12 +196,12 @@
       zuban
 
       # Language agent: translation / dictionary / grammar / OCR / TTS tooling
-      dict # DICT protocol client (needs a configured server/database, see note below)
+      dict # DICT protocol client; needs a dictd server, which this repo does not declare
       espeak-ng # pronunciation/TTS sanity check - voices confirmed: cmn, cmn-latn-pinyin, eo, es, it, pl, vi, vi-vn-x-central, vi-vn-x-south, yue, yue-latn-jyutping
       languagetool # multilingual grammar/style checker - covers eo/es/it/pl; complements aspell's spellcheck-only coverage
       ocrmypdf # OCR-to-searchable-PDF wrapper; needs tesseract5 below on PATH, does not bundle it itself
       opencc # Simplified <-> Traditional Chinese conversion (s2t/t2s/s2hk/hk2s/s2twp configs bundled)
-      sdcv # StarDict console dictionary client (needs a dictionary file, see note below)
+      sdcv # StarDict console dictionary client; dictionaries/default.nix points it at the built databases
       tesseract5 # OCR engine - already bundles chi_sim/chi_tra/eng/epo/ita/pol/spa/vie traineddata, no extra config needed
       translate-shell # `trans` - MT cross-check only, never the final answer; also covers eo/es/it/pl (:eo, :es, :it, :pl)
 
