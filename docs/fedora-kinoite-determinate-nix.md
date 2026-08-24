@@ -615,11 +615,14 @@ git submodule foreach --quiet --recursive \
 kde-inotify-survey | jq '.totals'
 ```
 
-The survey is user-scoped and does not need `sudo`. Do not accept KDE's
-persistent sysctl increase merely to accommodate per-submodule Git daemons. If
-instance use remains near the warning threshold after the daemons stop and a
-fresh login, inspect the survey's per-process instance and watch counts before
-changing `fs.inotify.max_user_instances` or `fs.inotify.max_user_watches`.
+The survey is user-scoped and does not need `sudo`. The tool is
+`kdePackages.kde-inotify-survey` in nixpkgs; without installing it, substitute
+`nix run nixpkgs#kdePackages.kde-inotify-survey`, which the pinned registry
+resolves to this flake's locked nixpkgs. Do not accept KDE's persistent sysctl
+increase merely to accommodate per-submodule Git daemons. If instance use
+remains near the warning threshold after the daemons stop and a fresh login,
+inspect the survey's per-process instance and watch counts before changing
+`fs.inotify.max_user_instances` or `fs.inotify.max_user_watches`.
 
 ### Ghostty and tmux
 
