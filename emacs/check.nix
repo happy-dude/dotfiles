@@ -21,6 +21,9 @@
   opencodeDisableLspDownload = shared homes "OPENCODE_DISABLE_LSP_DOWNLOAD" (
     home: home.config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD
   );
+  initEl = shared homes "the emacs init.el" (
+    home: home.config.xdg.configFile."emacs/init.el".source
+  );
   opencode = import ../opencode/package.nix {inherit pkgs;};
   syntaxCheck = mkCheck {
     name = "dotfiles-emacs-checks";
@@ -62,7 +65,15 @@ in
         export OPENCODE_DISABLE_LSP_DOWNLOAD=${opencodeDisableLspDownload}
         mkdir -p "$XDG_CACHE_HOME" "$XDG_CONFIG_HOME" "$XDG_DATA_HOME"
 
+        # init.el locates its companions through the user emacs directory.
+        mkdir -p "$XDG_CONFIG_HOME/emacs"
+        ln -s ${lspPaths} "$XDG_CONFIG_HOME/emacs/lsp-paths.el"
+        ln -s ${lspConfig} "$XDG_CONFIG_HOME/emacs/lsp-servers.el"
+        ln -s ${agentShellConfig} "$XDG_CONFIG_HOME/emacs/agent-shell.el"
+
         emacs --batch --quick --load ${runtimeTest}
+        emacs --batch --quick --load ${initEl} \
+          --eval '(unless (dotfiles/sensitive-file-p (expand-file-name "~/.config/opencode/local.json")) (error "opencode path is not guarded"))'
       '';
     };
   }
