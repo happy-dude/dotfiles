@@ -148,7 +148,6 @@
   } @ inputs: let
     lib = nixpkgs.lib;
     system = "x86_64-linux";
-    #system = "aarch64-linux";
     pkgs = import nixpkgs {
       inherit system;
       overlays = [

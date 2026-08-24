@@ -1,4 +1,6 @@
 {...}: {
+  # The commented-out xdg.configFile blocks are kept as the native-format
+  # reference; the programs.aerc attributes below are the live configuration.
   #xdg.configFile."aerc/aerc.conf".source = ./.config/aerc/aerc.conf;
   #xdg.configFile."aerc/accounts.conf".source = ./.config/aerc/accounts.conf;
   xdg.configFile."aerc/notmuch-map.conf".source = ./.config/aerc/notmuch-map.conf;

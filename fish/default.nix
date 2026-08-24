@@ -5,6 +5,8 @@
   inputs,
   ...
 }: {
+  # Kept as the native-format reference; config.fish is inlined into
+  # programs.fish.shellInit below.
   #xdg.configFile."fish/config.fish".source = ./.config/fish/config.fish;
   xdg.configFile."fish/tide.fish".source = ./.config/fish/tide.fish;
   xdg.configFile."fish/functions/_tide_item_nohist.fish".source = ./.config/fish/functions/_tide_item_nohist.fish;
