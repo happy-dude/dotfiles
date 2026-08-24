@@ -29,6 +29,26 @@
       sort-gitmodules .gitmodules
       after=$(sha256sum .gitmodules)
       [[ $before == "$after" ]]
+
+      # A symlinked or non-regular .gitmodules is refused.
+      ln -s .gitmodules linked.gitmodules
+      if sort-gitmodules linked.gitmodules 2>/dev/null; then
+        echo 'accepted a symlinked .gitmodules' >&2
+        exit 1
+      fi
+
+      # Lines before the first section survive an actual reorder.
+      printf '%s\n' '# vendored modules' >preamble.gitmodules
+      printf '%s\n' \
+        '[submodule "zeta"]' \
+        $'\tpath = modules/zeta' \
+        '[submodule "alpha"]' \
+        $'\tpath = modules/alpha' \
+        >>preamble.gitmodules
+      sort-gitmodules preamble.gitmodules
+      head -1 preamble.gitmodules | grep -qx '# vendored modules'
+      grep -m1 '^\[submodule' preamble.gitmodules |
+        grep -qx '\[submodule "alpha"\]'
     '';
   };
   treefmtEval = treefmt-nix.lib.evalModule pkgs {

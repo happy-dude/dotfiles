@@ -7,17 +7,22 @@ in {
   python = mkCheck {
     name = "dotfiles-python-checks";
     tools = [
+      pkgs.findutils
       pkgs.prettier
       pkgs.python3
       pkgs.ruff
     ];
     script = ''
       ruff check --no-cache ${self}
-      PYTHONPYCACHEPREFIX="$TMPDIR/pycache" \
-        python3 -m compileall -q \
-          ${self}/agents ${self}/dictionaries ${self}/lib ${self}/rclone \
-          ${self}/rime ${self}/scripts ${self}/zed
-      python3 ${self}/scripts/test_commit_message_lint.py
+      # compileall exits zero even when it compiles nothing.
+      find ${self} -name '*.py' -print -quit | grep -q .
+      PYTHONPYCACHEPREFIX="$TMPDIR/pycache" python3 -m compileall -q ${self}
+      shopt -s nullglob
+      test_files=(${self}/scripts/test_*.py)
+      ((''${#test_files[@]} > 0))
+      for test_file in "''${test_files[@]}"; do
+        python3 "$test_file"
+      done
     '';
   };
 }

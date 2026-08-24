@@ -1,6 +1,7 @@
 {
   homes,
   pkgs,
+  self,
 }: let
   mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
   mkProfileCheck = username: home: let
@@ -42,6 +43,16 @@
             --headless \
             -u ${neovimConfig} \
             -l ${./tests/codecompanion.lua}
+
+        # matchtag.lua locates the repository from its own store path and
+        # reads parsers from MATCHTAG_TREESITTER_RUNTIME.
+        MATCHTAG_TREESITTER_RUNTIME="$PWD/data/nvim/site" \
+        HOME="$PWD/home" \
+          ${neovim}/bin/nvim \
+            --headless \
+            -u NONE \
+            -i NONE \
+            -l ${self}/vim/tests/matchtag.lua
 
       '';
     };
@@ -94,6 +105,20 @@ in {
       echo "all coc-settings.json language servers resolve"
     '';
   };
+  editor-search-highlight = mkCheck {
+    name = "editor-search-highlight-test";
+    tools = [
+      pkgs.neovim
+      pkgs.vim
+    ];
+    script = ''
+      # search.vim locates the repository from its own store path.
+      export HOME="$PWD/home"
+      mkdir -p "$HOME"
+      vim -Nu NONE -i NONE -es -S ${self}/vim/tests/search.vim
+      nvim --headless -u NONE -i NONE -S ${self}/vim/tests/search.vim
+    '';
+  };
   editor-secret-state = mkCheck {
     name = "editor-secret-state-test";
     tools = [
@@ -103,7 +128,7 @@ in {
     script = ''
       export HOME="$PWD/home"
       export DOTFILES_CACHE_VIM=${./.vim/vimrc_dir/cache.vim}
-      mkdir -p "$HOME/.config/rclone" "$HOME/.config/nix"
+      mkdir -p "$HOME/.config/rclone" "$HOME/.config/nix" "$HOME/.config/opencode"
       vim -Nu NONE -i NONE -es -S ${./tests/secret-state.vim}
       nvim --headless -u NONE -i NONE -S ${./tests/secret-state.vim}
     '';

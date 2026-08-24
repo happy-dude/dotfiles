@@ -42,13 +42,38 @@ def lint(message_path: Path) -> list[str]:
     if len(lines) > 1 and lines[1]:
         errors.append("commit subject must be followed by a blank line")
 
+    fence_len = 0
     for line_number, line in enumerate(lines[1:], start=2):
         if line.rstrip() != line:
             errors.append(f"line {line_number} has trailing whitespace")
-        if len(line) > BODY_LIMIT and not TRAILER_PATTERN.fullmatch(line):
-            errors.append(
-                f"line {line_number} exceeds {BODY_LIMIT} characters"
-            )
+        content = line.lstrip(" ")
+        indent = len(line) - len(content)
+        ticks = len(content) - len(content.lstrip("`"))
+        if fence_len:
+            if indent <= 3 and ticks >= fence_len and not content[ticks:]:
+                fence_len = 0
+        elif indent <= 3 and ticks >= 3 and "`" not in content[ticks:]:
+            # CommonMark: an opening fence is indented at most three spaces,
+            # its info string cannot contain a backtick (so an inline span
+            # cannot masquerade as a fence), and its closer is nothing but at
+            # least as many backticks. Prettier canonicalizes tilde fences to
+            # backticks, so only backtick fences survive to the width check.
+            fence_len = ticks
+        if len(line) <= BODY_LIMIT:
+            continue
+        # Fenced or indented code, trailers, and lines with no breakable
+        # whitespace (URLs, paths, hashes) cannot be rewrapped without damage.
+        if (
+            fence_len
+            or TRAILER_PATTERN.fullmatch(line)
+            or line.startswith(("    ", "\t"))
+        ):
+            continue
+        if len(line.split()) == 1:
+            continue
+        errors.append(f"line {line_number} exceeds {BODY_LIMIT} characters")
+    if fence_len:
+        errors.append("fenced code block is never closed")
 
     prettier = subprocess.run(
         [

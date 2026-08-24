@@ -7,7 +7,7 @@
       set -g default-shell "${pkgs.zsh}/bin/zsh"
 
       set -gu default-command
-      #set -g default-command "fish --login"
+      set -g default-command "${pkgs.fish}/bin/fish --login"
 
       ${builtins.readFile ./.tmux.conf}
     '';

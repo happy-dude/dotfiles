@@ -126,7 +126,7 @@ report_interruption() {
       "Rerun validation with:" >&2
     print_validation_command
   fi
-  exit 130
+  exit $((128 + $(kill -l "$signal_name")))
 }
 
 main() {
@@ -187,6 +187,7 @@ main() {
   [[ -z $upstream ]] ||
     die "$local_branch must remain local-only; found upstream: $upstream"
 
+  local rebase_merge rebase_apply
   rebase_merge=$(
     git -C "$branch_worktree" rev-parse --path-format=absolute \
       --git-path rebase-merge

@@ -9,14 +9,8 @@ inoremap <C-BS> <C-w>
 
 " To move up and down logical lines instead of physical lines
 " Instead of changing the Home row keys, use the arrow keys
-nnoremap    <expr><Down>            (v:count == 0 ? 'gj' : 'j')
-nnoremap    <expr><Up>              (v:count == 0 ? 'gk' : 'k')
-vnoremap    <expr><Down>            (v:count == 0 ? 'gj' : 'j')
-vnoremap    <expr><Up>              (v:count == 0 ? 'gk' : 'k')
 noremap     <silent><expr><Down>    (v:count == 0 ? 'gj' : 'j')
 noremap     <silent><expr><Up>      (v:count == 0 ? 'gk' : 'k')
-inoremap    <Down>                  <C-o>gj
-inoremap    <Up>                    <C-o>gk
 inoremap    <silent><Up>            <C-o>gk
 inoremap    <silent><Down>          <C-o>gj
 " Home and end keys are dependent on TERM variable and terminfo capabilities

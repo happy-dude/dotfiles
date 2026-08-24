@@ -219,6 +219,12 @@ trim_trailing_whitespace = true
 indent_style = tab
 indent_size = 8
 
+# Nix
+# ref:  https://github.com/NixOS/nixpkgs/blob/master/.editorconfig
+[*.nix]
+indent_size = 2
+indent_style = space
+
 # Org
 # Project policy: combine Org mode's no-tabs, 70-column editing settings with
 # Magit's source-block indentation policy.

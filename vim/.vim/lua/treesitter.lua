@@ -41,16 +41,23 @@ api.nvim_create_autocmd('FileType', {
 -- nvim-treesitter-textobjects
 require('nvim-treesitter-textobjects').setup({
   select = {
-    enable = true,
     lookahead = true,
-    keymaps = {
-      ['fo'] = '@function.outer',
-      ['fi'] = '@function.inner',
-      ['co'] = '@class.outer',
-      ['ci'] = '@class.inner',
-    },
   },
 })
+
+-- The plugin has no keymaps option on its main branch; declare the text
+-- objects directly. Moving them back into setup() would silently do nothing.
+local ts_select = require('nvim-treesitter-textobjects.select')
+for lhs, capture in pairs({
+  fo = '@function.outer',
+  fi = '@function.inner',
+  co = '@class.outer',
+  ci = '@class.inner',
+}) do
+  vim.keymap.set({ 'x', 'o' }, lhs, function()
+    ts_select.select_textobject(capture, 'textobjects')
+  end, { desc = 'Select ' .. capture })
+end
 
 -- LSP rename replacement for refactor.smart_rename
 vim.keymap.set('n', 'gs', function()

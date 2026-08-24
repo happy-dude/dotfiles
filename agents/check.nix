@@ -5,9 +5,7 @@ in {
     name = "kagi-prompt-budget-check";
     tools = [pkgs.python3];
     script = ''
-      python3 - \
-        ${./prompts/kagi-kernel.md} \
-        ${./prompts/kagi-language.md} <<'PYTHON'
+      python3 - ${./prompts} <<'PYTHON'
       import sys
       from pathlib import Path
 
@@ -17,14 +15,14 @@ in {
       limit = 20_000
       report = []
       over = []
-      for name in sys.argv[1:]:
-          path = Path(name)
-          # Store paths carry a hash prefix that obscures the file name.
-          label = path.name.split("-", 1)[-1]
+      for path in sorted(Path(sys.argv[1]).glob("kagi-*.md")):
+          label = path.name
           length = len(path.read_text(encoding="utf-8"))
           report.append(f"{label}: {length} of {limit} characters")
           if length > limit:
               over.append(f"{label}: {length - limit} characters over")
+      if not report:
+          raise SystemExit("no kagi-*.md prompts found")
       print("\n".join(report))
       if over:
           raise SystemExit("\n".join(over))

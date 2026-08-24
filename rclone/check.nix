@@ -9,6 +9,9 @@ in {
       test "$(python3 ${./watch_org.py} classify org-roam.db)" = ignore
       test "$(python3 ${./watch_org.py} classify org-roam.bak/note.org)" = ignore
       test "$(python3 ${./watch_org.py} classify .#note.org)" = ignore
+      test "$(python3 ${./watch_org.py} classify notes.org~)" = ignore
+      test "$(python3 ${./watch_org.py} classify .dir-locals.el)" = ignore
+      test "$(python3 ${./watch_org.py} classify sub/.dir-locals.el)" = ignore
     '';
   };
 }

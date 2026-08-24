@@ -10,10 +10,8 @@ IFS=$'\n\t'
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 UPDATE_SCRIPT="$SCRIPT_DIR/update.sh"
 
-fail() {
-  printf 'FAIL: %s\n' "$*" >&2
-  exit 1
-}
+# shellcheck disable=SC1091 # Sourced from the repository.
+source "$SCRIPT_DIR/lib/test-helpers.sh"
 
 # Run the updater and require it to refuse with the expected explanation.
 assert_rejects() {

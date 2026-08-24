@@ -14,11 +14,17 @@ endfunction
 
 command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
 
-" git grep
+" git grep (with --no-index outside a repository)
+function! s:GGrepRoot() abort
+  return get(systemlist('git rev-parse --show-toplevel 2>/dev/null'), 0, '')
+endfunction
+
 command! -bang -nargs=* GGrep
   \ call fzf#vim#grep(
-  \   'git grep --line-number -- '.shellescape(<q-args>), 0,
-  \   fzf#vim#with_preview({'dir': systemlist('git rev-parse --show-toplevel')[0]}), <bang>0)
+  \   'git grep --line-number ' . (empty(s:GGrepRoot()) ? '--no-index ' : '') . '-- '.shellescape(<q-args>),
+  \   0,
+  \   fzf#vim#with_preview({'dir': empty(s:GGrepRoot()) ? getcwd() : s:GGrepRoot()}),
+  \   <bang>0)
 
 " Search and apply mappings on selection objects
 nmap      <leader><tab>             <plug>(fzf-maps-n)

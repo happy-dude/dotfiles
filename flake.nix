@@ -148,7 +148,6 @@
   } @ inputs: let
     lib = nixpkgs.lib;
     system = "x86_64-linux";
-    #system = "aarch64-linux";
     pkgs = import nixpkgs {
       inherit system;
       overlays = [
@@ -235,12 +234,13 @@
     };
     checksConfig = import ./checks {
       inherit homes lib pkgs self;
+      treefmtChecks = treefmtConfig.checks;
     };
   in {
     homeConfigurations = homes;
     packages.${system}.home-manager = home-manager.packages.${system}.home-manager;
     formatter.${system} = treefmtConfig.formatter;
 
-    checks.${system} = treefmtConfig.checks // checksConfig;
+    checks.${system} = checksConfig;
   };
 }
