@@ -428,14 +428,16 @@
 (define-key global-map (kbd "C-c n g") 'org-roam-graph)
 (define-key global-map (kbd "C-c n i") 'org-roam-node-insert)
 (define-key global-map (kbd "C-c n c") 'org-roam-capture)
+(define-key global-map (kbd "C-c n u") 'org-roam-ui-mode)
 
 (add-hook 'after-init-hook 'org-roam-db-autosync-mode)
 
-;; org-roam-ui settings
-;(setq org-roam-ui-sync-theme t
-;      org-roam-ui-follow t
-;      org-roam-ui-update-on-save t
-;      org-roam-ui-open-on-start t)
+;; org-roam-ui
+(require 'org-roam-ui)
+(setq org-roam-ui-sync-theme t
+      org-roam-ui-follow t
+      org-roam-ui-update-on-save t
+      org-roam-ui-open-on-start t)
 ;; org-babel settings
 
 (setq org-confirm-babel-evaluate nil)
