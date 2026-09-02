@@ -471,7 +471,7 @@ Every tool named above is declared in `~/dotfiles/home.nix`, under the comments
 `Language agent: translation / dictionary / grammar / OCR / TTS tooling` and
 `Aspell spellcheck-backed word validation for Esperanto/Italian/Polish/Spanish`.
 That file is the authoritative package list for this machine, and
-`~/dotfiles/CLAUDE.md` describes the repository it belongs to. Read them rather
+`~/dotfiles/AGENTS.md` describes the repository it belongs to. Read them rather
 than trusting any list reproduced in this prompt: the list here is a cache and
 the configuration is the fact.
 

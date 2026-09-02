@@ -1,0 +1,718 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with
+code in this repository.
+
+## Repository overview
+
+Personal dotfiles for `schan` (Stanley Chan / Happy-Dude). The active Linux
+workflow is **Nix flakes + Home Manager**. Home Manager owns deployment; the
+README's Stow-first instructions are not the active bootstrap and will be
+updated separately. Immutable inputs may be store links, live-editable sources
+may use guarded out-of-store links, and application-mutated configuration must
+be materialized as writable regular files. Those materialisers do not all guard
+alike, and the difference is deliberate: the Rime host files carry a snapshot
+and refuse to write when the declaration and the runtime file both changed,
+while the Zed and Codex profiles are expected to be rewritten by the programs
+that own them and reassert only the declared keys.
+
+A separate `macos` branch exists for macOS-specific settings; this repository
+checkout is the Linux branch.
+
+## High-level architecture
+
+### Home Manager flake
+
+- `flake.nix` declares per-user Home Manager outputs through `mkHome`, applied
+  to an explicit per-machine capability record (`username`, `desktop`,
+  `nixPackage`, and the `hasFlatpak` / `usesFlatpakZed` / `hasSolaar` /
+  `hasRustup` facts): `homeConfigurations."schan"` is the personal Fedora
+  Kinoite (KDE Plasma) profile at `/home/schan`, and
+  `homeConfigurations."stachan"` is the work GNOME profile at `/home/stachan`.
+  Both are `x86_64-linux` Home Manager configurations for generic Linux rather
+  than NixOS. `schan` sets `nixPackage = null` so Home Manager retains the
+  host-provided Determinate Nix installation; `stachan` uses the Nix package
+  from the locked Nixpkgs input. Each machine switches its own output (`.#schan`
+  / `.#stachan`); `scripts/update.sh` defaults to `.#$(whoami)`.
+- On Kinoite, Determinate Nix runs natively on the host. Its persistent store at
+  `/var/home/nix` is mounted at `/nix` before the daemon starts, while the
+  OSTree/composefs root remains read-only. The former `nix-toolbox-42` container
+  and `ghcr.io/thrix/nix-toolbox:42` image are retired and are not a rollback
+  path. Any remaining `~/.local/share/nix` content is inactive legacy data
+  pending cleanup, not a recovery source or executable environment. The
+  mountpoint helper and system bootstrap are documented in
+  `docs/fedora-kinoite-determinate-nix.md`, with rollback and the major-upgrade
+  checklist in `docs/fedora-kinoite-upgrade-rollback.md` and the dated
+  deployment record in `docs/fedora-kinoite-migration-history.md`; they are host
+  state rather than Home Manager resources.
+- User Flatpaks on `schan` are declared through the stable `nix-flatpak` v0.7.0
+  Home Manager module in `flatpak/default.nix`. The module is deliberately not
+  imported for `stachan`: that managed Ubuntu host has no Flatpak installation,
+  and its AppArmor user-namespace allowance targets only `/usr/bin/flatpak`, not
+  the Nix-store executable used by `nix-flatpak`. The Home Manager module owns
+  only the user installation. Keep `services.flatpak.overrides` empty while
+  pinned to v0.7.0 because its merge serializer can introduce leading empty
+  permissions into externally managed list entries. A system-scoped copy may
+  coexist during a migration, but Home Manager never removes it; validate the
+  user copy before explicitly uninstalling the system ref without
+  `--delete-data`.
+- Linux security-policy constraint: before relying on Bubblewrap-backed file
+  tools, inspect whether AppArmor or SELinux is enforcing restrictions, whether
+  a tool-specific policy is loaded, and whether a safe unprivileged
+  user/network-namespace probe can configure its namespace. If the active
+  security policy prevents Bubblewrap from configuring the namespace, treat the
+  patch helper as unavailable for that session: use the narrowly scoped approved
+  elevated mode and, for file edits, a narrowly scoped Python script that reads
+  one named file, asserts the exact old text occurs once, replaces it once, and
+  writes the same file. Prefer exact multiline strings; use regular expressions
+  only when the edit genuinely requires them. Inspect the resulting diff
+  immediately, then run the normal formatter and tests. State when this fallback
+  is used. Do not weaken AppArmor or SELinux policy, disable namespace
+  restrictions, make Bubblewrap setuid, or disable sandboxing without explicit
+  user authorization. Do not generalize this workaround to unrelated failures.
+- Flake inputs: `nixpkgs` (nixos-unstable), `home-manager`, `nix-flatpak`,
+  `plasma-manager`, `nixgl`, `neovim-nightly-overlay`, `rust-overlay`,
+  `treefmt-nix`, the `ghostty` flake, and source-only Rime schema repositories.
+  Home Manager, plasma-manager, nixGL, the Neovim nightly overlay, the Rust
+  overlay, treefmt, and Ghostty all follow the root `nixpkgs` input so the graph
+  has one package-set revision. The Rime sources are locked in `flake.lock` and
+  advance with `nix flake update`; `rime/default.nix` consumes them. `nixGL` is
+  wired up via `targets.genericLinux.nixGL` in `home.nix` so OpenGL apps
+  (Ghostty, mesa-demos, solaar) can be wrapped with `config.lib.nixGL.wrap`.
+  Ghostty removes the wrapper's graphics variables before launching Fish so
+  terminal children receive a normal host environment.
+- Source-only inputs also lock Prezto, Tide, z, Roswell, RustOwl, virtme-ng, and
+  coc-zuban. Nixpkgs supplies bgutil-ytdlp-pot-provider, the Catppuccin Fcitx
+  themes, and the autopair, puffer, and spark Fish plugin sources. The same
+  locked RustOwl source builds both its server and Neovim client. Ordinary
+  editor plugins come from the locked Nixpkgs `vimPlugins` set; explicit source
+  inputs are reserved for sources that are absent from Nixpkgs or intentionally
+  track upstream independently.
+- `fish/.config/fish/tide.fish` is the declarative Tide profile, linked by Home
+  Manager and sourced by the tracked `config.fish`. It overrides machine-local
+  `fish_variables` so fresh profiles have a complete prompt.
+- `fish/.config/fish/config.fish` optionally sources
+  `~/.config/fish/secrets.fish`. The committed example contains placeholders
+  only; real values remain untracked, per-machine, and outside the Nix store.
+- `roswell/default.nix` applies the locked `roswell_src` source override and
+  installs Roswell. `virtme-ng/default.nix` builds `virtme_ng_src` with its
+  runtime helpers on `PATH` and installs `vng`. Ghidra comes from the locked
+  Nixpkgs package set rather than a Flatpak or mutable installer.
+- `home.nix` is the entry module: it lists top-level packages, sets the shared
+  `home.stateVersion = "26.11"` compatibility floor, and sets up plain-file
+  symlinks for the repo-root `.clang-format`, `.editorconfig`, and
+  `.golangci.yml`. The same module installs `.stylua.toml` as
+  `~/.config/stylua/stylua.toml` and `gdb/gdbinit` as `~/.config/gdb/gdbinit`.
+  Its shared package list includes `lazygit` and the Nix-managed language
+  tooling used by CoC and OpenCode. It installs the low-priority ncurses runtime
+  database alongside `ncurses.dev`; Ghostty's terminal-specific entry wins path
+  collisions. Change `stateVersion` only after reviewing and applying every
+  intervening Home Manager migration. The global gitignore is handled in the git
+  module via `programs.git.ignores`, not a `home.file`.
+- Feature modules live in their own subdirectories, each as a `default.nix`
+  imported from `flake.nix`'s `modules` list: `aerc/`, `agents/`, `bat/`,
+  `dictionaries/`, `emacs/`, `fish/`, `fonts/`, `fzf/`, `ghostty/`, `git/`,
+  `gnome/`, `gpg/`, `mail/`, `nix/`, `opencode/`, `rclone/`, `rime/`,
+  `roswell/`, `rustowl/`, `tldr/`, `tmux/`, `vim/`, `virtme-ng/`, `xdg/`,
+  `yt-dlp/`, `zed/`, `zsh/`. The desktop-specific `rime/gnome.nix` module is
+  imported separately. The `modules` list in `flake.nix` is authoritative; this
+  inventory is a convenience copy. Adding a new app means creating
+  `<app>/default.nix` and adding it to that list.
+- `flake.nix` is composition-only: it declares inputs and external overlays,
+  composes the Home Manager profiles once, and exposes imported formatter and
+  check outputs. `treefmt.nix` owns formatter policy; `checks/default.nix`
+  aggregates repository-wide checks and focused `<owner>/check.nix` files,
+  merging them through a fold that throws when two sets contribute the same
+  check name rather than silently keeping one.
+- `lib/` holds what the modules share. `lib/profile.nix` declares the
+  `dotfiles.profile` options describing what a machine provides, populated from
+  the per-machine capability records in `flake.nix`, so modules ask for the fact
+  they depend on instead of comparing the username. `lib/python/` holds the
+  durable file replacement the activation helpers use and the builder that
+  packages them; `lib/mkCheck.nix` builds check derivations;
+  `lib/less-flags.nix` holds the less options shared by the pager integrations;
+  `lib/homes.nix` returns a value every profile agrees on and otherwise names
+  the profiles that disagree. `scripts/lib/` holds the same for shell.
+- `flatpak/` and `plasma/` are capability-conditional modules: `mkHome` imports
+  the flatpak modules where `hasFlatpak` holds and the plasma modules where the
+  desktop is Plasma.
+- `treefmt.nix` configures **treefmt** (run via `nix fmt`): the Linux kernel's
+  `.clang-format` for C/C++, Alejandra for Nix, `fish_indent` for Fish, `shfmt`
+  for shell, Ruff for Python, Neovim's exact StyLua configuration for Lua,
+  Prettier for JSON/Markdown/YAML, and Taplo for TOML. The root `pyproject.toml`
+  defines the Python formatting and lint policy; `.editorconfig` has a
+  four-space fallback and project-specific Linux, Neovim, Ghostty, Fish, Org,
+  and Magit policies. Treefmt's Git walk skips submodule contents and excludes
+  `other/`, `karabiner/`, Rime YAML data, lock files, `LICENSE`, and
+  `agents/prompts/kagi-*.md`, whose whitespace is preserved because the
+  `kagi-prompt-budget` check measures those files against a fixed budget.
+- `nix/default.nix` pins both the `nixpkgs` registry entry and legacy `NIX_PATH`
+  lookup to the locked root input. It optionally includes the untracked
+  `~/.config/nix/local.conf` for per-machine access tokens and client settings;
+  `nix/local.conf.example` is the non-secret template. This flake does not use
+  channels.
+
+### Configuration ownership
+
+Home Manager owns Linux configuration except for `ssh/.ssh/config`, whose
+migration is intentionally deferred. `karabiner/` remains tracked because the
+macOS branch consumes the same state; Linux does not deploy it. `gdb/gdbinit` is
+linked to `~/.config/gdb/gdbinit`, and `emacs/init.el` is linked to
+`~/.config/emacs/init.el`. Emacs Custom writes machine-local state to
+`~/.config/emacs/custom.el` and loads it after the declarative defaults.
+`emacs/default.nix` also links `emacs/org-dir-locals.el`, creates the mutable
+`~/org/Archive` and `~/org/roam` directories during activation, starts the Emacs
+daemon with the graphical user session, and associates `org-protocol://` URLs
+with the dedicated URL-aware `emacs-org-protocol.desktop`. Protocol captures
+reuse one graphical client frame instead of Org's split-window display action.
+The canonical Firefox bookmarklet, optional `org` keyword, Flatpak portal flow,
+and validation steps are documented in `docs/emacs-org-protocol.md`. The derived
+Org Roam database and undo-tree history stay under the local XDG cache and must
+not be synchronized with the authoritative `~/org` files. Roswell itself remains
+Nix-built, but the copied helper and standalone `ros_swank` launcher are not
+deployed; Nix-installed SLIME starts Swank through `ros -Q run`.
+
+The style and lint configs (`.clang-format`, `.editorconfig`, `.golangci.yml`,
+`.stylua.toml`) live at the repository root and are inputs to treefmt. Home
+Manager keeps the first three at the home-directory locations their tools search
+and installs StyLua's config under `~/.config/stylua`.
+
+- **`aerc/`** configures aerc alone. GnuPG lives in `gpg/`, and mbsync and
+  notmuch in `mail/`.
+- **`bat/`** is a module (`bat/default.nix`, `programs.bat`); enabling the
+  program owns the package, so do not duplicate `bat` in `home.packages`.
+- **`fzf/`** enables Home Manager's FZF package and its Fish and Zsh
+  integrations; do not duplicate `fzf` in `home.packages` or shell startup.
+- **`zsh/`** sets `ZDOTDIR` to `~/.config/zsh` and lets Home Manager compose its
+  generated integrations with the tracked runcom files there. Only `~/.zshenv`
+  remains at the home root because Zsh needs it to bootstrap `ZDOTDIR` before
+  reading the other startup files.
+- **`git/`** is a module (`git/default.nix`, `programs.git`); enabling the
+  program owns the package, so do not duplicate `git` in `home.packages`. It
+  defines aliases, delta for diffs and bat as its pager, and
+  `programs.git.ignores` reading `git/.gitignore_global`, the user-global ignore
+  file. The repository also tracks its own root `.gitignore`, which covers this
+  checkout's working state so that a fresh clone hides it before the first
+  activation deploys the global file. A managed global `commit-msg` dispatcher
+  preserves repository-local hooks, lints every commit, and requires an
+  initially present `Assisted-by:` trailer to remain. Per-machine identity and
+  signing (`user.email`, `signingkey`, `commit`/`tag` `gpgsign`) live in an
+  untracked `~/.config/git/local.config` that the module `include`s — SSH/GPG
+  keys and email differ per box; template in `git/local.config.example`. Home
+  Manager writes `~/.config/git/config`, which an unmanaged `~/.gitconfig`
+  silently overrides (git reads it last).
+- **`xdg/`** owns generic-Linux XDG integration plus the nixGL-wrapped Solaar
+  package and its `schan`-only autostart entry.
+
+- **`zed/`** is a Home Manager module. `zed/.config/zed/settings.json` is the
+  canonical declarative source for managed keys; `zed/settings.nix` only adapts
+  commands that cross a host boundary. Do **not** add another settings
+  representation. Zed binaries remain externally managed. The custom OpenCode
+  ACP server runs the Nix-managed executable directly on `stachan`; on `schan`,
+  it uses the Flatpak-bundled `host-spawn` to reach that host executable.
+  Activation atomically merges declared keys into the mutable Flatpak file at
+  `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json` while preserving
+  runtime-only keys. `stachan` retains the normal host target at
+  `~/.config/zed/settings.json` through `programs.zed-editor`.
+- **`agents/`** holds canonical `kernel` and `language` prompts. Nix reads their
+  Markdown bodies and frontmatter to generate corresponding Codex and OpenCode
+  agents without checked-in generated artifacts, plus Codex profile templates.
+  `agents/codex.nix` owns the profile materializer, the guarded agent-directory
+  ownership migration, and their focused checks. Home Manager stores the
+  immutable templates under `~/.local/share/codex/generated-profiles` and uses a
+  Nix-built materializer to create missing writable mode-0600 profiles or
+  refresh generator-owned keys when a template changes. Generated profiles carry
+  Codex's official `config.toml` schema directive and preserve readable
+  multiline instructions. Runtime-owned project trust, TUI state, and other
+  profile keys survive that merge. The independently maintained Kagi Markdown
+  prompts (`agents/prompts/kagi-*.md`) carry a different, fixed instruction
+  budget, so they are kept verbatim in the repo — whitespace preserved and
+  measured by the `kagi-prompt-budget` check — rather than generated from the
+  canonical agent prompts or deployed as client agents. Kagi prompts target a
+  chat interface with optional web search and uploads but no shell, filesystem,
+  or host access; they delegate commands to the user and continue by
+  interpreting returned results. Claude and Codex session state, credentials,
+  provider configuration, and project trust remain machine-local and must never
+  be committed. Activation requires `~/.claude` and `~/.codex` to be real
+  directories and restricts them to mode `0700` while leaving their contents
+  writable.
+- **`opencode/`** installs the Nix package for both Linux profiles and owns the
+  global provider-neutral configuration. It disables self-updates and session
+  sharing, disables AI SDK telemetry, strips inherited OTLP exporter variables
+  only from the OpenCode process, asks before shell commands and
+  external-directory access, and reuses the canonical agent prompts. OpenCode
+  permissions are approval gates rather than a security sandbox; use process
+  isolation for untrusted repositories. Global LSP feedback remains disabled.
+  The repository-root `opencode.json` enables LSP feedback only for this
+  checkout, invokes the Nix-managed server commands, uses the stable TypeScript
+  SDK link, and disables overlapping Oxlint diagnostics. The LSP permission and
+  `OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured. The module also
+  owns `tui.json`, retains the Gruvbox Material material dark-medium theme, and
+  selects the separately generated mix dark-medium variant by default.
+  `OPENCODE_CONFIG` points to the optional mode-0600
+  `~/.config/opencode/local.json` for private MCP definitions and other
+  host-only extensions. Machine-local commands belong under
+  `~/.config/opencode/commands`; OpenCode also discovers compatible skills from
+  `~/.claude/skills` without copying them into this repository. Provider
+  credentials and client-specific state remain outside generated Nix paths.
+  `opencode/check.nix` owns the focused package, global and project LSP, schema,
+  theme, and telemetry checks; `flake.nix` only imports that check. Resolved
+  debug output may contain substituted credentials and must not be copied
+  wholesale into logs or bug reports.
+- **`rclone/`** installs the pinned rclone client and schedules guarded bisync
+  between `~/org` and `box:org`. A recursive inotify watcher batches local
+  changes five minutes after the first event; a 15-minute timer catches remote
+  and missed changes. The services remain inert until a manually reviewed
+  initial resync creates `~/.local/state/rclone/org-bisync-ready`. Its filter
+  keeps legacy and derived Org Roam databases, Home Manager links, locks, and
+  editor backups out of Box. The matching `RCLONE_TEST` access-check file is a
+  permanent safety sentinel on both sides, not a disposable test artifact. OAuth
+  state in `~/.config/rclone/rclone.conf` is machine-local and must never enter
+  Git or the Nix store. Setup and recovery are documented in
+  `docs/rclone-box-org.md`.
+- **`rime/`** is a native Home Manager module (`rime/default.nix`). Locked
+  schema inputs replace matching snapshot files and `pkgs.rime-zhwiki` supplies
+  Zhwiki. Home Manager owns each immutable Catppuccin and Plasma theme directory
+  while activation materializes the Fcitx profile and host configuration as
+  writable regular files with prior-source snapshots under
+  `~/.local/state/rime/host-config`. It rejects malformed or unmanaged
+  conflicts, materializes managed static data under
+  `~/.local/share/fcitx5/rime/.home-manager-static`, and leaves generated
+  schemas, learned user databases, and sync state writable beside it. Host-file
+  updates preserve runtime-only edits, replace an unchanged managed baseline,
+  and fail when both sides changed. Source changes invalidate only generated
+  build data and reload Rime; if Fcitx is not running, it rebuilds on its next
+  start.
+- `scripts/update.sh` updates Rime only through the locked flake inputs.
+- **`yt-dlp/`** uses the locked Nixpkgs bgutil-ytdlp-pot-provider package. Home
+  Manager links its Python plugin for yt-dlp discovery and points script mode at
+  the store-resident Node server. A focused check validates both profiles,
+  plugin layout, server version, wrapper startup, and generated configuration;
+  activation performs no mutable npm work.
+
+The active `kernel.md` and `language.md` prompts understand that this repository
+uses Home Manager on generic Linux, not NixOS. Both direct agents to verify
+packages before installing — `kernel.md` with
+`nix search`/`nix build --no-link`/`nix-instantiate --eval`, `language.md` with
+`nix search` — and to follow the propose → confirm → edit → `nix fmt .` → locked
+checks/build → `home-manager switch --flake .#$(whoami)` workflow for persistent
+changes. `language.md` also names the exact `home.nix` comment headings
+(`Language agent: translation / dictionary / grammar / OCR / TTS tooling` and
+`Aspell spellcheck-backed word validation for Esperanto/Italian/Polish/Spanish`)
+and the static Rime source tree (`rime/.local/share/fcitx5/rime/`). Update both
+prompts when those headings, package names, or paths change; they are maintained
+documentation, not generated files. The canonical Markdown is the only source to
+update: Nix generates Codex agents and profile templates during evaluation, so
+there is no manual regeneration step or generated-file drift to commit.
+
+The package lists embedded in those prompts are caches, not sources of truth.
+Each prompt tells the agent to inspect `home.nix` before deciding whether a tool
+is installed and to trust the live configuration when the two disagree. The
+prompts still need updates when `home.nix` changes because their documentation,
+examples, and package references can drift; the live check merely makes stale
+guidance detectable.
+
+### Vim and Emacs ownership
+
+- `vim/default.nix` composes one shared runtime for Vim and Neovim, then adds
+  Neovim's `lua/` runtime. Shared, Vim-only, and Neovim-only plugin lists use
+  `pkgs.vimPlugins`; the same module owns source-pinned CoC Zuban and RustOwl
+  client builds plus local plugin metadata overrides. Home Manager installs them
+  as native packages. The shared `vim/.vim/vimrc` loads ordered file-based
+  settings, while `lua/init.lua` is the Neovim entry point. There is no vim-plug
+  checkout or mutable plugin updater.
+- Home Manager builds Tree-sitter parsers and queries in `vim/default.nix`,
+  including an explicit `org.so` from `tree-sitter-org-nvim` because
+  `nvim-treesitter.withAllGrammars` omits it. The `neovim-org` flake check opens
+  a real Org file with each profile's evaluated Neovim package, configuration,
+  plugin pack, parsers, and queries. It verifies that Orgmode is configured
+  before its filetype hook and that the resulting buffer parses successfully.
+  Home Manager also builds the RustOwl server and matching optional Neovim
+  client, CoC plus its extensions, and all formatter, helper, and
+  language-server executables. `flake.lock` and the locked Nixpkgs revision
+  determine editor updates. Do not run mutable plugin, parser, CoC extension, or
+  vim-go binary update commands. Vim and Neovim retain backup, swap, and
+  persistent undo for ordinary files but disable them before reading known
+  credentials and machine-local secret directories.
+- CoC loads in both editors and owns LSP, diagnostics, completion, navigation,
+  and format-on-save. vim-go retains non-LSP Go commands. Vim uses its bundled
+  EditorConfig support and Neovim uses native EditorConfig. Do not reintroduce
+  ALE, Pathogen, vim-plug, editorconfig-vim, or plugin submodules.
+- CodeCompanion is Neovim-only and routes chat through the Nix-managed OpenCode
+  ACP server. Its inline interaction and history title and summary generation
+  retain the Anthropic HTTP adapter because those background operations do not
+  support ACP. Do not describe classic Vim as an ACP client.
+- `emacs/default.nix` installs the active package set exclusively through
+  `programs.emacs.extraPackages`, links `emacs/init.el` to
+  `~/.config/emacs/init.el`, links the Org directory-local settings, and creates
+  mutable Org directories. `emacs/lsp.nix` mirrors the CoC server matrix with
+  lsp-mode clients whose executables and TypeScript SDK are absolute Nix store
+  paths. It disables implicit clients and downloads, provides Nix-built
+  Tree-sitter grammars, and never starts local servers for remote buffers.
+  `agent-shell.el` selects the provider-neutral `opencode acp` client; private
+  provider configuration and credentials remain OpenCode-owned host state. Emacs
+  Custom writes to the machine-local `~/.config/emacs/custom.el`. No vendored
+  Emacs plugin or legacy package.el tree remains.
+
+### `other/` directory
+
+`other/` collects non-stowable, non-Nix configs (iptables, slim, x11, xmonad,
+alacritty, feh, firefox, macOS, udev). These are case-by-case references, not
+part of any automated install path on this branch.
+
+## Common commands
+
+### Apply changes (Home Manager)
+
+```bash
+nix fmt .
+nix flake check --show-trace --no-update-lock-file
+home-manager build --flake .#$(whoami) --show-trace --no-out-link --no-update-lock-file
+```
+
+`nix fmt .` is the repository-wide style-fix pass for supported, non-submodule
+files and atomically sorts a tracked `.gitmodules` when present. Strict
+validation keeps `flake.lock` unchanged and builds the selected activation
+package before any activation. A live switch mutates the active profile; run it
+only after explicit confirmation:
+
+```bash
+home-manager switch --flake .#$(whoami) --show-trace --no-update-lock-file
+```
+
+`nix flake check` is the only authority on whether a change is sound. This
+repository has three validation layers that fail independently: evaluating a
+profile, building the check derivations, and running the shell suites. Passing
+one implies nothing about the others, because each `<owner>/check.nix` imports
+module internals directly, so a changed function signature can evaluate both
+profiles and still break the checks; and the suites run against a read-only
+store path with an empty home under Nix, where a direct run has neither. Run the
+full check after changing any signature, argument list, or test fixture.
+
+Two scripts resist the obvious testing approach and should not be forced into
+it. `scripts/update.sh` defaults to its update mode, so removing any guard from
+it leads to a path that acts on the checkout rather than one that refuses; never
+test it by weakening a guard. `scripts/apply-portable-series.sh` is transferred
+to the destination computer on its own and must not source anything from this
+repository.
+
+The flake checks cover treefmt formatting; Ruff formatting, lint, and bytecode
+compilation for Python; Bash syntax and ShellCheck for `scripts/*.sh` and
+`scripts/lib/*.sh`; one derivation per `scripts/test_*.sh` suite, discovered
+from the directory rather than listed; native syntax checks for the managed Fish
+and Zsh files; focused tests for the Codex profile materializer, agent-directory
+ownership migration, `.gitmodules` formatter, rclone event classification,
+guarded Rime host-file and ownership-state materialization, Zed settings
+materialization, focused OpenCode package/LSP/schema/theme/telemetry checks, Git
+commit-message hook behavior, Kagi prompt character budgets, the aerc
+deployed/tracked configuration mirror, CoC language-server package resolution,
+the sdcv dictionary lookup, the CurSearch highlight link, and editor
+secret-state exclusions; Emacs `check-parens` and Org lint for tracked Org files
+plus a runtime load of the evaluated Emacs configuration; GitHub Actions syntax,
+pinned action revisions, and Dependabot config parsing; a real Neovim Org
+Tree-sitter parse against the evaluated Home Manager runtime; Rime Lua syntax
+and focused tests; profile-capability invariants; and gitleaks secret scanning.
+CI runs those checks and evaluates both Home Manager configurations on pushes
+and pull requests. Full builds of both configurations run weekly on a schedule
+and are opt-in through the `workflow_dispatch` `build_homes` input because
+builds are substantially more expensive than evaluation.
+
+### Zed / agent config
+
+Both are Home Manager-managed; neither uses a separate Stow step. Edit
+`zed/.config/zed/settings.json` (Zed) or `agents/prompts/*.md` (agents)
+directly. Zed and generated Codex changes require a validated Home Manager
+switch. Claude prompt changes are live immediately once the out-of-store agents
+symlink has been installed by an initial switch. The writable Codex profiles at
+`~/.codex/{kernel,language}.config.toml` are runtime state, not canonical prompt
+sources; do not edit their generated keys manually. Their schema directive
+points editors at Codex's current official `config.toml` schema. Standalone
+custom-agent TOMLs use Codex's separate custom-agent schema and therefore do not
+carry the `config.toml` directive.
+
+### Portable series workflow
+
+Portable changes may be prepared on a machine or branch that cannot push the
+destination remote or does not exist on the destination system. Keep that local
+context out of portable history:
+
+```bash
+./scripts/portable-series.sh start <name>
+# Develop and commit in the reported worktree.
+./scripts/portable-series.sh export <name>
+```
+
+`start` creates `replay/<name>` at current `origin/main` with a worktree-local
+placeholder identity. If the name already belongs to a branch or worktree,
+`start` refuses to reuse or delete it and prints the existing path plus safe
+continuation, export, attachment, or inspection guidance. `export` requires a
+clean unchanged base, lints every commit message, validates both Home Manager
+profiles, and writes a patch, manifest, checksum file, and series-qualified
+`apply-dotfiles-<name>.sh` helper to `~/Downloads` by default. It also writes a
+checksummed `dotfiles-<name>.tar.gz` containing those files for single-file
+transfer. Export builds every artifact in a temporary directory and publishes
+the checksum markers last, so an incomplete replacement cannot validate as
+current.
+
+Callers may set `PORTABLE_FORBIDDEN_PATTERN` for machine-local content policy;
+the pattern itself does not enter portable configuration. Export scans commit
+metadata and zero-context changed content before expensive validation, then
+scans the generated patch before publication. It reports only the category and
+line numbers of matches so private text is not echoed. Recognized `Assisted-by:`
+commit trailers are omitted from metadata and patch matching because they record
+required session attribution. Attribution-shaped lines in tracked file content
+remain subject to the policy.
+
+On the destination computer, verify the checksum file and run the transferred
+`apply-dotfiles-<name>.sh <manifest> ~/dotfiles`. It requires clean `main` at
+the recorded `origin/main`, re-authors and signs every commit with destination
+identity, validates that profile, and fast-forwards only local `main`. Neither
+script pushes. The archive workflow first verifies
+`dotfiles-<name>.tar.gz.sha256`, extracts its `dotfiles-<name>` directory, and
+runs the included apply script and manifest. State explicitly that nothing was
+pushed and leave review and push to the user. If application stops after
+creating its temporary branch, the failure output identifies that branch, the
+active branch, and any active `git am` operation to abort. If `origin/main`
+moved, update or rebase the isolated series; conflicts are unfinished Git state
+to resolve or abort, never a completed export.
+
+After a destination update is available remotely, synchronize another system
+with:
+
+```bash
+scripts/sync-local-branch.sh <local-branch> <profile> [repository]
+scripts/sync-local-branch.sh --validate <local-branch> <profile> [repository]
+```
+
+Sync mode fetches `main` directly into the `origin/main` remote-tracking ref,
+fast-forwards local `main`, rebases the named local-only branch, and validates
+the selected profile. Before rebasing it reports local commits whose patches are
+already represented upstream and are therefore expected to disappear. Only the
+`main` and named local-branch worktrees must be clean; unrelated linked
+worktrees are intentionally ignored. A dirty target refusal identifies its path
+and occurs before fetch or mutation. The script rejects prunable registrations
+and branches with an upstream, and never pushes or activates. Formatting, flake
+checks, and the profile build are reported as separate phases without a fixed
+timeout.
+
+Validate mode performs no fetch or rebase. It requires local `main` to equal the
+cached `origin/main` tip and the local-only branch to descend from that tip. Use
+it after manually completing a conflicted rebase or after an interrupted or
+failed validation phase. A validation failure does not roll back a completed
+fast-forward or rebase; its output identifies the phase and prints the exact
+rerun command. Conflict output uses the branch worktree explicitly for continue
+and abort commands, so it remains correct when the script was invoked from a
+different directory.
+
+### Update workflow
+
+`scripts/update.sh` is the one-shot orchestrator with three explicit modes:
+
+```bash
+./scripts/update.sh check                # validate and build the selected locked configuration
+./scripts/update.sh apply                # validate, build, then activate the existing lock
+./scripts/update.sh apply --show-changes # include the committed or staged Git diff
+./scripts/update.sh update               # full update; default when the mode is omitted
+./scripts/update.sh --autostash-submodules --verbose   # retain dirty-submodule stashes for review
+```
+
+`check` does not change the lock file or active profile. `apply` validates and
+builds before activating the existing lock. `update` runs the mutable update
+workflow, validates and builds its result, then activates unless
+`--skip-home-manager` is set. After a successful activation, both modes compare
+the previous and current Home Manager store closures with
+`nix store diff-closures`. They also print a repository shortlog when the update
+advanced Git HEAD. `--show-changes` adds the full committed diff for that range;
+when HEAD did not advance, it shows the staged diff if one exists. `--verbose`
+implies `--show-changes`. Changelog rendering is informational: a reporting
+failure warns but does not turn a successful activation into a failure. The
+script is fail-closed for state changes: any failed update step, flake check, or
+Home Manager build prevents activation.
+
+Rime updates happen through `nix flake update`. A subsequent Home Manager
+activation rebuilds generated schemas when the static Rime source stamp changes,
+so no manual deploy is required. Add `--skip-nix-flake` to leave flake inputs
+locked.
+
+Update-mode step order is: repository pull; generic submodule handling when
+`.gitmodules` contains entries; `nix fmt .`; `nix flake update`; locked flake
+validation and Home Manager build; optional activation; and the post-activation
+generation changelog. The corresponding skip flags are `--skip-pull`,
+`--skip-submodules`, `--skip-status`, `--skip-nix-fmt`, `--skip-nix-flake`, and
+`--skip-home-manager`. `HOME_MANAGER_FLAKE` defaults to `.#$(whoami)`.
+
+The script refuses to update dirty submodules unless `--autostash-submodules` is
+passed, and it does **not** auto-pop stashes afterward. The auto-stash scan
+considers each repository's own staged, unstaged, and untracked content while
+ignoring descendant-only dirtiness. It recursively rejects untracked embedded
+Git repositories and validates the complete stash graph plus staged, worktree,
+and untracked payloads. An anomalous or unexpectedly empty stash is retained
+verbatim and aborts the update; valid non-empty stashes remain for explicit
+review. Git fsmonitor is intentionally disabled while `core.untrackedCache`
+remains enabled. Recursive traversal otherwise starts a detached
+`git fsmonitor--daemon` for each initialized submodule and exhausts the per-user
+inotify instance limit. Do not re-enable it globally for this checkout; diagnose
+capacity with `kde-inotify-survey` before changing host sysctls.
+
+### Submodule helpers
+
+```bash
+git submodule update --remote
+git submodule sync --recursive
+git submodule foreach --quiet 'git submodule update --init --recursive'
+nix fmt .                                            # includes .gitmodules ordering
+./scripts/gitgc.sh [--aggressive] [dir]              # gc main repo and initialized submodules
+```
+
+The Nix-built treefmt formatter sorts `.gitmodules` atomically when the file is
+present. `gitgc.sh` prunes stale remote-tracking branches and runs Git's normal
+garbage collection policy while preserving configured reflog and
+unreachable-object grace periods, including in `--aggressive` mode.
+
+Editor plugins are Nix packages, not submodules. Prefer `pkgs.vimPlugins` and
+`programs.emacs.extraPackages`; use an explicit source-only flake input and a
+small derivation only when the locked package set does not provide the required
+source.
+
+## Working conventions
+
+- At the start of any session that may edit files, before the first write,
+  inspect AppArmor or SELinux enforcement and run the safe unprivileged
+  namespace/Bubblewrap probe described above. Decide whether `apply_patch` is
+  usable before beginning edits; if policy blocks it, use the documented
+  narrowly scoped fallback from the outset instead of discovering the failure
+  after work has started.
+- Before starting work expected to produce commits, establish the exact
+  `Assisted-by:` product, model/version, agent, and reasoning-level text for the
+  current session. If any field is unavailable, ask the user before making
+  commit-intended changes rather than waiting until commit time.
+- Keep documentation updates in commits separate from technical changes. When a
+  task needs both, commit the validated code, configuration, and tests first,
+  then make a documentation-only commit. Never mix documentation into the
+  technical commit or technical changes into the documentation commit.
+- When asking the user to run and return commands from a host, session,
+  container, VM, Toolbox, or other environment the agent cannot access, collect
+  all presently knowable safe read-only checks for that context into one
+  wholesale, clipboard-ready block. Avoid drip-feeding commands that force
+  repeated context switches; return to that context only when prior output
+  genuinely determines the next check or a state-changing step requires separate
+  confirmation.
+- When asking the user to run a multi-step workflow, provide one contiguous,
+  copy-pasteable command block. Include all presently knowable dependent steps,
+  inspection, and validation instead of splitting the workflow across multiple
+  replies or code blocks. Make dependent steps fail closed so later mutations do
+  not run after an earlier failure. Do not use `exit` in commands intended for
+  an interactive shell; use a function with `return`, or another construct that
+  reports failure without terminating the user's session.
+- In Zsh, lowercase `path` is a special array tied to scalar `PATH`; never use
+  it as a scratch variable because assigning it changes command lookup. Use a
+  descriptive name such as `candidate_path`. When discovery differs between
+  sessions, reproduce it in a fresh instance of the target shell with matching
+  login and interactive startup behavior before attributing the result to a
+  cache.
+
+- Never ask the user to copy and paste base64-encoded executable content. If a
+  script is too large to present normally, write it to a real file in an agreed
+  transfer location such as `~/Downloads`, provide its checksum and invocation,
+  and ask the user to transfer that file to the target computer before running
+  it.
+- Portable patch files, apply scripts, and application command blocks must never
+  push. Stop after applying and validating the local branch, state explicitly
+  that nothing was pushed, and require the user to review and push it.
+- Agent-assisted commits must include an `Assisted-by:` trailer recording the
+  actual product, model/version, agent, and reasoning level for that session,
+  for example `Assisted-by: ChatGPT (gpt-5.6-sol, medium, Codex)`. Never copy
+  stale attribution metadata; if any field is unavailable, ask before committing
+  rather than guessing.
+- Follow the Linux kernel's commit-message conventions: one logical change per
+  commit, an imperative `subsystem: summary` subject of at most 72 characters,
+  and a self-contained body that explains the problem or ownership constraint
+  before the implementation. Commit messages are valid Markdown and ordinary
+  prose never exceeds 80 characters; trailers, URLs, code, paths, and other
+  unbreakable text are exempt. Before committing through Claude Code, Codex, or
+  OpenCode, run `scripts/lint_commit_message.py <message-file>`. The managed
+  global `commit-msg` hook enforces this policy for every commit and preserves
+  any initial `Assisted-by:` trailer. See
+  <https://www.kernel.org/doc/html/latest/process/submitting-patches.html>.
+- Prefer adding packages to `home.nix`'s `home.packages` list (or to a module's
+  `default.nix`) over installing system-wide. Resolve binary collisions
+  explicitly with `lib.hiPrio` / `lib.lowPrio` as already done for `gcc` /
+  `clang` / `clang-tools` / `llvm` in `home.nix`.
+- Prefer Nix for declarations, dependency wiring, and derivations. Put
+  nontrivial file or state transformations in typed Python source beside the
+  owning module, package them with `pkgs.writers.writePython3Bin`, and pass
+  store paths explicitly. Repository-wide executable helpers belong in
+  `scripts/`; short Home Manager activation and derivation phases may remain
+  shell glue. Every tracked Python file must pass Ruff formatting, Ruff lint,
+  and bytecode compilation through the flake checks.
+- Python libraries must go through the existing
+  `python3.withPackages (ps: [ ... ])` entry in `home.packages`, never as bare
+  `python3Packages.*` items. Bare entries only place the library in the Nix
+  store; the wrapper is what makes it importable by the `python3` on `PATH`.
+  After changing it, verify with a fresh shell: `python3 -c "import <module>"`.
+- Package ownership follows four tiers: retain the tested base image; use
+  rpm-ostree only for host integration such as input methods and udev rules; use
+  user Flatpak for ordinary desktop applications; use Nix/Home Manager for the
+  remaining user tools and packages. Do not enable `nix-flatpak` on `stachan`
+  unless its host Flatpak/AppArmor boundary is deliberately redesigned.
+- For GUI/GL apps on generic (non-NixOS) Linux, wrap them with
+  `config.lib.nixGL.wrap pkgs.<app>` — see `mesa-demos`, `solaar`, and
+  `programs.ghostty.package`. Keep wrapper graphics variables inside the wrapped
+  process; a wrapped application that starts a general-purpose shell must remove
+  them from the shell environment.
+- The wrapped Ghostty package publishes its upstream desktop entry and user
+  service through the native Home Manager profile. Do not add a duplicate
+  desktop entry, force software rendering, or reintroduce the retired
+  `ghostty-toolbox` launcher or host-copy activation hook.
+- After editing, run `nix fmt .` and
+  `nix flake check --show-trace --no-update-lock-file` before committing.
+  Treefmt formats all supported tracked files outside submodules and the
+  documented exclusions; `update.sh update` performs this formatting and
+  validation automatically, but manual edits do not. Never run a live
+  `home-manager switch` without explicit confirmation.
+- The README's GNU Stow instructions are deferred documentation debt, not the
+  active Linux bootstrap. Native `/nix` is visible to Kinoite host processes, so
+  immutable host-facing assets may use ordinary Home Manager store links. Use
+  `mkOutOfStoreSymlink` or home-directory materialization only when live
+  editability or writable/generated state requires it.
+- Do not prepend `/nix/var/nix/profiles/default/bin` in shared Fish
+  configuration. The Determinate installer exposes Nix on `schan`; Home Manager
+  exposes its managed client on `stachan`.
+- tmux enables Ghostty's `extkeys` capability and CSI-u encoding so applications
+  can request modified-key reporting. Keep reporting request-driven rather than
+  forcing enhanced keys for every application.
+- **`rime/`** materializes writable Fcitx profile/config files with guarded
+  source snapshots, declares immutable theme directories through Home Manager,
+  then materializes locked schema inputs, the packaged Zhwiki dictionary, and
+  local overrides under `~/.local/share/fcitx5/rime/.home-manager-static`. This
+  separates managed static inputs from writable generated and learned state. A
+  source stamp refreshes the static snapshot, clears only generated `build/`
+  data, and reloads Rime; keep generated state out of Git.
+- **`rime/gnome.nix`** enables Fcitx 5 through Home Manager only for
+  `desktop = "gnome"`, using its Wayland frontend with the Rime and GTK addons.
+  It also sets `QT_IM_MODULE=fcitx`, which Home Manager otherwise omits for that
+  frontend. Plasma uses the shared Rime files but retains host-managed Fcitx
+  integration through KWin's Virtual Keyboard setting.
+- **`gnome/`** manages stable GNOME preferences only when `desktop = "gnome"`.
+  DConf values remain writable during the session and return to the declared
+  baseline on a later Home Manager activation.
+- **`plasma/`** manages stable Plasma preferences for `schan` through the pinned
+  plasma-manager module. The captured panel layout lives in `plasma/panels.nix`
+  behind the `dotfiles.plasma.managePanels` option and is off by default:
+  enabling high-level panel management deletes and rebuilds
+  `plasma-org.kde.plasma.desktop-appletsrc` when the declaration changes,
+  discarding panel edits made in the session. Enable it only when Home Manager
+  should own the complete panel layout; leave display topology, generated IDs,
+  wallpaper, and session history unmanaged.
+- **Vim runtime artifacts** are declarative: Home Manager links Tree-sitter
+  parsers and queries under the XDG data directory through `xdg.dataFile`, and
+  owns the stable TypeScript SDK link there too; Home Manager provides every
+  formatter and language-server command. `vim/.vim/coc-settings.json` is the
+  authoritative, sorted language-server and format-on-save matrix. Keep object
+  keys sorted while preserving semantic precedence within lists such as
+  `rootPatterns`. The matrix covers C/C++, Rust, Go, Zig, Perl, Python, Lua,
+  shell, Fish, Clojure, Fennel, Nix, YAML, JavaScript/TypeScript, Kotlin,
+  Haskell, Terraform, Markdown, LaTeX, Typst, Vim script, and JSON, with
+  project-gated ESLint and Oxlint integrations. Do not run `:TSUpdate`,
+  `:GoUpdateBinaries`, `:GoInstallBinaries`, vim-plug, or mutable CoC extension
+  updates.
