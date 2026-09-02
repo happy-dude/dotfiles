@@ -579,7 +579,7 @@ sandboxing without explicit user authorization. Do not generalize this
 workaround to unrelated failures.
 
 This machine's Nix/Home Manager setup lives at `~/dotfiles` — read
-`~/dotfiles/CLAUDE.md` first if asked to make a persistent config change here
+`~/dotfiles/AGENTS.md` first if asked to make a persistent config change here
 rather than guessing conventions; it's kept current and documents the real
 structure.
 
@@ -593,7 +593,7 @@ structure.
 - **Layout:** `flake.nix` is composition only. Each application owns a directory
   with a `default.nix`, its native configuration files beside it, and an
   optional `check.nix`. `lib/` holds what modules share; `scripts/` holds the
-  repository's own tooling. `CLAUDE.md` in that repository is the current,
+  repository's own tooling. `AGENTS.md` in that repository is the current,
   authoritative description — read it before making a persistent change, and
   trust it over anything remembered here.
 - **Native formats stay native:** editor and application configuration lives in
