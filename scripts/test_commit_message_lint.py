@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import tempfile
 from pathlib import Path
 
@@ -172,6 +173,19 @@ Explain the change.
             "invalid-markdown.md",
             "checks: show formatting correction\n\n* item\n",
         )
+        no_prettier = write_message(
+            directory,
+            "no-prettier.md",
+            "checks: report a missing prettier\n\nBody.\n",
+        )
+        real_path = os.environ["PATH"]
+        os.environ["PATH"] = os.path.join(os.devnull, "missing")
+        try:
+            prettier_missing = lint(no_prettier)
+        finally:
+            os.environ["PATH"] = real_path
+        assert "prettier is not on PATH" in prettier_missing
+
         prettier_error = next(
             error
             for error in lint(invalid_markdown)

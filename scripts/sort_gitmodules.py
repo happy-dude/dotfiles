@@ -4,7 +4,7 @@ from pathlib import Path
 
 from dotfiles_files import PRESERVE, write_text
 
-HEADER = re.compile(r'^\[submodule\s+"([^"]+)"\]$')
+HEADER = re.compile(r'^\s*\[submodule\s+"([^"]+)"\]\s*$')
 
 
 def sort_one(path: Path) -> None:
@@ -15,9 +15,10 @@ def sort_one(path: Path) -> None:
 
     preamble: list[str] = []
     blocks: list[tuple[str, list[str]]] = []
+    current = path.read_text(encoding="utf-8")
     current_key: str | None = None
     current_lines: list[str] = []
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in current.splitlines():
         match = HEADER.fullmatch(line)
         if match:
             if current_key is not None:
@@ -31,13 +32,17 @@ def sort_one(path: Path) -> None:
     if current_key is not None:
         blocks.append((current_key, current_lines))
 
+    if not blocks:
+        return
+
     blocks.sort(key=lambda block: block[0].casefold())
     output_lines = preamble.copy()
     for _, lines in blocks:
         output_lines.append(lines[0])
-        output_lines.extend("\t" + line.lstrip() for line in lines[1:])
+        for line in lines[1:]:
+            stripped = line.strip()
+            output_lines.append("\t" + stripped if stripped else "")
     output = "\n".join(output_lines) + "\n"
-    current = path.read_text(encoding="utf-8")
     if output == current:
         return
 

@@ -49,6 +49,27 @@
       head -1 preamble.gitmodules | grep -qx '# vendored modules'
       grep -m1 '^\[submodule' preamble.gitmodules |
         grep -qx '\[submodule "alpha"\]'
+
+      # A blank line inside a block stays blank rather than becoming a
+      # tab-only line.
+      printf '%s\n' \
+        '[submodule "alpha"]' \
+        $'\tpath = modules/alpha' \
+        >blank.gitmodules
+      printf '\n' >>blank.gitmodules
+      printf '%s\n' $'\turl = https://example.invalid/alpha' \
+        >>blank.gitmodules
+      sort-gitmodules blank.gitmodules
+      if grep -qx $'\t' blank.gitmodules; then
+        echo 'a blank line became a tab-only line' >&2
+        exit 1
+      fi
+      grep -qx "" blank.gitmodules
+
+      # An empty file is not rewritten.
+      touch empty.gitmodules
+      sort-gitmodules empty.gitmodules
+      test ! -s empty.gitmodules
     '';
   };
   treefmtEval = treefmt-nix.lib.evalModule pkgs {

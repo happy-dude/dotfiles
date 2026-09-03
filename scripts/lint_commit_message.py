@@ -46,8 +46,8 @@ def lint(message_path: Path) -> list[str]:
     for line_number, line in enumerate(lines[1:], start=2):
         if line.rstrip() != line:
             errors.append(f"line {line_number} has trailing whitespace")
-        content = line.lstrip(" ")
-        indent = len(line) - len(content)
+        content = line.lstrip(" \t")
+        indent = len(line.expandtabs(4)) - len(content)
         ticks = len(content) - len(content.lstrip("`"))
         if fence_len:
             if indent <= 3 and ticks >= fence_len and not content[ticks:]:
@@ -75,19 +75,23 @@ def lint(message_path: Path) -> list[str]:
     if fence_len:
         errors.append("fenced code block is never closed")
 
-    prettier = subprocess.run(
-        [
-            "prettier",
-            "--parser",
-            "markdown",
-            "--stdin-filepath",
-            "COMMIT_EDITMSG.md",
-        ],
-        check=False,
-        capture_output=True,
-        input=text,
-        text=True,
-    )
+    try:
+        prettier = subprocess.run(
+            [
+                "prettier",
+                "--parser",
+                "markdown",
+                "--stdin-filepath",
+                "COMMIT_EDITMSG.md",
+            ],
+            check=False,
+            capture_output=True,
+            input=text,
+            text=True,
+        )
+    except OSError:
+        errors.append("prettier is not on PATH")
+        return errors
     if prettier.returncode:
         detail = prettier.stderr.strip() or (
             f"Prettier exited with status {prettier.returncode}"
