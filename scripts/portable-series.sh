@@ -116,7 +116,7 @@ scan_final_patch() {
   local scan_path="$staging_directory/final-patch.txt"
 
   [[ -n $pattern ]] || return 0
-  sed '/^Assisted-by:[[:space:]]/d' "$patch_path" >"$scan_path"
+  sed '/^Assisted-by:/d' "$patch_path" >"$scan_path"
   scan_forbidden_content "$pattern" "final patch" "$scan_path"
 }
 
@@ -218,7 +218,7 @@ start_series() {
     fi
     return 1
   fi
-  if [[ -e $worktree ]]; then
+  if [[ -e $worktree || -L $worktree ]]; then
     die "worktree path already exists: $worktree"
     return 1
   fi
@@ -246,6 +246,7 @@ lint_commits() {
 
   temporary_directory=$(mktemp -d)
   trap 'rm -rf -- "$temporary_directory"' RETURN
+  trap 'rm -rf -- "$temporary_directory"' EXIT
   while IFS= read -r commit; do
     git -C "$worktree" show -s --format=%B "$commit" |
       python3 -c \
@@ -257,6 +258,7 @@ lint_commits() {
   done < <(git -C "$worktree" rev-list --reverse "$base..HEAD")
   rm -rf -- "$temporary_directory"
   trap - RETURN
+  trap - EXIT
 }
 
 export_series() {
@@ -309,15 +311,19 @@ export_series() {
   ((count > 0)) || die "portable branch contains no commits"
   reject_merge_commits "$worktree" "$base"
 
-  if git -C "$worktree" log --format='%an <%ae>' "$base..HEAD" |
-    grep -Ev '^Portable Dotfiles <portable@localhost>$'; then
+  local authors
+  authors=$(git -C "$worktree" log --format='%an <%ae>' "$base..HEAD")
+  if grep -Ev '^Portable Dotfiles <portable@localhost>$' <<<"$authors"; then
     die "portable history contains a non-portable author identity"
   fi
   lint_commits "$worktree" "$base"
 
   validate_forbidden_pattern "$forbidden_pattern"
+  # lint_commits clears the process-wide traps when it returns; the staging
+  # traps must be installed after it runs.
   staging_directory=$(mktemp -d "$output_directory/.dotfiles-$name.XXXXXX")
   trap 'rm -rf -- "$staging_directory"' RETURN
+  trap 'rm -rf -- "$staging_directory"' EXIT
   scan_series "$forbidden_pattern" "$worktree" "$base" "$staging_directory"
 
   (
@@ -382,6 +388,7 @@ EOF
     "$bundle_name"
   rm -rf -- "$staging_directory"
   trap - RETURN
+  trap - EXIT
 
   printf '%s\n' \
     "Portable artifacts written to $output_directory" \
