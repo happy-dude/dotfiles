@@ -343,6 +343,29 @@ run_validation() {
   run_home_manager_build || return
 }
 
+# After a validated update, the refreshed lock is the update's deliverable;
+# leaving it uncommitted strands it in the working tree. Bookkeeping failure
+# must not undo a validated run, so this only warns. Commits flake.lock alone,
+# even when the tree carries unrelated changes.
+commit_flake_lock() {
+  local target="$1"
+
+  have git || {
+    warn "Cannot commit flake.lock (git not found)"
+    return 0
+  }
+
+  if [ -z "$(git -C "$target" status --porcelain -- flake.lock)" ]; then
+    return 0
+  fi
+
+  if git -C "$target" commit -q -m "nix: update flake.lock" -- flake.lock; then
+    printf 'Committed the refreshed flake.lock as "nix: update flake.lock".\n'
+  else
+    warn "flake.lock is updated but could not be committed; commit it manually"
+  fi
+}
+
 current_home_manager_generation() {
   local profile
 
@@ -881,6 +904,7 @@ main() {
   apply)
     run_validation || exit $?
     run_home_manager_switch || exit $?
+    commit_flake_lock "$REPO_DIR"
     finish_successfully
     exit 0
     ;;
@@ -1033,6 +1057,10 @@ main() {
   #--------------------------------------------------------------------------------------------------
 
   run_validation || exit $?
+
+  # The refreshed lock is part of the validated result; commit it even when
+  # activation is deferred with --skip-home-manager.
+  commit_flake_lock "$REPO_DIR"
 
   #--------------------------------------------------------------------------------------------------
   # 6. Optionally activate the validated configuration

@@ -536,10 +536,12 @@ locked.
 
 Update-mode step order is: repository pull; generic submodule handling when
 `.gitmodules` contains entries; `nix fmt .`; `nix flake update`; locked flake
-validation and Home Manager build; optional activation; and the post-activation
-generation changelog. The corresponding skip flags are `--skip-pull`,
-`--skip-submodules`, `--skip-status`, `--skip-nix-fmt`, `--skip-nix-flake`, and
-`--skip-home-manager`. `HOME_MANAGER_FLAKE` defaults to `.#$(whoami)`.
+validation and Home Manager build; committing the refreshed `flake.lock`;
+optional activation; and the post-activation generation changelog. `apply` also
+commits a dirty `flake.lock` after a successful activation. The corresponding
+skip flags are `--skip-pull`, `--skip-submodules`, `--skip-status`,
+`--skip-nix-fmt`, `--skip-nix-flake`, and `--skip-home-manager`.
+`HOME_MANAGER_FLAKE` defaults to `.#$(whoami)`.
 
 The script refuses to update dirty submodules unless `--autostash-submodules` is
 passed, and it does **not** auto-pop stashes afterward. The auto-stash scan
