@@ -303,6 +303,12 @@ if clean_series never-started 2>/dev/null; then
   exit 1
 fi
 
+# An invalid series name is refused before any state is created.
+if clean_series 'bad name' 2>/dev/null; then
+  printf 'accepted an invalid series name\n' >&2
+  exit 1
+fi
+
 # clean covers the remaining worktree_for_branch outcomes: a prunable
 # registration is refused, and a branch with no worktree is simply deleted.
 git branch replay/prune refs/remotes/origin/main
@@ -314,8 +320,7 @@ if clean_series prune 2>/dev/null; then
   exit 1
 fi
 git show-ref --verify --quiet refs/heads/replay/prune || {
-  printf 'prunable refusal deleted the branch
-' >&2
+  printf '%s\n' 'prunable refusal deleted the branch' >&2
   exit 1
 }
 git worktree prune

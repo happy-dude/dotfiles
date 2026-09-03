@@ -18,6 +18,7 @@ cleanup_test_tmpdir() {
 test_setup() {
   TMPDIR_TEST="$(mktemp -d)"
   export GIT_CONFIG_GLOBAL=/dev/null
+  export GIT_CONFIG_SYSTEM=/dev/null
   trap cleanup_test_tmpdir EXIT
 }
 
