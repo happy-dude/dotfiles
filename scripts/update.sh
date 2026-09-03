@@ -56,7 +56,10 @@ SKIP_NIX_FLAKE=0
 SKIP_HOME_MANAGER=0
 
 SHOW_CHANGES=0
-VERBOSE="${VERBOSE:-0}"
+case "${VERBOSE:-0}" in
+1 | true | yes) VERBOSE=1 ;;
+*) VERBOSE=0 ;;
+esac
 
 REPO_DIR="."
 REPO_DIR_SET=0
@@ -392,7 +395,11 @@ print_git_changes() {
     return 0
   fi
 
-  if ! git diff --cached --quiet --; then
+  local staged_status=0
+  git diff --cached --quiet -- || staged_status=$?
+  if [ "$staged_status" -gt 1 ]; then
+    warn "could not inspect staged changes"
+  elif [ "$staged_status" -eq 1 ]; then
     msg
     msg "Staged Git changes:"
     git --no-pager diff --cached --no-ext-diff --
@@ -810,6 +817,7 @@ stash_dirty_submodules() {
 # Everything below runs only when this file is executed. The test suites
 # source it to exercise the functions above without performing an update.
 main() {
+  local section_result status
 
   # Argument parsing
   #--------------------------------------------------------------------------------------------------
@@ -904,7 +912,7 @@ main() {
   apply)
     run_validation || exit $?
     run_home_manager_switch || exit $?
-    commit_flake_lock "$REPO_DIR"
+    commit_flake_lock "$PWD"
     finish_successfully
     exit 0
     ;;
@@ -1060,7 +1068,7 @@ main() {
 
   # The refreshed lock is part of the validated result; commit it even when
   # activation is deferred with --skip-home-manager.
-  commit_flake_lock "$REPO_DIR"
+  commit_flake_lock "$PWD"
 
   #--------------------------------------------------------------------------------------------------
   # 6. Optionally activate the validated configuration
