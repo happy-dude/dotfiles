@@ -17,9 +17,12 @@ usage() {
 Usage:
   portable-series.sh start <name> [worktree]
   portable-series.sh export <name> [output-directory]
+  portable-series.sh clean <name>
 
 start creates replay/<name> in an isolated worktree rooted at origin/main.
 export validates that branch and writes patch artifacts without pushing.
+clean removes the worktree and branch of a series whose commits are all
+represented in origin/main.
 EOF
 }
 
@@ -387,6 +390,60 @@ EOF
     "Nothing was pushed. Transfer, review, and apply them on the destination computer."
 }
 
+clean_series() {
+  local name=$1
+  local branch="replay/$name"
+  local branch_ref="refs/heads/$branch"
+  local worktree
+  local lookup_status
+
+  validate_name "$name" || return 1
+  git -C "$repo_root" show-ref --verify --quiet "$branch_ref" || {
+    die "no such series: $branch"
+    return 1
+  }
+  git -C "$repo_root" show-ref --verify --quiet refs/remotes/origin/main || {
+    die "origin/main is not fetched; run git fetch origin main first"
+    return 1
+  }
+
+  local unrepresented
+  unrepresented=$(
+    git -C "$repo_root" cherry refs/remotes/origin/main "$branch_ref"
+  ) || {
+    die "could not compare $branch against origin/main"
+    return 1
+  }
+  if grep -q '^+' <<<"$unrepresented"; then
+    die "$branch has commits not represented in origin/main; export and apply them, or git fetch origin main first"
+    return 1
+  fi
+
+  if worktree=$(worktree_for_branch "$repo_root" "$branch_ref"); then
+    if [[ $worktree == "$repo_root" ]]; then
+      die "run clean from the main checkout, not from the series worktree $worktree"
+      return 1
+    fi
+    if [[ -n $(
+      git -C "$worktree" status --porcelain=v1 --untracked-files=all
+    ) ]]; then
+      die "series worktree is not clean: $worktree"
+      return 1
+    fi
+    git -C "$repo_root" worktree remove "$worktree"
+  else
+    lookup_status=$?
+    if ((lookup_status == 2)); then
+      print_worktree_inspection_help
+      die "prunable worktree registration for $branch; inspect before cleaning"
+      return 1
+    fi
+  fi
+  git -C "$repo_root" branch -D "$branch"
+
+  printf 'Removed series %s; nothing was pushed.\n' "$branch"
+}
+
 main() {
   local command_name=${1:-}
 
@@ -404,6 +461,13 @@ main() {
       return 2
     }
     export_series "$2" "${3:-}"
+    ;;
+  clean)
+    (($# == 2)) || {
+      usage
+      return 2
+    }
+    clean_series "$2"
     ;;
   *)
     usage

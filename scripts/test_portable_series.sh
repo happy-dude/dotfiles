@@ -256,3 +256,74 @@ done
 )
 test -f "$output_directory/apply-dotfiles-one.sh"
 test -f "$output_directory/apply-dotfiles-two.sh"
+
+# clean retires a series whose commits are represented upstream and refuses
+# one carrying unrepresented work or a dirty worktree.
+upstream="$temporary_directory/upstream.git"
+git init --quiet --bare --initial-branch=main "$upstream"
+git remote add origin "$upstream"
+git push --quiet origin main
+git fetch --quiet origin refs/heads/main:refs/remotes/origin/main
+
+series_worktree="$temporary_directory/series-demo"
+start_series demo "$series_worktree" >/dev/null
+printf '%s\n' represented >"$series_worktree/represented"
+git -C "$series_worktree" add represented
+git -C "$series_worktree" commit --quiet -m 'tests: add represented change'
+
+if clean_series demo 2>/dev/null; then
+  printf 'cleaned a series with unrepresented commits\n' >&2
+  exit 1
+fi
+test -d "$series_worktree"
+
+# The same patch lands upstream (re-authored, as the apply script does).
+printf '%s\n' represented >"$repo/represented"
+git add represented
+git commit --quiet -m 'tests: add represented change (upstream copy)'
+git push --quiet origin main
+git fetch --quiet origin refs/heads/main:refs/remotes/origin/main
+
+printf '%s\n' dirty >"$series_worktree/dirty"
+if clean_series demo 2>/dev/null; then
+  printf 'cleaned a series with a dirty worktree\n' >&2
+  exit 1
+fi
+rm -- "$series_worktree/dirty"
+
+clean_series demo >/dev/null
+test ! -e "$series_worktree"
+if git show-ref --verify --quiet refs/heads/replay/demo; then
+  printf 'clean left the series branch behind\n' >&2
+  exit 1
+fi
+
+if clean_series never-started 2>/dev/null; then
+  printf 'cleaned a series that never existed\n' >&2
+  exit 1
+fi
+
+# clean covers the remaining worktree_for_branch outcomes: a prunable
+# registration is refused, and a branch with no worktree is simply deleted.
+git branch replay/prune refs/remotes/origin/main
+prune_worktree="$temporary_directory/prune-wt"
+git worktree add --quiet "$prune_worktree" replay/prune
+rm -rf -- "$prune_worktree"
+if clean_series prune 2>/dev/null; then
+  printf 'cleaned a series with a prunable worktree\n' >&2
+  exit 1
+fi
+git show-ref --verify --quiet refs/heads/replay/prune || {
+  printf 'prunable refusal deleted the branch
+' >&2
+  exit 1
+}
+git worktree prune
+git branch -D replay/prune >/dev/null
+
+git branch replay/detached refs/remotes/origin/main
+clean_series detached >/dev/null
+if git show-ref --verify --quiet refs/heads/replay/detached; then
+  printf 'clean left a worktree-less series branch behind\n' >&2
+  exit 1
+fi
