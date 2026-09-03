@@ -85,6 +85,18 @@ grep -F -- 'Processing: child' <<<"$submodule_output" >/dev/null ||
   find "$parent_repo/.git/modules/child/objects/pack" -name '*.pack' -print -quit
 )" ] || fail 'gc produced no pack file in the child submodule'
 
+# A second positional directory is refused before any mutation.
+assert_refuses 'two directories' 'Multiple directories specified' \
+  "$no_origin" "$pruned_repo"
+
+# An unreachable origin warns and still garbage-collects.
+git -C "$no_origin" remote add origin "$TMPDIR_TEST/nonexistent.git"
+offline_output="$(bash "$GITGC" "$no_origin" 2>&1)"
+grep -F -- 'Warning: could not prune origin' <<<"$offline_output" >/dev/null ||
+  fail "unreachable origin did not warn: $offline_output"
+grep -F -- 'Done!' <<<"$offline_output" >/dev/null ||
+  fail "unreachable origin stopped the run: $offline_output"
+
 # --aggressive is accepted and still reaches every phase.
 aggressive_output="$(bash "$GITGC" --aggressive "$parent_repo")"
 grep -F -- 'Running aggressive gc' <<<"$aggressive_output" >/dev/null ||

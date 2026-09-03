@@ -17,9 +17,12 @@ usage() {
 Usage:
   portable-series.sh start <name> [worktree]
   portable-series.sh export <name> [output-directory]
+  portable-series.sh clean <name>
 
 start creates replay/<name> in an isolated worktree rooted at origin/main.
 export validates that branch and writes patch artifacts without pushing.
+clean removes the worktree and branch of a series whose commits are all
+represented in origin/main.
 EOF
 }
 
@@ -113,7 +116,7 @@ scan_final_patch() {
   local scan_path="$staging_directory/final-patch.txt"
 
   [[ -n $pattern ]] || return 0
-  sed '/^Assisted-by:[[:space:]]/d' "$patch_path" >"$scan_path"
+  sed '/^Assisted-by:/d' "$patch_path" >"$scan_path"
   scan_forbidden_content "$pattern" "final patch" "$scan_path"
 }
 
@@ -215,7 +218,7 @@ start_series() {
     fi
     return 1
   fi
-  if [[ -e $worktree ]]; then
+  if [[ -e $worktree || -L $worktree ]]; then
     die "worktree path already exists: $worktree"
     return 1
   fi
@@ -243,6 +246,7 @@ lint_commits() {
 
   temporary_directory=$(mktemp -d)
   trap 'rm -rf -- "$temporary_directory"' RETURN
+  trap 'rm -rf -- "$temporary_directory"' EXIT
   while IFS= read -r commit; do
     git -C "$worktree" show -s --format=%B "$commit" |
       python3 -c \
@@ -254,6 +258,7 @@ lint_commits() {
   done < <(git -C "$worktree" rev-list --reverse "$base..HEAD")
   rm -rf -- "$temporary_directory"
   trap - RETURN
+  trap - EXIT
 }
 
 export_series() {
@@ -306,15 +311,19 @@ export_series() {
   ((count > 0)) || die "portable branch contains no commits"
   reject_merge_commits "$worktree" "$base"
 
-  if git -C "$worktree" log --format='%an <%ae>' "$base..HEAD" |
-    grep -Ev '^Portable Dotfiles <portable@localhost>$'; then
+  local authors
+  authors=$(git -C "$worktree" log --format='%an <%ae>' "$base..HEAD")
+  if grep -Ev '^Portable Dotfiles <portable@localhost>$' <<<"$authors"; then
     die "portable history contains a non-portable author identity"
   fi
   lint_commits "$worktree" "$base"
 
   validate_forbidden_pattern "$forbidden_pattern"
+  # lint_commits clears the process-wide traps when it returns; the staging
+  # traps must be installed after it runs.
   staging_directory=$(mktemp -d "$output_directory/.dotfiles-$name.XXXXXX")
   trap 'rm -rf -- "$staging_directory"' RETURN
+  trap 'rm -rf -- "$staging_directory"' EXIT
   scan_series "$forbidden_pattern" "$worktree" "$base" "$staging_directory"
 
   (
@@ -379,12 +388,67 @@ EOF
     "$bundle_name"
   rm -rf -- "$staging_directory"
   trap - RETURN
+  trap - EXIT
 
   printf '%s\n' \
     "Portable artifacts written to $output_directory" \
     "$patch_name" "$manifest_name" "$checksum_name" "$apply_name" \
     "$bundle_name" "$bundle_checksum_name" \
     "Nothing was pushed. Transfer, review, and apply them on the destination computer."
+}
+
+clean_series() {
+  local name=$1
+  local branch="replay/$name"
+  local branch_ref="refs/heads/$branch"
+  local worktree
+  local lookup_status
+
+  validate_name "$name" || return 1
+  git -C "$repo_root" show-ref --verify --quiet "$branch_ref" || {
+    die "no such series: $branch"
+    return 1
+  }
+  git -C "$repo_root" show-ref --verify --quiet refs/remotes/origin/main || {
+    die "origin/main is not fetched; run git fetch origin main first"
+    return 1
+  }
+
+  local unrepresented
+  unrepresented=$(
+    git -C "$repo_root" cherry refs/remotes/origin/main "$branch_ref"
+  ) || {
+    die "could not compare $branch against origin/main"
+    return 1
+  }
+  if grep -q '^+' <<<"$unrepresented"; then
+    die "$branch has commits not represented in origin/main; export and apply them, or git fetch origin main first"
+    return 1
+  fi
+
+  if worktree=$(worktree_for_branch "$repo_root" "$branch_ref"); then
+    if [[ $worktree == "$repo_root" ]]; then
+      die "run clean from the main checkout, not from the series worktree $worktree"
+      return 1
+    fi
+    if [[ -n $(
+      git -C "$worktree" status --porcelain=v1 --untracked-files=all
+    ) ]]; then
+      die "series worktree is not clean: $worktree"
+      return 1
+    fi
+    git -C "$repo_root" worktree remove "$worktree"
+  else
+    lookup_status=$?
+    if ((lookup_status == 2)); then
+      print_worktree_inspection_help
+      die "prunable worktree registration for $branch; inspect before cleaning"
+      return 1
+    fi
+  fi
+  git -C "$repo_root" branch -D "$branch"
+
+  printf 'Removed series %s; nothing was pushed.\n' "$branch"
 }
 
 main() {
@@ -404,6 +468,13 @@ main() {
       return 2
     }
     export_series "$2" "${3:-}"
+    ;;
+  clean)
+    (($# == 2)) || {
+      usage
+      return 2
+    }
+    clean_series "$2"
     ;;
   *)
     usage
