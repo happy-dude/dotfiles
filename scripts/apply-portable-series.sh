@@ -18,7 +18,8 @@ read_manifest() {
   local key
   local value
 
-  while IFS='=' read -r key value; do
+  while IFS='=' read -r key value || [[ -n $key ]]; do
+    value=${value%$'\r'}
     case $key in
     version) manifest_version=$value ;;
     name) series_name=$value ;;
@@ -68,7 +69,7 @@ git -C "$repo" rev-parse --is-inside-work-tree >/dev/null 2>&1 ||
 [[ -z $(git -C "$repo" status --porcelain=v1 --untracked-files=all) ]] ||
   die "main worktree is not clean"
 
-git -C "$repo" fetch origin main
+git -C "$repo" fetch origin refs/heads/main:refs/remotes/origin/main
 head=$(git -C "$repo" rev-parse HEAD)
 origin_main=$(git -C "$repo" rev-parse origin/main)
 [[ $head == "$origin_main" ]] ||
@@ -83,6 +84,8 @@ signing_key=$(git -C "$repo" config --get user.signingkey || true)
 [[ -n $user_email ]] || die "Git user.email is not configured"
 [[ -n $signing_key ]] || die "Git user.signingkey is not configured"
 [[ $user_email != "portable@localhost" ]] ||
+  die "configure the real destination identity before applying"
+[[ $user_name != "Portable Dotfiles" ]] ||
   die "configure the real destination identity before applying"
 
 mail_directory=$(mktemp -d)
@@ -140,8 +143,8 @@ applied_count=$(git -C "$repo" rev-list --count "$expected_base..HEAD")
 
 git -C "$repo" switch main
 git -C "$repo" merge --ff-only "$temporary_branch"
-git -C "$repo" branch -d "$temporary_branch"
 success=true
+git -C "$repo" branch -d "$temporary_branch"
 
 printf '%s\n' \
   "Portable series applied, re-authored, signed, and validated on local main." \
