@@ -223,6 +223,11 @@ main() {
         "Resolve conflicts in: $branch_worktree" \
         "Then continue with:" >&2
       printf '  git -C %q rebase --continue\n' "$branch_worktree" >&2
+      printf '%s\n' \
+        "If continue reports 'you have staged changes', the pick stopped" \
+        "in edit state because the resolution changed its content; fold" \
+        "the resolution into the current commit with:" >&2
+      printf '  git commit --amend --no-edit && git rebase --continue\n' >&2
       printf '%s\n' "After completion, validate with:" >&2
       print_validation_command
       printf '%s\n' "To restore the prior local branch, run:" >&2

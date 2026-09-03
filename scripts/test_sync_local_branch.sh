@@ -183,6 +183,8 @@ printf -v expected_validate '  %q --validate %q %q %q' \
 grep -Fq "$expected_continue" "$output"
 grep -Fq "$expected_abort" "$output"
 grep -Fq "$expected_validate" "$output"
+grep -Fq "fold" "$output"
+grep -Fq 'git commit --amend --no-edit' "$output"
 printf '%s\n' resolved >"$branch_worktree/shared"
 git -C "$branch_worktree" add shared
 GIT_EDITOR=true git -C "$branch_worktree" rebase --continue >/dev/null
