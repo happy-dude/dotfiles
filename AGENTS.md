@@ -440,6 +440,8 @@ context out of portable history:
 ./scripts/portable-series.sh start <name>
 # Develop and commit in the reported worktree.
 ./scripts/portable-series.sh export <name>
+# After the series is applied upstream, retire it:
+./scripts/portable-series.sh clean <name>
 ```
 
 `start` creates `replay/<name>` at current `origin/main` with a worktree-local
@@ -487,13 +489,14 @@ scripts/sync-local-branch.sh --validate <local-branch> <profile> [repository]
 Sync mode fetches `main` directly into the `origin/main` remote-tracking ref,
 fast-forwards local `main`, rebases the named local-only branch, and validates
 the selected profile. Before rebasing it reports local commits whose patches are
-already represented upstream and are therefore expected to disappear. Only the
-`main` and named local-branch worktrees must be clean; unrelated linked
-worktrees are intentionally ignored. A dirty target refusal identifies its path
-and occurs before fetch or mutation. The script rejects prunable registrations
-and branches with an upstream, and never pushes or activates. Formatting, flake
-checks, and the profile build are reported as separate phases without a fixed
-timeout.
+already represented upstream and are therefore expected to disappear, and its
+conflict output names the amend-then-continue pattern for resolutions that
+change a pick's content. Only the `main` and named local-branch worktrees must
+be clean; unrelated linked worktrees are intentionally ignored. A dirty target
+refusal identifies its path and occurs before fetch or mutation. The script
+rejects prunable registrations and branches with an upstream, and never pushes
+or activates. Formatting, flake checks, and the profile build are reported as
+separate phases without a fixed timeout.
 
 Validate mode performs no fetch or rebase. It requires local `main` to equal the
 cached `origin/main` tip and the local-only branch to descend from that tip. Use
