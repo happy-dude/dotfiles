@@ -309,26 +309,27 @@ if clean_series 'bad name' 2>/dev/null; then
   exit 1
 fi
 
-# clean covers the remaining worktree_for_branch outcomes: a prunable
-# registration is refused, and a branch with no worktree is simply deleted.
-git branch replay/prune refs/remotes/origin/main
-prune_worktree="$temporary_directory/prune-wt"
-git worktree add --quiet "$prune_worktree" replay/prune
-rm -rf -- "$prune_worktree"
-if clean_series prune 2>/dev/null; then
-  printf 'cleaned a series with a prunable worktree\n' >&2
+# lint_commits' EXIT trap must clean its staging directory even when the
+# linter kills the run; the path is baked into the trap at install time.
+lint_tmp="$temporary_directory/lint-tmp"
+mkdir "$lint_tmp"
+cp -- "$source_root/scripts/lint_commit_message.py" "$repo/scripts/"
+git -C "$repo" switch -qc bad-message "$base"
+git -C "$repo" commit -q --allow-empty -m 'no subsystem prefix'
+lint_rc=0
+(
+  cd -- "$repo"
+  TMPDIR="$lint_tmp" bash -c \
+    'source scripts/portable-series.sh && lint_commits "$1" "$2"' \
+    _ "$repo" "$base"
+) >/dev/null 2>&1 || lint_rc=$?
+if [ "$lint_rc" -eq 0 ]; then
+  printf 'lint_commits accepted an invalid commit message\n' >&2
   exit 1
 fi
-git show-ref --verify --quiet refs/heads/replay/prune || {
-  printf '%s\n' 'prunable refusal deleted the branch' >&2
-  exit 1
-}
-git worktree prune
-git branch -D replay/prune >/dev/null
-
-git branch replay/detached refs/remotes/origin/main
-clean_series detached >/dev/null
-if git show-ref --verify --quiet refs/heads/replay/detached; then
-  printf 'clean left a worktree-less series branch behind\n' >&2
+# mktemp staging directories are tmp.*; prettier's node cache
+# (node-compile-cache) also lands in TMPDIR and is not ours.
+if ls -d "$lint_tmp"/tmp.* >/dev/null 2>&1; then
+  printf 'lint staging directory leaked\n' >&2
   exit 1
 fi
