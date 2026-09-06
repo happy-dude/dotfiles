@@ -246,7 +246,9 @@ lint_commits() {
 
   temporary_directory=$(mktemp -d)
   trap 'rm -rf -- "$temporary_directory"' RETURN
-  trap 'rm -rf -- "$temporary_directory"' EXIT
+  # EXIT traps run after function scope ends; bake the path in.
+  # shellcheck disable=SC2064 # Early expansion is the point: EXIT runs after function scope ends.
+  trap "rm -rf -- $(printf '%q' "$temporary_directory")" EXIT
   while IFS= read -r commit; do
     git -C "$worktree" show -s --format=%B "$commit" |
       python3 -c \
@@ -323,7 +325,8 @@ export_series() {
   # traps must be installed after it runs.
   staging_directory=$(mktemp -d "$output_directory/.dotfiles-$name.XXXXXX")
   trap 'rm -rf -- "$staging_directory"' RETURN
-  trap 'rm -rf -- "$staging_directory"' EXIT
+  # shellcheck disable=SC2064 # Early expansion is the point: EXIT runs after function scope ends.
+  trap "rm -rf -- $(printf '%q' "$staging_directory")" EXIT
   scan_series "$forbidden_pattern" "$worktree" "$base" "$staging_directory"
 
   (
