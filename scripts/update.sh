@@ -350,6 +350,13 @@ run_validation() {
 # leaving it uncommitted strands it in the working tree. Bookkeeping failure
 # must not undo a validated run, so this only warns. Commits flake.lock alone,
 # even when the tree carries unrelated changes.
+readonly LOCK_COMMIT_SUBJECT="nix: update flake.lock"
+
+# Only an unpublished tip lock commit is amended; one contained in any
+# remote-tracking branch always gets a fresh commit. Identification is by
+# exact subject alone, so a hand-made or apply-reauthored commit with that
+# subject is also foldable; those are unpublished until pushed, which is the
+# property the fold relies on.
 commit_flake_lock() {
   local target="$1"
 
@@ -362,8 +369,45 @@ commit_flake_lock() {
     return 0
   fi
 
-  if git -C "$target" commit -q -m "nix: update flake.lock" -- flake.lock; then
-    printf 'Committed the refreshed flake.lock as "nix: update flake.lock".\n'
+  # Fold only an unpublished tip lock commit. Identification is by exact
+  # subject, which is what this script and the update docs use. Tracking refs
+  # can be stale after a push from another clone; that is inherent to any
+  # local check and merely risks a rejected push, never lost work.
+  local foldable=0
+  if [ "$(git -C "$target" log -1 --format=%s 2>/dev/null || printf '')" \
+    = "$LOCK_COMMIT_SUBJECT" ] && git -C "$target" symbolic-ref -q HEAD \
+    >/dev/null; then
+    local published_refs local_refs
+    local publish_status=0
+    local local_status=0
+    published_refs="$(
+      git -C "$target" branch -r --contains HEAD 2>/dev/null
+    )" || publish_status=$?
+    local_refs="$(
+      git -C "$target" branch --format='%(refname)' --contains HEAD 2>/dev/null
+    )" || local_status=$?
+    # An amend moves only the current branch, so fold only when HEAD is that
+    # branch's tip and no other local branch contains the commit; branches
+    # built on top of it would be orphaned.
+    if [ "$publish_status" -ne 0 ] || [ "$local_status" -ne 0 ]; then
+      warn "could not determine whether the lock commit is published; committing a fresh lock commit"
+    elif [ -z "$published_refs" ] &&
+      [ "$(printf '%s\n' "$local_refs" | grep -c .)" -eq 1 ]; then
+      foldable=1
+    fi
+  fi
+
+  if [ "$foldable" -eq 1 ]; then
+    if git -C "$target" commit -q --amend --no-edit -- flake.lock; then
+      printf 'Folded the refreshed flake.lock into the previous lock update.\n'
+    else
+      warn "flake.lock is updated but could not be amended in place; commit it manually"
+    fi
+    return 0
+  fi
+
+  if git -C "$target" commit -q -m "$LOCK_COMMIT_SUBJECT" -- flake.lock; then
+    printf 'Committed the refreshed flake.lock as "%s".\n' "$LOCK_COMMIT_SUBJECT"
   else
     warn "flake.lock is updated but could not be committed; commit it manually"
   fi
