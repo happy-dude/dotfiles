@@ -68,12 +68,7 @@
       "command": ["tinymist", "lsp"]
     },
     "typescript": {
-      "command": ["typescript-language-server", "--stdio"],
-      "initialization": {
-        "tsserver": {
-          "path": "{env:HOME}/.local/share/nix-typescript/lib/tsserver.js"
-        }
-      }
+      "command": ["tsgo", "--lsp", "--stdio"]
     },
     "vim-ls": {
       "command": ["vim-language-server", "--stdio"],

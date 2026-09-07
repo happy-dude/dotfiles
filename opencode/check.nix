@@ -28,8 +28,7 @@
     terraform-ls
     texlab
     tinymist
-    typescript
-    typescript-language-server
+    typescript-go
     vim-language-server
     vscode-langservers-extracted
     yaml-language-server
@@ -103,7 +102,7 @@ in
           terraform-ls \
           texlab \
           tinymist \
-          typescript-language-server \
+          tsgo \
           vim-language-server \
           vscode-eslint-language-server \
           vscode-json-language-server \
@@ -209,10 +208,6 @@ in
         fi
 
         # Policy that the file alone does not explain.
-        jq -e --arg home "$HOME" '
-          (.lsp.oxlint.disabled == true) and
-          (.lsp.typescript.initialization.tsserver.path ==
-            ($home + "/.local/share/nix-typescript/lib/tsserver.js"))
-        ' project.json >/dev/null
+        jq -e '.lsp.oxlint.disabled == true' project.json >/dev/null
       '';
     }
