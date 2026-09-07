@@ -91,14 +91,13 @@ in {
         (dotfiles-terraform . ("${pkgs.terraform-ls}/bin/terraform-ls" "serve"))
         (dotfiles-texlab . ("${pkgs.texlab}/bin/texlab"))
         (dotfiles-tinymist . ("${pkgs.tinymist}/bin/tinymist" "lsp"))
-        (dotfiles-typescript . ("${pkgs.typescript-language-server}/bin/typescript-language-server" "--stdio"))
+        ;; typescript 7 (tsgo) ships no tsserver.js; tsgo serves LSP
+        ;; directly over stdio, so there is no SDK pin.
+        (dotfiles-typescript . ("${pkgs.typescript-go}/bin/tsgo" "--lsp" "--stdio"))
         (dotfiles-vim . ("${pkgs.vim-language-server}/bin/vim-language-server" "--stdio"))
         (dotfiles-yaml . ("${pkgs.yaml-language-server}/bin/yaml-language-server" "--stdio"))
         (dotfiles-zls . ("${pkgs.zls}/bin/zls"))
         (dotfiles-zuban . ("${pkgs.zuban}/bin/zuban" "server"))))
-
-    (defconst dotfiles-typescript-sdk
-      "${pkgs.typescript}/lib/node_modules/typescript/lib/tsserver.js")
 
     (provide 'dotfiles-lsp-paths)
     ;;; lsp-paths.el ends here

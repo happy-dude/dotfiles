@@ -180,8 +180,7 @@ in {
       traceroute
       tree
       tree-sitter
-      typescript
-      typescript-language-server
+      typescript-go
       typst
       util-linux
       valgrind

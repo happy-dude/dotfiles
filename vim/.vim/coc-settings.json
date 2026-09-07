@@ -212,9 +212,9 @@
       "filetypes": ["typst"],
       "rootPatterns": ["typst.toml", ".git"]
     },
-    "typescript-language-server": {
-      "args": ["--stdio"],
-      "command": "typescript-language-server",
+    "tsgo": {
+      "args": ["--lsp", "--stdio"],
+      "command": "tsgo",
       "filetypes": [
         "javascript",
         "javascriptreact",

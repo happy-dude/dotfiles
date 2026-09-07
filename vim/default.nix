@@ -219,7 +219,6 @@ in {
   };
 
   xdg.dataFile = {
-    "nix-typescript".source = "${pkgs.typescript}/lib/node_modules/typescript";
     "nvim/site/parser".source = "${treesitterRuntime}/parser";
     "nvim/site/queries".source = "${treesitterRuntime}/queries";
   };

@@ -19,11 +19,10 @@
 ;; indicator until the core lookup handles nested mode-line constructs.
 (setcdr (assq 'lsp-mode minor-mode-alist) '(" LSP"))
 
-;; Nix owns the store paths for every language server, the Tree-sitter
-;; grammar bundle, and the TypeScript SDK.  It writes them to lsp-paths.el,
-;; which must already be loaded when this file runs; init.el loads the two in
-;; order.  Everything below is ordinary Emacs Lisp so that it can be read and
-;; edited as such.
+;; Nix owns the store paths for every language server and the Tree-sitter
+;; grammar bundle.  It writes them to lsp-paths.el, which must already be
+;; loaded when this file runs; init.el loads the two in order.  Everything
+;; below is ordinary Emacs Lisp so that it can be read and edited as such.
 (unless (boundp 'dotfiles-lsp-server-commands)
   (error "lsp-paths.el must be loaded before lsp-servers.el"))
 
@@ -153,10 +152,7 @@ references that navigator lacks, mirroring the CoC configuration."
 (dotfiles/lsp-register 'dotfiles-tinymist '(typst-ts-mode))
 (dotfiles/lsp-register
  'dotfiles-typescript nil
- :activation-fn (lsp-activate-on "javascript" "javascriptreact" "typescript" "typescriptreact")
- :initialization-options
- `(:disableAutomaticTypingAcquisition t
-   :tsserver (:path ,dotfiles-typescript-sdk)))
+ :activation-fn (lsp-activate-on "javascript" "javascriptreact" "typescript" "typescriptreact"))
 (dotfiles/lsp-register 'dotfiles-vim '(vimrc-mode vimscript-ts-mode))
 (dotfiles/lsp-register 'dotfiles-yaml '(yaml-mode yaml-ts-mode))
 (dotfiles/lsp-register 'dotfiles-zls '(zig-mode zig-ts-mode))
