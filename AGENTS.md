@@ -244,8 +244,8 @@ and installs StyLua's config under `~/.config/stylua`.
   permissions are approval gates rather than a security sandbox; use process
   isolation for untrusted repositories. Global LSP feedback remains disabled.
   The repository-root `opencode.json` enables LSP feedback only for this
-  checkout, invokes the Nix-managed server commands, uses the stable TypeScript
-  SDK link, and disables overlapping Oxlint diagnostics. The LSP permission and
+  checkout, invokes the Nix-managed server commands, and disables overlapping
+  Oxlint diagnostics. The LSP permission and
   `OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured. The module also
   owns `tui.json`, retains the Gruvbox Material material dark-medium theme, and
   selects the separately generated mix dark-medium variant by default.
@@ -346,13 +346,13 @@ guidance detectable.
   `programs.emacs.extraPackages`, links `emacs/init.el` to
   `~/.config/emacs/init.el`, links the Org directory-local settings, and creates
   mutable Org directories. `emacs/lsp.nix` mirrors the CoC server matrix with
-  lsp-mode clients whose executables and TypeScript SDK are absolute Nix store
-  paths. It disables implicit clients and downloads, provides Nix-built
-  Tree-sitter grammars, and never starts local servers for remote buffers.
-  `agent-shell.el` selects the provider-neutral `opencode acp` client; private
-  provider configuration and credentials remain OpenCode-owned host state. Emacs
-  Custom writes to the machine-local `~/.config/emacs/custom.el`. No vendored
-  Emacs plugin or legacy package.el tree remains.
+  lsp-mode clients whose executables are absolute Nix store paths. It disables
+  implicit clients and downloads, provides Nix-built Tree-sitter grammars, and
+  never starts local servers for remote buffers. `agent-shell.el` selects the
+  provider-neutral `opencode acp` client; private provider configuration and
+  credentials remain OpenCode-owned host state. Emacs Custom writes to the
+  machine-local `~/.config/emacs/custom.el`. No vendored Emacs plugin or legacy
+  package.el tree remains.
 
 ### `other/` directory
 
@@ -715,7 +715,7 @@ source.
   wallpaper, and session history unmanaged.
 - **Vim runtime artifacts** are declarative: Home Manager links Tree-sitter
   parsers and queries under the XDG data directory through `xdg.dataFile`, and
-  owns the stable TypeScript SDK link there too; Home Manager provides every
+  TypeScript is served by tsgo (typescript-go). Home Manager provides every
   formatter and language-server command. `vim/.vim/coc-settings.json` is the
   authoritative, sorted language-server and format-on-save matrix. Keep object
   keys sorted while preserving semantic precedence within lists such as
