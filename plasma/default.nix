@@ -7,7 +7,7 @@
     Home Manager ownership of the complete Plasma panel layout
   '';
 
-  config = lib.mkIf (config.dotfiles.profile.desktop == "plasma") {
+  config = {
     programs.plasma = {
       enable = true;
       overrideConfig = false;
