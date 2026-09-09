@@ -133,6 +133,12 @@ in {
   home.packages = [opencode];
   home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD = "true";
   home.sessionVariables.OPENCODE_CONFIG = "${config.xdg.configHome}/opencode/local.json";
+  # The Emacs daemon and other systemd user services never source the shell
+  # session variables; environment.d is how they see the same two settings.
+  systemd.user.sessionVariables = {
+    OPENCODE_DISABLE_LSP_DOWNLOAD = config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD;
+    OPENCODE_CONFIG = config.home.sessionVariables.OPENCODE_CONFIG;
+  };
   xdg.configFile."opencode/opencode.json".source =
     json.generate "opencode.json" settings;
   xdg.configFile."opencode/tui.json".source =
