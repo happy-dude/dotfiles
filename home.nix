@@ -28,7 +28,6 @@ in {
       BUILDKIT_PROGRESS = "plain";
       DOCKER_BUILDKIT = "1";
       EDITOR = "nvim";
-      FZF_DEFAULT_COMMAND = "rg --files --hidden --follow --glob '!.git'";
       LESS = lessFlags;
       MANPAGER = "nvim +Man!";
       MANWIDTH = "80";
