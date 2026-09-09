@@ -5,6 +5,28 @@
   ...
 }: let
   commitMsgHook = import ./commit-msg-hook.nix {inherit pkgs;};
+  localHook = import ./local-hook.nix {inherit pkgs;};
+  # Client-side hooks from githooks(5) other than commit-msg, which has its
+  # own dispatcher below. fsmonitor-watchman is omitted: Git expects a
+  # response from it, and core.fsmonitor stays off here.
+  dispatchedHooks = [
+    "applypatch-msg"
+    "pre-applypatch"
+    "post-applypatch"
+    "pre-commit"
+    "pre-merge-commit"
+    "prepare-commit-msg"
+    "post-commit"
+    "pre-rebase"
+    "post-checkout"
+    "post-merge"
+    "pre-push"
+    "post-rewrite"
+    "pre-auto-gc"
+    "post-index-change"
+    "reference-transaction"
+    "sendemail-validate"
+  ];
 in {
   # Per-machine identity + signing (user.email, user.signingkey, commit/tag
   # gpgsign) live in an untracked ~/.config/git/local.config, included below —
@@ -88,7 +110,13 @@ in {
     };
   };
 
-  xdg.configFile."git/hooks/commit-msg".source = lib.getExe commitMsgHook;
+  xdg.configFile =
+    {
+      "git/hooks/commit-msg".source = lib.getExe commitMsgHook;
+    }
+    // lib.genAttrs (map (name: "git/hooks/${name}") dispatchedHooks) (_: {
+      source = lib.getExe localHook;
+    });
 
   # delta (enableGitIntegration) sets per-command [pager] + interactive.diffFilter,
   # not core.pager, so it coexists with core.pager = bat above.

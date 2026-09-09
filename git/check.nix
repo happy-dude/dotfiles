@@ -1,7 +1,48 @@
 {pkgs}: let
   mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
   commitMsgHook = import ./commit-msg-hook.nix {inherit pkgs;};
+  localHook = import ./local-hook.nix {inherit pkgs;};
 in {
+  git-local-hook = mkCheck {
+    name = "git-local-hook-test";
+    tools = [pkgs.git];
+    script = ''
+      mkdir hooks repo
+      # Installed the way Home Manager does: one symlink per hook name.
+      for name in pre-commit post-commit pre-push; do
+        ln -s ${pkgs.lib.getExe localHook} "hooks/$name"
+      done
+      cd repo
+      git init --quiet
+      git config user.name test
+      git config user.email test@example.invalid
+      git config core.hooksPath "$PWD/../hooks"
+
+      # No repository hook: the dispatcher is a no-op and the commit proceeds.
+      git commit --quiet --allow-empty -m 'test: no local hook'
+
+      # A repository hook runs with the dispatcher's arguments and its exit
+      # status decides the outcome.
+      cat >.git/hooks/pre-commit <<'EOF'
+      #!${pkgs.bash}/bin/bash
+      touch "$(git rev-parse --show-toplevel)/pre-commit-ran"
+      exit "$(cat "$(git rev-parse --show-toplevel)/pre-commit-status")"
+      EOF
+      chmod 0755 .git/hooks/pre-commit
+      printf '0\n' >pre-commit-status
+      git commit --quiet --allow-empty -m 'test: local hook accepts'
+      test -e pre-commit-ran
+
+      rm pre-commit-ran
+      printf '1\n' >pre-commit-status
+      if git commit --quiet --allow-empty -m 'test: local hook rejects'; then
+        echo "committed although the repository hook rejected" >&2
+        exit 1
+      fi
+      test -e pre-commit-ran
+    '';
+  };
+
   git-commit-message = mkCheck {
     name = "git-commit-message-test";
     tools = [
