@@ -48,11 +48,15 @@ require('nvim-treesitter-textobjects').setup({
 -- The plugin has no keymaps option on its main branch; declare the text
 -- objects directly. Moving them back into setup() would silently do nothing.
 local ts_select = require('nvim-treesitter-textobjects.select')
+-- Capitalised so they neither shadow f{char} in Visual mode nor make c
+-- wait for a second key; CoC's if/af/ic/ac stay the LSP-backed objects. In
+-- Lisp buffers vim-sexp's buffer-local aF/iF (top-level form) take
+-- precedence, which is the right object there.
 for lhs, capture in pairs({
-  fo = '@function.outer',
-  fi = '@function.inner',
-  co = '@class.outer',
-  ci = '@class.inner',
+  aF = '@function.outer',
+  iF = '@function.inner',
+  aC = '@class.outer',
+  iC = '@class.inner',
 }) do
   vim.keymap.set({ 'x', 'o' }, lhs, function()
     ts_select.select_textobject(capture, 'textobjects')
