@@ -59,6 +59,8 @@ def materialize(static_path: Path, target: Path) -> None:
         if target.exists()
         else {}
     )
+    if not isinstance(dynamic, dict):
+        fail(f"Refusing Zed settings that are not a JSON object: {target}")
     merged = merge(dynamic, static)
     rendered = json.dumps(merged, ensure_ascii=False, indent=2)
     write_text(target, rendered + "\n", 0o600)
