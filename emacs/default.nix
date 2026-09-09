@@ -29,7 +29,7 @@ in {
 
   xdg.desktopEntries.emacs-org-protocol = {
     name = "Emacs Org Protocol";
-    exec = "${pkgs.emacs-pgtk}/bin/emacsclient --alternate-editor= --create-frame --no-wait -- %u";
+    exec = "${config.programs.emacs.finalPackage}/bin/emacsclient --alternate-editor= --create-frame --no-wait -- %u";
     icon = "emacs";
     mimeType = ["x-scheme-handler/org-protocol"];
     noDisplay = true;
