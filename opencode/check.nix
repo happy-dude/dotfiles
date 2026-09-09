@@ -35,6 +35,16 @@ in
       == "${home.config.xdg.configHome}/opencode/local.json"
   )
   homeList;
+  # systemd user services read environment.d, not the shell session
+  # variables, so both values must reach them by that route too.
+  assert lib.all (
+    home:
+      home.config.systemd.user.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD
+      == "true"
+      && home.config.systemd.user.sessionVariables.OPENCODE_CONFIG
+      == home.config.home.sessionVariables.OPENCODE_CONFIG
+  )
+  homeList;
     mkCheck {
       name = "dotfiles-opencode-check";
       tools =
