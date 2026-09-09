@@ -88,7 +88,6 @@ in {
     Timer = {
       OnBootSec = "5m";
       OnUnitActiveSec = "15m";
-      Persistent = true;
       RandomizedDelaySec = "2m";
       Unit = "rclone-box-org-bisync.service";
     };
