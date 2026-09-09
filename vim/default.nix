@@ -71,10 +71,6 @@
   });
   sharedRuntimeFiles = [
     {
-      name = "spell";
-      path = ./.vim/spell;
-    }
-    {
       name = "vimrc";
       path = ./.vim/vimrc;
     }
