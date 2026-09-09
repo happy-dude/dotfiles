@@ -6,10 +6,23 @@
 }: let
   commitMsgHook = import ./commit-msg-hook.nix {inherit pkgs;};
   localHook = import ./local-hook.nix {inherit pkgs;};
-  # Client-side hooks from githooks(5) other than commit-msg, which has its
-  # own dispatcher below. fsmonitor-watchman is omitted: Git expects a
-  # response from it, and core.fsmonitor stays off here.
+  # Every hook githooks(5) documents other than commit-msg, which has its own
+  # dispatcher below, and the three Git consults as protocols or overrides
+  # rather than as notifications or vetoes: fsmonitor-watchman must answer
+  # with a file list, proc-receive speaks the receive-pack report protocol,
+  # and an existing push-to-checkout replaces Git's own checkout update, so a
+  # stand-in that exits 0 would leave the receiving worktree behind. The
+  # receive-side hooks matter too: a push into a local bare repository runs
+  # git-receive-pack under this user's core.hooksPath.
   dispatchedHooks = [
+    "p4-changelist"
+    "p4-prepare-changelist"
+    "p4-post-changelist"
+    "p4-pre-submit"
+    "pre-receive"
+    "update"
+    "post-receive"
+    "post-update"
     "applypatch-msg"
     "pre-applypatch"
     "post-applypatch"
