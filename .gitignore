@@ -24,3 +24,6 @@ nvim.log
 
 # Machine-local secrets
 secrets.fish
+# A filled-in copy of git/local.config.example; the real file lives at
+# ~/.config/git/local.config.
+/git/local.config
