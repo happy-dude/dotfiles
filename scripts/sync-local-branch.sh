@@ -19,7 +19,7 @@ format_worktree() {
   local status
 
   (
-    cd -- "$worktree"
+    cd -- "$worktree" || exit 1
     nix fmt .
   ) || return
   status=$(git -C "$worktree" status --porcelain=v1 --untracked-files=all)
@@ -73,7 +73,7 @@ check_flake() {
   local worktree=$1
 
   (
-    cd -- "$worktree"
+    cd -- "$worktree" || exit 1
     nix flake check --show-trace --no-update-lock-file
   )
 }
@@ -83,7 +83,7 @@ build_profile() {
   local profile=$2
 
   (
-    cd -- "$worktree"
+    cd -- "$worktree" || exit 1
     home-manager build --flake ".#$profile" --show-trace \
       --no-out-link --no-update-lock-file
   )
