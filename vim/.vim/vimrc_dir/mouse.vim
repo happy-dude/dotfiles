@@ -10,9 +10,15 @@ if has('mouse')
       " makes tmux enter copy mode instead of selecting or scrolling
       " inside Vim -- but luckily, setting it up from within autocmds
       " works
+      " xterm2 stops at column 223; SGR has no limit and every terminal
+      " listed above speaks it.
       augroup vim_ttymouse
         autocmd!
-        autocmd VimEnter,FocusGained,BufEnter * set ttymouse=xterm2
+        if has('mouse_sgr')
+          autocmd VimEnter,FocusGained,BufEnter * set ttymouse=sgr
+        else
+          autocmd VimEnter,FocusGained,BufEnter * set ttymouse=xterm2
+        endif
       augroup END
     endif
   endif
