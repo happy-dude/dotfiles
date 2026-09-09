@@ -12,9 +12,7 @@
     then pkgs.nix
     else config.nix.package;
 in {
-  # Kept as the native-format reference; config.fish is inlined into
-  # programs.fish.shellInit below.
-  #xdg.configFile."fish/config.fish".source = ./.config/fish/config.fish;
+  # config.fish is the native source; programs.fish.shellInit reads it in.
   xdg.configFile."fish/tide.fish".source = ./.config/fish/tide.fish;
   xdg.configFile."fish/functions/_tide_item_nohist.fish".source = ./.config/fish/functions/_tide_item_nohist.fish;
   xdg.configFile."fish/completions/nix.fish".source = "${nixClient}/share/fish/vendor_completions.d/nix.fish";
