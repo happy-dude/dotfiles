@@ -80,7 +80,7 @@ in {
       marksman
       nixd
       oxlint
-      perl
+      (perl.withPackages (ps: [ps.PerlLanguageServer]))
       perlnavigator
       ruff
       terraform-ls
@@ -102,6 +102,9 @@ in {
         echo "coc-settings.json names servers with no matching package:$missing" >&2
         exit 1
       }
+      # The Perl entry runs the interpreter itself, so a bare perl on PATH
+      # would satisfy command -v without the language-server module.
+      perl -MPerl::LanguageServer -e1
       echo "all coc-settings.json language servers resolve"
     '';
   };
