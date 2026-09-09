@@ -356,61 +356,38 @@
 (setq org-roam-graph-executable "dot")
 (setq org-roam-graph-viewer #'browse-url-of-file)
 
+(defun dotfiles/org-roam-note-head (with-ref)
+  "Return the head of a new Org Roam note, with a ROAM_REFS line when WITH-REF."
+  (concat ":PROPERTIES:\n"
+          ":ID: %(org-id-new)\n"
+          (if with-ref ":ROAM_REFS: ${ref}\n" "")
+          ":END:\n"
+          "#+TITLE: ${title}\n"
+          "#+CREATED: %U\n"
+          "#+LAST_MODIFIED: %U\n"
+          "#+FILETAGS:\n"
+          "- sources ::\n"
+          "-\n"
+          "- nodes ::\n"
+          "\n"
+          "* Summary\n"
+          "** Questions\n"
+          "** Impact\n"
+          "*** Purpose (Inspire)\n"
+          "*** Values (Guide)\n"
+          "*** Habits (Define)\n"
+          "\n"
+          "* Notes\n"))
+
 (setq org-roam-capture-templates
-      '(("d" "default" plain "%?"
-         :if-new (file+head "%<%Y%m%d>-$\{slug}.org"
-                            ":PROPERTIES:
-                            :ID: %(org-id-new)
-                            :ROAM_REFS: $\{ref}
-                            :END:
-                            #+TITLE: $\{title}
-                            #+CREATED: %U
-                            #+LAST_MODIFIED: %U
-                            #+FILETAGS:
-                            - sources ::
-                            -
-                            - nodes ::
-
-                            * Summary
-                            ** Questions
-                            ** Impact
-                            *** Purpose (Inspire)
-                            *** Values (Guide)
-                            *** Habits (Define)
-
-                            * Notes
-                            -")
-                            :unnarrowed t)))
+      `(("d" "default" plain "%?"
+         :target (file+head "%<%Y%m%d>-${slug}.org" ,(dotfiles/org-roam-note-head nil))
+         :unnarrowed t)))
 
 (setq org-roam-capture-ref-templates
-      '(("r" "ref" plain "#+begin_quote
-%i
-#+end_quote
-
-%?"
-         :if-new (file+head "%<%Y%m%d>-$\{slug}.org"
-                            ":PROPERTIES:
-                            :ID: %(org-id-new)
-                            :ROAM_REFS: $\{ref}
-                            :END:
-                            #+TITLE: $\{title}
-                            #+CREATED: %U
-                            #+LAST_MODIFIED: %U
-                            #+FILETAGS:
-                            - sources ::
-                            -
-                            - nodes ::
-
-                            * Summary
-                            ** Questions
-                            ** Impact
-                            *** Purpose (Inspire)
-                            *** Values (Guide)
-                            *** Habits (Define)
-
-                            * Notes
-                            ")
-                            :unnarrowed t)))
+      `(("r" "ref" plain "#+begin_quote\n%i\n#+end_quote\n\n%?"
+         :target (file+head "%<%Y%m%d>-${slug}.org" ,(dotfiles/org-roam-note-head t))
+         :unnarrowed t)))
 
 
 (define-key global-map (kbd "C-c n l") 'org-roam-buffer-toggle)
@@ -531,9 +508,9 @@
     ":PROPERTIES:\n:ID: " (org-id-new) "\n:END:\n"
     (pcase org-journal-file-type
            (`daily "#+TITLE: Daily Journal\n#+STARTUP: showeverything")
-           (`weekly (concat "#+TITLE: Weekly Journal - " (format-time-string "%Y-W%V") "\n#+STARTUP: folded"))
-           (`monthly (concat "#+TITLE: Monthly Journal - " (format-time-string "%B [%Y%m]") "\n#+STARTUP: folded"))
-           (`yearly (concat "#+TITLE: Yearly Journal - " (format-time-string "%Y") "\n#+STARTUP: folded"))
+           (`weekly (concat "#+TITLE: Weekly Journal - " (format-time-string "%Y-W%V" time) "\n#+STARTUP: folded"))
+           (`monthly (concat "#+TITLE: Monthly Journal - " (format-time-string "%B [%Y%m]" time) "\n#+STARTUP: folded"))
+           (`yearly (concat "#+TITLE: Yearly Journal - " (format-time-string "%Y" time) "\n#+STARTUP: folded"))
            )))
 (setq org-journal-file-header 'org-journal-file-header-func)
 
