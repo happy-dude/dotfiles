@@ -83,14 +83,6 @@
     (setq-local undo-tree-auto-save-history nil)))
 (add-hook 'find-file-hook #'dotfiles/harden-sensitive-buffer)
 
-;; Values added by Custom
-(custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
-  )
-
 ;; Mimic vim rainbow parentheses settings:
 ;; red, green, blue-green, red-orange, blue, orange, violet, yellow, red-violet
 ;; Matching paren as azure
@@ -111,8 +103,6 @@
   '(rainbow-delimiters-unmatched-face ((t (:background "#D0EA2B"))))
   '(show-paren-match ((t (:foreground "azure" :weight semi-bold))))
   )
-
-(load custom-file 'noerror)
 
 ;; Home Manager generates absolute, Nix-store-pinned LSP and Tree-sitter paths.
 ;; lsp-paths.el holds those paths; lsp-servers.el is the Emacs Lisp that uses
@@ -610,3 +600,7 @@
 (require 'rainbow-delimiters)
 (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
 (add-hook 'org-mode-hook #'rainbow-delimiters-mode)
+
+;; Machine-local Custom values are loaded last so they override the
+;; declarative defaults above rather than being overwritten by them.
+(load custom-file 'noerror)
