@@ -94,6 +94,9 @@ checkout is the Linux branch.
 - `fish/.config/fish/config.fish` optionally sources
   `~/.config/fish/secrets.fish`. The committed example contains placeholders
   only; real values remain untracked, per-machine, and outside the Nix store.
+  Fish's `PATH` additions are session-only; a host whose `fish_variables` still
+  holds a persisted `fish_user_paths` from earlier configurations clears it once
+  with `set -e fish_user_paths`.
 - `roswell/default.nix` applies the locked `roswell_src` source override and
   installs Roswell. `virtme-ng/default.nix` builds `virtme_ng_src` with its
   runtime helpers on `PATH` and installs `vng`. Ghidra comes from the locked
