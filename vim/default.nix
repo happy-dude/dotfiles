@@ -110,7 +110,6 @@
     ack-vim
     coc-nvim
     csv-vim
-    ctrlp-vim
     fzf-vim
     gruvbox-material
     html5-vim

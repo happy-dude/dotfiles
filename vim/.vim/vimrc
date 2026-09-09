@@ -65,11 +65,8 @@ if &loadplugins
     lua require('codecompanion_nvim')
   endif
 
-  " Use fzf when available; ctrlp remains the pure Vimscript fallback.
   if executable("fzf")
     call s:SourcePackageConfig('fzf')
-  else
-    call s:SourcePackageConfig('ctrlp')
   endif
 
   if executable("node")
