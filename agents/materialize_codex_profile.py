@@ -6,12 +6,10 @@ from tomlkit.items import AoT, Table
 
 from dotfiles_files import write_text
 
-CONFIG_SCHEMA_URL = "https://developers.openai.com/codex/config-schema.json"
 MANAGED_KEYS = (
     "developer_instructions",
     "model_reasoning_effort",
 )
-SCHEMA_DIRECTIVE = f"#:schema {CONFIG_SCHEMA_URL}"
 
 
 def load_document(path: Path, description: str):
@@ -28,6 +26,10 @@ def materialize(source: Path, target: Path) -> None:
         raise SystemExit(message)
 
     generated = load_document(source, "generated Codex profile")
+    # Nix writes the schema directive into the template; carry it over
+    # verbatim.
+    first_line = source.read_text(encoding="utf-8").split("\n", 1)[0]
+    directive = first_line + "\n" if first_line.startswith("#:schema ") else ""
     unexpected = set(generated) - set(MANAGED_KEYS)
     if unexpected:
         names = ", ".join(sorted(unexpected))
@@ -64,7 +66,7 @@ def materialize(source: Path, target: Path) -> None:
         if isinstance(item, (Table, AoT)):
             merged[key] = value
 
-    write_text(target, SCHEMA_DIRECTIVE + "\n" + tomlkit.dumps(merged), 0o600)
+    write_text(target, directive + tomlkit.dumps(merged), 0o600)
 
 
 def main(arguments: list[str]) -> None:
