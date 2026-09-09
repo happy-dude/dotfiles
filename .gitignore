@@ -22,6 +22,15 @@ nvim.log
 *.orig
 *.rej
 
+# Rime writes learned data, sync state, and build output beside its schemas
+# when pointed at this tree; keep that state out of Git either way.
+/rime/.local/share/fcitx5/rime/*.userdb/
+/rime/.local/share/fcitx5/rime/sync/
+/rime/.local/share/fcitx5/rime/build/
+/rime/.local/share/fcitx5/rime/user.yaml
+/rime/.local/share/fcitx5/rime/installation.yaml
+/rime/.local/share/fcitx5/rime/trash/
+
 # Machine-local secrets
 secrets.fish
 # A filled-in copy of git/local.config.example; the real file lives at
