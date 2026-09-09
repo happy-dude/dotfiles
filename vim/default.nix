@@ -86,10 +86,16 @@
       name = "lua";
       path = ./.vim/lua;
     }
+    {
+      name = "after";
+      path = ./.vim/after;
+    }
   ];
+  # Plugin scripts under after/ run once every package is on the runtimepath.
   runtimeConfig = runtime: ''
     let g:dotfiles_vim_runtime = '${runtime}'
     set runtimepath^=${runtime}
+    set runtimepath+=${runtime}/after
     source ${runtime}/vimrc
   '';
 

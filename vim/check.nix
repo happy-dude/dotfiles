@@ -46,6 +46,17 @@
             -u ${neovimConfig} \
             -l ${./tests/codecompanion.lua}
 
+        # The colorscheme block only runs under a colour terminal.
+        TERM=xterm-256color \
+        HOME="$PWD/home" \
+        XDG_CACHE_HOME="$PWD/home/cache" \
+        XDG_DATA_HOME="$PWD/data" \
+        XDG_STATE_HOME="$PWD/home/state" \
+          ${neovim}/bin/nvim \
+            --headless \
+            -u ${neovimConfig} \
+            -l ${./tests/startup.lua}
+
         # matchtag.lua locates the repository from its own store path and
         # reads parsers from MATCHTAG_TREESITTER_RUNTIME.
         MATCHTAG_TREESITTER_RUNTIME="$PWD/data/nvim/site" \
@@ -59,6 +70,29 @@
       '';
     };
   profileChecks = lib.mapAttrsToList mkProfileCheck homes;
+  # Vim has no headless Lua entry point like the Org check; load the
+  # configuration in silent Ex mode and fail on any recorded error.
+  mkVimStartupCheck = username: home:
+    mkCheck {
+      name = "dotfiles-vim-startup-${username}-check";
+      tools = [home.config.programs.vim.package];
+      script = ''
+        mkdir -p home
+        # Silent Ex mode never queries the terminal, so declare the colour
+        # depth the colorscheme guard expects; :cquit fails the check when the
+        # expected scheme is not the one in effect.
+        HOME="$PWD/home" TERM=xterm-256color vim -es --cmd 'set t_Co=256' \
+          -c 'redir! > messages.txt' -c 'silent messages' -c 'redir END' \
+          -c 'if get(g:, "colors_name", "") !=# "gruvbox-material" | cquit | endif' \
+          -c 'qa!' </dev/null
+        test -f messages.txt
+        if grep -E '^E[0-9]+' messages.txt; then
+          echo "Vim reported errors while loading its configuration" >&2
+          exit 1
+        fi
+      '';
+    };
+  vimStartupChecks = lib.mapAttrsToList mkVimStartupCheck homes;
 in {
   # coc-settings.json drives its language servers by bare command; assert each
   # command it names resolves to a package in the shared server table. The
@@ -115,5 +149,9 @@ in {
   neovim-org = mkCheck {
     name = "dotfiles-neovim-org-check";
     script = lib.concatMapStringsSep "\n" (check: "test -e ${check}") profileChecks;
+  };
+  vim-startup = mkCheck {
+    name = "dotfiles-vim-startup-check";
+    script = lib.concatMapStringsSep "\n" (check: "test -e ${check}") vimStartupChecks;
   };
 }
