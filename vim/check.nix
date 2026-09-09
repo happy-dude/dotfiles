@@ -104,8 +104,12 @@ in {
     tools = [pkgs.jq] ++ languageServers.packages;
     script = ''
       missing=""
-      for cmd in $(jq -r '.languageserver | to_entries[] | .value.command' \
-          ${./.vim/coc-settings.json} | sort -u); do
+      # Extensions start clangd, rust-analyzer, and zuban through their own
+      # path keys rather than the languageserver table.
+      for cmd in $(jq -r '
+          [.languageserver[].command, ."clangd.path", ."rust-analyzer.server.path", ."zuban.path"]
+          | .[]
+        ' ${./.vim/coc-settings.json} | sort -u); do
         command -v "$cmd" >/dev/null || missing="$missing $cmd"
       done
       [ -z "$missing" ] || {
