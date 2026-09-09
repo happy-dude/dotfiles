@@ -84,10 +84,10 @@ checkout is the Linux branch.
 - Source-only inputs also lock Prezto, Tide, z, Roswell, RustOwl, virtme-ng, and
   coc-zuban. Nixpkgs supplies bgutil-ytdlp-pot-provider, the Catppuccin Fcitx
   themes, and the autopair, puffer, and spark Fish plugin sources. The same
-  locked RustOwl source builds both its server and Neovim client. Ordinary
-  editor plugins come from the locked Nixpkgs `vimPlugins` set; explicit source
-  inputs are reserved for sources that are absent from Nixpkgs or intentionally
-  track upstream independently.
+  locked RustOwl source builds both its server and Neovim client through
+  `rustowl/package.nix`. Ordinary editor plugins come from the locked Nixpkgs
+  `vimPlugins` set; explicit source inputs are reserved for sources that are
+  absent from Nixpkgs or intentionally track upstream independently.
 - `fish/.config/fish/tide.fish` is the declarative Tide profile, linked by Home
   Manager and sourced by the tracked `config.fish`. It overrides machine-local
   `fish_variables` so fresh profiles have a complete prompt.
@@ -125,17 +125,24 @@ checkout is the Linux branch.
   merging them through a fold that throws when two sets contribute the same
   check name rather than silently keeping one.
 - `lib/` holds what the modules share. `lib/profile.nix` declares the
-  `dotfiles.profile` options describing what a machine provides, populated from
-  the per-machine capability records in `flake.nix`, so modules ask for the fact
-  they depend on instead of comparing the username. `lib/python/` holds the
-  durable file replacement the activation helpers use and the builder that
-  packages them; `lib/mkCheck.nix` builds check derivations;
-  `lib/less-flags.nix` holds the less options shared by the pager integrations;
-  `lib/homes.nix` returns a value every profile agrees on and otherwise names
-  the profiles that disagree. `scripts/lib/` holds the same for shell.
+  `dotfiles.profile` options describing what a machine provides and is the only
+  reader of the per-machine capability record `flake.nix` passes as `profile`,
+  so modules ask for the fact they depend on instead of comparing the username;
+  it also sets `home.username` and `home.homeDirectory` from that record.
+  `lib/language-servers.nix` is the one table of language-server packages and
+  executables: `home.nix` installs its packages, `emacs/lsp.nix` takes its
+  absolute executables, and the OpenCode and CoC checks supply the same packages
+  as tools. `lib/python/` holds the durable file replacement the activation
+  helpers use and the builder that packages them; `lib/mkCheck.nix` builds check
+  derivations; `lib/less-flags.nix` holds the less options shared by the pager
+  integrations; `lib/homes.nix` returns a value every profile agrees on and
+  otherwise names the profiles that disagree. `scripts/lib/` holds the same for
+  shell.
 - `flatpak/` and `plasma/` are capability-conditional modules: `mkHome` imports
   the flatpak modules where `hasFlatpak` holds and the plasma modules where the
-  desktop is Plasma.
+  desktop is Plasma, because their options come from external modules. Modules
+  that use only core options (`gnome/`, `rime/gnome.nix`) guard themselves on
+  `dotfiles.profile` instead.
 - `treefmt.nix` configures **treefmt** (run via `nix fmt`): the Linux kernel's
   `.clang-format` for C/C++, Alejandra for Nix, `fish_indent` for Fish, `shfmt`
   for shell, Ruff for Python, Neovim's exact StyLua configuration for Lua,
@@ -181,8 +188,10 @@ and installs StyLua's config under `~/.config/stylua`.
   notmuch in `mail/`.
 - **`bat/`** is a module (`bat/default.nix`, `programs.bat`); enabling the
   program owns the package, so do not duplicate `bat` in `home.packages`.
-- **`fzf/`** enables Home Manager's FZF package and its Fish and Zsh
-  integrations; do not duplicate `fzf` in `home.packages` or shell startup.
+- **`fzf/`** enables Home Manager's FZF package, its Fish integration, and the
+  default command; do not duplicate `fzf` in `home.packages` or shell startup.
+  The Zsh bindings are sourced at the end of the tracked `.zshrc`, after
+  prezto's `bindkey -d` has run, so the module's own Zsh integration stays off.
 - **`zsh/`** sets `ZDOTDIR` to `~/.config/zsh` and lets Home Manager compose its
   generated integrations with the tracked runcom files there. Only `~/.zshenv`
   remains at the home root because Zsh needs it to bootstrap `ZDOTDIR` before
@@ -193,14 +202,21 @@ and installs StyLua's config under `~/.config/stylua`.
   `programs.git.ignores` reading `git/.gitignore_global`, the user-global ignore
   file. The repository also tracks its own root `.gitignore`, which covers this
   checkout's working state so that a fresh clone hides it before the first
-  activation deploys the global file. A managed global `commit-msg` dispatcher
-  preserves repository-local hooks, lints every commit, and requires an
-  initially present `Assisted-by:` trailer to remain. Per-machine identity and
-  signing (`user.email`, `signingkey`, `commit`/`tag` `gpgsign`) live in an
-  untracked `~/.config/git/local.config` that the module `include`s — SSH/GPG
-  keys and email differ per box; template in `git/local.config.example`. Home
-  Manager writes `~/.config/git/config`, which an unmanaged `~/.gitconfig`
-  silently overrides (git reads it last).
+  activation deploys the global file; the global list applies to every
+  repository, so it holds only generated and machine-local patterns. The module
+  sets `core.hooksPath`, and every hook name githooks(5) documents dispatches
+  there to the repository's own hook of that name — receive-side hooks included,
+  since a push into a local bare repository runs under the same setting — except
+  the protocol and override hooks `fsmonitor-watchman`, `proc-receive`, and
+  `push-to-checkout`, where a stand-in would change Git's behaviour; the
+  `commit-msg` dispatcher also lints every commit, reruns the repository hook
+  and the linter after each interactive edit, and requires an initially present
+  `Assisted-by:` trailer to remain. Per-machine identity and signing
+  (`user.email`, `signingkey`, `commit`/`tag` `gpgsign`) live in an untracked
+  `~/.config/git/local.config` that the module `include`s — SSH/GPG keys and
+  email differ per box; template in `git/local.config.example`. Home Manager
+  writes `~/.config/git/config`, which an unmanaged `~/.gitconfig` silently
+  overrides (git reads it last).
 - **`xdg/`** owns generic-Linux XDG integration plus the nixGL-wrapped Solaar
   package and its `schan`-only autostart entry.
 
@@ -246,10 +262,14 @@ and installs StyLua's config under `~/.config/stylua`.
   The repository-root `opencode.json` enables LSP feedback only for this
   checkout, invokes the Nix-managed server commands, and disables overlapping
   Oxlint diagnostics. The LSP permission and
-  `OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured. The module also
-  owns `tui.json`, retains the Gruvbox Material material dark-medium theme, and
-  selects the separately generated mix dark-medium variant by default.
-  `OPENCODE_CONFIG` points to the optional mode-0600
+  `OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured, and the same
+  guard and `OPENCODE_CONFIG` reach systemd user services such as the Emacs
+  daemon through `systemd.user.sessionVariables`; the user manager reads that
+  `environment.d` file when it starts, so a running daemon sees a changed value
+  after `systemctl --user daemon-reexec` and a restart, or the next login. The
+  module also owns `tui.json`, retains the Gruvbox Material material dark-medium
+  theme, and selects the separately generated mix dark-medium variant by
+  default. `OPENCODE_CONFIG` points to the optional mode-0600
   `~/.config/opencode/local.json` for private MCP definitions and other
   host-only extensions. Machine-local commands belong under
   `~/.config/opencode/commands`; OpenCode also discovers compatible skills from
@@ -272,10 +292,12 @@ and installs StyLua's config under `~/.config/stylua`.
   `docs/rclone-box-org.md`.
 - **`rime/`** is a native Home Manager module (`rime/default.nix`). Locked
   schema inputs replace matching snapshot files and `pkgs.rime-zhwiki` supplies
-  Zhwiki. Home Manager owns each immutable Catppuccin and Plasma theme directory
-  while activation materializes the Fcitx profile and host configuration as
-  writable regular files with prior-source snapshots under
-  `~/.local/state/rime/host-config`. It rejects malformed or unmanaged
+  Zhwiki. Home Manager owns each immutable Catppuccin and Plasma theme
+  directory; `rime/themes.nix` declares the Catppuccin theme names and the
+  `rime-theme-names` check holds them against the package at build time, so
+  evaluation never reads the package. Activation materializes the Fcitx profile
+  and host configuration as writable regular files with prior-source snapshots
+  under `~/.local/state/rime/host-config`. It rejects malformed or unmanaged
   conflicts, materializes managed static data under
   `~/.local/share/fcitx5/rime/.home-manager-static`, and leaves generated
   schemas, learned user databases, and sync state writable beside it. Host-file
@@ -319,8 +341,11 @@ guidance detectable.
   `pkgs.vimPlugins`; the same module owns source-pinned CoC Zuban and RustOwl
   client builds plus local plugin metadata overrides. Home Manager installs them
   as native packages. The shared `vim/.vim/vimrc` loads ordered file-based
-  settings, while `lua/init.lua` is the Neovim entry point. There is no vim-plug
-  checkout or mutable plugin updater.
+  settings, while `lua/init.lua` is the Neovim entry point, required from
+  `after/plugin/dotfiles.lua` once every package is on the runtimepath; the
+  vimrc never loads packages itself. There is no vim-plug checkout or mutable
+  plugin updater. The `vim-startup` check loads each profile's Vim configuration
+  in silent Ex mode and fails on any recorded error.
 - Home Manager builds Tree-sitter parsers and queries in `vim/default.nix`,
   including an explicit `org.so` from `tree-sitter-org-nvim` because
   `nvim-treesitter.withAllGrammars` omits it. The `neovim-org` flake check opens
@@ -347,8 +372,9 @@ guidance detectable.
   `~/.config/emacs/init.el`, links the Org directory-local settings, and creates
   mutable Org directories. `emacs/lsp.nix` mirrors the CoC server matrix with
   lsp-mode clients whose executables are absolute Nix store paths. It disables
-  implicit clients and downloads, provides Nix-built Tree-sitter grammars, and
-  never starts local servers for remote buffers. `agent-shell.el` selects the
+  implicit clients and downloads, provides Nix-built Tree-sitter grammars,
+  forbids Emacs' own grammar downloads, opens TSX in web-mode, and never starts
+  local servers for remote buffers. `agent-shell.el` selects the
   provider-neutral `opencode acp` client; private provider configuration and
   credentials remain OpenCode-owned host state. Emacs Custom writes to the
   machine-local `~/.config/emacs/custom.el`. No vendored Emacs plugin or legacy
@@ -401,10 +427,12 @@ compilation for Python; Bash syntax and ShellCheck for `scripts/*.sh` and
 `scripts/lib/*.sh`; one derivation per `scripts/test_*.sh` suite, discovered
 from the directory rather than listed; native syntax checks for the managed Fish
 and Zsh files; focused tests for the Codex profile materializer, agent-directory
-ownership migration, `.gitmodules` formatter, rclone event classification,
-guarded Rime host-file and ownership-state materialization, Zed settings
-materialization, focused OpenCode package/LSP/schema/theme/telemetry checks, Git
-commit-message hook behavior, Kagi prompt character budgets, the aerc
+ownership migration, `.gitmodules` formatter, rclone event classification and
+decoding, guarded Rime host-file and ownership-state materialization, the Rime
+theme names against the Catppuccin package, Zed settings materialization,
+focused OpenCode package/LSP/schema/theme/telemetry checks, Git commit-message
+hook behavior and the repository-hook dispatcher, a silent Ex-mode load of each
+profile's Vim configuration, Kagi prompt character budgets, the aerc
 deployed/tracked configuration mirror, CoC language-server package resolution,
 the sdcv dictionary lookup, the CurSearch highlight link, and editor
 secret-state exclusions; Emacs `check-parens` and Org lint for tracked Org files
