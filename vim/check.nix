@@ -1,5 +1,6 @@
 {
   homes,
+  lib,
   pkgs,
   self,
 }: let
@@ -56,8 +57,7 @@
 
       '';
     };
-  stachanCheck = mkProfileCheck "stachan" homes.stachan;
-  schanCheck = mkProfileCheck "schan" homes.schan;
+  profileChecks = lib.mapAttrsToList mkProfileCheck homes;
 in {
   # coc-settings.json drives its language servers by bare command; assert each
   # command it names resolves to an installed language-server package. The
@@ -138,9 +138,6 @@ in {
   };
   neovim-org = mkCheck {
     name = "dotfiles-neovim-org-check";
-    script = ''
-      test -e ${stachanCheck}
-      test -e ${schanCheck}
-    '';
+    script = lib.concatMapStringsSep "\n" (check: "test -e ${check}") profileChecks;
   };
 }
