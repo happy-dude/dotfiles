@@ -26,8 +26,11 @@
 (unless (boundp 'dotfiles-lsp-server-commands)
   (error "lsp-paths.el must be loaded before lsp-servers.el"))
 
+;; Nix provides every grammar; neither treesit-auto nor Emacs' own ts-modes
+;; may download one into the user directory.
 (setq treesit-extra-load-path (list dotfiles-lsp-treesit-grammars-path)
-      treesit-auto-install nil)
+      treesit-auto-install nil
+      treesit-auto-install-grammar 'never)
 (require 'treesit-auto)
 (global-treesit-auto-mode 1)
 

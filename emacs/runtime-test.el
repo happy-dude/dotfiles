@@ -33,6 +33,8 @@
   (error "lsp-mode snippets require the undeclared yasnippet package"))
 (when treesit-auto-install
   (error "Tree-sitter grammar downloads are enabled"))
+(unless (eq treesit-auto-install-grammar 'never)
+  (error "Emacs' built-in Tree-sitter modes may download grammars"))
 (unless (equal (cdr (assq 'lsp-mode minor-mode-alist)) '(" LSP"))
   (error "lsp-mode retained a nested mode-line indicator"))
 
