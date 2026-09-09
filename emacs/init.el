@@ -525,10 +525,10 @@
 ;; config
 ;; ref: https://github.com/bastibe/org-journal
 (setq org-journal-file-type 'weekly)
-(defun org-journal-file-header-func (_time)
-  "Custom function to create journal header."
+(defun org-journal-file-header-func (time)
+  "Return the header of a new journal file for TIME: an ID drawer and a title."
   (concat
-    (org-id-get-create)
+    ":PROPERTIES:\n:ID: " (org-id-new) "\n:END:\n"
     (pcase org-journal-file-type
            (`daily "#+TITLE: Daily Journal\n#+STARTUP: showeverything")
            (`weekly (concat "#+TITLE: Weekly Journal - " (format-time-string "%Y-W%V") "\n#+STARTUP: folded"))
