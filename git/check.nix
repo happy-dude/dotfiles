@@ -106,6 +106,20 @@ in {
       EOF
       commit-msg verbose.md
 
+      # The marker inside prose is not a scissors line; the text after it
+      # is part of the message and must still be checked.
+      cat >quoted-scissors.md <<'EOF'
+      git: mention the scissors marker in prose
+
+      Git separates the diff with ------------------------ >8 ------------------------ in verbose mode.
+
+      This deliberately overlong line after the mention must still reach the width check.
+      EOF
+      if commit-msg quoted-scissors.md </dev/null; then
+        echo "accepted overlong text hidden behind a quoted scissors marker" >&2
+        exit 1
+      fi
+
       cat >merge-template.md <<'EOF'
       Merge branch 'main' into macos
 

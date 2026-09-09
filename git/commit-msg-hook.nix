@@ -45,11 +45,11 @@ in
         normalized_message=$(mktemp)
         raw_errors=$(mktemp)
 
-        if grep -Fq -- \
-          '------------------------ >8 ------------------------' \
-          "$message_path"; then
+        # Git's scissors line is the comment prefix and the marker on a line
+        # of their own; the marker inside prose is message text.
+        if grep -Eq -- '^[^[:space:]]+ -{24} >8 -{24}$' "$message_path"; then
           if ! awk \
-            'index($0, "------------------------ >8 ------------------------") { exit } { print }' \
+            '/^[^[:space:]]+ -{24} >8 -{24}$/ { exit } { print }' \
             "$message_path" | git stripspace --strip-comments \
             >"$cleaned_message"; then
             rm -f -- "$cleaned_message" "$normalized_message" "$raw_errors"
