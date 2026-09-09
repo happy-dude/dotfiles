@@ -14,29 +14,36 @@ import sys
 import tempfile
 from collections.abc import Callable
 from pathlib import Path
-from typing import BinaryIO
+from typing import BinaryIO, NoReturn
 
 PRESERVE = -1
 """Keep the destination's current permissions, for a file that exists."""
 
 
-def fail(message: str, status: int = 1) -> None:
+def fail(message: str, status: int = 1) -> NoReturn:
     print(message, file=sys.stderr)
     raise SystemExit(status)
 
 
-def state_home() -> Path:
-    value = os.environ.get("XDG_STATE_HOME")
-    if value:
+def _base_directory(variable: str, fallback: Path) -> Path:
+    # The base-directory specification requires absolute paths and says a
+    # relative value is invalid and must be ignored.
+    value = os.environ.get(variable)
+    if value and os.path.isabs(value):
         return Path(value)
-    return Path.home() / ".local" / "state"
+    return fallback
+
+
+def config_home() -> Path:
+    return _base_directory("XDG_CONFIG_HOME", Path.home() / ".config")
+
+
+def state_home() -> Path:
+    return _base_directory("XDG_STATE_HOME", Path.home() / ".local" / "state")
 
 
 def data_home() -> Path:
-    value = os.environ.get("XDG_DATA_HOME")
-    if value:
-        return Path(value)
-    return Path.home() / ".local" / "share"
+    return _base_directory("XDG_DATA_HOME", Path.home() / ".local" / "share")
 
 
 def same_content(left: Path, right: Path) -> bool:

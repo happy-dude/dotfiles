@@ -83,14 +83,6 @@
     (setq-local undo-tree-auto-save-history nil)))
 (add-hook 'find-file-hook #'dotfiles/harden-sensitive-buffer)
 
-;; Values added by Custom
-(custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
-  )
-
 ;; Mimic vim rainbow parentheses settings:
 ;; red, green, blue-green, red-orange, blue, orange, violet, yellow, red-violet
 ;; Matching paren as azure
@@ -111,8 +103,6 @@
   '(rainbow-delimiters-unmatched-face ((t (:background "#D0EA2B"))))
   '(show-paren-match ((t (:foreground "azure" :weight semi-bold))))
   )
-
-(load custom-file 'noerror)
 
 ;; Home Manager generates absolute, Nix-store-pinned LSP and Tree-sitter paths.
 ;; lsp-paths.el holds those paths; lsp-servers.el is the Emacs Lisp that uses
@@ -366,61 +356,38 @@
 (setq org-roam-graph-executable "dot")
 (setq org-roam-graph-viewer #'browse-url-of-file)
 
+(defun dotfiles/org-roam-note-head (with-ref)
+  "Return the head of a new Org Roam note, with a ROAM_REFS line when WITH-REF."
+  (concat ":PROPERTIES:\n"
+          ":ID: %(org-id-new)\n"
+          (if with-ref ":ROAM_REFS: ${ref}\n" "")
+          ":END:\n"
+          "#+TITLE: ${title}\n"
+          "#+CREATED: %U\n"
+          "#+LAST_MODIFIED: %U\n"
+          "#+FILETAGS:\n"
+          "- sources ::\n"
+          "-\n"
+          "- nodes ::\n"
+          "\n"
+          "* Summary\n"
+          "** Questions\n"
+          "** Impact\n"
+          "*** Purpose (Inspire)\n"
+          "*** Values (Guide)\n"
+          "*** Habits (Define)\n"
+          "\n"
+          "* Notes\n"))
+
 (setq org-roam-capture-templates
-      '(("d" "default" plain "%?"
-         :if-new (file+head "%<%Y%m%d>-$\{slug}.org"
-                            ":PROPERTIES:
-                            :ID: %(org-id-new)
-                            :ROAM_REFS: $\{ref}
-                            :END:
-                            #+TITLE: $\{title}
-                            #+CREATED: %U
-                            #+LAST_MODIFIED: %U
-                            #+FILETAGS:
-                            - sources ::
-                            -
-                            - nodes ::
-
-                            * Summary
-                            ** Questions
-                            ** Impact
-                            *** Purpose (Inspire)
-                            *** Values (Guide)
-                            *** Habits (Define)
-
-                            * Notes
-                            -")
-                            :unnarrowed t)))
+      `(("d" "default" plain "%?"
+         :target (file+head "%<%Y%m%d>-${slug}.org" ,(dotfiles/org-roam-note-head nil))
+         :unnarrowed t)))
 
 (setq org-roam-capture-ref-templates
-      '(("r" "ref" plain "#+begin_quote
-%i
-#+end_quote
-
-%?"
-         :if-new (file+head "%<%Y%m%d>-$\{slug}.org"
-                            ":PROPERTIES:
-                            :ID: %(org-id-new)
-                            :ROAM_REFS: $\{ref}
-                            :END:
-                            #+TITLE: $\{title}
-                            #+CREATED: %U
-                            #+LAST_MODIFIED: %U
-                            #+FILETAGS:
-                            - sources ::
-                            -
-                            - nodes ::
-
-                            * Summary
-                            ** Questions
-                            ** Impact
-                            *** Purpose (Inspire)
-                            *** Values (Guide)
-                            *** Habits (Define)
-
-                            * Notes
-                            ")
-                            :unnarrowed t)))
+      `(("r" "ref" plain "#+begin_quote\n%i\n#+end_quote\n\n%?"
+         :target (file+head "%<%Y%m%d>-${slug}.org" ,(dotfiles/org-roam-note-head t))
+         :unnarrowed t)))
 
 
 (define-key global-map (kbd "C-c n l") 'org-roam-buffer-toggle)
@@ -535,15 +502,15 @@
 ;; config
 ;; ref: https://github.com/bastibe/org-journal
 (setq org-journal-file-type 'weekly)
-(defun org-journal-file-header-func (_time)
-  "Custom function to create journal header."
+(defun org-journal-file-header-func (time)
+  "Return the header of a new journal file for TIME: an ID drawer and a title."
   (concat
-    (org-id-get-create)
+    ":PROPERTIES:\n:ID: " (org-id-new) "\n:END:\n"
     (pcase org-journal-file-type
            (`daily "#+TITLE: Daily Journal\n#+STARTUP: showeverything")
-           (`weekly (concat "#+TITLE: Weekly Journal - " (format-time-string "%Y-W%V") "\n#+STARTUP: folded"))
-           (`monthly (concat "#+TITLE: Monthly Journal - " (format-time-string "%B [%Y%m]") "\n#+STARTUP: folded"))
-           (`yearly (concat "#+TITLE: Yearly Journal - " (format-time-string "%Y") "\n#+STARTUP: folded"))
+           (`weekly (concat "#+TITLE: Weekly Journal - " (format-time-string "%Y-W%V" time) "\n#+STARTUP: folded"))
+           (`monthly (concat "#+TITLE: Monthly Journal - " (format-time-string "%B [%Y%m]" time) "\n#+STARTUP: folded"))
+           (`yearly (concat "#+TITLE: Yearly Journal - " (format-time-string "%Y" time) "\n#+STARTUP: folded"))
            )))
 (setq org-journal-file-header 'org-journal-file-header-func)
 
@@ -610,3 +577,7 @@
 (require 'rainbow-delimiters)
 (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
 (add-hook 'org-mode-hook #'rainbow-delimiters-mode)
+
+;; Machine-local Custom values are loaded last so they override the
+;; declarative defaults above rather than being overwritten by them.
+(load custom-file 'noerror)

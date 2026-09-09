@@ -10,9 +10,7 @@
   localFcitxThemesDir = ./.local/share/fcitx5/themes;
 
   catppuccinThemeDir = "${pkgs.catppuccin-fcitx5}/share/fcitx5/themes";
-  catppuccinThemeNames = builtins.attrNames (
-    lib.filterAttrs (_: type: type == "directory") (builtins.readDir catppuccinThemeDir)
-  );
+  catppuccinThemeNames = import ./themes.nix {inherit lib;};
   themeFiles = builtins.listToAttrs (
     map (name: {
       name = "fcitx5/themes/${name}";

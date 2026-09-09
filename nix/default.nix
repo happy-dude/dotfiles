@@ -2,10 +2,9 @@
   config,
   inputs,
   lib,
-  nixPackage,
   ...
 }: let
-  inherit (config.dotfiles.profile) hostProvidedNix;
+  inherit (config.dotfiles.profile) hostProvidedNix nixPackage;
   localConfig = "${config.xdg.configHome}/nix/local.conf";
 in {
   nix = {

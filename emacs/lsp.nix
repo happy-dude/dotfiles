@@ -1,5 +1,11 @@
 {pkgs}: let
-  perlWithLanguageServer = pkgs.perl.withPackages (ps: [ps.PerlLanguageServer]);
+  inherit
+    (import ../lib/language-servers.nix {
+      inherit pkgs;
+      lib = pkgs.lib;
+    })
+    bin
+    ;
   treesitGrammars = pkgs.emacsPackages.treesit-grammars.with-grammars (grammars:
     with grammars; [
       tree-sitter-bash
@@ -70,34 +76,34 @@ in {
     (defconst dotfiles-lsp-treesit-grammars-path "${treesitGrammars}/lib")
 
     (defconst dotfiles-lsp-server-commands
-      '((dotfiles-bash . ("${pkgs.bash-language-server}/bin/bash-language-server" "start"))
-        (dotfiles-clangd . ("${pkgs.clang-tools}/bin/clangd"))
-        (dotfiles-clojure . ("${pkgs.clojure-lsp}/bin/clojure-lsp" "listen"))
-        (eslint . ("${pkgs.vscode-langservers-extracted}/bin/vscode-eslint-language-server" "--stdio"))
-        (dotfiles-fennel . ("${pkgs.fennel-ls}/bin/fennel-ls" "--server"))
-        (dotfiles-fish . ("${pkgs.fish-lsp}/bin/fish-lsp" "start"))
-        (dotfiles-gopls . ("${pkgs.gopls}/bin/gopls"))
-        (dotfiles-haskell . ("${pkgs.haskell-language-server}/bin/haskell-language-server-wrapper" "--lsp"))
-        (dotfiles-json . ("${pkgs.vscode-langservers-extracted}/bin/vscode-json-language-server" "--stdio"))
-        (dotfiles-kotlin . ("${pkgs.kotlin-language-server}/bin/kotlin-language-server"))
-        (dotfiles-lua . ("${pkgs.lua-language-server}/bin/lua-language-server"))
-        (dotfiles-marksman . ("${pkgs.marksman}/bin/marksman" "server"))
-        (dotfiles-nixd . ("${pkgs.nixd}/bin/nixd"))
-        (dotfiles-oxlint . ("${pkgs.oxlint}/bin/oxlint" "--lsp"))
-        (dotfiles-perl-language-server . ("${perlWithLanguageServer}/bin/perl" "-MPerl::LanguageServer" "-e" "Perl::LanguageServer::run"))
-        (dotfiles-perl-navigator . ("${pkgs.perlnavigator}/bin/perlnavigator" "--stdio"))
-        (dotfiles-ruff . ("${pkgs.ruff}/bin/ruff" "server"))
-        (dotfiles-rust-analyzer . ("${pkgs.rust-analyzer}/bin/rust-analyzer"))
-        (dotfiles-terraform . ("${pkgs.terraform-ls}/bin/terraform-ls" "serve"))
-        (dotfiles-texlab . ("${pkgs.texlab}/bin/texlab"))
-        (dotfiles-tinymist . ("${pkgs.tinymist}/bin/tinymist" "lsp"))
-        ;; typescript 7 (tsgo) ships no tsserver.js; tsgo serves LSP
-        ;; directly over stdio, so there is no SDK pin.
-        (dotfiles-typescript . ("${pkgs.typescript-go}/bin/tsgo" "--lsp" "--stdio"))
-        (dotfiles-vim . ("${pkgs.vim-language-server}/bin/vim-language-server" "--stdio"))
-        (dotfiles-yaml . ("${pkgs.yaml-language-server}/bin/yaml-language-server" "--stdio"))
-        (dotfiles-zls . ("${pkgs.zls}/bin/zls"))
-        (dotfiles-zuban . ("${pkgs.zuban}/bin/zuban" "server"))))
+      '((dotfiles-bash . ("${bin "bash-language-server"}" "start"))
+        (dotfiles-clangd . ("${bin "clangd"}"))
+        (dotfiles-clojure . ("${bin "clojure-lsp"}" "listen"))
+        (eslint . ("${bin "vscode-eslint-language-server"}" "--stdio"))
+        (dotfiles-fennel . ("${bin "fennel-ls"}" "--server"))
+        (dotfiles-fish . ("${bin "fish-lsp"}" "start"))
+        (dotfiles-gopls . ("${bin "gopls"}"))
+        (dotfiles-haskell . ("${bin "haskell-language-server"}" "--lsp"))
+        (dotfiles-json . ("${bin "vscode-json-language-server"}" "--stdio"))
+        (dotfiles-kotlin . ("${bin "kotlin-language-server"}"))
+        (dotfiles-lua . ("${bin "lua-language-server"}"))
+        (dotfiles-marksman . ("${bin "marksman"}" "server"))
+        (dotfiles-nixd . ("${bin "nixd"}"))
+        (dotfiles-oxlint . ("${bin "oxlint"}" "--lsp"))
+        (dotfiles-perl-language-server . ("${bin "perl-language-server"}" "-MPerl::LanguageServer" "-e" "Perl::LanguageServer::run"))
+        (dotfiles-perl-navigator . ("${bin "perlnavigator"}" "--stdio"))
+        (dotfiles-ruff . ("${bin "ruff"}" "server"))
+        (dotfiles-rust-analyzer . ("${bin "rust-analyzer"}"))
+        (dotfiles-terraform . ("${bin "terraform-ls"}" "serve"))
+        (dotfiles-texlab . ("${bin "texlab"}"))
+        (dotfiles-tinymist . ("${bin "tinymist"}" "lsp"))
+        ;; typescript 7 ships no tsserver.js; its Go tsc serves LSP directly
+        ;; over stdio, so there is no SDK pin.
+        (dotfiles-typescript . ("${bin "tsc"}" "--lsp" "--stdio"))
+        (dotfiles-vim . ("${bin "vim-language-server"}" "--stdio"))
+        (dotfiles-yaml . ("${bin "yaml-language-server"}" "--stdio"))
+        (dotfiles-zls . ("${bin "zls"}"))
+        (dotfiles-zuban . ("${bin "zuban"}" "server"))))
 
     (provide 'dotfiles-lsp-paths)
     ;;; lsp-paths.el ends here

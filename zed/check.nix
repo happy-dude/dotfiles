@@ -60,6 +60,15 @@ in {
         assert settings["vim_mode"] is True
         assert stat.S_IMODE(path.stat().st_mode) == 0o600
         PYTHON
+
+        # A runtime file that is not a JSON object must be refused rather
+        # than silently replaced by the declared keys.
+        printf '[]\n' >work/array.json
+        if materialize-zed-settings work/static.json work/array.json; then
+          echo "replaced a non-object runtime settings file" >&2
+          exit 1
+        fi
+        test "$(cat work/array.json)" = '[]'
       '';
     };
 }

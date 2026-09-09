@@ -8,6 +8,9 @@
 in {
   home.file."org/.dir-locals.el".source = ./org-dir-locals.el;
 
+  # org-roam-graph renders through Graphviz's dot.
+  home.packages = [pkgs.graphviz];
+
   xdg.configFile."emacs/init.el".source = ./init.el;
   xdg.configFile."emacs/agent-shell.el".source = ./agent-shell.el;
   xdg.configFile."emacs/lsp-servers.el".source = ./lsp-servers.el;
@@ -29,7 +32,7 @@ in {
 
   xdg.desktopEntries.emacs-org-protocol = {
     name = "Emacs Org Protocol";
-    exec = "${pkgs.emacs-pgtk}/bin/emacsclient --alternate-editor= --create-frame --no-wait -- %u";
+    exec = "${config.programs.emacs.finalPackage}/bin/emacsclient --alternate-editor= --create-frame --no-wait -- %u";
     icon = "emacs";
     mimeType = ["x-scheme-handler/org-protocol"];
     noDisplay = true;

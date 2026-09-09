@@ -19,10 +19,11 @@ format_worktree() {
   local status
 
   (
-    cd -- "$worktree"
+    cd -- "$worktree" || exit 1
     nix fmt .
   ) || return
-  status=$(git -C "$worktree" status --porcelain=v1 --untracked-files=all)
+  status=$(git -C "$worktree" status --porcelain=v1 --untracked-files=all) ||
+    return
   if [[ -n $status ]]; then
     printf '%s\n' "$status" >&2
     die "formatter changed the local branch worktree"
@@ -35,7 +36,10 @@ require_clean_worktree() {
   local label=$2
   local status
 
-  status=$(git -C "$worktree" status --porcelain=v1 --untracked-files=all)
+  if ! status=$(git -C "$worktree" status --porcelain=v1 --untracked-files=all); then
+    die "unable to read the $label worktree status: $worktree"
+    return 1
+  fi
   if [[ -n $status ]]; then
     printf 'Dirty worktree: %s\n' "$worktree" >&2
     printf '%s\n' "$status" >&2
@@ -73,7 +77,7 @@ check_flake() {
   local worktree=$1
 
   (
-    cd -- "$worktree"
+    cd -- "$worktree" || exit 1
     nix flake check --show-trace --no-update-lock-file
   )
 }
@@ -83,7 +87,7 @@ build_profile() {
   local profile=$2
 
   (
-    cd -- "$worktree"
+    cd -- "$worktree" || exit 1
     home-manager build --flake ".#$profile" --show-trace \
       --no-out-link --no-update-lock-file
   )

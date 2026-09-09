@@ -5,72 +5,53 @@
   self,
 }: let
   mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
-  inherit (homes) schan stachan;
-  stachanConfig = stachan.config.xdg.configFile."opencode/opencode.json".source;
-  schanConfig = schan.config.xdg.configFile."opencode/opencode.json".source;
-  languageServerPackages = with pkgs; [
-    bash-language-server
-    clojure-lsp
-    eslint
-    fennel-ls
-    fish-lsp
-    gopls
-    haskell-language-server
-    kotlin-language-server
-    (lib.lowPrio clang-tools)
-    lua-language-server
-    marksman
-    nixd
-    oxlint
-    perlnavigator
-    ruff
-    rust-analyzer
-    terraform-ls
-    texlab
-    tinymist
-    typescript-go
-    vim-language-server
-    vscode-langservers-extracted
-    yaml-language-server
-    zls
-    zuban
-  ];
-  stachanTui = stachan.config.xdg.configFile."opencode/tui.json".source;
-  schanTui = schan.config.xdg.configFile."opencode/tui.json".source;
-  stachanTheme = stachan.config.xdg.configFile."opencode/themes/gruvbox-material.json".source;
-  schanTheme = schan.config.xdg.configFile."opencode/themes/gruvbox-material.json".source;
-  stachanMixTheme = stachan.config.xdg.configFile."opencode/themes/gruvbox-material-mix-dark-medium.json".source;
-  schanMixTheme = schan.config.xdg.configFile."opencode/themes/gruvbox-material-mix-dark-medium.json".source;
-  stachanPackage =
-    lib.findFirst (
-      package: lib.hasPrefix "opencode-no-telemetry-" package.name
-    )
-    null
-    stachan.config.home.packages;
-  schanPackage =
-    lib.findFirst (
-      package: lib.hasPrefix "opencode-no-telemetry-" package.name
-    )
-    null
-    schan.config.home.packages;
+  inherit (import ../lib/homes.nix {inherit lib;}) shared;
+  opencode = import ./package.nix {inherit pkgs;};
+  homeList = lib.attrValues homes;
+  languageServerPackages = (import ../lib/language-servers.nix {inherit lib pkgs;}).packages;
+  # The provider-neutral files are identical on every profile; name the one
+  # copy, or fail naming the profiles that disagree.
+  sharedFile = path:
+    shared homes "xdg.configFile.${path}" (
+      home: toString home.config.xdg.configFile.${path}.source
+    );
+  settings = sharedFile "opencode/opencode.json";
+  tui = sharedFile "opencode/tui.json";
+  theme = sharedFile "opencode/themes/gruvbox-material.json";
+  mixTheme = sharedFile "opencode/themes/gruvbox-material-mix-dark-medium.json";
 in
-  assert lib.all (package: lib.elem package stachan.config.home.packages) languageServerPackages;
-  assert lib.all (package: lib.elem package schan.config.home.packages) languageServerPackages;
-  assert stachan.config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD == "true";
-  assert schan.config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD == "true";
-  assert stachanPackage != null;
-  assert schanPackage != null;
-  assert stachan.config.home.sessionVariables.OPENCODE_CONFIG
-  == "${stachan.config.home.homeDirectory}/.config/opencode/local.json";
-  assert schan.config.home.sessionVariables.OPENCODE_CONFIG
-  == "${schan.config.home.homeDirectory}/.config/opencode/local.json";
+  assert lib.all (
+    home: lib.all (package: lib.elem package home.config.home.packages) languageServerPackages
+  )
+  homeList;
+  assert lib.all (home: lib.elem opencode home.config.home.packages) homeList;
+  assert lib.all (
+    home: home.config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD == "true"
+  )
+  homeList;
+  assert lib.all (
+    home:
+      home.config.home.sessionVariables.OPENCODE_CONFIG
+      == "${home.config.xdg.configHome}/opencode/local.json"
+  )
+  homeList;
+  # systemd user services read environment.d, not the shell session
+  # variables, so both values must reach them by that route too.
+  assert lib.all (
+    home:
+      home.config.systemd.user.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD
+      == "true"
+      && home.config.systemd.user.sessionVariables.OPENCODE_CONFIG
+      == home.config.home.sessionVariables.OPENCODE_CONFIG
+  )
+  homeList;
     mkCheck {
       name = "dotfiles-opencode-check";
       tools =
         [
           pkgs.check-jsonschema
           pkgs.jq
-          stachanPackage
+          opencode
         ]
         ++ languageServerPackages;
       script = ''
@@ -84,89 +65,38 @@ in
         export XDG_DATA_HOME="$HOME/.local/share"
         export XDG_STATE_HOME="$HOME/.local/state"
         mkdir -p "$XDG_CONFIG_HOME/opencode"
-        for command in \
-          bash-language-server \
-          clangd \
-          clojure-lsp \
-          fennel-ls \
-          fish-lsp \
-          gopls \
-          haskell-language-server-wrapper \
-          kotlin-language-server \
-          lua-language-server \
-          marksman \
-          nixd \
-          perlnavigator \
-          ruff \
-          rust-analyzer \
-          terraform-ls \
-          texlab \
-          tinymist \
-          tsgo \
-          vim-language-server \
-          vscode-eslint-language-server \
-          vscode-json-language-server \
-          yaml-language-server \
-          zls \
-          zuban
-        do
-          command -v "$command" >/dev/null
-        done
         grep -F 'unset OTEL_EXPORTER_OTLP_ENDPOINT' \
           "$(command -v opencode)"
         grep -F 'unset OTEL_EXPORTER_OTLP_HEADERS' \
           "$(command -v opencode)"
         grep -F 'unset OTEL_RESOURCE_ATTRIBUTES' \
           "$(command -v opencode)"
-        cmp ${stachanConfig} ${schanConfig}
-        cmp ${stachanTui} ${schanTui}
-        cmp ${stachanTheme} ${schanTheme}
-        cmp ${stachanMixTheme} ${schanMixTheme}
-        tui_schema=${stachanPackage}/share/tui.json
-        [ -e "$tui_schema" ] || tui_schema=${stachanPackage}/share/opencode/tui.json
+        tui_schema=${opencode}/share/tui.json
+        [ -e "$tui_schema" ] || tui_schema=${opencode}/share/opencode/tui.json
         check-jsonschema \
           --schemafile "$tui_schema" \
-          ${stachanTui}
+          ${tui}
         check-jsonschema \
           --schemafile ${pkgs.opencode.src}/packages/web/public/theme.json \
-          ${stachanTheme}
+          ${theme}
         check-jsonschema \
           --schemafile ${pkgs.opencode.src}/packages/web/public/theme.json \
-          ${stachanMixTheme}
+          ${mixTheme}
         jq -e '
           .theme == "gruvbox-material-mix-dark-medium"
-        ' ${stachanTui} >/dev/null
-        jq -e '
-          .defs.bg0 == "#282828" and
-          .defs.fg0 == "#d4be98" and
-          .defs.red == "#ea6962" and
-          .defs.green == "#a9b665" and
-          .defs.blue == "#7daea3" and
-          .defs.diffRed == "#402120" and
-          .defs.diffGreen == "#34381b" and
-          .theme.background == "bg0" and
-          .theme.text == "fg0" and
-          .theme.diffAddedBg == "diffGreen" and
-          .theme.diffRemovedBg == "diffRed" and
-          (.theme | length) >= 50
-        ' ${stachanTheme} >/dev/null
-        jq -e '
-          .defs.bg0 == "#282828" and
-          .defs.fg0 == "#e2cca9" and
-          .defs.red == "#f2594b" and
-          .defs.orange == "#f28534" and
-          .defs.yellow == "#e9b143" and
-          .defs.green == "#b0b846" and
-          .defs.aqua == "#8bba7f" and
-          .defs.blue == "#80aa9e" and
-          .defs.purple == "#d3869b" and
-          .defs.diffRed == "#402120" and
-          .defs.diffGreen == "#34381b" and
-          .theme.background == "bg0" and
-          .theme.text == "fg0" and
-          (.theme | length) >= 50
-        ' ${stachanMixTheme} >/dev/null
-        install -m 0600 ${stachanConfig} \
+        ' ${tui} >/dev/null
+        # The mix variant is the base theme with a brighter palette: same
+        # role assignments, same palette names, and exactly these colors
+        # redefined. Nix builds both from one attribute set; assert that
+        # relationship.
+        jq -e --slurpfile mix ${mixTheme} '
+          .theme == $mix[0].theme
+          and (.defs | keys) == ($mix[0].defs | keys)
+          and ([.defs | to_entries[] | select(.value != $mix[0].defs[.key]) | .key]
+            == ["aqua", "blue", "fg0", "fg1", "green", "orange", "red", "yellow"])
+          and (.theme | length) >= 50
+        ' ${theme} >/dev/null
+        install -m 0600 ${settings} \
           "$XDG_CONFIG_HOME/opencode/opencode.json"
 
         opencode debug config >resolved.json

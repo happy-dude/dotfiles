@@ -174,7 +174,9 @@ if command -q eza
     alias lg='eza -labGd --git --sort=modified --tree --level=2' # tree w/ git
 end
 
-fish_add_path -a "$HOME/.local/bin"
+# --path keeps this in the session PATH; without it fish_add_path writes the
+# universal fish_user_paths, which persists across sessions and is prepended.
+fish_add_path --path --append "$HOME/.local/bin"
 
 # Machine-local secrets stay outside Git and the Nix store.
 if test -r "$HOME/.config/fish/secrets.fish"

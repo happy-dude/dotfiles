@@ -1,4 +1,5 @@
 import fnmatch
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -36,6 +37,19 @@ def schedule(systemd_run: str, systemctl: str) -> None:
     )
 
 
+def event_path(line: bytes, org_directory: Path) -> Path | None:
+    """Return the event's path relative to the Org directory, or None.
+
+    inotifywait writes raw filenames, so decode them the way the filesystem
+    layer does; events outside the directory carry no path to relate.
+    """
+    path = Path(os.fsdecode(line.rstrip(b"\n")))
+    try:
+        return path.relative_to(org_directory)
+    except ValueError:
+        return None
+
+
 def watch(
     org_directory: Path,
     inotifywait: str,
@@ -53,14 +67,13 @@ def watch(
             str(org_directory),
         ],
         stdout=subprocess.PIPE,
-        text=True,
     )
     if watcher.stdout is None:
         watcher.terminate()
         raise RuntimeError("inotifywait stdout pipe is unavailable")
     for line in watcher.stdout:
-        relative = Path(line.rstrip("\n")).relative_to(org_directory)
-        if should_sync(relative):
+        relative = event_path(line, org_directory)
+        if relative is not None and should_sync(relative):
             schedule(systemd_run, systemctl)
     return watcher.wait()
 

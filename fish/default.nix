@@ -4,13 +4,18 @@
   pkgs,
   inputs,
   ...
-}: {
-  # Kept as the native-format reference; config.fish is inlined into
-  # programs.fish.shellInit below.
-  #xdg.configFile."fish/config.fish".source = ./.config/fish/config.fish;
+}: let
+  # Complete against the client the profile configures; a host-provided Nix
+  # has no configured client, so the locked package stands in.
+  nixClient =
+    if config.dotfiles.profile.hostProvidedNix
+    then pkgs.nix
+    else config.nix.package;
+in {
+  # config.fish is the native source; programs.fish.shellInit reads it in.
   xdg.configFile."fish/tide.fish".source = ./.config/fish/tide.fish;
   xdg.configFile."fish/functions/_tide_item_nohist.fish".source = ./.config/fish/functions/_tide_item_nohist.fish;
-  xdg.configFile."fish/completions/nix.fish".source = "${pkgs.nix}/share/fish/vendor_completions.d/nix.fish";
+  xdg.configFile."fish/completions/nix.fish".source = "${nixClient}/share/fish/vendor_completions.d/nix.fish";
   xdg.configFile."fish/completions/rustup.fish" = lib.mkIf config.dotfiles.profile.hasRustup {
     source = "${pkgs.rustup}/share/fish/vendor_completions.d/rustup.fish";
   };
@@ -21,7 +26,7 @@
     shellInit = ''
       ${builtins.readFile .config/fish/config.fish}
       # Keep mutable source-install fallbacks behind Home Manager packages.
-      fish_add_path --append --path --move "$(go env GOPATH)/bin"
+      fish_add_path --append --path --move "$HOME/go/bin"
       fish_add_path --append --path --move "$HOME/.cargo/bin"
       set -l normalized_path
 

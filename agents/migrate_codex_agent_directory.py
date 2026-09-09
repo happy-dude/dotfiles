@@ -1,9 +1,10 @@
 import os
 import sys
 from pathlib import Path
+from typing import NoReturn
 
 
-def fail(message: str, status: int = 1) -> None:
+def fail(message: str, status: int = 1) -> NoReturn:
     print(message, file=sys.stderr)
     raise SystemExit(status)
 
@@ -52,7 +53,6 @@ def main(arguments: list[str]) -> None:
                 store_dir = source.parent
                 if (
                     not remove_target
-                    or home_files == Path(link_target)
                     or home_files.parent != store_dir
                     or not home_files.name.endswith("-home-manager-files")
                 ):

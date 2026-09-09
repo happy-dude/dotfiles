@@ -115,7 +115,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-git mailsplit --mboxrd -o"$mail_directory" "$patch_path" >/dev/null
+git mailsplit -o"$mail_directory" "$patch_path" >/dev/null
 shopt -s nullglob
 mail_files=("$mail_directory"/*)
 [[ ${#mail_files[@]} -eq $expected_count ]] ||

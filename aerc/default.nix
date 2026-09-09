@@ -1,19 +1,14 @@
-{...}: let
+{lib, ...}: let
   lessFlags = import ../lib/less-flags.nix;
+  # The tracked template files are the source; the blank lines around
+  # their text are trimmed so the deployed templates keep their shape.
+  template = name:
+    lib.trim (builtins.readFile (./.config/aerc/templates + "/${name}")) + "\n";
 in {
-  # The commented-out xdg.configFile blocks are kept as the native-format
-  # reference; the programs.aerc attributes below are the live configuration.
-  #xdg.configFile."aerc/aerc.conf".source = ./.config/aerc/aerc.conf;
-  #xdg.configFile."aerc/accounts.conf".source = ./.config/aerc/accounts.conf;
+  # aerc.conf itself is mirrored: the tracked native file is the reference
+  # and the attributes below are the live configuration, kept equal by the
+  # aerc-config-mirror check.
   xdg.configFile."aerc/notmuch-map.conf".source = ./.config/aerc/notmuch-map.conf;
-
-  #xdg.configFile."aerc/templates/quoted_thanks".source = ./.config/aerc/templates/quoted_thanks;
-  #xdg.configFile."aerc/templates/thanks".source = ./.config/aerc/templates/thanks;
-
-  #xdg.configFile."aerc/stylesets/gruvbox".source = ./.config/aerc/stylesets/gruvbox;
-  #xdg.configFile."aerc/stylesets/gruvbox_material_dark_hard".source = ./.config/aerc/stylesets/gruvbox_material_dark_hard;
-  #xdg.configFile."aerc/stylesets/gruvbox_material_dark_medium".source = ./.config/aerc/stylesets/gruvbox_material_dark_medium;
-  #xdg.configFile."aerc/stylesets/gruvbox_material_dark_soft".source = ./.config/aerc/stylesets/gruvbox_material_dark_soft;
 
   programs.aerc = {
     enable = true;
@@ -34,9 +29,9 @@ in {
 
       ui = {
         index-columns = "date<12,name<18,flags>2,subject<*";
-        column-name = " {{index (.From | names) 0}}";
-        column-to = " {{index (.To | names) 0}}";
-        column-separator = " ⋮ ";
+        column-name = "{{index (.From | names) 0}}";
+        column-to = "{{index (.To | names) 0}}";
+        column-separator = "⋮";
         timestamp-format = "2006-01-02 03:04 PM MST";
         mouse-enabled = true;
         styleset-name = "gruvbox_material_dark_medium";
@@ -86,24 +81,8 @@ in {
     };
 
     templates = {
-      thanks = ''
-        Thanks!
-        ---
-        Stan
-
-        {{exec "{ git remote get-url --push origin; git reflog -2 origin/master --pretty=format:%h | xargs printf '%s\n' | tac; } | xargs printf 'To %s\n   %s..%s  master -> master'" ""}}
-      '';
-
-      quoted_thanks = ''
-        Thanks!
-        ---
-        Stan
-
-        {{exec "{ git remote get-url --push origin; git reflog -2 origin/master --pretty=format:%h | xargs printf '%s\n' | tac; } | xargs printf 'To %s\n   %s..%s  master -> master'" ""}}
-
-        On {{dateFormat (.OriginalDate | toLocal) "Mon Jan 2, 2006 at 3:04 PM MST"}}, {{(index .OriginalFrom 0).Name}} wrote:
-        {{wrapText .OriginalText 72 | quote}}
-      '';
+      thanks = template "thanks";
+      quoted_thanks = template "quoted_thanks";
     };
   };
 }

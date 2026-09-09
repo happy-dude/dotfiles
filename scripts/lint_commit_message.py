@@ -24,6 +24,32 @@ def is_generated_subject(subject: str) -> bool:
     )
 
 
+def trailer_block_start(lines: list[str]) -> int:
+    """Index of the first trailer line, or ``len(lines)`` without a block.
+
+    Git recognises trailers only in the final paragraph, and only when every
+    line there is a ``Token: value`` pair or an indented continuation.  A
+    ``Note:`` paragraph earlier in the body is prose and must wrap.
+    """
+    end = len(lines)
+    while end > 1 and not lines[end - 1].strip():
+        end -= 1
+    start = end
+    while start > 1 and lines[start - 1].strip():
+        start -= 1
+    block = lines[start:end]
+    if start <= 1 or not block:
+        return len(lines)
+    # Continuation lines may only follow a trailer; an indented paragraph on
+    # its own is prose.
+    if TRAILER_PATTERN.fullmatch(block[0]) and all(
+        TRAILER_PATTERN.fullmatch(line) or line.startswith((" ", "\t"))
+        for line in block
+    ):
+        return start
+    return len(lines)
+
+
 def lint(message_path: Path) -> list[str]:
     text = message_path.read_text(encoding="utf-8")
     lines = text.splitlines()
@@ -43,6 +69,7 @@ def lint(message_path: Path) -> list[str]:
         errors.append("commit subject must be followed by a blank line")
 
     fence_len = 0
+    trailer_start = trailer_block_start(lines)
     for line_number, line in enumerate(lines[1:], start=2):
         if line.rstrip() != line:
             errors.append(f"line {line_number} has trailing whitespace")
@@ -65,7 +92,7 @@ def lint(message_path: Path) -> list[str]:
         # whitespace (URLs, paths, hashes) cannot be rewrapped without damage.
         if (
             fence_len
-            or TRAILER_PATTERN.fullmatch(line)
+            or line_number - 1 >= trailer_start
             or line.startswith(("    ", "\t"))
         ):
             continue

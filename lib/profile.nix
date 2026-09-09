@@ -2,23 +2,32 @@
 #
 # Modules ask what a machine provides rather than which user owns it, so
 # adding a third profile means stating its facts here instead of finding
-# every comparison against a username.
+# every comparison against a username. The raw capability record from
+# flake.nix is read only here; everything else goes through the options.
 {
   lib,
-  desktop,
-  nixPackage,
-  hasRustup,
-  hasFlatpak,
-  usesFlatpakZed,
-  hasSolaar,
+  profile,
   ...
 }: let
   inherit (lib) mkOption types;
 in {
   options.dotfiles.profile = {
+    username = mkOption {
+      type = types.str;
+      description = "Login name of the user this profile belongs to.";
+    };
+
     desktop = mkOption {
       type = types.enum ["gnome" "plasma"];
       description = "Desktop session this profile integrates with.";
+    };
+
+    nixPackage = mkOption {
+      type = types.nullOr types.package;
+      description = ''
+        The Nix client Home Manager configures and validates settings
+        against, or null when the host installs and upgrades Nix itself.
+      '';
     };
 
     hostProvidedNix = mkOption {
@@ -58,8 +67,15 @@ in {
     };
   };
 
-  config.dotfiles.profile = {
-    inherit desktop hasRustup hasFlatpak usesFlatpakZed hasSolaar;
-    hostProvidedNix = nixPackage == null;
+  config = {
+    dotfiles.profile = {
+      inherit (profile) username desktop nixPackage hasRustup hasFlatpak usesFlatpakZed hasSolaar;
+      hostProvidedNix = profile.nixPackage == null;
+    };
+
+    home = {
+      inherit (profile) username;
+      homeDirectory = "/home/${profile.username}";
+    };
   };
 }

@@ -51,18 +51,36 @@ let s:sensitive_dirs = map([
       \ '~/.ssh',
       \ ], {_, path -> resolve(fnamemodify(expand(path), ':p')) . '/'})
 
-function! s:disable_sensitive_file_state() abort
-  let l:path = resolve(fnamemodify(expand('%:p'), ':p'))
-  if index(s:sensitive_files, l:path) >= 0
-    setlocal nobackup nowritebackup noswapfile noundofile
-    return
+" 'backup' and 'writebackup' are global options, so a buffer cannot switch
+" them off for itself; 'backupskip' excludes these files per name instead.
+let &backupskip .= ',' . join(
+      \ map(copy(s:sensitive_files), {_, path -> escape(path, ',\\')})
+      \ + map(copy(s:sensitive_dirs), {_, dir -> escape(dir, ',\\') . '*'}), ',')
+
+function! s:is_sensitive(path) abort
+  if index(s:sensitive_files, a:path) >= 0
+    return 1
   endif
   for l:dir in s:sensitive_dirs
-    if stridx(l:path, l:dir) == 0
-      setlocal nobackup nowritebackup noswapfile noundofile
-      return
+    if stridx(a:path, l:dir) == 0
+      return 1
     endif
   endfor
+  return 0
+endfunction
+
+function! s:disable_sensitive_file_state() abort
+  let l:buffer = fnamemodify(expand('%:p'), ':p')
+  let l:path = resolve(l:buffer)
+  if !s:is_sensitive(l:path)
+    return
+  endif
+  setlocal noswapfile noundofile
+  " Vim matches 'backupskip' against the buffer name, so a symlink to a
+  " sensitive file needs its own entry.
+  if l:buffer !=# l:path && index(split(&backupskip, ','), escape(l:buffer, ',\')) < 0
+    let &backupskip .= ',' . escape(l:buffer, ',\')
+  endif
 endfunction
 
 augroup dotfiles_sensitive_file_state

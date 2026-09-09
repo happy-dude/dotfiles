@@ -33,7 +33,7 @@ use_pager = true
 show_title = true
 
 [updates]
-auto_update = true
+auto_update = false
 auto_update_interval_hours = 720
 archive_source = "https://github.com/tldr-pages/tldr/releases/latest/download/"
 download_languages = ["en", "zh", "zh_tw"]

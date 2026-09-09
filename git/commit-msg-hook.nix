@@ -14,6 +14,7 @@ in
     name = "commit-msg";
     runtimeInputs = [
       pkgs.coreutils
+      pkgs.diffutils
       pkgs.gawk
       pkgs.git
       pkgs.gnugrep
@@ -44,11 +45,11 @@ in
         normalized_message=$(mktemp)
         raw_errors=$(mktemp)
 
-        if grep -Fq -- \
-          '------------------------ >8 ------------------------' \
-          "$message_path"; then
+        # Git's scissors line is the comment prefix and the marker on a line
+        # of their own; the marker inside prose is message text.
+        if grep -Eq -- '^[^[:space:]]+ -{24} >8 -{24}$' "$message_path"; then
           if ! awk \
-            'index($0, "------------------------ >8 ------------------------") { exit } { print }' \
+            '/^[^[:space:]]+ -{24} >8 -{24}$/ { exit } { print }' \
             "$message_path" | git stripspace --strip-comments \
             >"$cleaned_message"; then
             rm -f -- "$cleaned_message" "$normalized_message" "$raw_errors"
@@ -83,19 +84,42 @@ in
         return "$lint_status"
       }
 
-      if [[ -x $local_hook && \
-        $(readlink -f "$local_hook") != $(readlink -f "$0") ]]; then
-        "$local_hook" "$message_path"
-      fi
+      run_local_hook() {
+        if [[ -x $local_hook && \
+          $(readlink -f "$local_hook") != $(readlink -f "$0") ]]; then
+          "$local_hook" "$message_path"
+        fi
+      }
 
-      while ! lint_message; do
-        if [[ ! -t 0 || ! -t 1 ]]; then
-          printf 'correct the preserved message and retry:\ngit commit --amend --edit --file %q\n' \
-            "$message_path" >&2
+      # Git runs hooks with stdin on /dev/null and stdout joined to stderr, so
+      # only stderr and the controlling terminal reveal an interactive commit.
+      # The repository-local hook sees every edited message, not only the
+      # first one.
+      while ! { run_local_hook && lint_message; }; do
+        # Git exports GIT_EDITOR=: when it will not open an editor itself
+        # (-m, -F, --no-edit), so only a real editor allows re-editing.
+        editor=$(git var GIT_EDITOR)
+        if [[ ! -t 2 || $editor == : || $editor == true ]] ||
+          ! { : </dev/tty; } 2>/dev/null; then
+          printf '%s\n' \
+            'correct the preserved message and retry:' \
+            "git commit --edit --file $(printf '%q' "$message_path")" \
+            '(add --amend only if the rejected commit was itself an amend)' >&2
           exit 1
         fi
-        editor=$(git var GIT_EDITOR)
-        sh -c "$editor \"\$1\"" sh "$message_path"
+        before=$(mktemp)
+        cp -- "$message_path" "$before"
+        if ! sh -c "$editor \"\$1\"" sh "$message_path" </dev/tty >/dev/tty; then
+          rm -f -- "$before"
+          printf '%s\n' 'editor failed; aborting the commit' >&2
+          exit 1
+        fi
+        if cmp -s "$before" "$message_path"; then
+          rm -f -- "$before"
+          printf '%s\n' 'message unchanged; aborting the commit' >&2
+          exit 1
+        fi
+        rm -f -- "$before"
       done
     '';
   }

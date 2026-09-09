@@ -57,19 +57,8 @@ if &loadplugins
     packadd! editorconfig
   endif
 
-  " Load Home Manager native packages before configuring them.
-  packloadall
-
-  if has('nvim')
-    " Register the CodeCompanion source before CoC scans autoload sources.
-    lua require('codecompanion_nvim')
-  endif
-
-  " Use fzf when available; ctrlp remains the pure Vimscript fallback.
   if executable("fzf")
     call s:SourcePackageConfig('fzf')
-  else
-    call s:SourcePackageConfig('ctrlp')
   endif
 
   if executable("node")
@@ -95,12 +84,6 @@ if &loadplugins
   endfor
   unlet s:package_config
   unlet s:package_configs
-
-  if has('nvim')
-    " Configure Neovim plugins before filetype hooks can use their state.
-    packadd! rustowl-nvim
-    lua require('init')
-  endif
 
   syntax enable               " Enable syntax highlighting
   filetype plugin indent on   " Enable filetype plugin and filetype-based indentation

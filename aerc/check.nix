@@ -49,7 +49,11 @@ in {
               if "=" not in text:
                   continue
               name, value = text.split("=", 1)
-              found[f"{section} {name.strip()}"] = value.strip()
+              # aerc allows a key more than once (two text/html filters),
+              # so keep every value in order.
+              found.setdefault(f"{section} {name.strip()}", []).append(
+                  value.strip()
+              )
           return found
 
 

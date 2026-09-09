@@ -5,6 +5,41 @@
   ...
 }: let
   commitMsgHook = import ./commit-msg-hook.nix {inherit pkgs;};
+  localHook = import ./local-hook.nix {inherit pkgs;};
+  # Every hook githooks(5) documents other than commit-msg, which has its own
+  # dispatcher below, and the three Git consults as protocols or overrides
+  # rather than as notifications or vetoes: fsmonitor-watchman must answer
+  # with a file list, proc-receive speaks the receive-pack report protocol,
+  # and an existing push-to-checkout replaces Git's own checkout update, so a
+  # stand-in that exits 0 would leave the receiving worktree behind. The
+  # receive-side hooks matter too: a push into a local bare repository runs
+  # git-receive-pack under this user's core.hooksPath.
+  dispatchedHooks = [
+    "p4-changelist"
+    "p4-prepare-changelist"
+    "p4-post-changelist"
+    "p4-pre-submit"
+    "pre-receive"
+    "update"
+    "post-receive"
+    "post-update"
+    "applypatch-msg"
+    "pre-applypatch"
+    "post-applypatch"
+    "pre-commit"
+    "pre-merge-commit"
+    "prepare-commit-msg"
+    "post-commit"
+    "pre-rebase"
+    "post-checkout"
+    "post-merge"
+    "pre-push"
+    "post-rewrite"
+    "pre-auto-gc"
+    "post-index-change"
+    "reference-transaction"
+    "sendemail-validate"
+  ];
 in {
   # Per-machine identity + signing (user.email, user.signingkey, commit/tag
   # gpgsign) live in an untracked ~/.config/git/local.config, included below —
@@ -17,10 +52,12 @@ in {
 
     # Global gitignore -> ~/.config/git/ignore (git reads it by default; no
     # core.excludesFile needed). Kept as a plain file, read in.
-    ignores = lib.splitString "\n" (builtins.readFile ./.gitignore_global);
+    ignores = lib.filter (line: line != "") (
+      lib.splitString "\n" (builtins.readFile ./.gitignore_global)
+    );
 
     includes = [
-      {path = "${config.home.homeDirectory}/.config/git/local.config";}
+      {path = "${config.xdg.configHome}/git/local.config";}
     ];
 
     settings = {
@@ -86,7 +123,13 @@ in {
     };
   };
 
-  xdg.configFile."git/hooks/commit-msg".source = pkgs.lib.getExe commitMsgHook;
+  xdg.configFile =
+    {
+      "git/hooks/commit-msg".source = lib.getExe commitMsgHook;
+    }
+    // lib.genAttrs (map (name: "git/hooks/${name}") dispatchedHooks) (_: {
+      source = lib.getExe localHook;
+    });
 
   # delta (enableGitIntegration) sets per-command [pager] + interactive.diffFilter,
   # not core.pager, so it coexists with core.pager = bat above.

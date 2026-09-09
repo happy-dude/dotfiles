@@ -1,7 +1,10 @@
 " colorscheme settings
 
+" Packages join 'runtimepath' only after the vimrc has run, so look under
+" 'packpath' as well, as :colorscheme itself does.
 function! s:ColorschemeAvailable(name) abort
   return !empty(globpath(&runtimepath, 'colors/' . a:name . '.vim', 1))
+        \ || !empty(globpath(&packpath, 'pack/*/{start,opt}/*/colors/' . a:name . '.vim', 1))
 endfunction
 
 if (&t_Co >= 16) && (($TERM =~# "color") || ($TERM =~# "alacritty") || ($TERM =~# "wezterm") || ($TERM =~# "ghostty")) && (has("termguicolors")) && (!has("gui_running"))

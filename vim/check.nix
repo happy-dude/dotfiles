@@ -1,9 +1,11 @@
 {
   homes,
+  lib,
   pkgs,
   self,
 }: let
   mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
+  languageServers = import ../lib/language-servers.nix {inherit lib pkgs;};
   mkProfileCheck = username: home: let
     parserDirectory = home.config.xdg.dataFile."nvim/site/parser".source;
     queryDirectory = home.config.xdg.dataFile."nvim/site/queries".source;
@@ -44,6 +46,17 @@
             -u ${neovimConfig} \
             -l ${./tests/codecompanion.lua}
 
+        # The colorscheme block only runs under a colour terminal.
+        TERM=xterm-256color \
+        HOME="$PWD/home" \
+        XDG_CACHE_HOME="$PWD/home/cache" \
+        XDG_DATA_HOME="$PWD/data" \
+        XDG_STATE_HOME="$PWD/home/state" \
+          ${neovim}/bin/nvim \
+            --headless \
+            -u ${neovimConfig} \
+            -l ${./tests/startup.lua}
+
         # matchtag.lua locates the repository from its own store path and
         # reads parsers from MATCHTAG_TREESITTER_RUNTIME.
         MATCHTAG_TREESITTER_RUNTIME="$PWD/data/nvim/site" \
@@ -56,52 +69,56 @@
 
       '';
     };
-  stachanCheck = mkProfileCheck "stachan" homes.stachan;
-  schanCheck = mkProfileCheck "schan" homes.schan;
+  profileChecks = lib.mapAttrsToList mkProfileCheck homes;
+  # Vim has no headless Lua entry point like the Org check; load the
+  # configuration in silent Ex mode and fail on any recorded error.
+  mkVimStartupCheck = username: home:
+    mkCheck {
+      name = "dotfiles-vim-startup-${username}-check";
+      tools = [home.config.programs.vim.package];
+      script = ''
+        mkdir -p home
+        # Silent Ex mode never queries the terminal, so declare the colour
+        # depth the colorscheme guard expects; :cquit fails the check when the
+        # expected scheme is not the one in effect.
+        HOME="$PWD/home" TERM=xterm-256color vim -es --cmd 'set t_Co=256' \
+          -c 'redir! > messages.txt' -c 'silent messages' -c 'redir END' \
+          -c 'if get(g:, "colors_name", "") !=# "gruvbox-material" | cquit | endif' \
+          -c 'qa!' </dev/null
+        test -f messages.txt
+        if grep -E '^E[0-9]+' messages.txt; then
+          echo "Vim reported errors while loading its configuration" >&2
+          exit 1
+        fi
+      '';
+    };
+  vimStartupChecks = lib.mapAttrsToList mkVimStartupCheck homes;
 in {
   # coc-settings.json drives its language servers by bare command; assert each
-  # command it names resolves to an installed language-server package. The
+  # command it names resolves to a package in the shared server table. The
   # servers are supplied as tools rather than the whole profile: building the
   # full home.path (tens of GB) would make `nix flake check` run out of disk on
-  # CI, which only evaluates the profiles on push. Keep this list in step with
-  # the servers coc-settings.json configures.
+  # CI, which only evaluates the profiles on push.
   coc-language-servers = mkCheck {
     name = "coc-language-servers";
-    tools = with pkgs; [
-      jq
-      bash-language-server
-      clojure-lsp
-      fennel-ls
-      fish-lsp
-      gopls
-      haskell-language-server
-      kotlin-language-server
-      lua-language-server
-      marksman
-      nixd
-      oxlint
-      perl
-      perlnavigator
-      ruff
-      terraform-ls
-      texlab
-      tinymist
-      typescript-go
-      vscode-langservers-extracted
-      vim-language-server
-      yaml-language-server
-      zls
-    ];
+    tools = [pkgs.jq] ++ languageServers.packages;
     script = ''
       missing=""
-      for cmd in $(jq -r '.languageserver | to_entries[] | .value.command' \
-          ${./.vim/coc-settings.json} | sort -u); do
+      # Extensions start clangd, rust-analyzer, and zuban through their own
+      # path keys rather than the languageserver table.
+      for cmd in $(jq -r '
+          [.languageserver[].command, ."clangd.path", ."rust-analyzer.server.path", ."zuban.path"]
+          | .[]
+        ' ${./.vim/coc-settings.json} | sort -u); do
         command -v "$cmd" >/dev/null || missing="$missing $cmd"
       done
       [ -z "$missing" ] || {
         echo "coc-settings.json names servers with no matching package:$missing" >&2
         exit 1
       }
+      # The Perl entry runs the interpreter itself, so a bare perl on PATH
+      # would satisfy command -v without the language-server module.
+      perl -MPerl::LanguageServer -e1
       echo "all coc-settings.json language servers resolve"
     '';
   };
@@ -135,9 +152,10 @@ in {
   };
   neovim-org = mkCheck {
     name = "dotfiles-neovim-org-check";
-    script = ''
-      test -e ${stachanCheck}
-      test -e ${schanCheck}
-    '';
+    script = lib.concatMapStringsSep "\n" (check: "test -e ${check}") profileChecks;
+  };
+  vim-startup = mkCheck {
+    name = "dotfiles-vim-startup-check";
+    script = lib.concatMapStringsSep "\n" (check: "test -e ${check}") vimStartupChecks;
   };
 }

@@ -48,19 +48,11 @@
     inherit (cocZubanPackage) pname version meta;
     src = "${cocZubanPackage}/lib/node_modules/@yaegassy/coc-zuban";
   };
-  rustowlManifest = builtins.fromTOML (
-    builtins.readFile "${inputs.rustowl_src}/Cargo.toml"
-  );
-  rustOwlPlugin = pkgs.vimUtils.buildVimPlugin {
-    pname = "rustowl-nvim";
-    version = rustowlManifest.package.version;
-    src = inputs.rustowl_src;
-
-    postInstall = ''
-      find "$out" -mindepth 1 -maxdepth 1 \
-        ! -name lua ! -name ftplugin -exec rm -rf {} +
-    '';
-  };
+  rustOwlPlugin =
+    (import ../rustowl/package.nix {
+      inherit inputs pkgs;
+      lib = pkgs.lib;
+    }).neovimPlugin;
   vimSandwichWithLicense = pkgs.vimPlugins.vim-sandwich.overrideAttrs (old: {
     meta =
       old.meta
@@ -79,10 +71,6 @@
   });
   sharedRuntimeFiles = [
     {
-      name = "spell";
-      path = ./.vim/spell;
-    }
-    {
       name = "vimrc";
       path = ./.vim/vimrc;
     }
@@ -98,10 +86,16 @@
       name = "lua";
       path = ./.vim/lua;
     }
+    {
+      name = "after";
+      path = ./.vim/after;
+    }
   ];
+  # Plugin scripts under after/ run once every package is on the runtimepath.
   runtimeConfig = runtime: ''
     let g:dotfiles_vim_runtime = '${runtime}'
     set runtimepath^=${runtime}
+    set runtimepath+=${runtime}/after
     source ${runtime}/vimrc
   '';
 
@@ -118,7 +112,6 @@
     ack-vim
     coc-nvim
     csv-vim
-    ctrlp-vim
     fzf-vim
     gruvbox-material
     html5-vim

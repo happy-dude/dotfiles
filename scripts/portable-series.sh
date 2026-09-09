@@ -254,7 +254,7 @@ lint_commits() {
       python3 -c \
         'import sys; print(sys.stdin.read().rstrip() + "\n", end="")' \
         >"$temporary_directory/$(printf '%03d' "$index").md"
-    python3 "$repo_root/scripts/lint_commit_message.py" \
+    python3 "$worktree/scripts/lint_commit_message.py" \
       "$temporary_directory/$(printf '%03d' "$index").md"
     index=$((index + 1))
   done < <(git -C "$worktree" rev-list --reverse "$base..HEAD")
@@ -269,6 +269,7 @@ export_series() {
   local branch="replay/$name"
   local branch_ref="refs/heads/$branch"
   local worktree
+  local worktree_status
   local lookup_status
   local base
   local merge_base
@@ -301,8 +302,10 @@ export_series() {
     return 1
   fi
   [[ -d $output_directory ]] || die "output directory not found: $output_directory"
-  [[ -z $(git -C "$worktree" status --porcelain=v1 --untracked-files=all) ]] ||
-    die "portable worktree is not clean"
+  worktree_status=$(
+    git -C "$worktree" status --porcelain=v1 --untracked-files=all
+  ) || die "unable to read the portable worktree status: $worktree"
+  [[ -z $worktree_status ]] || die "portable worktree is not clean"
 
   git -C "$repo_root" fetch origin main
   base=$(git -C "$repo_root" rev-parse origin/main)
@@ -330,15 +333,20 @@ export_series() {
   scan_series "$forbidden_pattern" "$worktree" "$base" "$staging_directory"
 
   (
-    cd -- "$worktree"
+    cd -- "$worktree" || exit 1
     nix fmt .
     git diff --exit-code
     git diff --cached --exit-code
     nix flake check --show-trace --no-update-lock-file
-    home-manager build --flake .#stachan --show-trace \
-      --no-out-link --no-update-lock-file
-    home-manager build --flake .#schan --show-trace \
-      --no-out-link --no-update-lock-file
+    # Every profile the flake declares, so a new machine cannot escape the
+    # validation that gates the series.
+    while IFS= read -r profile; do
+      home-manager build --flake ".#$profile" --show-trace \
+        --no-out-link --no-update-lock-file
+    done < <(
+      nix eval --no-update-lock-file --raw .#homeConfigurations \
+        --apply 'homes: builtins.concatStringsSep "\n" (builtins.attrNames homes) + "\n"'
+    )
   )
 
   staged_patch_path="$staging_directory/$patch_name"
@@ -362,7 +370,7 @@ count=$count
 patch=$patch_name
 sha256=$patch_sha256
 EOF
-  cp -- "$repo_root/scripts/apply-portable-series.sh" \
+  cp -- "$worktree/scripts/apply-portable-series.sh" \
     "$staged_apply_path"
   chmod 0755 "$staged_apply_path"
   (
@@ -405,6 +413,7 @@ clean_series() {
   local branch="replay/$name"
   local branch_ref="refs/heads/$branch"
   local worktree
+  local worktree_status
   local lookup_status
 
   validate_name "$name" || return 1
@@ -434,9 +443,13 @@ clean_series() {
       die "run clean from the main checkout, not from the series worktree $worktree"
       return 1
     fi
-    if [[ -n $(
+    if ! worktree_status=$(
       git -C "$worktree" status --porcelain=v1 --untracked-files=all
-    ) ]]; then
+    ); then
+      die "unable to read the series worktree status: $worktree"
+      return 1
+    fi
+    if [[ -n $worktree_status ]]; then
       die "series worktree is not clean: $worktree"
       return 1
     fi

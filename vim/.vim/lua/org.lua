@@ -22,12 +22,14 @@ require('orgmode').setup({
 
   -- https://github.com/nvim-orgmode/orgmode/issues/250
   org_todo_keywords = { 'TODO', 'PROCESS', 'ORGANIZE', 'REVIEW', 'DO', '|', 'DONE' }, -- GTD
-  org_todo_keyword_faces = { -- Xterm256 cterm codes
-    TODO = ':foreground 131 :weight bold', -- IndianRed
-    PROCESS = ':foreground 63  :weight bold', -- RoyalBlue1
-    ORGANIZE = ':foreground 172 :weight bold', -- Orange3
-    REVIEW = ':foreground 171 :weight bold', -- MediumOrchid1
-    DO = ':foreground 203 :weight bold', -- IndianRed1
-    DONE = ':foreground 107 :weight bold', -- DarkOliveGreen3
+  -- orgmode emits these as gui attributes under 'termguicolors', where a
+  -- bare cterm index is dropped; name the xterm-256 colours as hex.
+  org_todo_keyword_faces = {
+    TODO = ':foreground #af5f5f :weight bold', -- IndianRed (131)
+    PROCESS = ':foreground #5f5fff :weight bold', -- RoyalBlue1 (63)
+    ORGANIZE = ':foreground #d78700 :weight bold', -- Orange3 (172)
+    REVIEW = ':foreground #d75fff :weight bold', -- MediumOrchid1 (171)
+    DO = ':foreground #ff5f5f :weight bold', -- IndianRed1 (203)
+    DONE = ':foreground #87af5f :weight bold', -- DarkOliveGreen3 (107)
   },
 })

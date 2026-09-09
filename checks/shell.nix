@@ -23,6 +23,9 @@
       tools = [
         pkgs.bash
         pkgs.git
+        # lint_commits runs the repository's commit-message linter.
+        pkgs.prettier
+        pkgs.python3
       ];
       script = ''bash ${self}/scripts/test_${name}.sh'';
     };
@@ -48,12 +51,19 @@ in
       # Discover every tracked Fish file recursively; a top-level glob misses
       # functions/, conf.d/, and completions/ under fish/.config/fish.
       script = ''
+        checked=0
         while IFS= read -r -d "" script; do
           fish --no-execute "$script"
+          checked=$((checked + 1))
         done < <(
           find ${self}/fish -type f \
             \( -name '*.fish' -o -name '*.fish.example' \) -print0
         )
+        [ "$checked" -gt 0 ] || {
+          echo "no Fish files were checked" >&2
+          exit 1
+        }
+        echo "checked $checked Fish files"
       '';
     };
 
@@ -61,12 +71,21 @@ in
       name = "dotfiles-zsh-syntax";
       tools = [pkgs.zsh];
       script = ''
-        for script in ${self}/zsh/.zshenv ${self}/zsh/.config/zsh/.*.zsh \
+        checked=0
+        for script in ${self}/zsh/.config/zsh/.*.zsh \
           ${self}/zsh/.config/zsh/.z*; do
+          # An unmatched glob stays a literal pattern; a matched file must
+          # parse. Nothing matching at all means the files moved.
           if [ -f "$script" ]; then
             zsh -n "$script"
+            checked=$((checked + 1))
           fi
         done
+        [ "$checked" -gt 0 ] || {
+          echo "no Zsh files were checked" >&2
+          exit 1
+        }
+        echo "checked $checked Zsh files"
       '';
     };
   }

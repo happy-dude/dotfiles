@@ -1,5 +1,4 @@
 {
-  "Lua.telemetry.enable": false,
   "clangd.checkUpdates": false,
   "clangd.path": "clangd",
   "coc.preferences.formatOnSaveFiletypes": [
@@ -36,16 +35,6 @@
   "diagnostic.errorSign": ">>",
   "diagnostic.refreshAfterSave": true,
   "diagnostic.warningSign": "--",
-  "git.addedSign.text": "++",
-  "git.branchCharacter": ".\ue0a0",
-  "git.changeRemovedSign.text": "\u2243\u2243",
-  "git.changedDecorator": "**",
-  "git.changedSign.text": "~~",
-  "git.conflictedDecorator": "xx",
-  "git.removedSign.text": "__",
-  "git.stagedDecorator": "\u25cf\u25cf",
-  "git.topRemovedSign.text": "\u203e\u203e",
-  "git.untrackedDecorator": "\u2026\u2026",
   "inlayHint.enableParameter": false,
   "languageserver": {
     "bash-language-server": {
@@ -214,7 +203,7 @@
     },
     "tsgo": {
       "args": ["--lsp", "--stdio"],
-      "command": "tsgo",
+      "command": "tsc",
       "filetypes": [
         "javascript",
         "javascriptreact",
@@ -246,7 +235,6 @@
   "rust-analyzer.server.path": "rust-analyzer",
   "rust-analyzer.updates.checkOnStartup": false,
   "rust-analyzer.updates.prompt": false,
-  "sumneko-lua.enable": false,
   "workspace.ignoredFolders": ["$HOME", "$HOME/.cargo/**", "$HOME/.rustup/**"],
   "zuban.path": "zuban"
 }

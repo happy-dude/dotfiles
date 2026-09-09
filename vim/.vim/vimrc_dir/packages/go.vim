@@ -8,8 +8,6 @@ let g:go_fmt_command = "goimports"      " Automatically format and rewrite impor
 "let g:go_auto_type_info = 1             " Automatically show identifier info whenever you move your cursor
 let g:go_doc_popup_window = 1           " Use popup-window for |K| and |:GoDoc| instead of |preview-window|
 
-set autowrite                       " Save when calling :GoBuild
-
 function! s:BuildGoFiles() abort
   let l:file = expand('%')
   if l:file =~# '^\f\+_test\.go$'

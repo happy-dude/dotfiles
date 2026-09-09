@@ -68,7 +68,7 @@
       "command": ["tinymist", "lsp"]
     },
     "typescript": {
-      "command": ["tsgo", "--lsp", "--stdio"]
+      "command": ["tsc", "--lsp", "--stdio"]
     },
     "vim-ls": {
       "command": ["vim-language-server", "--stdio"],

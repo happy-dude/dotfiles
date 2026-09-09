@@ -17,6 +17,9 @@ on:
 
 permissions:
   contents: read
+  # cache-nix-action purges superseded cache entries through the Actions API,
+  # which needs write access; without it the purge inputs below are inert.
+  actions: write
 
 concurrency:
   group:

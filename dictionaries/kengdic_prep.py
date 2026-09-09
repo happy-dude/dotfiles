@@ -19,7 +19,7 @@ def main() -> None:
     src, dst = sys.argv[1], sys.argv[2]
     entries: dict[str, list[str]] = {}
     with open(src, encoding="utf-8") as inp:
-        for row in csv.DictReader(inp, delimiter="\t"):
+        for row in csv.DictReader(inp, delimiter="\t", quoting=csv.QUOTE_NONE):
             surface = (row.get("surface") or "").strip()
             gloss = (row.get("gloss") or "").strip()
             hanja = (row.get("hanja") or "").strip()

@@ -61,6 +61,35 @@ Signed-off-by: Stanley Chan <schan@lostsanctum.dev>
             )
             assert not lint(generated), subject
 
+        long_trailer = write_message(
+            directory,
+            "long-trailer.md",
+            "checks: keep long trailers exempt from the width limit\n\n"
+            "Body.\n\n"
+            f"Link: https://example.invalid/{'a' * 90}\n"
+            "Assisted-by: ChatGPT (gpt-5.6-sol, medium, OpenCode)\n",
+        )
+        assert not lint(long_trailer)
+
+        prose_trailer_lookalike = write_message(
+            directory,
+            "prose-trailer-lookalike.md",
+            "checks: wrap prose that merely starts like a trailer\n\n"
+            f"Note: {('this prose paragraph must wrap ' * 4).rstrip()}\n\n"
+            "Assisted-by: ChatGPT (gpt-5.6-sol, medium, OpenCode)\n",
+        )
+        assert "line 3 exceeds 80 characters" in lint(prose_trailer_lookalike)
+
+        indented_paragraph = write_message(
+            directory,
+            "indented-paragraph.md",
+            "checks: wrap an indented final paragraph\n\n"
+            "Body.\n\n"
+            f"  - {('an indented list item is prose ' * 3).rstrip()}\n"
+            "  - second item\n",
+        )
+        assert "line 5 exceeds 80 characters" in lint(indented_paragraph)
+
         invalid_subject = write_message(
             directory,
             "invalid-subject.md",
