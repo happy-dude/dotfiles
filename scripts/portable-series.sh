@@ -254,7 +254,7 @@ lint_commits() {
       python3 -c \
         'import sys; print(sys.stdin.read().rstrip() + "\n", end="")' \
         >"$temporary_directory/$(printf '%03d' "$index").md"
-    python3 "$repo_root/scripts/lint_commit_message.py" \
+    python3 "$worktree/scripts/lint_commit_message.py" \
       "$temporary_directory/$(printf '%03d' "$index").md"
     index=$((index + 1))
   done < <(git -C "$worktree" rev-list --reverse "$base..HEAD")
@@ -362,7 +362,7 @@ count=$count
 patch=$patch_name
 sha256=$patch_sha256
 EOF
-  cp -- "$repo_root/scripts/apply-portable-series.sh" \
+  cp -- "$worktree/scripts/apply-portable-series.sh" \
     "$staged_apply_path"
   chmod 0755 "$staged_apply_path"
   (
