@@ -1,9 +1,10 @@
 import os
 import sys
 from pathlib import Path
+from typing import NoReturn
 
 
-def fail(message: str, status: int = 1) -> None:
+def fail(message: str, status: int = 1) -> NoReturn:
     print(message, file=sys.stderr)
     raise SystemExit(status)
 

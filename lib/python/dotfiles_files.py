@@ -14,13 +14,13 @@ import sys
 import tempfile
 from collections.abc import Callable
 from pathlib import Path
-from typing import BinaryIO
+from typing import BinaryIO, NoReturn
 
 PRESERVE = -1
 """Keep the destination's current permissions, for a file that exists."""
 
 
-def fail(message: str, status: int = 1) -> None:
+def fail(message: str, status: int = 1) -> NoReturn:
     print(message, file=sys.stderr)
     raise SystemExit(status)
 

@@ -1,7 +1,7 @@
 import json
 import sys
 from pathlib import Path
-from typing import TypeAlias, cast
+from typing import NoReturn, TypeAlias, cast
 
 import json5
 
@@ -18,7 +18,7 @@ JsonValue: TypeAlias = (
 )
 
 
-def fail(message: str, error: Exception | None = None) -> None:
+def fail(message: str, error: Exception | None = None) -> NoReturn:
     if error is not None:
         message = f"{message}: {error}"
     print(message, file=sys.stderr)
