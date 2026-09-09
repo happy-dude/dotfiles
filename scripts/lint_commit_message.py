@@ -40,7 +40,9 @@ def trailer_block_start(lines: list[str]) -> int:
     block = lines[start:end]
     if start <= 1 or not block:
         return len(lines)
-    if all(
+    # Continuation lines may only follow a trailer; an indented paragraph on
+    # its own is prose.
+    if TRAILER_PATTERN.fullmatch(block[0]) and all(
         TRAILER_PATTERN.fullmatch(line) or line.startswith((" ", "\t"))
         for line in block
     ):

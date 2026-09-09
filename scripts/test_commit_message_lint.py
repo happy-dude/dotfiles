@@ -80,6 +80,16 @@ Signed-off-by: Stanley Chan <schan@lostsanctum.dev>
         )
         assert "line 3 exceeds 80 characters" in lint(prose_trailer_lookalike)
 
+        indented_paragraph = write_message(
+            directory,
+            "indented-paragraph.md",
+            "checks: wrap an indented final paragraph\n\n"
+            "Body.\n\n"
+            f"  - {('an indented list item is prose ' * 3).rstrip()}\n"
+            "  - second item\n",
+        )
+        assert "line 5 exceeds 80 characters" in lint(indented_paragraph)
+
         invalid_subject = write_message(
             directory,
             "invalid-subject.md",
