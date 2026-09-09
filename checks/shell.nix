@@ -64,7 +64,7 @@ in
       name = "dotfiles-zsh-syntax";
       tools = [pkgs.zsh];
       script = ''
-        for script in ${self}/zsh/.zshenv ${self}/zsh/.config/zsh/.*.zsh \
+        for script in ${self}/zsh/.config/zsh/.*.zsh \
           ${self}/zsh/.config/zsh/.z*; do
           if [ -f "$script" ]; then
             zsh -n "$script"
