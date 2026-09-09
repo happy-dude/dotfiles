@@ -184,7 +184,7 @@
     mkHome = profile:
       home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        extraSpecialArgs = {inherit inputs;} // profile;
+        extraSpecialArgs = {inherit inputs profile;};
 
         modules =
           [

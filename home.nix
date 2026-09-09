@@ -3,7 +3,6 @@
   lib,
   pkgs,
   inputs,
-  username,
   ...
 }: let
   lessFlags = import ./lib/less-flags.nix;
@@ -13,9 +12,6 @@ in {
   targets.genericLinux.nixGL.installScripts = ["mesa"];
 
   home = {
-    inherit username;
-    homeDirectory = "/home/${username}";
-
     # Only the Nix profile bin directories belong here, and only when the host
     # owns the Nix install. ~/.cargo/bin and ~/go/bin are not Nix facts, and
     # sessionPath prepends — which would put mutable source-install binaries
