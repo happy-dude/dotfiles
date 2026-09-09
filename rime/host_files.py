@@ -82,22 +82,22 @@ def migrate_theme_root(marker_source: Path) -> None:
 
 
 def deploy(source_root: Path) -> None:
-    home = Path.home()
+    config_home = dotfiles_files.config_home()
     state_root = dotfiles_files.state_home() / "rime/host-config"
     files = (
         (
             source_root / ".config/fcitx5/profile",
-            home / ".config/fcitx5/profile",
+            config_home / "fcitx5/profile",
             state_root / "profile",
         ),
         (
             source_root / ".config/fcitx5/conf/classicui.conf",
-            home / ".config/fcitx5/conf/classicui.conf",
+            config_home / "fcitx5/conf/classicui.conf",
             state_root / "classicui.conf",
         ),
         (
             source_root / ".config/fcitx5/conf/rime.conf",
-            home / ".config/fcitx5/conf/rime.conf",
+            config_home / "fcitx5/conf/rime.conf",
             state_root / "rime.conf",
         ),
     )

@@ -25,6 +25,13 @@ def fail(message: str, status: int = 1) -> NoReturn:
     raise SystemExit(status)
 
 
+def config_home() -> Path:
+    value = os.environ.get("XDG_CONFIG_HOME")
+    if value:
+        return Path(value)
+    return Path.home() / ".config"
+
+
 def state_home() -> Path:
     value = os.environ.get("XDG_STATE_HOME")
     if value:
