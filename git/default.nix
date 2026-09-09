@@ -22,7 +22,7 @@ in {
     );
 
     includes = [
-      {path = "${config.home.homeDirectory}/.config/git/local.config";}
+      {path = "${config.xdg.configHome}/git/local.config";}
     ];
 
     settings = {
