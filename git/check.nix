@@ -18,6 +18,9 @@ in {
       if [[ ''${1##*/} == post-local-rewrite.md ]]; then
         printf '%s\n' 'Local hook replaced the validated message' >"$1"
       fi
+      if grep -q 'local-hook-reject' "$1"; then
+        exit 1
+      fi
       touch local-hook-ran
       EOF
       chmod 0755 .git/hooks/commit-msg
@@ -129,6 +132,41 @@ in {
         echo "accepted a message the editor left unchanged" >&2
         exit 1
       fi
+
+      # An edit the repository-local hook rejects must not slip past it
+      # merely because the global linter accepts the new text.
+      cat >rejected-editor <<'EOF'
+      #!${pkgs.bash}/bin/bash
+      cat >"$1" <<'MESSAGE'
+      git: introduce text the local hook rejects
+
+      local-hook-reject
+
+      Assisted-by: ChatGPT (gpt-5.6-sol, medium, OpenCode)
+      MESSAGE
+      EOF
+      chmod 0755 rejected-editor
+      cp unchanged.md local-reject.md
+      if GIT_EDITOR="$PWD/rejected-editor" script --quiet --return --command \
+        "commit-msg local-reject.md </dev/null" /dev/null; then
+        echo "accepted an edit the repository-local hook rejects" >&2
+        exit 1
+      fi
+
+      cat >failing-editor <<'EOF'
+      #!${pkgs.bash}/bin/bash
+      exit 3
+      EOF
+      chmod 0755 failing-editor
+      # stderr must stay on the terminal or the hook treats the commit as
+      # headless; read the diagnostic from the pty transcript instead.
+      cp unchanged.md editor-failed.md
+      if GIT_EDITOR="$PWD/failing-editor" script --quiet --return --command \
+        "commit-msg editor-failed.md </dev/null" editor-failed.txt; then
+        echo "accepted a message after the editor failed" >&2
+        exit 1
+      fi
+      grep -F 'editor failed' editor-failed.txt
 
       cp unchanged.md headless.md
       if commit-msg headless.md </dev/null 2>hint.txt; then

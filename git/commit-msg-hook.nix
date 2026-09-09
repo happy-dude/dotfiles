@@ -84,14 +84,18 @@ in
         return "$lint_status"
       }
 
-      if [[ -x $local_hook && \
-        $(readlink -f "$local_hook") != $(readlink -f "$0") ]]; then
-        "$local_hook" "$message_path"
-      fi
+      run_local_hook() {
+        if [[ -x $local_hook && \
+          $(readlink -f "$local_hook") != $(readlink -f "$0") ]]; then
+          "$local_hook" "$message_path"
+        fi
+      }
 
       # Git runs hooks with stdin on /dev/null and stdout joined to stderr, so
       # only stderr and the controlling terminal reveal an interactive commit.
-      while ! lint_message; do
+      # The repository-local hook sees every edited message, not only the
+      # first one.
+      while ! { run_local_hook && lint_message; }; do
         if [[ ! -t 2 ]] || ! { : </dev/tty; } 2>/dev/null; then
           printf '%s\n' \
             'correct the preserved message and retry:' \
@@ -102,8 +106,12 @@ in
         before=$(mktemp)
         cp -- "$message_path" "$before"
         editor=$(git var GIT_EDITOR)
-        if ! sh -c "$editor \"\$1\"" sh "$message_path" </dev/tty >/dev/tty ||
-          cmp -s "$before" "$message_path"; then
+        if ! sh -c "$editor \"\$1\"" sh "$message_path" </dev/tty >/dev/tty; then
+          rm -f -- "$before"
+          printf '%s\n' 'editor failed; aborting the commit' >&2
+          exit 1
+        fi
+        if cmp -s "$before" "$message_path"; then
           rm -f -- "$before"
           printf '%s\n' 'message unchanged; aborting the commit' >&2
           exit 1
