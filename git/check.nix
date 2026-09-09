@@ -9,9 +9,14 @@ in {
     script = ''
       mkdir hooks repo
       # Installed the way Home Manager does: one symlink per hook name.
-      for name in pre-commit post-commit pre-push; do
+      for name in pre-commit post-commit pre-push post-checkout \
+        post-index-change reference-transaction; do
         ln -s ${pkgs.lib.getExe localHook} "hooks/$name"
       done
+      # Home Manager sets core.hooksPath globally, so the dispatchers also
+      # run while git init is still creating a repository and during clone.
+      git -c core.hooksPath="$PWD/hooks" init --quiet fresh
+      git -C fresh rev-parse --is-inside-work-tree >/dev/null
       cd repo
       git init --quiet
       git config user.name test
@@ -40,6 +45,10 @@ in {
         exit 1
       fi
       test -e pre-commit-ran
+
+      cd ..
+      git -c core.hooksPath="$PWD/hooks" clone --quiet repo cloned
+      git -C cloned rev-parse --is-inside-work-tree >/dev/null
     '';
   };
 
