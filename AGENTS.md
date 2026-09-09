@@ -412,10 +412,12 @@ plus a runtime load of the evaluated Emacs configuration; GitHub Actions syntax,
 pinned action revisions, and Dependabot config parsing; a real Neovim Org
 Tree-sitter parse against the evaluated Home Manager runtime; Rime Lua syntax
 and focused tests; profile-capability invariants; and gitleaks secret scanning.
-CI runs those checks and evaluates both Home Manager configurations on pushes
-and pull requests. Full builds of both configurations run weekly on a schedule
-and are opt-in through the `workflow_dispatch` `build_homes` input because
-builds are substantially more expensive than evaluation.
+CI runs those checks and evaluates both Home Manager configurations on pushes to
+`main` and on pull requests; the profile names are listed in `ci.yml`
+explicitly, so a new profile must be added there as well. Full builds of both
+configurations run weekly on a schedule and are opt-in through the
+`workflow_dispatch` `build_homes` input because builds are substantially more
+expensive than evaluation.
 
 ### Zed / agent config
 
@@ -547,8 +549,10 @@ remote-tracking branch contains it, HEAD is on a branch, and no other local
 branch contains it; every other case, including a containment check that cannot
 be determined, gets a fresh commit. The corresponding skip flags are
 `--skip-pull`, `--skip-submodules`, `--skip-status`, `--skip-nix-fmt`,
-`--skip-nix-flake`, and `--skip-home-manager`. `HOME_MANAGER_FLAKE` defaults to
-`.#$(whoami)`.
+`--skip-nix-flake`, and `--skip-home-manager`; `--quiet` suppresses the section
+banners, and an optional positional path selects the repository.
+`apply --skip-home-manager` is rejected because `check` already covers it.
+`HOME_MANAGER_FLAKE` defaults to `.#$(whoami)`.
 
 The script refuses to update dirty submodules unless `--autostash-submodules` is
 passed, and it does **not** auto-pop stashes afterward. The auto-stash scan
@@ -685,8 +689,10 @@ source.
   `mkOutOfStoreSymlink` or home-directory materialization only when live
   editability or writable/generated state requires it.
 - Do not prepend `/nix/var/nix/profiles/default/bin` in shared Fish
-  configuration. The Determinate installer exposes Nix on `schan`; Home Manager
-  exposes its managed client on `stachan`.
+  configuration. The Determinate installer exposes Nix on `schan`; on `stachan`
+  the host installer's client stays first on `PATH` while Home Manager validates
+  `nix.conf` against the locked `nix.package` and takes the Fish completions
+  from that same package.
 - tmux enables Ghostty's `extkeys` capability and CSI-u encoding so applications
   can request modified-key reporting. Keep reporting request-driven rather than
   forcing enhanced keys for every application.
@@ -715,13 +721,13 @@ source.
   wallpaper, and session history unmanaged.
 - **Vim runtime artifacts** are declarative: Home Manager links Tree-sitter
   parsers and queries under the XDG data directory through `xdg.dataFile`, and
-  TypeScript is served by tsgo (typescript-go). Home Manager provides every
-  formatter and language-server command. `vim/.vim/coc-settings.json` is the
-  authoritative, sorted language-server and format-on-save matrix. Keep object
-  keys sorted while preserving semantic precedence within lists such as
-  `rootPatterns`. The matrix covers C/C++, Rust, Go, Zig, Perl, Python, Lua,
-  shell, Fish, Clojure, Fennel, Nix, YAML, JavaScript/TypeScript, Kotlin,
-  Haskell, Terraform, Markdown, LaTeX, Typst, Vim script, and JSON, with
-  project-gated ESLint and Oxlint integrations. Do not run `:TSUpdate`,
-  `:GoUpdateBinaries`, `:GoInstallBinaries`, vim-plug, or mutable CoC extension
-  updates.
+  TypeScript is served by `tsgo` from the nixpkgs `typescript` 7 package. Home
+  Manager provides every formatter and language-server command.
+  `vim/.vim/coc-settings.json` is the authoritative, sorted language-server and
+  format-on-save matrix. Keep object keys sorted while preserving semantic
+  precedence within lists such as `rootPatterns`. The matrix covers C/C++, Rust,
+  Go, Zig, Perl, Python, Lua, shell, Fish, Clojure, Fennel, Nix, YAML,
+  JavaScript/TypeScript, Kotlin, Haskell, Terraform, Markdown, LaTeX, Typst, Vim
+  script, and JSON, with project-gated ESLint and Oxlint integrations. Do not
+  run `:TSUpdate`, `:GoUpdateBinaries`, `:GoInstallBinaries`, vim-plug, or
+  mutable CoC extension updates.
