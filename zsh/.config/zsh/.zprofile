@@ -48,11 +48,12 @@ typeset -gU cdpath fpath mailpath path
 # )
 
 # Set the list of directories that Zsh searches for programs.
+# Home Manager places the Nix profile first; the local directories are
+# fallbacks behind it, so they append rather than prepend.
 path=(
-  $HOME/{,s}bin(N)
-  /opt/{homebrew,local}/{,s}bin(N)
-  /usr/local/{,s}bin(N)
   $path
+  $HOME/{,s}bin(N)
+  /usr/local/{,s}bin(N)
 )
 
 #
