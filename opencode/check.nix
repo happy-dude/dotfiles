@@ -8,33 +8,7 @@
   inherit (import ../lib/homes.nix {inherit lib;}) shared;
   opencode = import ./package.nix {inherit pkgs;};
   homeList = lib.attrValues homes;
-  languageServerPackages = with pkgs; [
-    bash-language-server
-    clojure-lsp
-    eslint
-    fennel-ls
-    fish-lsp
-    gopls
-    haskell-language-server
-    kotlin-language-server
-    (lib.lowPrio clang-tools)
-    lua-language-server
-    marksman
-    nixd
-    oxlint
-    perlnavigator
-    ruff
-    rust-analyzer
-    terraform-ls
-    texlab
-    tinymist
-    typescript
-    vim-language-server
-    vscode-langservers-extracted
-    yaml-language-server
-    zls
-    zuban
-  ];
+  languageServerPackages = (import ../lib/language-servers.nix {inherit lib pkgs;}).packages;
   # The provider-neutral files are identical on every profile; name the one
   # copy, or fail naming the profiles that disagree.
   sharedFile = path:

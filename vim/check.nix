@@ -5,6 +5,7 @@
   self,
 }: let
   mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
+  languageServers = import ../lib/language-servers.nix {inherit lib pkgs;};
   mkProfileCheck = username: home: let
     parserDirectory = home.config.xdg.dataFile."nvim/site/parser".source;
     queryDirectory = home.config.xdg.dataFile."nvim/site/queries".source;
@@ -60,38 +61,13 @@
   profileChecks = lib.mapAttrsToList mkProfileCheck homes;
 in {
   # coc-settings.json drives its language servers by bare command; assert each
-  # command it names resolves to an installed language-server package. The
+  # command it names resolves to a package in the shared server table. The
   # servers are supplied as tools rather than the whole profile: building the
   # full home.path (tens of GB) would make `nix flake check` run out of disk on
-  # CI, which only evaluates the profiles on push. Keep this list in step with
-  # the servers coc-settings.json configures.
+  # CI, which only evaluates the profiles on push.
   coc-language-servers = mkCheck {
     name = "coc-language-servers";
-    tools = with pkgs; [
-      jq
-      bash-language-server
-      clojure-lsp
-      fennel-ls
-      fish-lsp
-      gopls
-      haskell-language-server
-      kotlin-language-server
-      lua-language-server
-      marksman
-      nixd
-      oxlint
-      (perl.withPackages (ps: [ps.PerlLanguageServer]))
-      perlnavigator
-      ruff
-      terraform-ls
-      texlab
-      tinymist
-      typescript
-      vscode-langservers-extracted
-      vim-language-server
-      yaml-language-server
-      zls
-    ];
+    tools = [pkgs.jq] ++ languageServers.packages;
     script = ''
       missing=""
       for cmd in $(jq -r '.languageserver | to_entries[] | .value.command' \
