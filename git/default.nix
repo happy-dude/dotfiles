@@ -88,7 +88,7 @@ in {
     };
   };
 
-  xdg.configFile."git/hooks/commit-msg".source = pkgs.lib.getExe commitMsgHook;
+  xdg.configFile."git/hooks/commit-msg".source = lib.getExe commitMsgHook;
 
   # delta (enableGitIntegration) sets per-command [pager] + interactive.diffFilter,
   # not core.pager, so it coexists with core.pager = bat above.
