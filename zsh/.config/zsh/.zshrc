@@ -180,3 +180,9 @@ then
     alias lg='eza -labGd --git --sort=modified --tree --level=2'            # tree w/ git
     alias lt='eza -labGF --tree --level=2'                                  # tree
 fi
+
+# fzf key bindings and completion. prezto's editor module ran `bindkey -d`
+# above, so these must be installed after it or ^R/^T/M-c stay at the defaults.
+if (( $+commands[fzf] )); then
+  source <(fzf --zsh)
+fi
