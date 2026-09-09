@@ -1,4 +1,5 @@
 import fnmatch
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -53,13 +54,18 @@ def watch(
             str(org_directory),
         ],
         stdout=subprocess.PIPE,
-        text=True,
     )
     if watcher.stdout is None:
         watcher.terminate()
         raise RuntimeError("inotifywait stdout pipe is unavailable")
+    # inotifywait writes raw filenames; decoding them strictly would let one
+    # non-UTF-8 name kill the watcher on every event that touches it.
     for line in watcher.stdout:
-        relative = Path(line.rstrip("\n")).relative_to(org_directory)
+        path = Path(os.fsdecode(line.rstrip(b"\n")))
+        try:
+            relative = path.relative_to(org_directory)
+        except ValueError:
+            continue
         if should_sync(relative):
             schedule(systemd_run, systemctl)
     return watcher.wait()
