@@ -97,9 +97,9 @@ in {
         (dotfiles-terraform . ("${bin "terraform-ls"}" "serve"))
         (dotfiles-texlab . ("${bin "texlab"}"))
         (dotfiles-tinymist . ("${bin "tinymist"}" "lsp"))
-        ;; typescript 7 (tsgo) ships no tsserver.js; tsgo serves LSP
-        ;; directly over stdio, so there is no SDK pin.
-        (dotfiles-typescript . ("${bin "tsgo"}" "--lsp" "--stdio"))
+        ;; typescript 7 ships no tsserver.js; its Go tsc serves LSP directly
+        ;; over stdio, so there is no SDK pin.
+        (dotfiles-typescript . ("${bin "tsc"}" "--lsp" "--stdio"))
         (dotfiles-vim . ("${bin "vim-language-server"}" "--stdio"))
         (dotfiles-yaml . ("${bin "yaml-language-server"}" "--stdio"))
         (dotfiles-zls . ("${bin "zls"}"))

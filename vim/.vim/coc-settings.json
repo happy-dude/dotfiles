@@ -203,7 +203,7 @@
     },
     "tsgo": {
       "args": ["--lsp", "--stdio"],
-      "command": "tsgo",
+      "command": "tsc",
       "filetypes": [
         "javascript",
         "javascriptreact",

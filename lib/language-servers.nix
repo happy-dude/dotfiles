@@ -91,9 +91,11 @@
       package = pkgs.tinymist;
       exe = "tinymist";
     };
-    "tsgo" = {
+    # TypeScript 7's Go compiler; nixpkgs installs it as tsc, and it also
+    # speaks LSP.
+    "tsc" = {
       package = pkgs.typescript;
-      exe = "tsgo";
+      exe = "tsc";
     };
     "vim-language-server" = {
       package = pkgs.vim-language-server;
