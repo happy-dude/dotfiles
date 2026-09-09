@@ -47,6 +47,11 @@
   runtimeTest = ./runtime-test.el;
 in
   assert opencodeDisableLspDownload == "true";
+  assert lib.all (
+    home:
+      lib.hasPrefix "${home.config.programs.emacs.finalPackage}/bin/emacsclient "
+      home.config.xdg.desktopEntries.emacs-org-protocol.exec
+  ) (lib.attrValues homes);
   assert lib.all (home: lib.elem opencode home.config.home.packages) (
     lib.attrValues homes
   ); {
