@@ -14,6 +14,7 @@ in
     name = "commit-msg";
     runtimeInputs = [
       pkgs.coreutils
+      pkgs.diffutils
       pkgs.gawk
       pkgs.git
       pkgs.gnugrep
@@ -88,14 +89,26 @@ in
         "$local_hook" "$message_path"
       fi
 
+      # Git runs hooks with stdin on /dev/null and stdout joined to stderr, so
+      # only stderr and the controlling terminal reveal an interactive commit.
       while ! lint_message; do
-        if [[ ! -t 0 || ! -t 1 ]]; then
-          printf 'correct the preserved message and retry:\ngit commit --amend --edit --file %q\n' \
-            "$message_path" >&2
+        if [[ ! -t 2 ]] || ! { : </dev/tty; } 2>/dev/null; then
+          printf '%s\n' \
+            'correct the preserved message and retry:' \
+            "git commit --edit --file $(printf '%q' "$message_path")" \
+            '(add --amend only if the rejected commit was itself an amend)' >&2
           exit 1
         fi
+        before=$(mktemp)
+        cp -- "$message_path" "$before"
         editor=$(git var GIT_EDITOR)
-        sh -c "$editor \"\$1\"" sh "$message_path"
+        if ! sh -c "$editor \"\$1\"" sh "$message_path" </dev/tty >/dev/tty ||
+          cmp -s "$before" "$message_path"; then
+          rm -f -- "$before"
+          printf '%s\n' 'message unchanged; aborting the commit' >&2
+          exit 1
+        fi
+        rm -f -- "$before"
       done
     '';
   }

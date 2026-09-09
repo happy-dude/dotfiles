@@ -112,10 +112,34 @@ in {
       MESSAGE
       EOF
       chmod 0755 editor
+      # Git hands hooks /dev/null on stdin; only the terminal on stderr and
+      # /dev/tty distinguish an interactive commit.
       GIT_EDITOR="$PWD/editor" \
         script --quiet --return --command \
-          "commit-msg invalid-agent.md" /dev/null
+          "commit-msg invalid-agent.md </dev/null" /dev/null
       grep -Fx 'git: repair an invalid interactive message' invalid-agent.md
+
+      cat >unchanged.md <<'EOF'
+      Invalid agent subject
+
+      Assisted-by: ChatGPT (gpt-5.6-sol, medium, OpenCode)
+      EOF
+      if GIT_EDITOR=true script --quiet --return --command \
+        "commit-msg unchanged.md </dev/null" /dev/null; then
+        echo "accepted a message the editor left unchanged" >&2
+        exit 1
+      fi
+
+      cp unchanged.md headless.md
+      if commit-msg headless.md </dev/null 2>hint.txt; then
+        echo "accepted an invalid message without a terminal" >&2
+        exit 1
+      fi
+      grep -F -- 'git commit --edit --file headless.md' hint.txt
+      if grep -F -- '--amend --edit' hint.txt; then
+        echo "the hint still suggests --amend" >&2
+        exit 1
+      fi
 
       cat >human.md <<'EOF'
       human: use repository-specific style
