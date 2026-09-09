@@ -17,7 +17,9 @@ in {
 
     # Global gitignore -> ~/.config/git/ignore (git reads it by default; no
     # core.excludesFile needed). Kept as a plain file, read in.
-    ignores = lib.splitString "\n" (builtins.readFile ./.gitignore_global);
+    ignores = lib.filter (line: line != "") (
+      lib.splitString "\n" (builtins.readFile ./.gitignore_global)
+    );
 
     includes = [
       {path = "${config.home.homeDirectory}/.config/git/local.config";}
