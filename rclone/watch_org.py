@@ -37,6 +37,19 @@ def schedule(systemd_run: str, systemctl: str) -> None:
     )
 
 
+def event_path(line: bytes, org_directory: Path) -> Path | None:
+    """Return the event's path relative to the Org directory, or None.
+
+    inotifywait writes raw filenames, so decode them the way the filesystem
+    layer does; events outside the directory carry no path to relate.
+    """
+    path = Path(os.fsdecode(line.rstrip(b"\n")))
+    try:
+        return path.relative_to(org_directory)
+    except ValueError:
+        return None
+
+
 def watch(
     org_directory: Path,
     inotifywait: str,
@@ -58,15 +71,9 @@ def watch(
     if watcher.stdout is None:
         watcher.terminate()
         raise RuntimeError("inotifywait stdout pipe is unavailable")
-    # inotifywait writes raw filenames; decoding them strictly would let one
-    # non-UTF-8 name kill the watcher on every event that touches it.
     for line in watcher.stdout:
-        path = Path(os.fsdecode(line.rstrip(b"\n")))
-        try:
-            relative = path.relative_to(org_directory)
-        except ValueError:
-            continue
-        if should_sync(relative):
+        relative = event_path(line, org_directory)
+        if relative is not None and should_sync(relative):
             schedule(systemd_run, systemctl)
     return watcher.wait()
 
