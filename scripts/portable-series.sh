@@ -269,6 +269,7 @@ export_series() {
   local branch="replay/$name"
   local branch_ref="refs/heads/$branch"
   local worktree
+  local worktree_status
   local lookup_status
   local base
   local merge_base
@@ -301,8 +302,10 @@ export_series() {
     return 1
   fi
   [[ -d $output_directory ]] || die "output directory not found: $output_directory"
-  [[ -z $(git -C "$worktree" status --porcelain=v1 --untracked-files=all) ]] ||
-    die "portable worktree is not clean"
+  worktree_status=$(
+    git -C "$worktree" status --porcelain=v1 --untracked-files=all
+  ) || die "unable to read the portable worktree status: $worktree"
+  [[ -z $worktree_status ]] || die "portable worktree is not clean"
 
   git -C "$repo_root" fetch origin main
   base=$(git -C "$repo_root" rev-parse origin/main)
@@ -405,6 +408,7 @@ clean_series() {
   local branch="replay/$name"
   local branch_ref="refs/heads/$branch"
   local worktree
+  local worktree_status
   local lookup_status
 
   validate_name "$name" || return 1
@@ -434,9 +438,13 @@ clean_series() {
       die "run clean from the main checkout, not from the series worktree $worktree"
       return 1
     fi
-    if [[ -n $(
+    if ! worktree_status=$(
       git -C "$worktree" status --porcelain=v1 --untracked-files=all
-    ) ]]; then
+    ); then
+      die "unable to read the series worktree status: $worktree"
+      return 1
+    fi
+    if [[ -n $worktree_status ]]; then
       die "series worktree is not clean: $worktree"
       return 1
     fi
