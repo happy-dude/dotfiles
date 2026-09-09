@@ -28,7 +28,7 @@
     terraform-ls
     texlab
     tinymist
-    typescript-go
+    typescript
     vim-language-server
     vscode-langservers-extracted
     yaml-language-server

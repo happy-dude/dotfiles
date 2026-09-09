@@ -93,7 +93,7 @@ in {
         (dotfiles-tinymist . ("${pkgs.tinymist}/bin/tinymist" "lsp"))
         ;; typescript 7 (tsgo) ships no tsserver.js; tsgo serves LSP
         ;; directly over stdio, so there is no SDK pin.
-        (dotfiles-typescript . ("${pkgs.typescript-go}/bin/tsgo" "--lsp" "--stdio"))
+        (dotfiles-typescript . ("${pkgs.typescript}/bin/tsgo" "--lsp" "--stdio"))
         (dotfiles-vim . ("${pkgs.vim-language-server}/bin/vim-language-server" "--stdio"))
         (dotfiles-yaml . ("${pkgs.yaml-language-server}/bin/yaml-language-server" "--stdio"))
         (dotfiles-zls . ("${pkgs.zls}/bin/zls"))
