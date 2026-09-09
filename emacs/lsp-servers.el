@@ -14,9 +14,9 @@
 (require 'lsp-mode)
 (require 'lsp-completion)
 
-;; Emacs 30 cannot map lsp-mode's nested workspace lighter back to its
-;; owning minor mode when handling mode-line mouse actions. Keep a flat
-;; indicator until the core lookup handles nested mode-line constructs.
+;; Emacs cannot map lsp-mode's nested workspace lighter back to its owning
+;; minor mode when handling mode-line mouse actions. Keep a flat indicator
+;; until the core lookup handles nested mode-line constructs.
 (setcdr (assq 'lsp-mode minor-mode-alist) '(" LSP"))
 
 ;; Nix owns the store paths for every language server and the Tree-sitter
@@ -33,6 +33,10 @@
       treesit-auto-install-grammar 'never)
 (require 'treesit-auto)
 (global-treesit-auto-mode 1)
+
+;; The grammar bundle has no tsx grammar and Emacs' tsx-ts-mode-maybe falls
+;; back to fundamental-mode without one, which no LSP client serves.
+(add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
 
 (require 'company)
 (require 'company-box)

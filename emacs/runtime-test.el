@@ -35,6 +35,9 @@
   (error "Tree-sitter grammar downloads are enabled"))
 (unless (eq treesit-auto-install-grammar 'never)
   (error "Emacs' built-in Tree-sitter modes may download grammars"))
+(unless (eq (assoc-default "component.tsx" auto-mode-alist #'string-match-p)
+            'web-mode)
+  (error "TSX files do not open in web-mode"))
 (unless (equal (cdr (assq 'lsp-mode minor-mode-alist)) '(" LSP"))
   (error "lsp-mode retained a nested mode-line indicator"))
 
