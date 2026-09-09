@@ -333,15 +333,20 @@ export_series() {
   scan_series "$forbidden_pattern" "$worktree" "$base" "$staging_directory"
 
   (
-    cd -- "$worktree"
+    cd -- "$worktree" || exit 1
     nix fmt .
     git diff --exit-code
     git diff --cached --exit-code
     nix flake check --show-trace --no-update-lock-file
-    home-manager build --flake .#stachan --show-trace \
-      --no-out-link --no-update-lock-file
-    home-manager build --flake .#schan --show-trace \
-      --no-out-link --no-update-lock-file
+    # Every profile the flake declares, so a new machine cannot escape the
+    # validation that gates the series.
+    while IFS= read -r profile; do
+      home-manager build --flake ".#$profile" --show-trace \
+        --no-out-link --no-update-lock-file
+    done < <(
+      nix eval --no-update-lock-file --raw .#homeConfigurations \
+        --apply 'homes: builtins.concatStringsSep "\n" (builtins.attrNames homes) + "\n"'
+    )
   )
 
   staged_patch_path="$staging_directory/$patch_name"
