@@ -168,11 +168,26 @@ in {
 
       Assisted-by: ChatGPT (gpt-5.6-sol, medium, OpenCode)
       EOF
-      if GIT_EDITOR=true script --quiet --return --command \
+      cat >noop-editor <<'EOF'
+      #!${pkgs.bash}/bin/bash
+      exit 0
+      EOF
+      chmod 0755 noop-editor
+      if GIT_EDITOR="$PWD/noop-editor" script --quiet --return --command \
         "commit-msg unchanged.md </dev/null" /dev/null; then
         echo "accepted a message the editor left unchanged" >&2
         exit 1
       fi
+
+      # git commit -m in a terminal: Git exports GIT_EDITOR=: and the hook
+      # must print the recovery hint rather than run ':' as the editor.
+      cp unchanged.md no-editor.md
+      if GIT_EDITOR=: script --quiet --return --command \
+        "commit-msg no-editor.md </dev/null" no-editor.txt; then
+        echo "accepted an invalid message when git had no editor" >&2
+        exit 1
+      fi
+      grep -F -- 'git commit --edit --file no-editor.md' no-editor.txt
 
       # An edit the repository-local hook rejects must not slip past it
       # merely because the global linter accepts the new text.
