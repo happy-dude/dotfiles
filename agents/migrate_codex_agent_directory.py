@@ -53,7 +53,6 @@ def main(arguments: list[str]) -> None:
                 store_dir = source.parent
                 if (
                     not remove_target
-                    or home_files == Path(link_target)
                     or home_files.parent != store_dir
                     or not home_files.name.endswith("-home-manager-files")
                 ):
