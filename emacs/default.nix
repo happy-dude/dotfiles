@@ -8,6 +8,9 @@
 in {
   home.file."org/.dir-locals.el".source = ./org-dir-locals.el;
 
+  # org-roam-graph renders through Graphviz's dot.
+  home.packages = [pkgs.graphviz];
+
   xdg.configFile."emacs/init.el".source = ./init.el;
   xdg.configFile."emacs/agent-shell.el".source = ./agent-shell.el;
   xdg.configFile."emacs/lsp-servers.el".source = ./lsp-servers.el;
