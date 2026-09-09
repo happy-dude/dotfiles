@@ -102,6 +102,24 @@ in {
       test "$(stat -c %a "$home/.config/fcitx5/profile")" = 644
       test ! -e "$home/.local/share/fcitx5/themes"
 
+      # Fcitx reads $XDG_CONFIG_HOME when it is set to an absolute path; the
+      # base-directory specification says a relative value is ignored.
+      relocated="$PWD/relocated-config"
+      HOME="$home" XDG_CONFIG_HOME="$relocated" \
+        XDG_STATE_HOME="$PWD/relocated-state" \
+        rime-host-files deploy "$source_root"
+      test -f "$relocated/fcitx5/profile"
+      mkdir relative-home
+      (
+        cd relative-home
+        HOME="$PWD" XDG_CONFIG_HOME=relative XDG_STATE_HOME=relative-state \
+          rime-host-files deploy "$source_root"
+      )
+      test -f relative-home/.config/fcitx5/profile
+      test -f relative-home/.local/state/rime/host-config/profile
+      test ! -e relative-home/relative
+      test ! -e relative-home/relative-state
+
       printf '%s\n' runtime-edit >"$home/.config/fcitx5/profile"
       HOME="$home" XDG_STATE_HOME="$state" \
         rime-host-files deploy "$source_root"

@@ -25,25 +25,25 @@ def fail(message: str, status: int = 1) -> NoReturn:
     raise SystemExit(status)
 
 
-def config_home() -> Path:
-    value = os.environ.get("XDG_CONFIG_HOME")
-    if value:
+def _base_directory(variable: str, fallback: Path) -> Path:
+    # The base-directory specification requires absolute paths and says a
+    # relative value is invalid and must be ignored.
+    value = os.environ.get(variable)
+    if value and os.path.isabs(value):
         return Path(value)
-    return Path.home() / ".config"
+    return fallback
+
+
+def config_home() -> Path:
+    return _base_directory("XDG_CONFIG_HOME", Path.home() / ".config")
 
 
 def state_home() -> Path:
-    value = os.environ.get("XDG_STATE_HOME")
-    if value:
-        return Path(value)
-    return Path.home() / ".local" / "state"
+    return _base_directory("XDG_STATE_HOME", Path.home() / ".local" / "state")
 
 
 def data_home() -> Path:
-    value = os.environ.get("XDG_DATA_HOME")
-    if value:
-        return Path(value)
-    return Path.home() / ".local" / "share"
+    return _base_directory("XDG_DATA_HOME", Path.home() / ".local" / "share")
 
 
 def same_content(left: Path, right: Path) -> bool:
