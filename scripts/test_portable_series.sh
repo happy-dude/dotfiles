@@ -317,16 +317,25 @@ cp -- "$source_root/scripts/lint_commit_message.py" "$repo/scripts/"
 git -C "$repo" switch -qc bad-message "$base"
 git -C "$repo" commit -q --allow-empty -m 'no subsystem prefix'
 lint_rc=0
-(
+lint_output=$(
   cd -- "$repo"
   TMPDIR="$lint_tmp" bash -c \
     'source scripts/portable-series.sh && lint_commits "$1" "$2"' \
-    _ "$repo" "$base"
-) >/dev/null 2>&1 || lint_rc=$?
+    _ "$repo" "$base" 2>&1
+) || lint_rc=$?
 if [ "$lint_rc" -eq 0 ]; then
   printf 'lint_commits accepted an invalid commit message\n' >&2
   exit 1
 fi
+# The linter itself must have rejected the message, not a missing runtime.
+case $lint_output in
+*"'subsystem: summary'"*) ;;
+*)
+  printf 'lint_commits failed without the linter rejecting the message:\n%s\n' \
+    "$lint_output" >&2
+  exit 1
+  ;;
+esac
 # mktemp staging directories are tmp.*; prettier's node cache
 # (node-compile-cache) also lands in TMPDIR and is not ours.
 if ls -d "$lint_tmp"/tmp.* >/dev/null 2>&1; then

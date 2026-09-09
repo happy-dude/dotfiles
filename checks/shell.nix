@@ -23,6 +23,9 @@
       tools = [
         pkgs.bash
         pkgs.git
+        # lint_commits runs the repository's commit-message linter.
+        pkgs.prettier
+        pkgs.python3
       ];
       script = ''bash ${self}/scripts/test_${name}.sh'';
     };
