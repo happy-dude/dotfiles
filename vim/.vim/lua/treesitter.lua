@@ -4,11 +4,11 @@ local api = vim.api
 
 require('matchtag')
 
--- Nix deployments link parsers and queries through Home Manager. Stow
--- deployments retain the nvim-treesitter :TSInstall/:TSUpdate workflow.
+-- Home Manager links the parsers and queries; nothing installs or updates
+-- them at run time.
 
 -- nvim-treesitter ships features disabled; start highlighting when a parser is
--- available from either deployment.
+-- available.
 local treesitter_start_group = api.nvim_create_augroup('TreesitterStart', { clear = true })
 api.nvim_create_autocmd('FileType', {
   group = treesitter_start_group,
