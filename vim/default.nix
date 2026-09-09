@@ -48,19 +48,11 @@
     inherit (cocZubanPackage) pname version meta;
     src = "${cocZubanPackage}/lib/node_modules/@yaegassy/coc-zuban";
   };
-  rustowlManifest = builtins.fromTOML (
-    builtins.readFile "${inputs.rustowl_src}/Cargo.toml"
-  );
-  rustOwlPlugin = pkgs.vimUtils.buildVimPlugin {
-    pname = "rustowl-nvim";
-    version = rustowlManifest.package.version;
-    src = inputs.rustowl_src;
-
-    postInstall = ''
-      find "$out" -mindepth 1 -maxdepth 1 \
-        ! -name lua ! -name ftplugin -exec rm -rf {} +
-    '';
-  };
+  rustOwlPlugin =
+    (import ../rustowl/package.nix {
+      inherit inputs pkgs;
+      lib = pkgs.lib;
+    }).neovimPlugin;
   vimSandwichWithLicense = pkgs.vimPlugins.vim-sandwich.overrideAttrs (old: {
     meta =
       old.meta
