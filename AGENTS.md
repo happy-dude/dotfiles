@@ -752,13 +752,13 @@ source.
   wallpaper, and session history unmanaged.
 - **Vim runtime artifacts** are declarative: Home Manager links Tree-sitter
   parsers and queries under the XDG data directory through `xdg.dataFile`, and
-  TypeScript is served by `tsgo` from the nixpkgs `typescript` 7 package. Home
-  Manager provides every formatter and language-server command.
-  `vim/.vim/coc-settings.json` is the authoritative, sorted language-server and
-  format-on-save matrix. Keep object keys sorted while preserving semantic
-  precedence within lists such as `rootPatterns`. The matrix covers C/C++, Rust,
-  Go, Zig, Perl, Python, Lua, shell, Fish, Clojure, Fennel, Nix, YAML,
-  JavaScript/TypeScript, Kotlin, Haskell, Terraform, Markdown, LaTeX, Typst, Vim
-  script, and JSON, with project-gated ESLint and Oxlint integrations. Do not
-  run `:TSUpdate`, `:GoUpdateBinaries`, `:GoInstallBinaries`, vim-plug, or
-  mutable CoC extension updates.
+  TypeScript is served by `tsc`, the Go compiler of the nixpkgs `typescript` 7
+  package, which also speaks LSP. Home Manager provides every formatter and
+  language-server command. `vim/.vim/coc-settings.json` is the authoritative,
+  sorted language-server and format-on-save matrix. Keep object keys sorted
+  while preserving semantic precedence within lists such as `rootPatterns`. The
+  matrix covers C/C++, Rust, Go, Zig, Perl, Python, Lua, shell, Fish, Clojure,
+  Fennel, Nix, YAML, JavaScript/TypeScript, Kotlin, Haskell, Terraform,
+  Markdown, LaTeX, Typst, Vim script, and JSON, with project-gated ESLint and
+  Oxlint integrations. Do not run `:TSUpdate`, `:GoUpdateBinaries`,
+  `:GoInstallBinaries`, vim-plug, or mutable CoC extension updates.
