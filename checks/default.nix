@@ -24,6 +24,7 @@ in
       codex-profile-materializer = codex.checks.profileMaterializer;
       codex-agent-directory-migration = codex.checks.agentDirectoryMigration;
       dictionaries = import ../dictionaries/check.nix {inherit homes lib pkgs;};
+      omp = import ../omp/check.nix {inherit homes lib pkgs;};
       opencode = import ../opencode/check.nix {inherit homes lib pkgs self;};
     }
     (import ./profiles.nix {inherit homes lib pkgs;})

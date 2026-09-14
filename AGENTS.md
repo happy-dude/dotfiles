@@ -115,7 +115,7 @@ checkout is the Linux branch.
 - Feature modules live in their own subdirectories, each as a `default.nix`
   imported from `flake.nix`'s `modules` list: `aerc/`, `agents/`, `bat/`,
   `dictionaries/`, `emacs/`, `fish/`, `fonts/`, `fzf/`, `ghostty/`, `git/`,
-  `gnome/`, `gpg/`, `mail/`, `nix/`, `opencode/`, `rclone/`, `rime/`,
+  `gnome/`, `gpg/`, `mail/`, `nix/`, `omp/`, `opencode/`, `rclone/`, `rime/`,
   `roswell/`, `rustowl/`, `tldr/`, `tmux/`, `vim/`, `virtme-ng/`, `xdg/`,
   `yt-dlp/`, `zed/`, `zsh/`. The desktop-specific `rime/gnome.nix` module is
   imported separately. The `modules` list in `flake.nix` is authoritative; this
@@ -138,9 +138,10 @@ checkout is the Linux branch.
   as tools. `lib/python/` holds the durable file replacement the activation
   helpers use and the builder that packages them; `lib/mkCheck.nix` builds check
   derivations; `lib/less-flags.nix` holds the less options shared by the pager
-  integrations; `lib/homes.nix` returns a value every profile agrees on and
-  otherwise names the profiles that disagree. `scripts/lib/` holds the same for
-  shell.
+  integrations; `lib/gruvbox-material.nix` holds the Gruvbox Material palettes
+  the OpenCode and oh-my-pi themes share; `lib/homes.nix` returns a value every
+  profile agrees on and otherwise names the profiles that disagree.
+  `scripts/lib/` holds the same for shell.
 - `flatpak/` and `plasma/` are capability-conditional modules: `mkHome` imports
   the flatpak modules where `hasFlatpak` holds and the plasma modules where the
   desktop is Plasma, because their options come from external modules. Modules
@@ -234,27 +235,52 @@ and installs StyLua's config under `~/.config/stylua`.
   runtime-only keys. `stachan` retains the normal host target at
   `~/.config/zed/settings.json` through `programs.zed-editor`.
 - **`agents/`** holds canonical `kernel` and `language` prompts. Nix reads their
-  Markdown bodies and frontmatter to generate corresponding Codex and OpenCode
-  agents without checked-in generated artifacts, plus Codex profile templates.
-  `agents/codex.nix` owns the profile materializer, the guarded agent-directory
-  ownership migration, and their focused checks. Home Manager stores the
-  immutable templates under `~/.local/share/codex/generated-profiles` and uses a
-  Nix-built materializer to create missing writable mode-0600 profiles or
-  refresh generator-owned keys when a template changes. Generated profiles carry
-  Codex's official `config.toml` schema directive and preserve readable
-  multiline instructions. Runtime-owned project trust, TUI state, and other
-  profile keys survive that merge. The independently maintained Kagi Markdown
-  prompts (`agents/prompts/kagi-*.md`) carry a different, fixed instruction
-  budget, so they are kept verbatim in the repo — whitespace preserved and
-  measured by the `kagi-prompt-budget` check — rather than generated from the
-  canonical agent prompts or deployed as client agents. Kagi prompts target a
-  chat interface with optional web search and uploads but no shell, filesystem,
-  or host access; they delegate commands to the user and continue by
-  interpreting returned results. Claude and Codex session state, credentials,
-  provider configuration, and project trust remain machine-local and must never
-  be committed. Activation requires `~/.claude` and `~/.codex` to be real
-  directories and restricts them to mode `0700` while leaving their contents
-  writable.
+  Markdown bodies and frontmatter to generate corresponding Codex, OpenCode, and
+  oh-my-pi agents without checked-in generated artifacts, plus Codex profile
+  templates. `agents/codex.nix` owns the profile materializer, the guarded
+  agent-directory ownership migration, and their focused checks. Home Manager
+  stores the immutable templates under `~/.local/share/codex/generated-profiles`
+  and uses a Nix-built materializer to create missing writable mode-0600
+  profiles or refresh generator-owned keys when a template changes. Generated
+  profiles carry Codex's official `config.toml` schema directive and preserve
+  readable multiline instructions. Runtime-owned project trust, TUI state, and
+  other profile keys survive that merge. The independently maintained Kagi
+  Markdown prompts (`agents/prompts/kagi-*.md`) carry a different, fixed
+  instruction budget, so they are kept verbatim in the repo — whitespace
+  preserved and measured by the `kagi-prompt-budget` check — rather than
+  generated from the canonical agent prompts or deployed as client agents. Kagi
+  prompts target a chat interface with optional web search and uploads but no
+  shell, filesystem, or host access; they delegate commands to the user and
+  continue by interpreting returned results. Claude and Codex session state,
+  credentials, provider configuration, and project trust remain machine-local
+  and must never be committed. Activation requires `~/.claude`, `~/.codex`, and
+  `~/.omp` to be real directories and restricts them to mode `0700` while
+  leaving their contents writable.
+- **`omp/`** installs oh-my-pi (`omp`) for both Linux profiles on the same
+  footing as OpenCode. omp rewrites its global `~/.omp/agent/config.yml` from
+  `/settings` and `omp config set`, so Home Manager does not own that file; the
+  declared keys travel in a `PI_CONFIG_FILES` overlay that the wrapped package
+  adds to every invocation, which omp loads after the global file and never
+  writes back, so declared keys win and every other key stays the program's. A
+  user's own `PI_CONFIG_FILES` entries load after the declared overlay and still
+  win. The overlay sets `tools.approvalMode` to `write`, so reads and workspace
+  writes run while anything that executes prompts; turns off the startup update
+  check, plugin-update checks, and the automatic tool-issue reports; points
+  `skills.customDirectories` at `~/.claude/skills`; and selects the mix
+  dark-medium Gruvbox Material variant as `theme.dark`. The wrapper also strips
+  the OTLP exporter variables omp would otherwise export through. Updates come
+  from the locked Nixpkgs package. Language servers stay enabled because omp
+  resolves them from `PATH` and never downloads one. The module generates the
+  `kernel` and `language` task agents under `~/.omp/agent/agents` from the
+  canonical prompts, because omp skips `~/.claude/agents` deliberately, and
+  installs both Gruvbox Material variants under `~/.omp/agent/themes`. `~/.omp`
+  is among the directories the Vim and Emacs secret-state guards exclude. omp's
+  `models.yml`, `mcp.json`, credential store, and sessions under `~/.omp/agent`
+  are machine-local and must never be committed. `omp/check.nix` runs the
+  wrapped omp in an empty home to confirm the overlay and exporter stripping,
+  reads the effective settings back, compares the generated agents with the
+  canonical prompt bodies, and validates both themes against the schema omp
+  ships.
 - **`opencode/`** installs the Nix package for both Linux profiles and owns the
   global provider-neutral configuration. It disables self-updates and session
   sharing, disables AI SDK telemetry, strips inherited OTLP exporter variables
@@ -433,35 +459,36 @@ and Zsh files; focused tests for the Codex profile materializer, agent-directory
 ownership migration, `.gitmodules` formatter, rclone event classification and
 decoding, guarded Rime host-file and ownership-state materialization, the Rime
 theme names against the Catppuccin package, Zed settings materialization,
-focused OpenCode package/LSP/schema/theme/telemetry checks, Git commit-message
-hook behavior and the repository-hook dispatcher, a silent Ex-mode load of each
-profile's Vim configuration, Kagi prompt character budgets, the aerc
-deployed/tracked configuration mirror, CoC language-server package resolution,
-the sdcv dictionary lookup, the CurSearch highlight link, and editor
-secret-state exclusions; Emacs `check-parens` and Org lint for tracked Org files
-plus a runtime load of the evaluated Emacs configuration; GitHub Actions syntax,
-pinned action revisions, and Dependabot config parsing; a real Neovim Org
-Tree-sitter parse against the evaluated Home Manager runtime; Rime Lua syntax
-and focused tests; profile-capability invariants; and gitleaks secret scanning.
-CI runs those checks and evaluates both Home Manager configurations on pushes to
-`main` and on pull requests; the profile names are listed in `ci.yml`
-explicitly, so a new profile must be added there as well. Full builds of both
-configurations run weekly on a schedule and are opt-in through the
-`workflow_dispatch` `build_homes` input because builds are substantially more
-expensive than evaluation.
+focused OpenCode package/LSP/schema/theme/telemetry checks, the oh-my-pi
+wrapper, overlay, agent, and theme checks, Git commit-message hook behavior and
+the repository-hook dispatcher, a silent Ex-mode load of each profile's Vim
+configuration, Kagi prompt character budgets, the aerc deployed/tracked
+configuration mirror, CoC language-server package resolution, the sdcv
+dictionary lookup, the CurSearch highlight link, and editor secret-state
+exclusions; Emacs `check-parens` and Org lint for tracked Org files plus a
+runtime load of the evaluated Emacs configuration; GitHub Actions syntax, pinned
+action revisions, and Dependabot config parsing; a real Neovim Org Tree-sitter
+parse against the evaluated Home Manager runtime; Rime Lua syntax and focused
+tests; profile-capability invariants; and gitleaks secret scanning. CI runs
+those checks and evaluates both Home Manager configurations on pushes to `main`
+and on pull requests; the profile names are listed in `ci.yml` explicitly, so a
+new profile must be added there as well. Full builds of both configurations run
+weekly on a schedule and are opt-in through the `workflow_dispatch`
+`build_homes` input because builds are substantially more expensive than
+evaluation.
 
 ### Zed / agent config
 
 Both are Home Manager-managed; neither uses a separate Stow step. Edit
 `zed/.config/zed/settings.json` (Zed) or `agents/prompts/*.md` (agents)
-directly. Zed and generated Codex changes require a validated Home Manager
-switch. Claude prompt changes are live immediately once the out-of-store agents
-symlink has been installed by an initial switch. The writable Codex profiles at
-`~/.codex/{kernel,language}.config.toml` are runtime state, not canonical prompt
-sources; do not edit their generated keys manually. Their schema directive
-points editors at Codex's current official `config.toml` schema. Standalone
-custom-agent TOMLs use Codex's separate custom-agent schema and therefore do not
-carry the `config.toml` directive.
+directly. Zed and generated Codex and oh-my-pi changes require a validated Home
+Manager switch. Claude prompt changes are live immediately once the out-of-store
+agents symlink has been installed by an initial switch. The writable Codex
+profiles at `~/.codex/{kernel,language}.config.toml` are runtime state, not
+canonical prompt sources; do not edit their generated keys manually. Their
+schema directive points editors at Codex's current official `config.toml`
+schema. Standalone custom-agent TOMLs use Codex's separate custom-agent schema
+and therefore do not carry the `config.toml` directive.
 
 ### Portable series workflow
 

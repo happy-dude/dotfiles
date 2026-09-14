@@ -37,6 +37,11 @@ call assert_true(s:BackupSkipped($HOME . '/.config/opencode/local.json'))
 call assert_false(&l:swapfile)
 call assert_false(&l:undofile)
 
+execute 'edit ' . fnameescape($HOME . '/.omp/agent/agent.db')
+call assert_true(s:BackupSkipped($HOME . '/.omp/agent/agent.db'))
+call assert_false(&l:swapfile)
+call assert_false(&l:undofile)
+
 " A symlink to a secret gets no backup under either name. Neovim may reuse
 " the secret's own buffer for the alias, so assert the outcome, not the
 " pattern.

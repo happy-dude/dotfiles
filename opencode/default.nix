@@ -5,6 +5,7 @@
   ...
 }: let
   prompts = import ../agents/prompts.nix {inherit lib;};
+  palette = import ../lib/gruvbox-material.nix;
   json = pkgs.formats.json {};
   opencode = import ./package.nix {inherit pkgs;};
   settings = {
@@ -33,32 +34,7 @@
   };
   gruvboxMaterialTheme = {
     "$schema" = "https://opencode.ai/theme.json";
-    defs = {
-      bgDim = "#1b1b1b";
-      bg0 = "#282828";
-      bg1 = "#32302f";
-      bg2 = "#32302f";
-      bg3 = "#45403d";
-      bg5 = "#5a524c";
-      bgStatusline2 = "#3a3735";
-      fg0 = "#d4be98";
-      fg1 = "#ddc7a1";
-      gray0 = "#7c6f64";
-      gray1 = "#928374";
-      gray2 = "#a89984";
-      red = "#ea6962";
-      orange = "#e78a4e";
-      yellow = "#d8a657";
-      green = "#a9b665";
-      aqua = "#89b482";
-      blue = "#7daea3";
-      purple = "#d3869b";
-      diffRed = "#402120";
-      diffGreen = "#34381b";
-      diffBlue = "#0e363e";
-      visualRed = "#4c3432";
-      visualGreen = "#3b4439";
-    };
+    defs = palette.darkMedium;
     theme = {
       primary = "blue";
       secondary = "purple";
@@ -113,22 +89,7 @@
       syntaxPunctuation = "fg0";
     };
   };
-  gruvboxMaterialMixTheme =
-    gruvboxMaterialTheme
-    // {
-      defs =
-        gruvboxMaterialTheme.defs
-        // {
-          fg0 = "#e2cca9";
-          fg1 = "#e2cca9";
-          red = "#f2594b";
-          orange = "#f28534";
-          yellow = "#e9b143";
-          green = "#b0b846";
-          aqua = "#8bba7f";
-          blue = "#80aa9e";
-        };
-    };
+  gruvboxMaterialMixTheme = gruvboxMaterialTheme // {defs = palette.mixDarkMedium;};
 in {
   home.packages = [opencode];
   home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD = "true";
