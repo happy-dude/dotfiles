@@ -204,6 +204,7 @@
             ./gpg
             ./mail
             ./nix
+            ./omp
             ./opencode
             ./rclone
             ./rime

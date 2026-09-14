@@ -4,6 +4,7 @@
 /.agents/
 /.claude/
 /.codex/
+/.omp/
 /.direnv/
 /.ruff_cache/
 /.worktrees/
