@@ -41,6 +41,7 @@ let s:sensitive_dirs = map([
       \ '~/.aws',
       \ '~/.claude',
       \ '~/.codex',
+      \ '~/.omp',
       \ '~/.config/gh',
       \ '~/.config/op',
       \ '~/.config/opencode',

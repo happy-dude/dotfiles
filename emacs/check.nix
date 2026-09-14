@@ -79,6 +79,8 @@ in
         emacs --batch --quick --load ${runtimeTest}
         emacs --batch --quick --load ${initEl} \
           --eval '(unless (dotfiles/sensitive-file-p (expand-file-name "~/.config/opencode/local.json")) (error "opencode path is not guarded"))'
+        emacs --batch --quick --load ${initEl} \
+          --eval '(unless (dotfiles/sensitive-file-p (expand-file-name "~/.omp/agent/agent.db")) (error "omp path is not guarded"))'
       '';
     };
   }
