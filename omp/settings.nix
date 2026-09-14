@@ -20,4 +20,7 @@
   # only when asked, and this asks for the skills alone rather than for
   # Claude Code's whole configuration.
   skills.customDirectories = ["~/.claude/skills"];
+  # The mix variant of the Gruvbox Material theme the module installs, as
+  # OpenCode selects it.
+  theme.dark = "gruvbox-material-mix-dark-medium";
 }
