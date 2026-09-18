@@ -1,149 +1,198 @@
-@-moz-document url(chrome://browser/content/browser.xul),
-               url(chrome://browser/content/browser.xhtml) {
-    /*
-     * https://www.userchrome.org/megabar-styling-firefox-address-bar.html
-     */
+/* Optional, separately installed Lepton: chrome/css/leptonChrome.css.
+ * The URL-bar overrides below also work without it.
+ */
+@import url("css/leptonChrome.css");
 
-    /*** Megabar Styler General - version 2020-07-27 ***/
+/* Targets Firefox Nightly 158.0a1 (20260916094607). The two-line layout
+ * requires browser.nova.enabled = false; Nova retains its native row layout.
+ */
+/* Companion about:config settings:
+ * browser.urlbar.maxRichResults = 10
+ * browser.urlbar.resultMenu.keyboardAccessible = true
+ * browser.urlbar.scotchBonnet.disableOneOffs = true
+ * Native one-off hiding also removes its keyboard-navigation targets.
+ * Ten ordinary results were checked at 400–880px window heights. Extremely
+ * short windows or tall rich cards can still exceed the visible scrollport;
+ * CSS cannot provide the classic URL bar's missing selection auto-scroll.
+ */
 
-    /*** General Preferences ***/
-    :root {
-      /* Number of pixels of enlargement when URL bar is focused */
-      --mbarstyler-popout-pixels: 0px; /* [0px - 7px] */
+@-moz-document url("chrome://browser/content/browser.xhtml")
+{
+  :root {
+    --mbarstyler-title-font-size: 15px;
+    --mbarstyler-url-font-size: 13px;
+  }
 
-      /* Top Bar Display or Not */
-      --mbarstyler-top-bar-display: none; /* [block,none] */
-
-      /* Font sizes (default: 13.8px for title, 10.2px for URL) */
-      --mbarstyler-title-font-size: 14px; /* [13px - 18px] */
-      --mbarstyler-url-font-size: 12px; /* [12px - 16px] */
-
-      /* Rows to show without scrolling */
-      --mbarstyler-max-rows-without-scrolling: 16;
-
-      /* Bottom border for each result row */
-      --mbarstyler-bottom-border-width: 1px; /* [0px or 1px] */
-
-      /* Match display style */
-      --mbarstyler-match-weight: 700; /* [400,700] */
-      --mbarstyler-match-background-opacity: 0.05; /* [0.0,0.05,0.1] */
+  #urlbar {
+    /* The popover's containing area is the space below its input anchor. */
+    > .urlbarView:popover-open {
+      max-height: calc(
+        100% - var(--urlbarView-joint-background-outset-block, 0px)
+      );
     }
 
-    /*** URL bar enlargement or lack thereof ***/
-
-    /* Compute new position, width, and padding */
-    #urlbar[breakout][breakout-extend] {
-      top: calc(5px - var(--mbarstyler-popout-pixels)) !important;
-      left: calc(0px - var(--mbarstyler-popout-pixels)) !important;
-      width: calc(100% + (2 * var(--mbarstyler-popout-pixels))) !important;
-      padding: var(--mbarstyler-popout-pixels) !important;
-    }
-    [uidensity="compact"] #urlbar[breakout][breakout-extend] {
-      top: calc(3px - var(--mbarstyler-popout-pixels)) !important;
-    }
-    [uidensity="touch"] #urlbar[breakout][breakout-extend] {
-      top: calc(4px - var(--mbarstyler-popout-pixels)) !important;
+    > .urlbarView > .urlbarView-body-outer {
+      min-height: 0;
+      overflow-y: auto;
+      scrollbar-width: thin;
     }
 
-    /* Prevent shift of URL bar contents */
-    #urlbar[breakout][breakout-extend] > #urlbar-input-container {
-      height: var(--urlbar-height) !important;
-      padding: 0 !important;
-    }
-
-    /* Do not animate */
-    #urlbar[breakout][breakout-extend] > #urlbar-background {
-      animation: none !important;;
-    }
-
-    /* Remove shadows */
-    #urlbar[breakout][breakout-extend] > #urlbar-background {
-      box-shadow: none !important;
-    }
-
-    /*** Top "Blue Bar" Display ***/
-
-    .urlbarView-row:first-of-type {
-      display: var(--mbarstyler-top-bar-display) !important;
-    }
-
-    /*** Font Sizes and Scrolling ***/
-
-    /* Title font-size */
-    .urlbarView-row .urlbarView-title {
+    .urlbarView-title {
       font-size: var(--mbarstyler-title-font-size) !important;
     }
 
-    /* URL / action font-size */
-    .urlbarView-row .urlbarView-secondary,
-    .urlbarView-row .urlbarView-url,
-    .urlbarView-row .urlbarView-action {
+    .urlbarView-secondary,
+    .urlbarView-url,
+    .urlbarView-action {
       font-size: var(--mbarstyler-url-font-size) !important;
     }
 
-    /* Set max-height for items visible without scrolling */
-    #urlbarView-results, #urlbar-results {
-      height: unset !important;
-      max-height: calc(2.5 * (var(--mbarstyler-title-font-size) + var(--mbarstyler-bottom-border-width)) * var(--mbarstyler-max-rows-without-scrolling)) !important;
-    }
-    #urlbar-results {
-      overflow-y: auto !important;
+    .urlbarView-row-inner {
+      padding-block: 2px !important;
     }
 
-    /* Clean up extra spacing at the top and bottom */
-    #urlbar-results {
-      padding-top: 0 !important;
-      padding-bottom: 0 !important;
-    }
-
-    /* Subtle border between results */
     .urlbarView-row:not(:last-of-type) {
-      border-bottom: var(--mbarstyler-bottom-border-width) solid rgba(0, 0, 0, 0.1) !important;
+      border-bottom: 1px solid var(--urlbarview-separator-color) !important;
     }
 
-    /* Match Styling Like Fx43-47 */
-    .urlbarView-row:not([selected]) .urlbarView-title strong,
-    .urlbarView-row:not([selected]) .urlbarView-url strong {
-      font-weight: var(--mbarstyler-match-weight) !important;
-      border-radius: 2px;
-      box-shadow: inset 0 0 1px 1px rgba(0, 0, 0, calc(var(--mbarstyler-match-background-opacity) * 2));
-      background-color: rgba(0, 0, 0, var(--mbarstyler-match-background-opacity));
-    }
-    [lwt-popup-brighttext] .urlbarView-row:not([selected]) .urlbarView-title strong,
-    [lwt-popup-brighttext] .urlbarView-row:not([selected]) .urlbarView-url strong {
-      box-shadow: inset 0 0 1px 1px rgba(255, 255, 255, calc(var(--mbarstyler-match-background-opacity) * 2));
-      background-color: rgba(255, 255, 255, var(--mbarstyler-match-background-opacity));
-    }
-    [lwthemetextcolor="bright"] .urlbarView-row:not([selected]) .urlbarView-title strong,
-    [lwthemetextcolor="bright"] .urlbarView-row:not([selected]) .urlbarView-url strong {
-      box-shadow: inset 0 0 1px 1px rgba(192, 192, 192, calc(var(--mbarstyler-match-background-opacity) * 4));
-      background-color: rgba(192, 192, 192, calc(var(--mbarstyler-match-background-opacity) * 3));
-    }
-
-    /*** End of: Megabar Styler General ***/
-
-
-    /*** Megabar Styler One-Offs - version 2020-05-31 ***/
-
-    /*** One-Off Search Button Preferences ***/
-    :root {
-      /* One-Offs Display or Not */
-      --mbarstyler-oneoffs-display: flex; /* [flex,none] */
-    }
-
-    /* Show or Hide the One-Offs Search Icon Bar */
-    #urlbar .search-one-offs:not([hidden]) {
-      display: var(--mbarstyler-oneoffs-display) !important;
-    }
-    /* Shorten the One-Offs Search Icon Bar Vertically */
-    #urlbar .search-one-offs:not([hidden]) {
-      padding-block: unset !important;
-    }
-    /* We don't need the text */
-    #urlbar .search-one-offs .search-panel-header {
+    /* Suppress category headings, not the result rows that carry them. */
+    .urlbarView-row[label]::before {
       display: none !important;
     }
 
-    /*** End of: Megabar Styler One-Offs ***/
+    .urlbarView-row[label] {
+      margin-block-start: 0 !important;
+    }
 
+    @media not -moz-pref("browser.nova.enabled") {
+      /* Classic URL-bar selection does not scroll rows into view. With the
+     * companion result limit, short windows use compact single-line rows.
+     */
+      @media (height < 640px) {
+        .urlbarView-row:not([rich-suggestion], [restyled-search])
+          > .urlbarView-row-inner {
+          flex-wrap: nowrap !important;
+        }
+
+        .urlbarView-row:not([rich-suggestion], [restyled-search])
+          > .urlbarView-row-inner
+          > .urlbarView-no-wrap {
+          flex-basis: auto !important;
+        }
+
+        .urlbarView-row[has-url]:not(
+            [rich-suggestion],
+            [restyled-search],
+            [sponsored]
+          ) {
+          .urlbarView-action,
+          .urlbarView-tags,
+          .urlbarView-title-separator {
+            display: none !important;
+          }
+
+          > .urlbarView-row-inner > .urlbarView-no-wrap {
+            max-width: calc(
+              70% - 2 * (var(--urlbarview-favicon-size) + (6px + 2px))
+            ) !important;
+            min-width: 0;
+            flex-shrink: 1 !important;
+          }
+
+          > .urlbarView-row-inner > .urlbarView-url {
+            visibility: visible !important;
+            min-width: 0;
+            margin-top: 0 !important;
+            margin-inline: 0 !important;
+            margin-inline-start: 8px !important;
+          }
+        }
+      }
+
+      @media (height >= 640px) {
+        /* Keep rich suggestions and restyled search results in their native layout. */
+        .urlbarView-row[has-url]:not([rich-suggestion], [restyled-search]) {
+          > .urlbarView-row-inner {
+            display: flex !important;
+            flex-wrap: wrap !important;
+          }
+
+          /* Keep Firefox's first-line grouping; the title pushes badges to the end. */
+          .urlbarView-no-wrap {
+            display: flex !important;
+            flex-basis: 100% !important;
+            max-width: 100% !important;
+            min-width: 0;
+          }
+
+          .urlbarView-title {
+            flex: 1 1 auto;
+            min-width: 0;
+          }
+
+          .urlbarView-tags {
+            order: 4;
+            max-width: 30%;
+            min-width: 0;
+          }
+
+          .urlbarView-title-separator {
+            display: none !important;
+          }
+
+          .urlbarView-action {
+            order: 1;
+            flex-shrink: 0;
+            margin-block: 0 !important;
+            padding-block: 0 !important;
+            margin-inline-start: 8px !important;
+          }
+
+          .urlbarView-userContext {
+            order: 2;
+          }
+
+          .urlbarView-tabGroup {
+            order: 3;
+          }
+
+          > .urlbarView-row-inner > .urlbarView-url {
+            flex-basis: calc(100% - var(--urlbarView-second-line-indent));
+            min-width: 0;
+            padding-inline-start: 0 !important;
+            margin-top: 0 !important;
+            margin-inline: 0 !important;
+            margin-inline-start: var(
+              --urlbarView-second-line-indent
+            ) !important;
+            visibility: visible !important;
+          }
+
+          /* Native hover swaps the device label for the URL; this layout shows both. */
+          &[type="remotetab"] .urlbarView-action {
+            visibility: visible !important;
+            width: auto !important;
+            padding-inline: 8px !important;
+
+            @media -moz-pref("browser.urlbar.scotchBonnet.enableOverride") {
+              border-inline: 1px solid var(--border-color-deemphasized) !important;
+            }
+          }
+        }
+
+        /* Follow the available result width, including space taken by toolbars. */
+        .urlbarView-results[wrap]
+          .urlbarView-row[has-url]:not(
+            [rich-suggestion],
+            [restyled-search],
+            [sponsored]
+          ) {
+          .urlbarView-action,
+          .urlbarView-tags {
+            display: none !important;
+          }
+        }
+      }
+    }
+  }
 }
