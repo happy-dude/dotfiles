@@ -16,11 +16,13 @@
     );
   agentNames = ["kernel" "language"];
   agents = lib.genAttrs agentNames (name: sharedFile ".omp/agent/agents/${name}.md");
+  theme = sharedFile ".omp/agent/themes/gruvbox-material.json";
+  mixTheme = sharedFile ".omp/agent/themes/gruvbox-material-mix-dark-medium.json";
 in
   assert lib.all (home: lib.elem omp home.config.home.packages) homeList;
     mkCheck {
       name = "dotfiles-omp-check";
-      tools = [pkgs.jq omp];
+      tools = [pkgs.check-jsonschema pkgs.jq omp];
       script = ''
         export HOME="$PWD/home"
         export OMP_SKIP_SETUP=1
@@ -59,8 +61,24 @@ in
           .["startup.checkUpdate"].value == false and
           .["marketplace.autoUpdate"].value == "off" and
           .["dev.autoqa"].value == false and
-          .["skills.customDirectories"].value == ["~/.claude/skills"]
+          .["skills.customDirectories"].value == ["~/.claude/skills"] and
+          .["theme.dark"].value == "gruvbox-material-mix-dark-medium"
         ' settings.json >/dev/null
+
+        # Both themes satisfy the schema omp ships, every colour token names
+        # a palette variable, and the mix variant is the base theme with the
+        # same role mapping and exactly the mix palette's colours redefined.
+        schema=${omp}/lib/omp/packages/coding-agent/src/modes/theme/theme-schema.json
+        check-jsonschema --schemafile "$schema" ${theme} ${mixTheme}
+        jq -e '.name == "gruvbox-material"' ${theme} >/dev/null
+        jq -e '.name == "gruvbox-material-mix-dark-medium"' ${mixTheme} >/dev/null
+        jq -e '([.colors[]] - (.vars | keys)) == []' ${theme} >/dev/null
+        jq -e --slurpfile mix ${mixTheme} '
+          .colors == $mix[0].colors
+          and (.vars | keys) == ($mix[0].vars | keys)
+          and ([.vars | to_entries[] | select(.value != $mix[0].vars[.key]) | .key]
+            == ["aqua", "blue", "fg0", "fg1", "green", "orange", "red", "yellow"])
+        ' ${theme} >/dev/null
 
         # omp requires name and description in an agent's frontmatter and
         # takes the rest of the file as the prompt; that rest must be the
