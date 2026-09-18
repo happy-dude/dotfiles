@@ -145,7 +145,8 @@ in {
     script = ''
       export HOME="$PWD/home"
       export DOTFILES_CACHE_VIM=${./.vim/vimrc_dir/cache.vim}
-      mkdir -p "$HOME/.config/rclone" "$HOME/.config/nix" "$HOME/.config/opencode"
+      mkdir -p "$HOME/.config/rclone" "$HOME/.config/nix" "$HOME/.config/opencode" \
+        "$HOME/.omp/agent"
       vim -Nu NONE -i NONE -es -S ${./tests/secret-state.vim}
       nvim --headless -u NONE -i NONE -S ${./tests/secret-state.vim}
     '';

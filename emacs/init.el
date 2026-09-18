@@ -49,6 +49,7 @@
      "/\\.claude/"
      "/\\.claude\\.json\\'"
      "/\\.codex/"
+     "/\\.omp/"
      "/\\.gnupg/"
      "/\\.kube/"
      "/\\.password-store/"
