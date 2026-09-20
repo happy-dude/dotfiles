@@ -6,6 +6,7 @@
   prompts = import ../agents/prompts.nix {inherit lib;};
   settings = import ./settings.nix;
   omp = import ./package.nix {inherit pkgs settings;};
+  schemaPath = import ./theme-schema-path.nix pkgs.omp.version;
   palette = import ../lib/gruvbox-material.nix;
   json = pkgs.formats.json {};
   # omp discovers task agents from ~/.omp/agent/agents/*.md, taking `name`
@@ -32,7 +33,7 @@
   # palette variable, so the two variants share one role mapping and differ
   # only in `vars`.
   gruvboxMaterialTheme = name: vars: {
-    "$schema" = "https://raw.githubusercontent.com/can1357/oh-my-pi/v${pkgs.omp.version}/packages/coding-agent/src/modes/theme/theme-schema.json";
+    "$schema" = "https://raw.githubusercontent.com/can1357/oh-my-pi/v${pkgs.omp.version}/${schemaPath}";
     inherit name vars;
     colors = {
       accent = "aqua";
