@@ -7,6 +7,7 @@
   inherit (import ../lib/homes.nix {inherit lib;}) shared;
   settings = import ./settings.nix;
   omp = import ./package.nix {inherit pkgs settings;};
+  schemaPath = import ./theme-schema-path.nix pkgs.omp.version;
   homeList = lib.attrValues homes;
   # The provider-neutral files are identical on every profile; name the one
   # copy, or fail naming the profiles that disagree.
@@ -68,7 +69,7 @@ in
         # Both themes satisfy the schema omp ships, every colour token names
         # a palette variable, and the mix variant is the base theme with the
         # same role mapping and exactly the mix palette's colours redefined.
-        schema=${omp}/lib/omp/packages/coding-agent/src/modes/theme/theme-schema.json
+        schema=${omp}/lib/omp/${schemaPath}
         check-jsonschema --schemafile "$schema" ${theme} ${mixTheme}
         jq -e '.name == "gruvbox-material"' ${theme} >/dev/null
         jq -e '.name == "gruvbox-material-mix-dark-medium"' ${mixTheme} >/dev/null
