@@ -263,9 +263,10 @@ and installs StyLua's config under `~/.config/stylua`.
   adds to every invocation, which omp loads after the global file and never
   writes back, so declared keys win and every other key stays the program's. A
   user's own `PI_CONFIG_FILES` entries load after the declared overlay and still
-  win. The overlay sets `tools.approvalMode` to `write`, so reads and workspace
-  writes run while anything that executes prompts; turns off the startup update
-  check, plugin-update checks, and the automatic tool-issue reports; points
+  win; a running session may also have runtime overrides. The overlay sets
+  `tools.approvalMode` to `write`, allowing read/write-tier tools subject to
+  more-specific policies. This is not a workspace filesystem boundary. It turns
+  off startup and plugin-update checks and automatic tool-issue reports; points
   `skills.customDirectories` at `~/.claude/skills`; and selects the mix
   dark-medium Gruvbox Material variant as `theme.dark`. The wrapper also strips
   the OTLP exporter variables omp would otherwise export through. Updates come
@@ -490,6 +491,18 @@ schema directive points editors at Codex's current official `config.toml`
 schema. Standalone custom-agent TOMLs use Codex's separate custom-agent schema
 and therefore do not carry the `config.toml` directive.
 
+For omp settings, edit `omp/settings.nix` when the value should be shared. Use
+`/settings` or `omp config set` for settings that belong to this machine. The
+Home Manager overlay takes precedence over the global `config.yml`, so changing
+a managed value there will not change what the wrapped program uses. Check the
+effective settings with `omp config list` before assuming an edit was ignored or
+a cache needs clearing. A user's additional `PI_CONFIG_FILES` entries load last
+and can override the declared settings.
+
+The package comes from the locked Nixpkgs input. Update it through the flake,
+not `omp update`. Credentials, sessions, and project trust still belong to the
+client; a Home Manager build does not replace them or activate a new profile.
+
 ### Portable series workflow
 
 Portable changes may be prepared on a machine or branch that cannot push the
@@ -705,6 +718,109 @@ source.
   global `commit-msg` hook enforces this policy for every commit and preserves
   any initial `Assisted-by:` trailer. See
   <https://www.kernel.org/doc/html/latest/process/submitting-patches.html>.
+- Keep documentation close to the problem being solved. Explain the relevant
+  behavior, then the change or workaround. A short paragraph is often enough;
+  use a list when there are separate steps or choices.
+- Give concrete paths, commands, and configuration examples. If a workaround
+  depends on a nightly build, operating system, or package version, say which
+  one. Separate what was checked from what still needs investigating. Use `ref:`
+  or `refs:` for the upstream issue, patch, or documentation that explains the
+  constraint.
+- When matching the owner's writing, prefer substantive older issues, PRs, and
+  commit bodies to lock-file updates or recent assisted prose. Useful examples:
+  the [vim-go POSIX fix](https://github.com/fatih/vim-go/pull/3691),
+  [RustOwl loading-order proposal](https://github.com/cordx56/rustowl/issues/45),
+  [Fish crash reproduction](https://github.com/fish-shell/fish-shell/issues/11052),
+  and
+  [rainbow-delimiters regression](https://gitlab.com/HiPhish/rainbow-delimiters.nvim/-/issues/21).
+  Those show the explanation and verification style; they are not a reason to
+  copy old workarounds, typos, or claims into new documentation. A date alone
+  does not establish whether a passage was written without assistance.
+- For a bug report, lead with the symptom and impact, not a proposed diagnosis.
+  State what was expected and what actually happened. Include the exact error,
+  commands, relevant input, versions, and environment needed to reproduce it.
+  Reduce the example without removing the conditions that trigger the failure.
+  For an intermittent issue, give the observed frequency and conditions rather
+  than claiming the reproducer always fails. Keep hypotheses and workarounds
+  separate from observations; a patch does not replace the problem description.
+- Preserve useful evidence before resets, reinstalls, or other recovery steps.
+  Keep the relevant log and first failure intact, then make a redacted copy for
+  sharing. Credentials, private data, and memory dumps need particular care.
+  Never invent output or imply a suggested check was actually run.
+- Search for an existing report and follow the project's reporting instructions.
+  Use the appropriate vendor or upstream channel, with one report per distinct
+  issue. For kernel reports, consult `MAINTAINERS`; do not assume every
+  subsystem uses the same tracker. Record the kernel version/configuration,
+  hardware, distro patches, external modules, and taint state where relevant.
+- For a regression, name the last known-good and first known-bad versions and
+  include a bisection result if one was obtained. Check a suitable current
+  upstream or supported stable release when safe and authorized; document any
+  testing limitation instead of hiding it. This is not permission to replace the
+  kernel, unload drivers, or weaken host policy without confirmation.
+- Keep the discussion useful after filing: answer requests for evidence, test
+  proposed fixes when safe, and report the actual result and tested version.
+  Follow the project's private disclosure process for security-sensitive bugs.
+  refs:
+  [How to Report Bugs Effectively](https://www.chiark.greenend.org.uk/~sgtatham/bugs.html)
+  and
+  [Reporting issues](https://docs.kernel.org/admin-guide/reporting-issues.html).
+- Before requesting review, review the diff yourself. Keep the change focused,
+  explain its purpose and constraints, and state what was tested and what was
+  not. Let formatters, linters, and automated checks handle mechanical issues so
+  reviewers can spend their time on behavior, design, and maintainability.
+- Review the code, not the author. Make comments specific and explain the
+  consequence, with a useful alternative where possible. Separate blocking
+  correctness, security, regression, and maintainability concerns from optional
+  suggestions or personal preferences. Ask when intent is unclear; do not turn a
+  question into a defect without checking it.
+- Keep the feedback loop manageable: address or explain each substantive
+  finding, group duplicates, and move unrelated improvements out of the review.
+  The author owns the revision and verification; reviewers own the evidence
+  behind their comments. Automated or model-generated approval is not a
+  substitute for that judgment. refs: Adrienne Braganza's
+  [Looks Good to Me](https://www.manning.com/books/looks-good-to-me) and its
+  public
+  [working-agreement template](https://github.com/adriennetacke/lgtm-extras/blob/main/Templates/starter-team-working-agreement.md).
+- Before requesting a change, decide whether it belongs in this patch or a
+  follow-up. State what should change, why, and what result would satisfy it. If
+  an exchange is not resolving the question, clarify the missing decision and
+  record the outcome rather than adding more speculative comments.
+- Agree on the reviewed revision and required checks. Do not keep moving the
+  target with unrelated changes, count approvals as proof, or assume written
+  policy is enforced by the tools. Recheck the affected behavior after
+  revisions. An emergency does not authorize bypassing this repository's safety,
+  validation, push, or activation rules; any exceptional procedure needs
+  explicit scope, approval, recovery steps, and follow-up verification.
+- Prepare patches against the recipient's expected base and keep each logical
+  change together. Order dependencies so intermediate commits still build and
+  work. Separate fixes, refactors, and unrelated cleanup; explain dependencies
+  instead of making the reviewer reconstruct them.
+- Commit messages describe the problem, user-visible impact, and final change.
+  Make the explanation understandable without opening a link or reading an
+  earlier revision. Back performance claims with measurements and their costs.
+  Keep v1-to-v2 notes in the cover letter or submission commentary, not in the
+  permanent rationale. Address review feedback and identify what changed.
+- Preserve real contributor attribution when adapting another person's patch,
+  and identify substantive maintainer changes. Do not invent sign-offs, tests,
+  or reviews. Use human `Tested-by:` and `Reviewed-by:` tags only with the
+  required permission and while they still apply to the revision; substantial
+  changes may need renewed testing or review. Record coding assistance with the
+  actual `Assisted-by:` metadata, not a simulated human review tag.
+- Follow the subsystem's maintainer profile for its target tree, checks,
+  submission format, and review cadence. For kernel email discussions, use
+  plain-text patches and trimmed inline replies. Prioritize regressions and
+  serious failures, acknowledge review delays, and keep public discussion public
+  unless security or privacy requires otherwise. refs:
+  [Submitting patches](https://docs.kernel.org/process/submitting-patches.html)
+  and the
+  [Kernel Maintainer Handbook](https://docs.kernel.org/maintainer/index.html).
+- Comments should explain a constraint, invariant, or non-obvious choice in the
+  code as it stands. Keep useful source references and version limits; remove
+  stale claims or trial-and-error narration. Do not rewrite an accurate comment
+  just to make it sound different.
+- Use [the software design notes](docs/software-design.md) when changing module
+  boundaries, interfaces, tests, or comments. Judge the tradeoff by what a
+  reader or caller must know, not by a line-count target or a preferred slogan.
 - Prefer adding packages to `home.nix`'s `home.packages` list (or to a module's
   `default.nix`) over installing system-wide. Resolve binary collisions
   explicitly with `lib.hiPrio` / `lib.lowPrio` as already done for `gcc` /

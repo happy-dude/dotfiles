@@ -5,9 +5,9 @@
 }: let
   mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
 
-  # One derivation per suite. A failure then names the suite that failed, an
-  # unrelated edit does not re-run the others, and Nix can run them at once.
-  # Discovered rather than listed, so a new suite is checked once it exists.
+  # One derivation per suite names failures and lets Nix run them at once.
+  # Each depends on the whole source tree, so an edit can invalidate all suites.
+  # Discover suites rather than keeping a second list of their names.
   suites =
     map (entry: lib.removeSuffix ".sh" (lib.removePrefix "test_" entry))
     (lib.filter (

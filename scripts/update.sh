@@ -6,7 +6,6 @@
 ###
 ### Author: Stanley Chan
 ### Github: https://github.com/Happy-Dude/dotfiles.git
-### Version: Fri Mar 07 2026
 ###
 ### Modes:
 ###     check   Validate the flake and build the selected Home Manager configuration without applying it
@@ -18,12 +17,12 @@
 ###     2. Sync / init / update configured git submodules, if any
 ###     3. Run `nix fmt .`
 ###     4. Run `nix flake update`
-###     5. Validate the flake and build the Home Manager configuration
+###     5. Validate the flake, build the Home Manager configuration, and commit the refreshed lock
 ###     6. Optionally run `home-manager switch`
 ###     7. Report the generation closure changes and repository shortlog
 ###
 ### Usage:
-###     ./scripts/update.sh [options] [directory]
+###     ./scripts/update.sh [check|apply|update] [options] [directory]
 ###
 ### Notes:
 ###     - Dirty top-level repo pull is allowed via:
@@ -352,11 +351,9 @@ run_validation() {
 # even when the tree carries unrelated changes.
 readonly LOCK_COMMIT_SUBJECT="nix: update flake.lock"
 
-# Only an unpublished tip lock commit is amended; one contained in any
-# remote-tracking branch always gets a fresh commit. Identification is by
-# exact subject alone, so a hand-made or apply-reauthored commit with that
-# subject is also foldable; those are unpublished until pushed, which is the
-# property the fold relies on.
+# Amend a matching tip lock commit only when no remote-tracking branch and
+# no other local branch contains it. The exact subject identifies lock
+# updates, including hand-made or re-authored commits with that subject.
 commit_flake_lock() {
   local target="$1"
 
@@ -369,10 +366,8 @@ commit_flake_lock() {
     return 0
   fi
 
-  # Fold only an unpublished tip lock commit. Identification is by exact
-  # subject, which is what this script and the update docs use. Tracking refs
-  # can be stale after a push from another clone; that is inherent to any
-  # local check and merely risks a rejected push, never lost work.
+  # Remote-tracking refs are local evidence, not a query of the server. Stale
+  # refs can miss a published commit, so this is not proof it was never pushed.
   local foldable=0
   if [ "$(git -C "$target" log -1 --format=%s 2>/dev/null || printf '')" \
     = "$LOCK_COMMIT_SUBJECT" ] && git -C "$target" symbolic-ref -q HEAD \
@@ -386,9 +381,8 @@ commit_flake_lock() {
     local_refs="$(
       git -C "$target" branch --format='%(refname)' --contains HEAD 2>/dev/null
     )" || local_status=$?
-    # An amend moves only the current branch, so fold only when HEAD is that
-    # branch's tip and no other local branch contains the commit; branches
-    # built on top of it would be orphaned.
+    # Other local branches would retain the old lock update after an amend;
+    # keep that shared commit intact and make a fresh one instead.
     if [ "$publish_status" -ne 0 ] || [ "$local_status" -ne 0 ]; then
       warn "could not determine whether the lock commit is published; committing a fresh lock commit"
     elif [ -z "$published_refs" ] &&

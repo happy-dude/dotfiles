@@ -49,9 +49,8 @@ def data_home() -> Path:
 def same_content(left: Path, right: Path) -> bool:
     """Compare two files without holding either wholly in memory.
 
-    Rime ships dictionaries of several megabytes, and this runs for every
-    managed file on every activation. A missing file counts as different, so
-    that callers guarding a replacement fail closed.
+    Rime's host-file guards compare the declaration, runtime file, and last
+    deployed snapshot. A missing file is different, not an empty file.
     """
     try:
         if left.stat().st_size != right.stat().st_size:

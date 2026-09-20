@@ -108,9 +108,9 @@ def refresh_static(static_source: Path, static_dir: Path) -> None:
         )
         make_user_writable(temporary)
         if lexists(static_dir):
-            # Move the live tree aside before installing the replacement so a
-            # failure between the two never leaves Rime without its managed
-            # data; the rename is atomic and the old tree can be rolled back.
+            # Keep the old tree for rollback if installation fails. The two
+            # renames are not one atomic swap: static_dir is absent between
+            # them, and a killed run relies on recovery at the next activation.
             os.replace(static_dir, backup)
             moved = True
         try:

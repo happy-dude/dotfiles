@@ -481,6 +481,26 @@ from:
   generalized form everywhere: before endorsing a change, enumerate what
   observable behavior it alters and who might depend on it (Hyrum's law), and
   prefer the path that improves things without breaking anything.
+- **Deep interfaces, not arbitrary size limits.** Hide representation and
+  lifecycle decisions behind an interface simpler than its implementation. Keep
+  tightly coupled steps together; a chain of tiny helpers that requires reading
+  every body has not reduced the reader's work. Compare alternatives for
+  consequential interfaces, and keep specialization with the layer that owns it.
+  See `docs/software-design.md` in this repository for the fuller discussion and
+  source references. Prefer Ousterhout's second-edition design guidance when
+  local readability advice would fragment a useful abstraction. Treat older
+  programming-style rules as historical guidance, subordinate to newer work and
+  current project constraints rather than a mandate to rewrite working code.
+- **Use tests and measurement for the claim being made.** Protect observable
+  contracts, real boundaries, and plausible regressions; do not pin incidental
+  plumbing or impose TDD, coverage, or function-length rules mechanically. For a
+  known bug, reproduce before fixing when practical. Profile meaningful
+  performance work and state what was actually measured. A compatibility smoke
+  test is not a quality or performance benchmark.
+- **Review constructively.** Explain the code path, impact, and a useful way
+  forward. Separate blockers from suggestions and uncertain questions. Keep
+  unrelated improvements out of the series, preserve contributor attribution,
+  and never manufacture human review or testing tags from model approval.
 
 These are judgment lenses, not a mandatory checklist to recite — bring one up
 when it changes the verdict, and give the verdict plainly (including "this isn't
@@ -496,12 +516,12 @@ valuable _in-session_ to you and the user, but it's noise in the committed
 artifact: a reviewer reading a point-A-to-Z diff cares what the code does and
 why it's correct, not which dead ends preceded it.
 
-- **Code comments:** write one only to state something the code itself can't
-  show — a non-obvious constraint, an invariant, a "must hold this lock here
-  because…", a hardware/spec quirk. Never write a comment that narrates what a
-  line does, says "changed from the old approach," or explains why your edit is
-  correct to a reviewer. If it stops being true the moment the PR merges, it
-  doesn't belong in the code.
+- **Code comments:** document interface contracts, ownership, units, failures,
+  ordering, and non-obvious invariants. Design notes, domain explanations, and
+  state/guide comments can save a reader substantial reconstruction. Do not
+  restate an obvious line, narrate discarded attempts, or justify the edit to a
+  reviewer. Keep the explanation near the code and update it when behavior
+  changes; if it stops being true once merged, it does not belong.
 - **Commit messages / PR descriptions:** describe the final change and _why it's
   needed_, in the imperative, as if the failed attempts never happened. Don't
   include a "previously I tried X but…" changelog.
@@ -538,15 +558,29 @@ Process guidance to fold into contribution advice
   effort grows superlinearly with size). Simplify and reorder before posting —
   present the cleanest final series, not the discovery order (the "final state,
   not the journey" rule above applies to series structure too).
-- **Review dynamics:** the normal responses to a posting are criticism, change
-  requests, or silence — none of them is rejection. Address every comment
-  technically, rework, resubmit; after a few quiet days a polite re-post is
-  expected, not rude. Arguments that carry weight there: fixes multiple
-  problems, deletes code, tested on real hardware/architectures, measured
-  performance. Arguments that don't: deadlines, "our product needs it," how
-  another OS does it, or seniority.
+- **Review dynamics:** criticism, change requests, and silence are normal
+  responses, not automatic rejection. Address substantive comments and follow
+  the subsystem's review cadence before reminders or resubmission. Put revision
+  notes in submission commentary, not the permanent commit rationale. Arguments
+  that carry weight: fixes multiple problems, deletes code, tested on real
+  hardware/architectures, measured performance. Arguments that don't: deadlines,
+  "our product needs it," how another OS does it, or seniority.
 - **Entry points** for someone new: kernelnewbies.org, janitorial/cleanup work,
   and `drivers/staging` are the standard on-ramps.
+
+For bug reports, give expected versus observed behavior, a minimal usable
+reproducer, exact versions/errors, and the relevant environment. Preserve
+evidence before recovery steps and redact secrets from shared copies. Label
+hypotheses separately; do not invent output for a check that was not run. Search
+existing reports and follow the project's or subsystem's reporting route. For
+regressions, include the last good and first bad versions and a bisection result
+if obtained. Record kernel configuration, external modules, and taint where
+relevant; testing a new kernel still needs authorization. Follow up with actual
+results when a fix is tested. References:
+[Tatham](https://www.chiark.greenend.org.uk/~sgtatham/bugs.html),
+[kernel issue reporting](https://docs.kernel.org/admin-guide/reporting-issues.html),
+[patch submission](https://docs.kernel.org/process/submitting-patches.html), and
+[maintainer guidance](https://docs.kernel.org/maintainer/index.html).
 
 ## Quick reference
 

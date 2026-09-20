@@ -7,8 +7,7 @@ let maplocalleader = ","
 " Delete the previous word when the frontend reports distinct Ctrl-Backspace.
 inoremap <C-BS> <C-w>
 
-" To move up and down logical lines instead of physical lines
-" Instead of changing the Home row keys, use the arrow keys
+" Arrow keys follow screen lines; an explicit count uses buffer lines.
 noremap     <silent><expr><Down>    (v:count == 0 ? 'gj' : 'j')
 noremap     <silent><expr><Up>      (v:count == 0 ? 'gk' : 'k')
 inoremap    <silent><Up>            <C-o>gk
@@ -19,8 +18,7 @@ noremap     <silent><End>           g<End>
 inoremap    <silent><Home>          <C-o>g<Home>
 inoremap    <silent><End>           <C-o>g<End>
 
-" Smart way to move between windows
-" Also noted how they don't seem to work... Need to investigate.
+" Optional window-navigation mappings; left disabled.
 "noremap    <C-j>       <C-w>j
 "noremap    <C-k>       <C-w>k
 "noremap    <C-h>       <C-w>h
@@ -46,10 +44,8 @@ nnoremap    Y           y$
 "onoremap <silent> w :execute 'normal! '.v:count1.'w'<CR>
 
 " From http://www.reddit.com/r/vim/comments/26nut8/why_does_cw_work_like_ce/chsz0pq
-" What this does is it creates a new operator "z" that forcibly acts as a
-" normal "w". This "w" is then mapped (only for cw, aka the "error") to cw to
-" fix it. However it works perfectly fine with dw as well. It takes just one
-" command history so undo works properly and dot repetition works as expected.
+" Operator-pending z uses the normal w motion. The optional cw mapping below
+" is disabled, so cw retains Vim's built-in behaviour.
 onoremap    <silent>z   :<C-U>normal! w<CR>
 "map        cw          cz
 

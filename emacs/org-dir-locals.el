@@ -1,6 +1,6 @@
 ;;; Directory Local Variables            -*- no-byte-compile: t -*-
 
-;; Keep Org, beorg, Emacs, and Dropbox synchronization coherent.
+;; Keep Org's on-disk indentation consistent across Emacs and beorg.
 ;; See https://christiantietze.de/posts/2019/03/sync-emacs-org-files/
 ;; and https://www.nicklanasa.com/posts/emacs-syncing.
 ((org-mode . ((indent-tabs-mode . nil)

@@ -70,7 +70,7 @@ in {
         type = "cat-file -t";
         dump = "cat-file -p";
         dft = "difftool";
-        # Lists all local branches that have been deleted on remote
+        # Force-delete local branches whose upstream ref is gone, even if unmerged.
         gone = "!git for-each-ref --format '%(refname:short) %(upstream:track)' | awk '$2 == \"[gone]\" {print $1}' | xargs -r git branch -D";
         alias = "! git config --get-regexp ^alias\\. | sed -e s/^alias\\.// -e s/\\ /\\ =\\ /";
       };

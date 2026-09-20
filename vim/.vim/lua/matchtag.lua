@@ -2,7 +2,7 @@ local api = vim.api
 
 local namespace = api.nvim_create_namespace('MatchTag')
 
--- Replace gregsexton/MatchTag with structural HTML and XML matching.
+-- Highlight matching HTML and XML tags structurally.
 -- Tree-sitter identifies the containing element, including nested same-name
 -- tags, and extmarks highlight both tag names with MatchParen.
 

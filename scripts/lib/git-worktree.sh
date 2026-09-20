@@ -2,10 +2,9 @@
 # Sourced by the portable scripts; it has no shebang of its own.
 # Locate the worktree checked out at a branch.
 #
-# Prints the worktree path and returns 0 when one exists, 1 when the branch
-# has no worktree, and 2 when the only registration is prunable. Callers
-# distinguish those cases, because a prunable registration needs a different
-# remedy than an absent one.
+# Prints a usable worktree path and returns 0. Without one, returns 2 if a
+# matching registration is prunable, otherwise 1. Callers distinguish these
+# cases because a prunable registration needs a different remedy.
 
 worktree_for_branch() {
   local repo=$1
