@@ -1,9 +1,8 @@
 # Facts about the machine a profile targets.
 #
-# Modules ask what a machine provides rather than which user owns it, so
-# adding a third profile means stating its facts here instead of finding
-# every comparison against a username. The raw capability record from
-# flake.nix is read only here; everything else goes through the options.
+# Modules ask what a machine provides rather than which user owns it.
+# flake.nix declares each machine's capability record; this module exposes
+# it through options so other modules do not read the raw record.
 {
   lib,
   profile,

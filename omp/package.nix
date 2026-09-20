@@ -1,5 +1,4 @@
-# oh-my-pi carrying the declared settings and none of the host's OTLP
-# exporter configuration.
+# oh-my-pi with declared settings and no inherited OTLP export endpoints.
 {
   pkgs,
   settings,
@@ -12,8 +11,8 @@ in
     paths = [pkgs.omp];
     nativeBuildInputs = [pkgs.makeWrapper];
     # The overlay is prefixed so a user's own PI_CONFIG_FILES entries load
-    # after it and still win. omp initialises OTLP export whenever one of the
-    # endpoint variables is set; drop the host's so a session exports nothing.
+    # after it and still win. omp's OTLP exporter requires an endpoint; remove
+    # the inherited endpoints so the host environment cannot enable it.
     postBuild = ''
       wrapProgram "$out/bin/omp" \
         --prefix PI_CONFIG_FILES : ${overlay} \

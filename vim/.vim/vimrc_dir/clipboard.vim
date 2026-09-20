@@ -34,9 +34,9 @@ if !has('nvim') && exists('v:clipproviders')
 endif
 
 if has('unnamedplus')
-  set clipboard=unnamedplus   " Use the '+' register for all yank, delete, and change operations; the '+' register is the X Windows clipboard
+  set clipboard=unnamedplus   " Use '+' (the clipboard) for unnamed yank, delete, and put operations
 elseif has('clipboard')
-  set clipboard=unnamed       " Use the '*' register for all yank, delete, and change operations; the '*' register is the system clipboard
+  set clipboard=unnamed       " Fall back to '*' (the primary selection on X11 and Wayland)
 endif
 
 " Highlight yanked region

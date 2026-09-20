@@ -10,7 +10,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # treefmt-nix — one `nix fmt` that formats every language in the repo
+    # treefmt.nix owns the formatter selection and exclusions behind `nix fmt`.
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";

@@ -1,8 +1,7 @@
 # Build a check derivation from a script that fails loudly or succeeds.
 #
-# A flake check only has to produce its output path, so every check ended
-# with the same line creating one. Stating the tools and the script is the
-# whole of what a check actually says.
+# Check scripts own their assertions. The helper supplies their tools and
+# creates the output path only after the script succeeds.
 {pkgs}: {
   name,
   tools ? [],

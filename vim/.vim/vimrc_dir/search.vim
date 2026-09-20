@@ -7,7 +7,7 @@ set hlsearch            " Highlight search matches
 set incsearch           " Highlight matches while entering a search
 
 function! s:ApplySearchHighlights() abort
-  " Replace hlnext.vim with the editors' built-in current-match group.
+  " Distinguish the current search match from the other highlighted matches.
   highlight! link CurSearch IncSearch
 endfunction
 

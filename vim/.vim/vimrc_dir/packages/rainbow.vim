@@ -3,7 +3,7 @@
 let g:rainbow_active = 1
 " guifgs are RBG color wheel complements:
 " red, green, blue-green, red-orange, blue, orange, violet, yellow, red-violet, yellow-green
-" ctermfgs are 24-bit equivalent of the first 16 colors of 256-color chart
+" ctermfgs use indices from the terminal's first 16 palette entries
 " '0' black and '8' grey don't show up well on terminals, so 14/16 used
 let g:rainbow_conf = {
       \   'guifgs'     : ['#FE2712', '#66B032', '#0392CE', '#FD5308', '#0247FE', '#FB9902', '#8601AF', '#FEFE33', '#A7194B', '#D0EA2B'],

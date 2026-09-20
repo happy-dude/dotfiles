@@ -1,8 +1,7 @@
 # Helpers for facts that must hold across every profile.
 #
-# Checks repeatedly bound one value per profile and then asserted the two
-# were equal. Naming the shared value once says the same thing, and reports
-# which profiles disagreed rather than which assertion failed.
+# A disagreement names every profile and its value, so a shared fact cannot
+# silently depend on which profile a check happens to select.
 {lib}: {
   # Return the value every profile derives, or fail naming the disagreement.
   shared = homes: description: get: let

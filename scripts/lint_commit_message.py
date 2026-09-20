@@ -27,9 +27,9 @@ def is_generated_subject(subject: str) -> bool:
 def trailer_block_start(lines: list[str]) -> int:
     """Index of the first trailer line, or ``len(lines)`` without a block.
 
-    Git recognises trailers only in the final paragraph, and only when every
-    line there is a ``Token: value`` pair or an indented continuation.  A
-    ``Note:`` paragraph earlier in the body is prose and must wrap.
+    This linter exempts the final paragraph from wrapping only when every
+    line is a ``Token: value`` pair or an indented continuation. A ``Note:``
+    paragraph earlier in the body is prose and must wrap.
     """
     end = len(lines)
     while end > 1 and not lines[end - 1].strip():
@@ -83,8 +83,8 @@ def lint(message_path: Path) -> list[str]:
             # CommonMark: an opening fence is indented at most three spaces,
             # its info string cannot contain a backtick (so an inline span
             # cannot masquerade as a fence), and its closer is nothing but at
-            # least as many backticks. Prettier canonicalizes tilde fences to
-            # backticks, so only backtick fences survive to the width check.
+            # least as many backticks. This width check recognizes backtick
+            # fences; Prettier checks Markdown formatting below.
             fence_len = ticks
         if len(line) <= BODY_LIMIT:
             continue

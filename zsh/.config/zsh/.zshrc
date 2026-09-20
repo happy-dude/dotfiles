@@ -55,7 +55,7 @@ autoload -Uz add-zsh-hook
 _nohist_addhistory() { (( _NOHIST )) && return 1; return 0; }
 add-zsh-hook zshaddhistory _nohist_addhistory
 
-# Powerlevel10k: show a magenta-on-black `no-hist` block while history saving is off.
+# Powerlevel10k: show a black-on-magenta `no-hist` block while history saving is off.
 # Kept here rather than in .p10k.zsh so re-running `p10k configure` won't clobber it.
 # p10k reads its config lazily on first prompt (after this file runs), so defining the
 # segment and appending to the elements array here is enough — no `p10k reload` needed.
@@ -152,7 +152,7 @@ alias gl="git log --date=relative --abbrev=12 -n 160 \
     --pretty='format:%C(dim blue)%h%C(auto)%d %s %>|(68,trunc)%C(8)- %C(dim magenta)%an%C(8), %ad' --graph --all"
 alias gits="git --no-pager show --no-patch --format='commit %h (\"%s\")%n'"
 
-# Run the current kernel tree with the usual AMD debugging defaults.
+# Run the current kernel tree with user networking and KASLR disabled.
 function vmeamd() {
     command vng \
         --run \

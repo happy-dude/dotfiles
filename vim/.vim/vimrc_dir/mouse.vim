@@ -5,13 +5,9 @@ if has('mouse')
   set mouse=a
   if !has('nvim')
     if ($TERM =~ "xterm" || $TERM =~ "screen" || $TERM =~ "tmux" || $TERM =~ "urxvt" || $TERM =~ "ghostty")
-      " for some reason, doing this directly with 'set ttymouse=xterm2'
-      " doesn't work -- 'set ttymouse?' returns xterm2 but the mouse
-      " makes tmux enter copy mode instead of selecting or scrolling
-      " inside Vim -- but luckily, setting it up from within autocmds
-      " works
-      " xterm2 stops at column 223; SGR has no limit and every terminal
-      " listed above speaks it.
+      " Reassert the mouse protocol on entry and focus changes; without this,
+      " tmux can handle drags as copy-mode input instead of passing them to Vim.
+      " Prefer SGR when Vim supports it; xterm2 is limited to column 223.
       augroup vim_ttymouse
         autocmd!
         if has('mouse_sgr')

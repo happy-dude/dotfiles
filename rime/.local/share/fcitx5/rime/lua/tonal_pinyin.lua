@@ -1,4 +1,4 @@
--- tonal_pinyin.lua (WITH JYUTPING)
+-- Append available pinyin and jyutping readings to candidate comments.
 
 local romanization = require('romanization')
 

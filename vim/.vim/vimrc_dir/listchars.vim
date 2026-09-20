@@ -7,7 +7,7 @@ set listchars+=extends:›,precedes:‹
 "set listchars+=eol:¬    " or eol:$ or eol:↲
 
 if v:version > 704 || v:version == 704 && has("patch338")
-  set breakindent showbreak=↪\   " Set breakindent with .. for wrapped lines
+  set breakindent showbreak=↪\   " Indent wrapped lines and mark them with an arrow
   "set breakindent showbreak=..\ 
   "set breakindent showbreak=\\ 
   "set breakindent showbreak=…\ 

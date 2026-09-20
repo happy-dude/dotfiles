@@ -56,7 +56,7 @@ local function func(key_event, env)
     return 2 -- kNoop
   end
 
-  -- Only process key press (not release), no modifiers
+  -- Leave releases and Alt/Ctrl/Super shortcuts to later processors.
   if key_event:release() or key_event:alt() or key_event:ctrl() or key_event:super() then
     return 2 -- kNoop
   end

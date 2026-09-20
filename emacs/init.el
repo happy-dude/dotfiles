@@ -6,7 +6,7 @@
        "emacs/custom.el"
        (or (getenv "XDG_CONFIG_HOME") "~/.config")))
 
-;; Emacs state lives under XDG_DATA_HOME like the rest of the profile.
+;; Backups and auto-saves live under XDG_DATA_HOME.
 (defvar dotfiles/data-home
   (expand-file-name "emacs" (or (getenv "XDG_DATA_HOME") "~/.local/share"))
   "Base directory for Emacs backups, auto-saves, and related state.")
@@ -38,10 +38,8 @@
       auto-save-timeout 30              ; number of seconds idle time before auto-save (default: 30)
       )
 
-;; Never write backups, auto-saves, or persisted undo history for credential
-;; and secret files. Vim already refuses these paths; without the same guard
-;; Emacs would drop plaintext copies of SSH keys, GnuPG data, password-store
-;; entries, rclone tokens, and local API-key files into its state directories.
+;; Backups, auto-saves, and persisted undo history can expose plaintext
+;; credentials. Exclude the known credential paths below from those copies.
 (defvar dotfiles/sensitive-file-regexp
   (mapconcat
    #'identity
@@ -67,7 +65,7 @@
   "Paths whose contents must never be copied into Emacs state.")
 
 (defun dotfiles/sensitive-file-p (name)
-  "Return non-nil when NAME is a credential or secret file."
+  "Return non-nil when NAME matches a known credential or secret path."
   (and name (string-match-p dotfiles/sensitive-file-regexp name)))
 
 ;; Suppress numbered/backup copies of secrets.
@@ -114,7 +112,7 @@
 (load (locate-user-emacs-file "agent-shell.el") nil nil t)
 
 ;; Settings related to visuals, line numbers, fonts, etc.
-;; UI: show icons with text below
+;; Show toolbar icons without text labels.
 (setq tool-bar-style 'image)
 
 ;; Hide welcome screen
@@ -315,7 +313,7 @@
 (add-hook 'org-mode-hook #'auto-revert-mode)
 (add-hook 'text-mode-hook #'visual-line-mode)
 
-; Make org-mode, iOS BeOrg, emacs, and (Drop)Box sync play well with each other
+; Save Org buffers so file-based sync clients can see their changes.
 ; See https://christiantietze.de/posts/2019/03/sync-emacs-org-files/ and https://www.nicklanasa.com/posts/emacs-syncing-dropbox-beorg
 (add-hook 'auto-save-hook 'org-save-all-org-buffers)
 
@@ -522,8 +520,8 @@
 (global-set-key (kbd "C-c j") 'org-journal-new-entry)
 
 ;; evil-mode settings
-;; Make sure to set `evil-want-integration' to nil before loading evil or evil-collection.
-;; Warning (evil-collection): Make sure to set `evil-want-keybinding' to nil before loading evil or evil-collection.
+;; Keep Evil integration enabled, but let evil-collection own package keymaps.
+;; Set evil-want-keybinding before either package loads.
 (setq evil-want-integration t)
 (setq evil-want-keybinding nil)
 

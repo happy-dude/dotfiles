@@ -63,7 +63,7 @@ for lhs, capture in pairs({
   end, { desc = 'Select ' .. capture })
 end
 
--- LSP rename replacement for refactor.smart_rename
+-- Rename through CoC, falling back to the native LSP client.
 vim.keymap.set('n', 'gs', function()
   -- Use coc.nvim rename if available, fall back to native LSP
   if vim.fn.exists(':CocAction') == 2 then
