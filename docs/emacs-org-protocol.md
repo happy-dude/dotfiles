@@ -19,7 +19,7 @@ missing spaces, periods, or regular-expression delimiters make it invalid:
 
 <!-- prettier-ignore -->
 ```javascript
-javascript:(()=>{const MAX_ENCODED_URL_CHARS=8000;let ref;try{ref=new URL(document.querySelector('link[rel~="canonical" i][href]')?.href||location.href);if(!/^https?:$/.test(ref.protocol))ref=new URL(location.href)}catch{ref=new URL(location.href)}ref.username='';ref.password='';for(const key of [...ref.searchParams.keys()]){if(/^utm_/i.test(key)||/^(fbclid|gclid|dclid|gbraid|wbraid|msclkid|yclid|twclid|ttclid|igshid|mc_cid|mc_eid|mkt_tok|_hsenc|_hsmi|vero_id|oly_enc_id|oly_anon_id)$/i.test(key))ref.searchParams.delete(key)}ref.hash='';const title=document.title.replace(/\s+/g,' ').trim()||ref.hostname;let selection;const active=document.activeElement;const isTextarea=!!active&&active.tagName==='TEXTAREA';const isTextInput=!!active&&active.tagName==='INPUT'&&active.type!=='password';if((isTextarea||isTextInput)&&typeof active.selectionStart==='number'&&typeof active.selectionEnd==='number'){selection=active.value.slice(active.selectionStart,active.selectionEnd)}else{selection=window.getSelection().toString()}const buildUrl=(bodyText)=>'org-protocol://roam-ref?'+new URLSearchParams({template:'r',ref:ref.href,title,body:bodyText}).toString();let body=selection.trim();if(buildUrl(body).length>MAX_ENCODED_URL_CHARS){const points=Array.from(body);let lo=0;let hi=points.length;while(lo<hi){const mid=Math.ceil((lo+hi)/2);if(buildUrl(points.slice(0,mid).join('')).length<=MAX_ENCODED_URL_CHARS){lo=mid}else{hi=mid-1}}body=points.slice(0,lo).join('')}location.href=buildUrl(body);void 0})()
+javascript:(()=>{const MAX_ENCODED_URL_CHARS=8000;let ref;try{ref=new URL(document.querySelector('link[rel~="canonical" i][href]')?.href||location.href);if(!/^https?:$/.test(ref.protocol))ref=new URL(location.href)}catch{ref=new URL(location.href)}ref.username='';ref.password='';for(const key of [...ref.searchParams.keys()]){if(/^utm_/i.test(key)||/^(fbclid|gclid|dclid|gbraid|wbraid|msclkid|yclid|twclid|ttclid|igshid|mc_cid|mc_eid|mkt_tok|_hsenc|_hsmi|vero_id|oly_enc_id|oly_anon_id)$/i.test(key))ref.searchParams.delete(key)}ref.hash='';const title=document.title.replace(/\s+/g,' ').trim()||ref.hostname;let selection;const active=document.activeElement;const isTextarea=!!active&&active.tagName==='TEXTAREA';const isTextInput=!!active&&active.tagName==='INPUT'&&active.type!=='password';if((isTextarea||isTextInput)&&typeof active.selectionStart==='number'&&typeof active.selectionEnd==='number'){selection=active.value.slice(active.selectionStart,active.selectionEnd)}else{selection=window.getSelection().toString()}const buildUrl=(bodyText)=>'org-protocol://roam-ref?'+new URLSearchParams({template:'r',ref:ref.href,title,body:bodyText}).toString();let body=selection.trim();if(buildUrl(body).length>MAX_ENCODED_URL_CHARS){if(buildUrl('').length>MAX_ENCODED_URL_CHARS){alert('The page URL and title are too long for Org capture; no capture was sent.');return}const points=Array.from(body);let lo=0;let hi=points.length;while(lo<hi){const mid=Math.ceil((lo+hi)/2);if(buildUrl(points.slice(0,mid).join('')).length<=MAX_ENCODED_URL_CHARS){lo=mid}else{hi=mid-1}}body=points.slice(0,lo).join('')}location.href=buildUrl(body);void 0})()
 ```
 
 Optionally assign the Firefox bookmark the keyword `org`. Typing `org` in the
@@ -123,6 +123,12 @@ The same code expanded for readability is:
   // the whole encoded URL within budget.
   let body = selection.trim();
   if (buildUrl(body).length > MAX_ENCODED_URL_CHARS) {
+    if (buildUrl("").length > MAX_ENCODED_URL_CHARS) {
+      alert(
+        "The page URL and title are too long for Org capture; no capture was sent.",
+      );
+      return;
+    }
     const points = Array.from(body);
     let lo = 0;
     let hi = points.length;

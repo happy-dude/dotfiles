@@ -56,6 +56,14 @@ in
     lib.attrValues homes
   ); {
     emacs = syntaxCheck;
+    emacs-org-bookmarklet = mkCheck {
+      name = "dotfiles-emacs-org-bookmarklet";
+      tools = [pkgs.nodejs];
+      script = ''
+        DOTFILES_ORG_PROTOCOL_DOC=${../docs/emacs-org-protocol.md} \
+          node --test ${./bookmarklet-test.mjs}
+      '';
+    };
     emacs-runtime = mkCheck {
       name = "dotfiles-emacs-runtime";
       tools = [emacsPackage opencode];
