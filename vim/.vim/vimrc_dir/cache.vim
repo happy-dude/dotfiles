@@ -86,7 +86,7 @@ endfunction
 
 augroup dotfiles_sensitive_file_state
   autocmd!
-  autocmd BufReadPre,BufNewFile * call <SID>disable_sensitive_file_state()
+  autocmd BufReadPre,BufNewFile,BufFilePost * call <SID>disable_sensitive_file_state()
 augroup END
 
 unlet s:backup_dir s:dir s:state_dir s:swap_dir s:undo_dir s:view_dir
