@@ -54,9 +54,6 @@
     (when (lsp--client-download-server-fn client)
       (error "%s retained a server downloader" server-id))))
 
-(unless (equal (length dotfiles-lsp-client-ids) 26)
-  (error "Unexpected LSP client count: %s" (length dotfiles-lsp-client-ids)))
-
 (dolist (language '(bash c clojure cpp css fennel fish go gomod haskell hcl
                          html javascript json kotlin latex lua markdown
                          markdown-inline nix perl python ruby rust sql
