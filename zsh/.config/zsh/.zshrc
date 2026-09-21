@@ -52,7 +52,7 @@ typeset -g _NOHIST=0
 nohist()  { _NOHIST=1; }
 yeshist() { _NOHIST=0; }
 autoload -Uz add-zsh-hook
-_nohist_addhistory() { (( _NOHIST )) && return 1; return 0; }
+_nohist_addhistory() { (( _NOHIST )) && return 2; return 0; }
 add-zsh-hook zshaddhistory _nohist_addhistory
 
 # Powerlevel10k: show a black-on-magenta `no-hist` block while history saving is off.
