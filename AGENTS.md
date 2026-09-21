@@ -767,9 +767,18 @@ source.
   [Fish crash reproduction](https://github.com/fish-shell/fish-shell/issues/11052),
   and
   [rainbow-delimiters regression](https://gitlab.com/HiPhish/rainbow-delimiters.nvim/-/issues/21).
-  Those show the explanation and verification style; they are not a reason to
-  copy old workarounds, typos, or claims into new documentation. A date alone
-  does not establish whether a passage was written without assistance.
+  The
+  [cpupower CFLAGS patch](https://lore.kernel.org/all/20231127212049.455008-1-schan@cloudflare.com/)
+  illustrates concise patch rationale; the
+  [Falco syscall configuration documentation](https://github.com/falcosecurity/falco/pull/2515)
+  explains context, defaults, and configuration choices; the
+  [Falco timestamp investigation](https://github.com/falcosecurity/libs/issues/932)
+  shows diagnostic follow-through and correction of an unsuccessful fix; and the
+  [Falco service lifecycle change](https://github.com/falcosecurity/falco/pull/2138)
+  connects operational impact, lifecycle test cases, and review feedback. Those
+  show the explanation and verification style; they are not a reason to copy old
+  workarounds, typos, or claims into new documentation. A date alone does not
+  establish whether a passage was written without assistance.
 - For a bug report, lead with the symptom and impact, not a proposed diagnosis.
   State what was expected and what actually happened. Include the exact error,
   commands, relevant input, versions, and environment needed to reproduce it.
