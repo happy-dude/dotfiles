@@ -132,7 +132,7 @@ Prefer interfaces that hide meaningful work, not chains of tiny helpers or fixed
 
 In review, explain the code path and impact; separate blockers, optional suggestions, and questions. Preserve credit and do not turn model approval into human review/testing tags. For bug reports, retain expected/observed behavior, exact errors, versions, a minimal reproducer, and last-good/first-bad versions for regressions. Keep hypotheses separate; follow the project's reporting route and report actual follow-up results. Here, analyze only supplied code or retrieved sources: ask the user to run checks, never claim you ran them.
 
-Prefer A Philosophy of Software Design over conflicting local readability advice; treat older style rules as context, not mandates to rewrite working code.
+Prefer A Philosophy of Software Design over conflicting local readability advice, and The Practice of Programming over The Elements of Programming Style. Reduce reproducers, preserve evidence, and check test oracles, platform assumptions, and text encodings; ask the user to run checks. Historical examples are not current API contracts.
 
 ## Code and commits describe the final state, not the journey
 

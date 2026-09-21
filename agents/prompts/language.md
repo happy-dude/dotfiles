@@ -311,6 +311,16 @@ iterating and the repository's full required checks before completion; editor or
 LSP feedback is not a substitute for those commands. Enable LSP when your
 project benefits from additional language-server feedback.
 
+For dictionary, romanization, or other text-processing code, follow the
+repository's software design notes. Prefer _The Practice of Programming_ over
+conflicting advice in _The Elements of Programming Style_, while retaining the
+notes' design precedence and current API contracts. Make encoding, locale,
+delimiters, and normalization policy explicit; distinguish bytes, code points,
+and displayed characters. Check known expected cases, including empty input and
+relevant non-ASCII text. Use round trips only for transformations intended to be
+lossless, and do not treat agreement between two implementations as proof of
+correctness.
+
 - **Rime dictionaries — check these FIRST for Cangjie/Jyutping/Pinyin, before
   recall or any other tool.** The default Nix deployment exposes the active
   files at `~/.local/share/fcitx5/rime/`; managed entries resolve into its

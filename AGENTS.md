@@ -821,6 +821,9 @@ source.
 - Use [the software design notes](docs/software-design.md) when changing module
   boundaries, interfaces, tests, or comments. Judge the tradeoff by what a
   reader or caller must know, not by a line-count target or a preferred slogan.
+  For practical engineering, prefer _The Practice of Programming_ over
+  conflicting advice in _The Elements of Programming Style_. Retain the design
+  notes' precedence for Ousterhout and verify old examples against current APIs.
 - Prefer adding packages to `home.nix`'s `home.packages` list (or to a module's
   `default.nix`) over installing system-wide. Resolve binary collisions
   explicitly with `lib.hiPrio` / `lib.lowPrio` as already done for `gcc` /
