@@ -264,9 +264,17 @@ git init --quiet --bare --initial-branch=main "$upstream"
 git remote add origin "$upstream"
 git push --quiet origin main
 git fetch --quiet origin refs/heads/main:refs/remotes/origin/main
+git config --unset-all remote.origin.fetch
+git config --add remote.origin.fetch \
+  '+refs/heads/unrelated:refs/remotes/origin/unrelated'
+printf '%s\n' advanced >upstream-only
+git add upstream-only
+git commit --quiet -m 'tests: advance the portable base'
+git push --quiet origin main
 
 series_worktree="$temporary_directory/series-demo"
 start_series demo "$series_worktree" >/dev/null
+test "$(git -C "$series_worktree" rev-parse HEAD)" = "$(git rev-parse main)"
 printf '%s\n' represented >"$series_worktree/represented"
 git -C "$series_worktree" add represented
 git -C "$series_worktree" commit --quiet -m 'tests: add represented change'

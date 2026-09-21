@@ -223,7 +223,7 @@ start_series() {
     return 1
   fi
 
-  git -C "$repo_root" fetch origin main
+  git -C "$repo_root" fetch origin refs/heads/main:refs/remotes/origin/main
   git -C "$repo_root" worktree add -b "$branch" "$worktree" origin/main
   git -C "$repo_root" config extensions.worktreeConfig true
   git -C "$worktree" config --worktree user.name "Portable Dotfiles"
@@ -307,7 +307,7 @@ export_series() {
   ) || die "unable to read the portable worktree status: $worktree"
   [[ -z $worktree_status ]] || die "portable worktree is not clean"
 
-  git -C "$repo_root" fetch origin main
+  git -C "$repo_root" fetch origin refs/heads/main:refs/remotes/origin/main
   base=$(git -C "$repo_root" rev-parse origin/main)
   merge_base=$(git -C "$worktree" merge-base HEAD origin/main)
   [[ $merge_base == "$base" ]] ||
