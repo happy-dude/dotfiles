@@ -88,6 +88,8 @@ grep -F -- 'Processing: child' <<<"$submodule_output" >/dev/null ||
 # A second positional directory is refused before any mutation.
 assert_refuses 'two directories' 'Multiple directories specified' \
   "$no_origin" "$pruned_repo"
+assert_refuses 'two directories starting with dot' 'Multiple directories specified' \
+  . "$pruned_repo"
 
 # An unreachable origin warns and still garbage-collects.
 git -C "$no_origin" remote add origin "$TMPDIR_TEST/nonexistent.git"
