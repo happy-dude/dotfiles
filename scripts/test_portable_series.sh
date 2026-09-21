@@ -317,6 +317,46 @@ if clean_series 'bad name' 2>/dev/null; then
   exit 1
 fi
 
+# cherry omits merges: matching ordinary patches do not cover content added
+# while resolving or completing a merge.
+merged_worktree="$temporary_directory/series-merged"
+start_series merged "$merged_worktree" >/dev/null
+git -C "$merged_worktree" switch --quiet -c merge-side
+printf '%s\n' side >"$merged_worktree/side-change"
+git -C "$merged_worktree" add side-change
+git -C "$merged_worktree" commit --quiet -m 'tests: add the side patch'
+side_commit=$(git -C "$merged_worktree" rev-parse HEAD)
+git -C "$merged_worktree" switch --quiet replay/merged
+printf '%s\n' first >"$merged_worktree/first-change"
+git -C "$merged_worktree" add first-change
+git -C "$merged_worktree" commit --quiet -m 'tests: add the first patch'
+first_commit=$(git -C "$merged_worktree" rev-parse HEAD)
+git -C "$merged_worktree" merge --quiet --no-ff --no-commit merge-side
+printf '%s\n' unique >"$merged_worktree/merge-only"
+git -C "$merged_worktree" add merge-only
+git -C "$merged_worktree" commit --quiet -m 'tests: retain merge-only content'
+merged_head=$(git -C "$merged_worktree" rev-parse HEAD)
+git cherry-pick "$first_commit" "$side_commit" >/dev/null
+git push --quiet origin main
+git fetch --quiet origin refs/heads/main:refs/remotes/origin/main
+if git cherry origin/main replay/merged | grep -q '^+'; then
+  printf 'merge fixture still has unrepresented ordinary patches\n' >&2
+  exit 1
+fi
+if clean_series merged 2>/dev/null; then
+  printf 'cleaned a series with unrepresented merge content\n' >&2
+  exit 1
+fi
+test "$(git rev-parse replay/merged)" = "$merged_head"
+test "$(<"$merged_worktree/merge-only")" = unique
+
+# Once the merge itself is upstream, its series can be retired normally.
+git merge --quiet --no-ff replay/merged -m 'tests: retain the complete merge'
+git push --quiet origin main
+git fetch --quiet origin refs/heads/main:refs/remotes/origin/main
+clean_series merged >/dev/null
+test ! -e "$merged_worktree"
+
 # lint_commits' EXIT trap must clean its staging directory even when the
 # linter kills the run; the path is baked into the trap at install time.
 lint_tmp="$temporary_directory/lint-tmp"

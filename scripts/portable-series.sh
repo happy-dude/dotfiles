@@ -428,6 +428,20 @@ clean_series() {
     return 1
   }
 
+  # Patch equivalence does not cover a merge's conflict resolutions.
+  local merge_commits
+  merge_commits=$(
+    git -C "$repo_root" rev-list --min-parents=2 \
+      "refs/remotes/origin/main..$branch_ref"
+  ) || {
+    die "could not inspect merge history for $branch"
+    return 1
+  }
+  if [[ -n $merge_commits ]]; then
+    die "$branch has merge commits not in origin/main; inspect before cleaning"
+    return 1
+  fi
+
   local unrepresented
   unrepresented=$(
     git -C "$repo_root" cherry refs/remotes/origin/main "$branch_ref"
