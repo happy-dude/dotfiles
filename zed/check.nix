@@ -69,6 +69,33 @@ in {
           exit 1
         fi
         test "$(cat work/array.json)" = '[]'
+
+        # Failed parsing must not discard runtime-only settings.
+        printf '{runtime_only: "unfinished"\n' >work/invalid.json
+        cp work/invalid.json work/invalid.before
+        if materialize-zed-settings work/static.json work/invalid.json; then
+          echo "replaced malformed runtime settings" >&2
+          exit 1
+        fi
+        cmp work/invalid.before work/invalid.json
+
+        # Neither a valid nor a dangling link grants ownership of its target.
+        cp work/settings.json work/external.json
+        cp work/external.json work/external.before
+        ln -s "$PWD/work/external.json" work/linked.json
+        if materialize-zed-settings work/static.json work/linked.json; then
+          echo "accepted symlinked runtime settings" >&2
+          exit 1
+        fi
+        test -L work/linked.json
+        cmp work/external.before work/external.json
+        ln -s "$PWD/work/missing.json" work/dangling.json
+        if materialize-zed-settings work/static.json work/dangling.json; then
+          echo "accepted dangling runtime settings link" >&2
+          exit 1
+        fi
+        test -L work/dangling.json
+        test ! -e work/missing.json
       '';
     };
 }
