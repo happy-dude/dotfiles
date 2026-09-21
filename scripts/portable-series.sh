@@ -274,6 +274,7 @@ export_series() {
   local base
   local merge_base
   local count
+  local profiles
   local patch_name="dotfiles-$name.patch"
   local manifest_name="dotfiles-$name.manifest"
   local checksum_name="dotfiles-$name.sha256"
@@ -340,13 +341,14 @@ export_series() {
     nix flake check --show-trace --no-update-lock-file
     # Every profile the flake declares, so a new machine cannot escape the
     # validation that gates the series.
-    while IFS= read -r profile; do
-      home-manager build --flake ".#$profile" --show-trace \
-        --no-out-link --no-update-lock-file
-    done < <(
+    profiles=$(
       nix eval --no-update-lock-file --raw .#homeConfigurations \
         --apply 'homes: builtins.concatStringsSep "\n" (builtins.attrNames homes) + "\n"'
     )
+    while IFS= read -r profile; do
+      home-manager build --flake ".#$profile" --show-trace \
+        --no-out-link --no-update-lock-file
+    done <<<"$profiles"
   )
 
   staged_patch_path="$staging_directory/$patch_name"
