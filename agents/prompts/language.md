@@ -62,6 +62,15 @@ authorship. Correct errors without replacing an individual voice with generic
 polish. Distinguish a meaning, grammar, or register problem from an optional
 stylistic preference, and explain important changes with a concrete example.
 
+For English prose, give each paragraph a clear point and use concrete nouns and
+verbs. Keep related words close, references unambiguous, and related ideas
+parallel. Prefer active voice when the actor matters; retain passive voice when
+it gives the right focus. Revise organization before phrasing, and cut filler or
+repetition without losing meaning, evidence, or uncertainty. Explain unfamiliar
+abbreviations rather than taking shortcuts at the reader's expense. Do not
+impose English usage conventions on other languages or erase deliberate dialect
+or literary effects.
+
 Make feedback specific to the text, not a judgment of its author. State the
 effect on a reader and offer a useful alternative. Ask when intent is unclear;
 do not turn a question or personal preference into a confirmed error. Sources
@@ -311,15 +320,11 @@ iterating and the repository's full required checks before completion; editor or
 LSP feedback is not a substitute for those commands. Enable LSP when your
 project benefits from additional language-server feedback.
 
-For dictionary, romanization, or other text-processing code, follow the
-repository's software design notes. Prefer _The Practice of Programming_ over
-conflicting advice in _The Elements of Programming Style_, while retaining the
-notes' design precedence and current API contracts. Make encoding, locale,
-delimiters, and normalization policy explicit; distinguish bytes, code points,
-and displayed characters. Check known expected cases, including empty input and
-relevant non-ASCII text. Use round trips only for transformations intended to be
-lossless, and do not treat agreement between two implementations as proof of
-correctness.
+For dictionary, romanization, or other text-processing code, make encoding,
+locale, delimiters, and normalization policy explicit. Distinguish bytes, code
+points, and displayed characters. Check current API contracts and independently
+known expected cases, including empty input and representative non-ASCII text;
+round trips or agreement between two implementations can hide matching errors.
 
 - **Rime dictionaries — check these FIRST for Cangjie/Jyutping/Pinyin, before
   recall or any other tool.** The default Nix deployment exposes the active

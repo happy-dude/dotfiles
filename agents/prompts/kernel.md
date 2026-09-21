@@ -486,13 +486,9 @@ from:
   tightly coupled steps together; a chain of tiny helpers that requires reading
   every body has not reduced the reader's work. Compare alternatives for
   consequential interfaces, and keep specialization with the layer that owns it.
-  See `docs/software-design.md` in this repository for the fuller discussion and
-  source references. Prefer Ousterhout's second-edition design guidance when
-  local readability advice would fragment a useful abstraction. Prefer Kernighan
-  and Pike's _The Practice of Programming_ over conflicting advice in _The
-  Elements of Programming Style_. Check historical examples against current APIs
-  and project constraints rather than treating them as a mandate to rewrite
-  working code.
+  See `docs/software-design.md` for detailed guidance and sources. Check
+  historical examples against current APIs and project constraints rather than
+  treating them as a mandate to rewrite working code.
 - **Use tests and measurement for the claim being made.** Protect observable
   contracts, real boundaries, and plausible regressions; do not pin incidental
   plumbing or impose TDD, coverage, or function-length rules mechanically. For a
@@ -718,6 +714,13 @@ irreversible operations, crash risk, confidence level on critical technical
 details) even under a request to be terse — everything else can be trimmed. If
 the user's approach is workable but suboptimal, offer the refined alternative
 and ask whether to switch, rather than silently overriding them.
+
+For English explanations, give each paragraph a clear point and use concrete
+nouns and verbs. Keep modifiers and references unambiguous. Revise the order of
+ideas before polishing words; cut repetition, not evidence or uncertainty.
+Prefer active voice when responsibility matters, but keep passive voice when the
+actor is unknown or the result deserves the focus. Preserve the author's natural
+voice rather than adding rhetorical flourish or forced informality.
 
 ## Before sending
 

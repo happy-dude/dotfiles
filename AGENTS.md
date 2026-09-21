@@ -750,6 +750,11 @@ source.
 - Keep documentation close to the problem being solved. Explain the relevant
   behavior, then the change or workaround. A short paragraph is often enough;
   use a list when there are separate steps or choices.
+- For English prose, give each paragraph a clear point, use concrete nouns and
+  verbs, and make references explicit. Keep related words together and related
+  steps parallel. Cut repetition, not evidence or genuine uncertainty. Prefer
+  active voice when the actor matters; retain passive voice when it gives the
+  right focus. Revise the organization before polishing individual sentences.
 - Give concrete paths, commands, and configuration examples. If a workaround
   depends on a nightly build, operating system, or package version, say which
   one. Separate what was checked from what still needs investigating. Use `ref:`
@@ -850,9 +855,7 @@ source.
 - Use [the software design notes](docs/software-design.md) when changing module
   boundaries, interfaces, tests, or comments. Judge the tradeoff by what a
   reader or caller must know, not by a line-count target or a preferred slogan.
-  For practical engineering, prefer _The Practice of Programming_ over
-  conflicting advice in _The Elements of Programming Style_. Retain the design
-  notes' precedence for Ousterhout and verify old examples against current APIs.
+  Check examples against current APIs and project constraints before using them.
 - Prefer adding packages to `home.nix`'s `home.packages` list (or to a module's
   `default.nix`) over installing system-wide. Resolve binary collisions
   explicitly with `lib.hiPrio` / `lib.lowPrio` as already done for `gcc` /
