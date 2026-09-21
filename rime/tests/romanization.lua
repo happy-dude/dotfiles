@@ -5,6 +5,7 @@ local romanization = require('romanization')
 local cases = {
   { 'ma1', 'mā' },
   { 'jing3', 'jǐng' },
+  { 'er2', 'ér' },
   { 'xiao3', 'xiǎo' },
   { 'gui4', 'guì' },
   { 'liu2', 'liú' },
