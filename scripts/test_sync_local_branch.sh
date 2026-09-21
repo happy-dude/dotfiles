@@ -96,6 +96,12 @@ run_sync() {
 
 create_fixture success
 commit_work work-only local
+git -C "$branch_worktree" config rebase.updateRefs true
+git -C "$branch_worktree" branch backup-first
+first_backup=$(git -C "$branch_worktree" rev-parse backup-first)
+commit_work work-second local-second
+git -C "$branch_worktree" branch backup-tip
+tip_backup=$(git -C "$branch_worktree" rev-parse backup-tip)
 advance_origin upstream-only upstream
 unrelated_worktree="$fixture_root/unrelated worktree"
 git -C "$main_worktree" branch unrelated
@@ -112,6 +118,9 @@ test "$(git -C "$main_worktree" rev-parse origin/main)" = "$remote_head"
 test "$(git -C "$branch_worktree" merge-base work origin/main)" = \
   "$remote_head"
 test "$(git -C "$origin" rev-parse refs/heads/main)" = "$remote_head"
+test "$(git -C "$branch_worktree" rev-parse backup-first)" = "$first_backup"
+test "$(git -C "$branch_worktree" rev-parse backup-tip)" = "$tip_backup"
+test "$(git -C "$branch_worktree" config --bool rebase.updateRefs)" = true
 grep -Fq "nix|$branch_worktree|fmt ." "$log"
 grep -Fq \
   "nix|$branch_worktree|flake check --show-trace --no-update-lock-file" \
@@ -167,6 +176,9 @@ grep -Fq 'preflight stopped before fetch or mutation' "$output"
 
 create_fixture conflict
 commit_work shared local
+git -C "$branch_worktree" config rebase.updateRefs true
+git -C "$branch_worktree" branch backup-conflict
+conflict_backup=$(git -C "$branch_worktree" rev-parse backup-conflict)
 advance_origin shared upstream
 remote_head=$(git -C "$origin" rev-parse refs/heads/main)
 if run_sync work test-profile "$main_worktree"; then
@@ -188,6 +200,7 @@ grep -Fq 'git commit --amend --no-edit' "$output"
 printf '%s\n' resolved >"$branch_worktree/shared"
 git -C "$branch_worktree" add shared
 GIT_EDITOR=true git -C "$branch_worktree" rebase --continue >/dev/null
+test "$(git -C "$branch_worktree" rev-parse backup-conflict)" = "$conflict_backup"
 run_sync --validate work test-profile "$main_worktree"
 test "$(git -C "$branch_worktree" merge-base work origin/main)" = \
   "$remote_head"

@@ -969,7 +969,8 @@ main() {
     section_start "Pulling latest changes for main repo"
     if git rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; then
       vmsg "Dirty top-level worktree is allowed here via --autostash."
-      git pull --rebase --autostash
+      # Updating this checkout must not rewrite backup or topic branches.
+      git -c rebase.updateRefs=false pull --rebase --autostash
       section_end "done"
     else
       warn "No upstream tracking branch configured; skipping pull (use --skip-pull to suppress this warning)"
