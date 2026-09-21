@@ -2,6 +2,8 @@ import fnmatch
 import os
 import subprocess
 import sys
+from collections.abc import Iterator
+from io import BufferedReader
 from pathlib import Path
 
 
@@ -37,17 +39,21 @@ def schedule(systemd_run: str, systemctl: str) -> None:
     )
 
 
-def event_path(line: bytes, org_directory: Path) -> Path | None:
-    """Return the event's path relative to the Org directory, or None.
-
-    inotifywait writes raw filenames, so decode them the way the filesystem
-    layer does; events outside the directory carry no path to relate.
-    """
-    path = Path(os.fsdecode(line.rstrip(b"\n")))
-    try:
-        return path.relative_to(org_directory)
-    except ValueError:
-        return None
+def event_paths(stream: BufferedReader, org_directory: Path) -> Iterator[Path]:
+    """Decode NUL-framed paths without changing filename bytes."""
+    pending = b""
+    while chunk := stream.read1(4096):
+        records = (pending + chunk).split(b"\0")
+        pending = records.pop()
+        for record in records:
+            path = Path(os.fsdecode(record))
+            try:
+                relative = path.relative_to(org_directory)
+            except ValueError:
+                continue
+            yield relative
+    if pending:
+        raise ValueError("inotifywait ended with an incomplete path record")
 
 
 def watch(
@@ -56,26 +62,29 @@ def watch(
     systemd_run: str,
     systemctl: str,
 ) -> int:
-    watcher = subprocess.Popen(
+    with subprocess.Popen(
         [
             inotifywait,
             "--monitor",
             "--recursive",
             "--quiet",
-            "--format=%w%f",
+            "--format=%w%f%0",
+            "--no-newline",
             "--event=close_write,create,delete,moved_to,moved_from",
             str(org_directory),
         ],
         stdout=subprocess.PIPE,
-    )
-    if watcher.stdout is None:
-        watcher.terminate()
-        raise RuntimeError("inotifywait stdout pipe is unavailable")
-    for line in watcher.stdout:
-        relative = event_path(line, org_directory)
-        if relative is not None and should_sync(relative):
-            schedule(systemd_run, systemctl)
-    return watcher.wait()
+    ) as watcher:
+        try:
+            if watcher.stdout is None:
+                raise RuntimeError("inotifywait stdout pipe is unavailable")
+            for relative in event_paths(watcher.stdout, org_directory):
+                if should_sync(relative):
+                    schedule(systemd_run, systemctl)
+        finally:
+            if watcher.poll() is None:
+                watcher.terminate()
+        return watcher.wait()
 
 
 def main(arguments: list[str]) -> None:
