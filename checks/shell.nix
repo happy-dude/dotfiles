@@ -23,6 +23,8 @@
       tools = [
         pkgs.bash
         pkgs.git
+        pkgs.gnutar
+        pkgs.gzip
         # lint_commits runs the repository's commit-message linter.
         pkgs.prettier
         pkgs.python3

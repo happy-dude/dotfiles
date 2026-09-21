@@ -65,8 +65,13 @@
   "Paths whose contents must never be copied into Emacs state.")
 
 (defun dotfiles/sensitive-file-p (name)
-  "Return non-nil when NAME matches a known credential or secret path."
-  (and name (string-match-p dotfiles/sensitive-file-regexp name)))
+  "Return non-nil when NAME or its local target is a known secret path.
+Remote names are matched as written, without extra network access."
+  (and name
+       (or (string-match-p dotfiles/sensitive-file-regexp name)
+           (and (not (file-remote-p name))
+                (string-match-p dotfiles/sensitive-file-regexp
+                                (file-truename name))))))
 
 ;; Suppress numbered/backup copies of secrets.
 (setq backup-enable-predicate
@@ -81,6 +86,7 @@
     (auto-save-mode -1)
     (setq-local undo-tree-auto-save-history nil)))
 (add-hook 'find-file-hook #'dotfiles/harden-sensitive-buffer)
+(add-hook 'after-set-visited-file-name-hook #'dotfiles/harden-sensitive-buffer)
 
 ;; Mimic vim rainbow parentheses settings:
 ;; red, green, blue-green, red-orange, blue, orange, violet, yellow, red-violet

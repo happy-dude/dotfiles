@@ -223,7 +223,7 @@ start_series() {
     return 1
   fi
 
-  git -C "$repo_root" fetch origin main
+  git -C "$repo_root" fetch origin refs/heads/main:refs/remotes/origin/main
   git -C "$repo_root" worktree add -b "$branch" "$worktree" origin/main
   git -C "$repo_root" config extensions.worktreeConfig true
   git -C "$worktree" config --worktree user.name "Portable Dotfiles"
@@ -274,6 +274,7 @@ export_series() {
   local base
   local merge_base
   local count
+  local profiles
   local patch_name="dotfiles-$name.patch"
   local manifest_name="dotfiles-$name.manifest"
   local checksum_name="dotfiles-$name.sha256"
@@ -307,7 +308,7 @@ export_series() {
   ) || die "unable to read the portable worktree status: $worktree"
   [[ -z $worktree_status ]] || die "portable worktree is not clean"
 
-  git -C "$repo_root" fetch origin main
+  git -C "$repo_root" fetch origin refs/heads/main:refs/remotes/origin/main
   base=$(git -C "$repo_root" rev-parse origin/main)
   merge_base=$(git -C "$worktree" merge-base HEAD origin/main)
   [[ $merge_base == "$base" ]] ||
@@ -340,13 +341,14 @@ export_series() {
     nix flake check --show-trace --no-update-lock-file
     # Every profile the flake declares, so a new machine cannot escape the
     # validation that gates the series.
-    while IFS= read -r profile; do
-      home-manager build --flake ".#$profile" --show-trace \
-        --no-out-link --no-update-lock-file
-    done < <(
+    profiles=$(
       nix eval --no-update-lock-file --raw .#homeConfigurations \
         --apply 'homes: builtins.concatStringsSep "\n" (builtins.attrNames homes) + "\n"'
     )
+    while IFS= read -r profile; do
+      home-manager build --flake ".#$profile" --show-trace \
+        --no-out-link --no-update-lock-file
+    done <<<"$profiles"
   )
 
   staged_patch_path="$staging_directory/$patch_name"
@@ -425,6 +427,20 @@ clean_series() {
     die "origin/main is not fetched; run git fetch origin main first"
     return 1
   }
+
+  # Patch equivalence does not cover a merge's conflict resolutions.
+  local merge_commits
+  merge_commits=$(
+    git -C "$repo_root" rev-list --min-parents=2 \
+      "refs/remotes/origin/main..$branch_ref"
+  ) || {
+    die "could not inspect merge history for $branch"
+    return 1
+  }
+  if [[ -n $merge_commits ]]; then
+    die "$branch has merge commits not in origin/main; inspect before cleaning"
+    return 1
+  fi
 
   local unrepresented
   unrepresented=$(

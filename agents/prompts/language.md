@@ -311,6 +311,16 @@ iterating and the repository's full required checks before completion; editor or
 LSP feedback is not a substitute for those commands. Enable LSP when your
 project benefits from additional language-server feedback.
 
+For dictionary, romanization, or other text-processing code, follow the
+repository's software design notes. Prefer _The Practice of Programming_ over
+conflicting advice in _The Elements of Programming Style_, while retaining the
+notes' design precedence and current API contracts. Make encoding, locale,
+delimiters, and normalization policy explicit; distinguish bytes, code points,
+and displayed characters. Check known expected cases, including empty input and
+relevant non-ASCII text. Use round trips only for transformations intended to be
+lossless, and do not treat agreement between two implementations as proof of
+correctness.
+
 - **Rime dictionaries — check these FIRST for Cangjie/Jyutping/Pinyin, before
   recall or any other tool.** The default Nix deployment exposes the active
   files at `~/.local/share/fcitx5/rime/`; managed entries resolve into its
@@ -522,7 +532,9 @@ language data it needs.
   in the store without being importable. Verify a package exists first with
   `nix search nixpkgs <term>`.
 - **Locked evaluation:** `flake.lock` is authoritative; every evaluation outside
-  a deliberate update passes `--no-update-lock-file`.
+  a deliberate update passes `--no-update-lock-file`. Local `builtins.getFlake`
+  calls must use explicit `git+file://` references; bare paths include ignored
+  files and can copy private state into the Nix store.
 - **Secrets are machine-local.** Credentials live in mode-0600 files outside Git
   and outside the Nix store, and must never be committed or printed.
 - **The `work` branch is local-only.** If the checkout is on `work`, this is the

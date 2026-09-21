@@ -56,6 +56,14 @@ in
     lib.attrValues homes
   ); {
     emacs = syntaxCheck;
+    emacs-org-bookmarklet = mkCheck {
+      name = "dotfiles-emacs-org-bookmarklet";
+      tools = [pkgs.nodejs];
+      script = ''
+        DOTFILES_ORG_PROTOCOL_DOC=${../docs/emacs-org-protocol.md} \
+          node --test ${./bookmarklet-test.mjs}
+      '';
+    };
     emacs-runtime = mkCheck {
       name = "dotfiles-emacs-runtime";
       tools = [emacsPackage opencode];
@@ -78,9 +86,7 @@ in
 
         emacs --batch --quick --load ${runtimeTest}
         emacs --batch --quick --load ${initEl} \
-          --eval '(unless (dotfiles/sensitive-file-p (expand-file-name "~/.config/opencode/local.json")) (error "opencode path is not guarded"))'
-        emacs --batch --quick --load ${initEl} \
-          --eval '(unless (dotfiles/sensitive-file-p (expand-file-name "~/.omp/agent/agent.db")) (error "omp path is not guarded"))'
+          --load ${./secret-state-test.el}
       '';
     };
   }

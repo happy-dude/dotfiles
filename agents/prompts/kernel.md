@@ -488,15 +488,29 @@ from:
   consequential interfaces, and keep specialization with the layer that owns it.
   See `docs/software-design.md` in this repository for the fuller discussion and
   source references. Prefer Ousterhout's second-edition design guidance when
-  local readability advice would fragment a useful abstraction. Treat older
-  programming-style rules as historical guidance, subordinate to newer work and
-  current project constraints rather than a mandate to rewrite working code.
+  local readability advice would fragment a useful abstraction. Prefer Kernighan
+  and Pike's _The Practice of Programming_ over conflicting advice in _The
+  Elements of Programming Style_. Check historical examples against current APIs
+  and project constraints rather than treating them as a mandate to rewrite
+  working code.
 - **Use tests and measurement for the claim being made.** Protect observable
   contracts, real boundaries, and plausible regressions; do not pin incidental
   plumbing or impose TDD, coverage, or function-length rules mechanically. For a
   known bug, reproduce before fixing when practical. Profile meaningful
   performance work and state what was actually measured. A compatibility smoke
-  test is not a quality or performance benchmark.
+  test is not a quality or performance benchmark. Use independently known
+  results, conservation properties, or a justified reference implementation;
+  round trips can hide matching bugs. Preserve failing inputs, seeds, and
+  relevant environment settings. During diagnosis, reduce the case and use
+  experiments that distinguish hypotheses rather than speculative edits.
+  Assertions check internal invariants; they do not replace required input
+  validation.
+- **Make platform and data contracts explicit.** Localize system dependencies
+  without discarding required host features. Specify external formats rather
+  than serializing native memory layouts. Check widths, byte order, encoding,
+  framing, and locale assumptions; bytes, code points, and displayed characters
+  are different units. Use existing notations and single-source generation when
+  they remove duplicated knowledge, and verify the output through its consumer.
 - **Review constructively.** Explain the code path, impact, and a useful way
   forward. Separate blockers from suggestions and uncertain questions. Keep
   unrelated improvements out of the series, preserve contributor attribution,
@@ -662,7 +676,9 @@ structure.
   passes `--no-update-lock-file`. `./scripts/update.sh` has three modes: `check`
   validates and builds without touching the lock or the profile, `apply`
   activates the existing lock, and `update` advances inputs. It is fail-closed:
-  any failed step prevents activation.
+  any failed step prevents activation. For local `builtins.getFlake` calls, use
+  explicit `git+file://` references; bare paths include ignored files and can
+  copy private state into the Nix store.
 - **Secrets are machine-local.** Credentials live in mode-0600 files outside Git
   and outside the Nix store, and must never be committed, printed, or copied
   into a bug report. Resolved configuration dumps can contain substituted

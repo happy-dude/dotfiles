@@ -136,6 +136,20 @@ in {
       nvim --headless -u NONE -i NONE -S ${self}/vim/tests/search.vim
     '';
   };
+  editor-perl-substitute = mkCheck {
+    name = "editor-perl-substitute-test";
+    tools = [
+      pkgs.neovim
+      pkgs.perl
+      pkgs.vim
+    ];
+    script = ''
+      export HOME="$PWD/home"
+      mkdir -p "$HOME"
+      vim -Nu NONE -i NONE -es -S ${self}/vim/tests/substitute.vim
+      nvim --headless -u NONE -i NONE -S ${self}/vim/tests/substitute.vim
+    '';
+  };
   editor-secret-state = mkCheck {
     name = "editor-secret-state-test";
     tools = [

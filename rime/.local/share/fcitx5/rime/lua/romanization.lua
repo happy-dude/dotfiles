@@ -15,6 +15,7 @@ function M.convert_tones(pinyin)
   end
 
   pinyin = pinyin:gsub('([aeiouv])(ng?)([1-4])', '%1%3%2')
+  pinyin = pinyin:gsub('([aeiouv])(r)([1-4])', '%1%3%2')
   pinyin = pinyin:gsub('([aeo])([iuo])([1-4])', '%1%3%2')
 
   for vowel, tones in pairs(tone_marks) do

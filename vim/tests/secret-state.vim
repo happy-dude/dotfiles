@@ -74,6 +74,16 @@ call setline(1, 'v2')
 write
 call assert_true(empty(glob(s:backup_dir . '/*rclone.conf~', 0, 1)))
 
+" :saveas changes a buffer's identity without reading a new file. Its new
+" sensitive name must disable state before the write persists undo history.
+execute 'edit ' . fnameescape($HOME . '/ordinary.txt')
+call assert_true(&l:swapfile)
+call assert_true(&l:undofile)
+execute 'saveas! ' . fnameescape($HOME . '/.config/rclone/renamed.txt')
+call assert_false(&l:swapfile)
+call assert_false(&l:undofile)
+call assert_false(filereadable(undofile(expand('%:p'))))
+
 if !empty(v:errors)
   for error in v:errors
     echomsg error

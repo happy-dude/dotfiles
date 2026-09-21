@@ -118,13 +118,13 @@ def refresh_static(static_source: Path, static_dir: Path) -> None:
         except OSError:
             if moved and not lexists(static_dir):
                 os.replace(backup, static_dir)
-                moved = False
             raise
+        else:
+            if moved:
+                shutil.rmtree(backup)
     finally:
         if temporary.exists():
             shutil.rmtree(temporary)
-        if moved and lexists(backup):
-            shutil.rmtree(backup)
 
 
 def deploy(

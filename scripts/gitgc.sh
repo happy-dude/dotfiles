@@ -28,6 +28,7 @@ EOF
 
 AGGRESSIVE=false
 SEARCH_DIR="."
+SEARCH_DIR_SET=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -45,13 +46,13 @@ while [[ $# -gt 0 ]]; do
     exit 1
     ;;
   *)
-    if [[ $SEARCH_DIR != "." ]]; then
-      printf 'Multiple directories specified: %s and %s
-' "$SEARCH_DIR" "$1" >&2
+    if [[ $SEARCH_DIR_SET == true ]]; then
+      printf 'Multiple directories specified: %s and %s\n' "$SEARCH_DIR" "$1" >&2
       usage >&2
       exit 1
     fi
     SEARCH_DIR="$1"
+    SEARCH_DIR_SET=true
     shift
     ;;
   esac

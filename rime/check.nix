@@ -208,6 +208,14 @@ in {
       test -d "$migration_state/rime/home-manager-ownership-v1"
     '';
   };
+  rime-failure-recovery = mkCheck {
+    name = "rime-failure-recovery-test";
+    tools = [pkgs.python3];
+    script = ''
+      PYTHONPATH=${../lib/python}:${./.} \
+        python3 ${./tests/test_failure_recovery.py}
+    '';
+  };
   rime-lua = mkCheck {
     name = "dotfiles-rime-lua-tests";
     tools = [

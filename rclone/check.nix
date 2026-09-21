@@ -14,20 +14,42 @@ in {
       test "$(python3 ${./watch_org.py} classify sub/.dir-locals.el)" = ignore
 
       python3 - <<'PYTHON'
+      import os
       import sys
+      from io import BufferedReader, BytesIO
       from pathlib import Path
 
       sys.path.insert(0, "${./.}")
-      from watch_org import event_path
+      from watch_org import event_paths, should_sync
+
+      class FragmentedStream(BytesIO):
+          def readinto(self, buffer):
+              return super().readinto(memoryview(buffer)[:3])
 
       org = Path("/home/user/org")
-      assert event_path(b"/home/user/org/notes.org\n", org) == Path("notes.org")
-      # A filename that is not valid UTF-8 must still yield a relative path.
-      import os
-      latin1 = event_path(b"/home/user/org/caf\xe9.org\n", org)
-      assert latin1 == Path(os.fsdecode(b"caf\xe9.org"))
-      # Events outside the watched tree carry nothing to relate.
-      assert event_path(b"/home/user/elsewhere/x.org\n", org) is None
+      names = [
+          b"notes.org",
+          b"caf\xe9.org",
+          b"sub\nfolder/notes.org",
+          b"notes.org~\n",
+          b"notes.org~",
+      ]
+      events = b"\0".join(b"/home/user/org/" + name for name in names)
+      events += b"\0/home/user/elsewhere/x.org\0"
+      expected = [Path(os.fsdecode(name)) for name in names]
+      # Pipes can split anywhere, including inside a filename; retain every
+      # filename byte whether records arrive fragmented or together.
+      for stream_type in (BytesIO, FragmentedStream):
+          with BufferedReader(stream_type(events)) as stream:
+              assert list(event_paths(stream, org)) == expected
+      assert [path for path in expected if should_sync(path)] == expected[:-1]
+      with BufferedReader(BytesIO(b"/home/user/org/unfinished")) as stream:
+          try:
+              list(event_paths(stream, org))
+          except ValueError:
+              pass
+          else:
+              raise AssertionError("an incomplete event was accepted")
       PYTHON
     '';
   };

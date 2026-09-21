@@ -229,11 +229,14 @@ and installs StyLua's config under `~/.config/stylua`.
   commands that cross a host boundary. Do **not** add another settings
   representation. Zed binaries remain externally managed. The custom OpenCode
   ACP server runs the Nix-managed executable directly on `stachan`; on `schan`,
-  it uses the Flatpak-bundled `host-spawn` to reach that host executable.
-  Activation atomically merges declared keys into the mutable Flatpak file at
-  `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json` while preserving
-  runtime-only keys. `stachan` retains the normal host target at
-  `~/.config/zed/settings.json` through `programs.zed-editor`.
+  it uses the Flatpak-bundled `host-spawn` to reach that host executable. One
+  local materializer atomically merges declared keys into the writable settings
+  file on both profiles, preserving runtime-only keys and refusing malformed
+  files or symlinks. The Flatpak target is
+  `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`; the native target
+  is `${config.xdg.configHome}/zed/settings.json`, normally
+  `~/.config/zed/settings.json`. Both use `zedSettingsActivation` and honor Home
+  Manager's dry-run command.
 - **`agents/`** holds canonical `kernel` and `language` prompts. Nix reads their
   Markdown bodies and frontmatter to generate corresponding Codex, OpenCode, and
   oh-my-pi agents without checked-in generated artifacts, plus Codex profile
@@ -334,7 +337,10 @@ and installs StyLua's config under `~/.config/stylua`.
   updates preserve runtime-only edits, replace an unchanged managed baseline,
   and fail when both sides changed. Source changes invalidate only generated
   build data and reload Rime; if Fcitx is not running, it rebuilds on its next
-  start.
+  start. A failed static-tree rollback retains the backup for the next
+  activation; the directory replacement is recoverable, not one atomic swap.
+  Authorized host-file links stay readable until their staged replacement is
+  ready.
 - `scripts/update.sh` updates Rime only through the locked flake inputs.
 - **`yt-dlp/`** uses the locked Nixpkgs bgutil-ytdlp-pot-provider package. Home
   Manager links its Python plugin for yt-dlp discovery and points script mode at
@@ -387,12 +393,15 @@ guidance detectable.
   language-server executables. `flake.lock` and the locked Nixpkgs revision
   determine editor updates. Do not run mutable plugin, parser, CoC extension, or
   vim-go binary update commands. Vim and Neovim retain backup, swap, and
-  persistent undo for ordinary files but disable them before reading known
-  credentials and machine-local secret directories.
+  persistent undo for ordinary files, but exclude known credentials and secret
+  directories when opening local aliases or changing a buffer's filename too.
+  These guards prevent future state copies; they do not erase existing copies.
 - CoC loads in both editors and owns LSP, diagnostics, completion, navigation,
   and format-on-save. vim-go retains non-LSP Go commands. Vim uses its bundled
   EditorConfig support and Neovim uses native EditorConfig. Do not reintroduce
-  ALE, Pathogen, vim-plug, editorconfig-vim, or plugin submodules.
+  ALE, Pathogen, vim-plug, editorconfig-vim, or plugin submodules. The `:S` Perl
+  substitution command replaces only its addressed range, including when output
+  adds or removes lines, and groups the replacement into one undo.
 - CodeCompanion is Neovim-only and routes chat through the Nix-managed OpenCode
   ACP server. Its inline interaction and history title and summary generation
   retain the Anthropic HTTP adapter because those background operations do not
@@ -408,7 +417,10 @@ guidance detectable.
   provider-neutral `opencode acp` client; private provider configuration and
   credentials remain OpenCode-owned host state. Emacs Custom writes to the
   machine-local `~/.config/emacs/custom.el`. No vendored Emacs plugin or legacy
-  package.el tree remains.
+  package.el tree remains. Its secret-state guard checks local symlink targets
+  and visited-filename changes. Remote names remain lexical to avoid an extra
+  network lookup. Previously written backup, auto-save, or undo files are not
+  retroactively erased.
 
 ### `other/` directory
 
@@ -435,6 +447,12 @@ only after explicit confirmation:
 ```bash
 home-manager switch --flake .#$(whoami) --show-trace --no-update-lock-file
 ```
+
+For ad hoc local `builtins.getFlake` evaluation, use an explicit `git+file://`
+reference. Bare absolute paths and `path:` inputs include ignored files and can
+copy machine-local state into the world-readable Nix store. Use tracked Git
+sources for live checkouts; lock-file immutability does not provide file
+filtering.
 
 `nix flake check` is the only authority on whether a change is sound. This
 repository has three validation layers that fail independently: evaluating a
@@ -467,16 +485,16 @@ configuration, Kagi prompt character budgets, the aerc deployed/tracked
 configuration mirror, CoC language-server package resolution, the sdcv
 dictionary lookup, the CurSearch highlight link, and editor secret-state
 exclusions; Emacs `check-parens` and Org lint for tracked Org files plus a
-runtime load of the evaluated Emacs configuration; GitHub Actions syntax, pinned
-action revisions, and Dependabot config parsing; a real Neovim Org Tree-sitter
-parse against the evaluated Home Manager runtime; Rime Lua syntax and focused
-tests; profile-capability invariants; and gitleaks secret scanning. CI runs
-those checks and evaluates both Home Manager configurations on pushes to `main`
-and on pull requests; the profile names are listed in `ci.yml` explicitly, so a
-new profile must be added there as well. Full builds of both configurations run
-weekly on a schedule and are opt-in through the `workflow_dispatch`
-`build_homes` input because builds are substantially more expensive than
-evaluation.
+runtime load of the evaluated Emacs configuration and published Org bookmarklet
+behavior; GitHub Actions syntax, pinned action revisions, and Dependabot config
+parsing; a real Neovim Org Tree-sitter parse against the evaluated Home Manager
+runtime; Rime Lua syntax and focused tests; profile-capability invariants; and
+gitleaks secret scanning. CI runs those checks and evaluates both Home Manager
+configurations on pushes to `main` and on pull requests; the profile names are
+listed in `ci.yml` explicitly, so a new profile must be added there as well.
+Full builds of both configurations run weekly on a schedule and are opt-in
+through the `workflow_dispatch` `build_homes` input because builds are
+substantially more expensive than evaluation.
 
 ### Zed / agent config
 
@@ -529,6 +547,14 @@ transfer. Export builds every artifact in a temporary directory and publishes
 the checksum markers last, so an incomplete replacement cannot validate as
 current.
 
+Both `start` and `export` refresh `origin/main` with an explicit refspec rather
+than relying on the remote's fetch mapping. Failure to enumerate the profiles or
+build any declared profile prevents publication.
+
+`clean` refuses merge commits not reachable from `origin/main`: equivalent
+ordinary patches do not prove that a merge's conflict-resolution content is
+upstream. It preserves that branch and worktree for explicit review.
+
 Callers may set `PORTABLE_FORBIDDEN_PATTERN` for machine-local content policy;
 the pattern itself does not enter portable configuration. Export scans commit
 metadata and zero-context changed content before expensive validation, then
@@ -569,7 +595,10 @@ be clean; unrelated linked worktrees are intentionally ignored. A dirty target
 refusal identifies its path and occurs before fetch or mutation. The script
 rejects prunable registrations and branches with an upstream, and never pushes
 or activates. Formatting, flake checks, and the profile build are reported as
-separate phases without a fixed timeout.
+separate phases without a fixed timeout. Automated sync rebases and the
+updater's rebasing pull disable Git's automatic updates to other local branch
+refs. Backup and topic refs retain their original commits even when
+`rebase.updateRefs` is enabled for manual rebases.
 
 Validate mode performs no fetch or rebase. It requires local `main` to equal the
 cached `origin/main` tip and the local-only branch to descend from that tip. Use
@@ -821,6 +850,9 @@ source.
 - Use [the software design notes](docs/software-design.md) when changing module
   boundaries, interfaces, tests, or comments. Judge the tradeoff by what a
   reader or caller must know, not by a line-count target or a preferred slogan.
+  For practical engineering, prefer _The Practice of Programming_ over
+  conflicting advice in _The Elements of Programming Style_. Retain the design
+  notes' precedence for Ousterhout and verify old examples against current APIs.
 - Prefer adding packages to `home.nix`'s `home.packages` list (or to a module's
   `default.nix`) over installing system-wide. Resolve binary collisions
   explicitly with `lib.hiPrio` / `lib.lowPrio` as already done for `gcc` /

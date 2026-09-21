@@ -43,8 +43,6 @@
 (global-company-mode 1)
 (add-hook 'company-mode-hook #'company-box-mode)
 
-(defconst dotfiles-lsp-client-ids (mapcar #'car dotfiles-lsp-server-commands))
-
 (defun dotfiles/lsp-command (server-id)
   (or (alist-get server-id dotfiles-lsp-server-commands)
       (error "No Nix command registered for %s" server-id)))

@@ -15,11 +15,17 @@ principles in _A Philosophy of Software Design_, prefer the latter. A locally
 tidier function is not an improvement if it fragments a coherent operation or
 makes callers learn more implementation detail.
 
-_The Elements of Programming Style_ is a useful historical reference, not a
-reason to copy Fortran-era constraints into current code. The newer design and
-readability guidance takes precedence. Its emphasis on clear expression,
-explicit data layout, checked inputs, boundary tests, and measured optimization
-still fits; blanket rewrite or control-flow rules need the context below.
+Kernighan and Pike's _The Practice of Programming_ supplies practical guidance
+on representation, interfaces, debugging, testing, performance, portability, and
+notation. Where it conflicts with _The Elements of Programming Style_, use _The
+Practice of Programming_. This does not change the design precedence above or
+override current language contracts, security requirements, or compatibility.
+
+_The Elements of Programming Style_ remains historical context. Its emphasis on
+clear expression, explicit data layout, checked inputs, boundary tests, and
+measured optimization still fits; blanket rewrite or control-flow rules need the
+context below. Check current API documentation when adapting old examples, and
+consult the errata for _The Practice of Programming_.
 
 ## Start with the problem
 
@@ -27,6 +33,12 @@ Explain what needs to change and what must stay the same. Identify the data, its
 owner, who can mutate it, and the users of the interface before choosing an
 abstraction. A design that hides the ownership problem behind another wrapper
 has not solved it.
+
+Choose the representation for the operations and input sizes that matter. Check
+the cost of lookups, growth, and traversal, including work hidden inside
+convenient library calls. A representation that makes boundary cases ordinary
+can remove branches; it must not reserve a sentinel that valid input can
+contain.
 
 Watch for three useful signs of complexity:
 
@@ -66,6 +78,10 @@ until it meets the real safety, error-handling, and verification requirements.
 Warden's warning is worth keeping in mind: calling code a prototype does not
 make it safe to ship without that work.
 
+Before giving a prototype more users, revisit assumptions about input sizes,
+delimiters, caller-owned buffers, shared state, and error returns. Success on
+one sample does not establish a reusable interface's contract.
+
 ## Keep ownership and hidden knowledge together
 
 A useful module does substantial work behind an interface that is simpler than
@@ -88,11 +104,25 @@ of the same private representation.
   definition is preferable where practical; otherwise use a focused check and a
   nearby explanation of the coupling.
 
+State whether returned data is borrowed or owned, what may mutate it, and which
+operations invalidate references. Prefer pairing acquisition and release within
+one owner; when ownership transfers, make that transfer explicit. Do not close a
+caller's stream or mutate its buffer unless the contract grants that right.
+Garbage collection does not settle sharing, file-handle lifetimes, or cleanup.
+
 For these dotfiles, application configuration stays in its native format. Nix
 owns composition and package wiring; nontrivial state transformations belong in
 the owning helper. Sharing a fact should not require inventing another
 configuration language or moving application-specific policy into a generic
 library.
+
+Use an existing notation or data table when it expresses repetitive work more
+clearly than procedural branches. Generate mechanical representations from one
+authoritative definition rather than maintaining hand-edited copies. Keep the
+generator and its inputs understandable, preserve useful diagnostics, and check
+the result through its consumer. A generator can reproduce the same mistake
+consistently; generation alone is not evidence of correctness. A new language or
+schema is justified only when it removes more complexity than it introduces.
 
 ## Make common use straightforward
 
@@ -110,6 +140,11 @@ or option for every imagined variation usually is not.
 Pull unavoidable complexity behind the interface when doing so simplifies the
 system overall. Do not merely move work into a library if that obscures failure,
 adds surprising cost, or makes important policy impossible to control.
+
+Keep related operations consistent in arguments, results, and side effects.
+Hidden cross-call state can make independent uses interfere; put state in an
+explicit owner where the interface needs independent instances. Do not add
+another operation merely to compensate for an implementation defect.
 
 Keep the interface documentation separate from implementation notes. The caller
 needs the contract, not the internal algorithm. Someone modifying the algorithm
@@ -149,6 +184,13 @@ Handle an error at the layer that has enough context to recover or report it
 usefully. Aggregate repetitive handling when the failures really share a policy.
 Do not catch everything, discard diagnostics, or return success for work that
 was not done.
+
+Library error reporting should preserve the caller's control over recovery,
+logging, and process lifetime rather than unexpectedly printing or exiting.
+Distinguish an empty result or normal end-of-input from a failed operation when
+the caller must respond differently. Check output and finalization failures as
+well as reads; a replacement must not be published as successful if writing it
+failed.
 
 Specify the important failure details:
 
@@ -306,6 +348,17 @@ implementation details a mock can assert.
   the behavior being checked and make failures show the useful expected and
   observed values. Test code should be understandable without a separate
   exercise in decoding its fixtures or helper layers.
+- Establish expected results independently: known cases, conservation
+  properties, or a simple reference implementation. Round trips can hide
+  matching bugs in two components, and an old version's output is not
+  automatically correct.
+- Exercise meaningful error paths with bounded fault injection or small test
+  capacities where appropriate. Keep those controls isolated from production;
+  never weaken a safety guard merely to make a test reach later code.
+- Preserve failing inputs, seeds, and relevant environment settings so failures
+  can be replayed. Assertions can check internal invariants, but must not
+  replace required input validation or contain side effects needed for correct
+  execution.
 
 The sources do not agree on TDD. Martin and Warden emphasize test-first feedback
 and refactoring; Ousterhout worries that short test-driven steps can displace
@@ -345,6 +398,13 @@ Look beyond CPU loops. Filesystem work, process startup, network waits, locks,
 and serialization can dominate the result. A small benchmark is useful only when
 its workload supports the claim being made.
 
+Automate measurements with the workload and build configuration recorded.
+Distinguish elapsed time from CPU time, account for noise and instrumentation,
+and check whether call counts and growth rates match the expected work. Improve
+the measured bottleneck, rerun correctness checks, and stop when the requirement
+is met. Historical speedups and micro-optimization recipes are not predictions
+for a current compiler or machine.
+
 Make the common path straightforward. A clearer data model or fewer special
 cases may improve performance without obscuring the code. Do not add a cache,
 new dependency, or lower-level implementation just because it might be faster.
@@ -354,10 +414,43 @@ and focused logs. Logging should help reconstruct the important operation and
 its failures without leaking credentials or private content. Request IDs can
 help when work crosses processes; logging every branch is not a universal rule.
 
+Reason back from the first reliable evidence before changing code. Reduce the
+input or change range while preserving the failure, and choose experiments that
+distinguish specific hypotheses. Repeated offsets or size thresholds are clues,
+not diagnoses. For intermittent failures, compare environments and record the
+conditions and frequency instead of claiming a deterministic reproducer.
+
+Keep useful invariant checks or supported diagnostics when they justify their
+cost; remove temporary probes rather than leaving commented-out debugging code.
+Keep investigation notes separately from comments and commit rationale. Commit
+the resulting contract or constraint, not the sequence of unsuccessful attempts.
+
 Prefer simple concurrency and explicit ownership. Know which operation can run
 at the same time, how it is cancelled, and who waits for workers to finish.
 Concurrency and distributed boundaries introduce failure modes; use them when
 the real isolation, deployment, or performance requirement justifies the cost.
+
+## Make platform and data-format assumptions explicit
+
+Define the platforms and language versions actually supported. Prefer shared
+behavior where it meets the requirements, and localize necessary differences
+behind the owning interface rather than scattering platform conditionals. Do not
+remove required functionality merely to reach a lowest common denominator.
+Exercise the supported variants; one compiler or host does not validate them
+all.
+
+Treat external representations as contracts, not memory dumps. Use the format's
+specified widths, byte order, framing, escaping, and numeric precision. Text
+formats still need explicit encodings and line-ending rules. Do not equate
+bytes, code points, or user-perceived characters, assume English collation, or
+let the host locale silently redefine stored data. Normalize only where the
+format or requested transformation calls for it.
+
+Changing a command's meaning or a stored format can break existing consumers
+even when the new behavior looks better. Make intentional incompatibility
+explicit through the appropriate version or interface boundary and a migration
+plan; do not impose a silent semantic change or invent unused compatibility
+layers.
 
 ## Keep the tradeoffs explicit
 
@@ -392,9 +485,18 @@ behavior that matters.
   Chapters 2–11 cover complexity and interfaces; 12–18 cover comments, names,
   changes, and consistency; 19–21 cover testing, performance, and deciding what
   matters. [Book homepage](https://web.stanford.edu/~ouster/cgi-bin/book.php).
+- Brian W. Kernighan and Rob Pike, _The Practice of Programming_ (1999),
+  Addison-Wesley, ISBN 0-201-61586-X.
+  [Authors' homepage](https://www.cs.princeton.edu/~bwk/tpop.webpage/) and
+  [errata](https://www.cs.princeton.edu/~bwk/tpop.webpage/errata.html). Used for
+  practical design, interfaces, debugging, testing, performance, portability,
+  and notation; takes precedence over conflicting advice in _The Elements of
+  Programming Style_. The examples illustrate tradeoffs, not a replacement for
+  current API contracts or the safety checks here.
 - Brian W. Kernighan and P. J. Plauger, _The Elements of Programming Style_,
   second edition (1978), McGraw-Hill, ISBN 978-0-07-034207-1. Used as historical
-  context; the newer books and current language conventions take precedence.
+  context; _The Practice of Programming_, the newer design and readability
+  guidance, and current language conventions take precedence.
 - [Ousterhout and Martin: A Philosophy of Software Design vs Clean Code](https://github.com/johnousterhout/aposd-vs-clean-code)
 - Dustin Boswell and Trevor Foucher,
   [The Art of Readable Code](https://www.oreilly.com/library/view/the-art-of/9781449318482/).

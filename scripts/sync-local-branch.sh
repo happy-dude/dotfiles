@@ -220,7 +220,9 @@ main() {
       printf '%s\n' "Nothing was rebased, pushed, or activated." >&2
       return 1
     fi
-    if ! git -C "$branch_worktree" rebase "$origin_main"; then
+    # Sync owns only the named branch, not other refs into its history.
+    if ! git -C "$branch_worktree" -c rebase.updateRefs=false \
+      rebase "$origin_main"; then
       printf '%s\n' \
         "Rebase stopped before completion. Nothing was pushed or activated." \
         "Local main was fast-forwarded to $origin_main." \

@@ -36,10 +36,7 @@ def validate_materialize(
 def materialize(source: Path, target: Path, snapshot: Path) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     snapshot.parent.mkdir(parents=True, exist_ok=True)
-    if target.is_symlink():
-        target.unlink()
-
-    if not target.exists():
+    if target.is_symlink() or not target.exists():
         copy_file(source, target, 0o644)
         copy_file(source, snapshot, 0o600)
     elif not snapshot.exists():
