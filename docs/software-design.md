@@ -4,28 +4,12 @@ The aim is to make the code easier to understand and change without breaking
 what already works. Less code can help, but fewer lines are not the same thing
 as a simpler design. Look at what a reader has to know to make a safe change.
 
-These notes draw mainly from John Ousterhout's _A Philosophy of Software
-Design_, second edition, alongside the discussions and essays linked below. The
-authors disagree on some important points. Use the tradeoffs to examine the code
-in front of you, not as rules that override correctness, security, or the
-requested behavior.
-
-Where local advice from _The Art of Readable Code_ conflicts with the design
-principles in _A Philosophy of Software Design_, prefer the latter. A locally
-tidier function is not an improvement if it fragments a coherent operation or
-makes callers learn more implementation detail.
-
-Kernighan and Pike's _The Practice of Programming_ supplies practical guidance
-on representation, interfaces, debugging, testing, performance, portability, and
-notation. Where it conflicts with _The Elements of Programming Style_, use _The
-Practice of Programming_. This does not change the design precedence above or
-override current language contracts, security requirements, or compatibility.
-
-_The Elements of Programming Style_ remains historical context. Its emphasis on
-clear expression, explicit data layout, checked inputs, boundary tests, and
-measured optimization still fits; blanket rewrite or control-flow rules need the
-context below. Check current API documentation when adapting old examples, and
-consult the errata for _The Practice of Programming_.
+Preserve correctness, security, compatibility, and the requested behavior. Judge
+readability across the whole operation: a locally tidy function is not an
+improvement if it fragments coupled work or makes callers learn more
+implementation detail. Check examples against current API contracts and project
+constraints before adapting them; historical code is not a mandate to rewrite
+working code. Sources and further discussion are listed under References.
 
 ## Start with the problem
 
@@ -66,17 +50,12 @@ to the first plausible one. Compare how a caller uses it, which state it owns,
 how it fails, and what a future change would touch. A small experiment can help
 when the important constraint is still uncertain.
 
-There is a useful tension here. Ousterhout argues for deliberate investment in
-design; Grug warns against building abstractions before understanding the
-problem. Both can be useful: think about the interface early, then revise it as
-working code and feedback expose better boundaries. Do not leave an obviously
-wrong abstraction in place just because it was planned, or indefinitely defer
-necessary design because it is supposed to emerge later.
+Think about the interface early, then revise it as working code and feedback
+expose better boundaries. Do not retain a wrong abstraction merely because it
+was planned, or defer necessary design indefinitely in the hope it will emerge.
 
 A prototype answers a question. Keep it separate from a finished implementation
 until it meets the real safety, error-handling, and verification requirements.
-Warden's warning is worth keeping in mind: calling code a prototype does not
-make it safe to ship without that work.
 
 Before giving a prototype more users, revisit assumptions about input sizes,
 delimiters, caller-owned buffers, shared state, and error returns. Success on
@@ -86,8 +65,8 @@ one sample does not establish a reusable interface's contract.
 
 A useful module does substantial work behind an interface that is simpler than
 its implementation. Callers should not need to read its internals to use it
-correctly. This is what Ousterhout means by a deep module; it does not mean a
-large class or a complicated implementation.
+correctly. Module depth describes how much useful work an interface hides, not
+the size of a class or the complexity of its implementation.
 
 Group code around the information and decisions it owns, not just the order in
 which steps happen. Splitting parsing, validation, and execution into different
@@ -157,9 +136,8 @@ Keep closely related steps together when understanding either one requires the
 same state and invariants. Repeatedly jumping between tiny helpers to
 reconstruct one operation is a warning that the split may not be helping.
 
-There is no target line count. Martin and Ousterhout agree that decomposition
-can go too far, but disagree about where that point is. Check the actual caller
-and implementation rather than applying a slogan about small functions.
+There is no target line count. Check the actual caller and implementation rather
+than applying a slogan about small functions.
 
 - Keep acquisition, use, and release understandable as one resource lifetime.
 - Avoid pass-through layers that add another interface without hiding work. A
@@ -269,10 +247,6 @@ comments can describe the contract, the design, and facts the reader would
 otherwise have to reconstruct. Neither a descriptive name nor a test captures
 every useful explanation.
 
-Ousterhout and Martin disagree about how much commenting helps. Antirez's
-classification is useful because it asks what a particular comment is doing for
-the reader, rather than treating all comments alike.
-
 ### Interface comments
 
 Document the behavior needed to use a function or module without opening its
@@ -326,6 +300,39 @@ If work must remain deferred, describe the actual limitation and its conditions,
 with an issue reference where available. Do not fill code with vague `TODO`,
 `FIXME`, or "temporary" labels that give the next reader no useful direction.
 
+## Write clear prose
+
+For English explanations, choose an order that answers the reader's question,
+not the order in which the writer discovered the answer. Keep the author's
+meaning, register, and natural voice rather than adding a generic polish.
+
+- Give each paragraph a clear purpose. Lead with its point or a useful
+  transition, then supply the explanation or evidence it needs. Use paragraph
+  breaks to organize thought, not to impose a fixed sentence count.
+- Use concrete nouns and verbs. Name the actor when that helps explain
+  responsibility; use the passive when the actor is unknown or the result is the
+  useful focus. Do not invent an actor merely to avoid a passive sentence.
+- Prefer direct statements and instructions. Keep precise negatives,
+  preconditions, and uncertainty when they affect meaning; clarity does not
+  justify turning a qualified observation into a stronger claim.
+- Cut filler, repetition, and decorative wording, not needed detail. Familiar
+  words usually work better than inflated ones; explain unfamiliar abbreviations
+  instead of making the reader decode them. Keep technical terms when precision
+  requires them.
+- Keep modifiers near what they modify and make pronoun references clear. Use
+  parallel forms for related steps or comparisons, and consistent tense for the
+  same time frame. Keep the main point from being buried in qualifications.
+- Revise the organization before polishing individual sentences. Reread for
+  ambiguous references, unsupported emphasis, repeated explanations, and changes
+  in meaning or voice. Respect the reader's knowledge without omitting necessary
+  context or adding unsolicited opinion.
+
+These are contextual choices, not bans on passive voice, sentence-ending
+prepositions, split infinitives, dialect, or deliberate literary effects. Follow
+the requested language and audience; English usage conventions do not govern
+translations into other languages. Preserve quoted text, commands, identifiers,
+and evidence unless their transformation is part of the task.
+
 ## Test behavior at useful boundaries
 
 Use tests to preserve observable behavior, expose mistakes, and make changes
@@ -360,13 +367,10 @@ implementation details a mock can assert.
   replace required input validation or contain side effects needed for correct
   execution.
 
-The sources do not agree on TDD. Martin and Warden emphasize test-first feedback
-and refactoring; Ousterhout worries that short test-driven steps can displace
-interface design; Grug prefers discovering boundaries through working code and
-then testing them. Do not use that disagreement to ban unit tests, require one
-sequence for every task, or defer testing indefinitely. Review whether the
-chosen approach produces useful contracts, trustworthy tests, and a design that
-can still change.
+Test during development rather than deferring all feedback until the end.
+Test-first development is one useful technique, not a replacement for interface
+design or a required sequence for every task. Choose checks that produce useful
+contracts, trustworthy results, and a design that can still change.
 
 A passing test only establishes what it exercised. Do not call an untested
 platform supported or treat a small compatibility probe as a quality benchmark.
@@ -382,10 +386,9 @@ from behavioral changes where that makes the patch easier to verify. Maintain
 interfaces deliberately, migrate callers together, and use the project's
 formatter and checks rather than restyling by hand.
 
-A large speculative rewrite is not the same thing as continuous small
-refactoring. Warden's counterpoint to Grug is important here: a mistaken
-abstraction can be revised as understanding improves. The answer is not to
-freeze the design forever, but to keep changes bounded and checkable.
+Revise abstractions when their assumptions fail. Keep that work bounded and
+checkable rather than freezing a poor design or hiding a speculative rewrite
+inside routine cleanup.
 
 ## Measure performance and make debugging possible
 
@@ -454,12 +457,10 @@ layers.
 
 ## Keep the tradeoffs explicit
 
-Grug's warnings about premature abstraction, dense expressions, large rewrites,
-and unfamiliar complexity are useful. They are not proof that new technology,
-closures, generics, microservices, or a particular UI architecture are always
-wrong. Warden emphasizes the context that a joke can leave out: team ownership,
-independent deployment, user needs, and the constraints under which earlier code
-was written.
+Choose tools and architectures for the actual constraints: team ownership,
+deployment boundaries, user needs, and maintenance costs. Do not turn concerns
+about complexity into blanket objections to closures, generics, microservices,
+or a particular UI architecture.
 
 - Prefer a simpler design when it meets the requirements. Propose a smaller
   scope when appropriate; never silently deliver only a convenient subset.
@@ -475,10 +476,6 @@ was written.
 - Neither novelty nor age establishes quality. Compare the real benefit with the
   dependency, migration, operational, and maintenance costs.
 
-The useful question is not which author wins. It is whether the change leaves
-this system easier to use, reason about, and maintain while preserving the
-behavior that matters.
-
 ## References
 
 - John Ousterhout, _A Philosophy of Software Design_, second edition (2021).
@@ -488,20 +485,20 @@ behavior that matters.
 - Brian W. Kernighan and Rob Pike, _The Practice of Programming_ (1999),
   Addison-Wesley, ISBN 0-201-61586-X.
   [Authors' homepage](https://www.cs.princeton.edu/~bwk/tpop.webpage/) and
-  [errata](https://www.cs.princeton.edu/~bwk/tpop.webpage/errata.html). Used for
-  practical design, interfaces, debugging, testing, performance, portability,
-  and notation; takes precedence over conflicting advice in _The Elements of
-  Programming Style_. The examples illustrate tradeoffs, not a replacement for
-  current API contracts or the safety checks here.
+  [errata](https://www.cs.princeton.edu/~bwk/tpop.webpage/errata.html).
+  Practical design, interfaces, debugging, testing, performance, portability,
+  and notation.
 - Brian W. Kernighan and P. J. Plauger, _The Elements of Programming Style_,
-  second edition (1978), McGraw-Hill, ISBN 978-0-07-034207-1. Used as historical
-  context; _The Practice of Programming_, the newer design and readability
-  guidance, and current language conventions take precedence.
+  second edition (1978), McGraw-Hill, ISBN 978-0-07-034207-1. Historical
+  examples of expression, data layout, and testing.
 - [Ousterhout and Martin: A Philosophy of Software Design vs Clean Code](https://github.com/johnousterhout/aposd-vs-clean-code)
 - Dustin Boswell and Trevor Foucher,
   [The Art of Readable Code](https://www.oreilly.com/library/view/the-art-of/9781449318482/).
-  Used for naming, comments, control flow, local state, and readable tests;
-  subordinate to the design guidance above when decomposition advice conflicts.
+  Naming, comments, control flow, local state, and readable tests.
 - [The Grug Brained Developer](https://grugbrain.dev/)
 - [Jesse Warden: Criticisms of The Grug Brained Developer](https://jessewarden.com/2023/08/criticisms-of-the-grug-brained-developer.html)
 - [Salvatore Sanfilippo: Writing system software: code comments](https://antirez.com/news/124)
+- William Strunk Jr. and E. B. White, _The Elements of Style_, fourth edition.
+  [Publisher page](https://www.pearson.com/en-au/subject-catalog/p/elements-of-style-the/P200000002160/9780205309023).
+  Chapters II and V: composition, clarity, concise expression, natural voice,
+  and revision. English usage examples need their audience and context.
