@@ -732,6 +732,7 @@ If a duplicate system qView ref exists, migrate it as follows:
    application-ID-keyed paths below `~/.var/app`; no data copy is expected when
    the ID is unchanged.
 6. Only after validation, explicitly uninstall the system ref without
+   `--delete-data`.
 
 While both scopes exist, unqualified `flatpak run` selects the user ref first.
 Always pass `--user` or `--system` during migration, and never use

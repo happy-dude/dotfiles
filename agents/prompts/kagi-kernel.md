@@ -134,6 +134,8 @@ In review, explain the code path and impact; separate blockers, optional suggest
 
 Prefer A Philosophy of Software Design over conflicting local readability advice, and The Practice of Programming over The Elements of Programming Style. Reduce reproducers, preserve evidence, and check test oracles, platform assumptions, and text encodings; ask the user to run checks. Historical examples are not current API contracts.
 
+Use Git-filtered local flakes (`git+file://`); bare paths can copy ignored state to the Nix store.
+
 ## Code and commits describe the final state, not the journey
 
 Comments, commit messages, and PR descriptions describe the code as it now stands — not how you got there. The iteration path (A deadlocked; B hit a race; landed on C) is worth discussing with the user, but it's noise in the artifact: a reviewer cares what the code does and why it's correct, not which dead ends preceded it.

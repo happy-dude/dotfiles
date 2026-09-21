@@ -186,10 +186,11 @@ The same code expanded for readability is:
    - `body` supplies the selected page text as the capture's initial content.
      The reference template expands it with `%i` inside an Org quote block and
      places `%?` afterward for additional notes.
-9. The body is truncated by Unicode code point so that the whole encoded
-   org-protocol URL stays within `MAX_ENCODED_URL_CHARS` (8000 characters of
-   encoded URI). Iterating code points with `Array.from` never splits a
-   surrogate pair, and a binary search keeps the longest prefix that fits.
+9. If the reference URL and title alone exceed the 8000-character encoded-URI
+   budget, the bookmarklet reports the problem and sends no capture. Otherwise,
+   the body is truncated by Unicode code point to keep the whole URL within
+   `MAX_ENCODED_URL_CHARS`. Iterating with `Array.from` never splits a surrogate
+   pair, and a binary search keeps the longest prefix that fits.
 10. Assigning the resulting URL to `location.href` asks Firefox to dispatch it
     through the desktop's registered `org-protocol` handler.
 11. `void 0` prevents a returned string from replacing the current page in
@@ -204,6 +205,11 @@ point until the whole encoded org-protocol URL fits `MAX_ENCODED_URL_CHARS`
 (8000 characters of encoded URI); a longer selection is shortened rather than
 risking a length overrun that silently drops the capture, a surrogate pair is
 never split, and the `%?` insertion point remains for adding more by hand.
+
+If the reference URL and title already exceed that budget, the bookmarklet
+reports the problem without dispatching the URL. It does not truncate the
+reference and silently change the page identity; use a manual capture with
+suitable metadata.
 
 Firefox normally hands the external scheme to the desktop handler without
 replacing the source page. Opening the protocol URL through `window.open()` may
@@ -233,8 +239,8 @@ The canonical dotfiles bookmarklet additionally:
 - clears any embedded basic-auth credentials so they never enter `ROAM_REFS`;
 - removes the `utm_` family and the click and campaign tokens of the major ad,
   social, and marketing platforms while retaining meaningful query parameters;
-- caps the whole encoded URL, truncating the selection by Unicode code point so
-  a large one cannot overrun the handoff or split a surrogate pair;
+- caps the whole encoded URL, rejecting oversized metadata and truncating the
+  selection without splitting a surrogate pair;
 - removes the fragment so sections of one page share an Org Roam reference;
 - normalizes title whitespace, falls back to the host for an empty title, and
   trims the selected text;

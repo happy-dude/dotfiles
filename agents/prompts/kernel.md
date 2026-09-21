@@ -676,7 +676,9 @@ structure.
   passes `--no-update-lock-file`. `./scripts/update.sh` has three modes: `check`
   validates and builds without touching the lock or the profile, `apply`
   activates the existing lock, and `update` advances inputs. It is fail-closed:
-  any failed step prevents activation.
+  any failed step prevents activation. For local `builtins.getFlake` calls, use
+  explicit `git+file://` references; bare paths include ignored files and can
+  copy private state into the Nix store.
 - **Secrets are machine-local.** Credentials live in mode-0600 files outside Git
   and outside the Nix store, and must never be committed, printed, or copied
   into a bug report. Resolved configuration dumps can contain substituted

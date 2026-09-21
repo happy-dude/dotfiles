@@ -532,7 +532,9 @@ language data it needs.
   in the store without being importable. Verify a package exists first with
   `nix search nixpkgs <term>`.
 - **Locked evaluation:** `flake.lock` is authoritative; every evaluation outside
-  a deliberate update passes `--no-update-lock-file`.
+  a deliberate update passes `--no-update-lock-file`. Local `builtins.getFlake`
+  calls must use explicit `git+file://` references; bare paths include ignored
+  files and can copy private state into the Nix store.
 - **Secrets are machine-local.** Credentials live in mode-0600 files outside Git
   and outside the Nix store, and must never be committed or printed.
 - **The `work` branch is local-only.** If the checkout is on `work`, this is the

@@ -32,8 +32,8 @@ in {
     hostProvidedNix = mkOption {
       type = types.bool;
       description = ''
-        The host installs and upgrades Nix itself, so Home Manager must
-        neither install a Nix package nor own its configuration file.
+        The host installs and upgrades Nix itself, so Home Manager must not
+        install another Nix client. User-level Nix settings remain managed.
       '';
     };
 

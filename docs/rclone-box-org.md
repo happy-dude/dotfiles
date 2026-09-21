@@ -52,6 +52,11 @@ timer for five minutes later. Its fixed unit name makes later events reuse that
 pending batch instead of moving the deadline. After it fires, a new event can
 schedule the next batch.
 
+Watcher records use NUL delimiters and filesystem decoding, so embedded or
+trailing newlines and non-UTF-8 filename bytes do not change path identity
+before exclusion checks. This does not remove inotify's queue and
+recursive-watch limitations; the periodic timer remains necessary.
+
 Changes downloaded from Box can schedule one redundant follow-up run. That run
 finds no differences and refreshes bisync's listings. The periodic timer also
 runs every 15 minutes so remote-only changes and missed filesystem events remain
@@ -127,12 +132,13 @@ rclone bisync ~/org box:org \
   --verbose
 ```
 
-Scheduled and manual runs cap deletions with `--max-delete 50`: a run that would
-delete more than that — a remote-side wipe, a bad filter after a manual resync —
-aborts before touching either tree. If a run reports that resync is required,
-inspect both sides and perform a manual `--resync --resync-mode newer --dry-run`
-before allowing changes. Never bypass access checks or raise the deletion limit
-merely to make a failed scheduled run pass.
+During normal bisync operation, `--max-delete 50` rejects a run when more than
+50 percent of the files in either path's prior listing were deleted. This is a
+percentage, not a limit of 50 files; renaming a large directory can also trigger
+it. If a run reports that resync is required, inspect both sides and perform a
+manual `--resync --resync-mode newer --dry-run` before allowing changes. Never
+bypass access checks or raise the deletion limit merely to make a failed run
+pass.
 
 See the [rclone Box backend](https://rclone.org/box/) and
 [bisync documentation](https://rclone.org/bisync/) for backend limitations and
