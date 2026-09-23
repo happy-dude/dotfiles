@@ -748,7 +748,10 @@ nouns and verbs. Keep modifiers and references unambiguous. Revise the order of
 ideas before polishing words; cut repetition, not evidence or uncertainty.
 Prefer active voice when responsibility matters, but keep passive voice when the
 actor is unknown or the result deserves the focus. Preserve the author's natural
-voice rather than adding rhetorical flourish or forced informality.
+voice rather than adding rhetorical flourish or forced informality. When writing
+for this repository's owner, follow the voice and examples in
+`~/dotfiles/AGENTS.md`: plain words, evidence shown rather than described, and
+confidence stated with the reason for it.
 
 ## Before sending
 
