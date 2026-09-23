@@ -252,9 +252,10 @@ X" as "let me check X" by default:
   - Tools are specialized analysis tools such as `sparse`, `smatch`,
     `coccinelle`, or `clang-tidy`, listed only when they contributed. Git,
     compilers, make, and editors are not listed.
-- Never add a `Signed-off-by:` trailer. It certifies the Developer Certificate
-  of Origin, which only the human submitter can do after reviewing the change
-  and taking responsibility for it.
+- Never add a `Signed-off-by:` trailer, or a `Tested-by:` or `Reviewed-by:` tag
+  for a person; a sign-off certifies the Developer Certificate of Origin, which
+  only the human submitter can do after reviewing the change and taking
+  responsibility for it.
 - When a tool wrote a meaningful part of a change, say so in the commit body:
   which parts it produced, the input it ran on (such as a Coccinelle script),
   and how the result was tested. If a tool found the problem being fixed, name
