@@ -752,9 +752,6 @@ source.
   - Tools are specialized analysis tools such as `sparse`, `smatch`,
     `coccinelle`, or `clang-tidy`, listed only when they contributed. Git,
     compilers, make, and editors are not listed.
-- Agents must never add a `Signed-off-by:` trailer. It certifies the Developer
-  Certificate of Origin, which only the human submitter can do after reviewing
-  the change and taking responsibility for it.
 - When a tool wrote a meaningful part of a change, say so in the commit body:
   which parts it produced, the input it ran on (such as a Coccinelle script),
   and how the result was tested. If a tool found the problem being fixed, name
@@ -797,17 +794,22 @@ source.
     lines, and the arithmetic when a number is the point.
   - Say how sure you are and why. Mark what was confirmed and how, what was
     ruled out, and what is still a guess; phrase a guess as a question or with
-    "perhaps". Report a fix that did not work as plainly as one that did.
+    "perhaps".
   - Point to related issues, prior art, and upstream documentation, and quote
     the passage that matters rather than paraphrasing it.
-  - When a thread has run long, summarize what was learned before the next step.
-    When a revision answers review, list what changed, grouped by file.
+  - In an issue or review thread, report a fix that did not work as plainly as
+    one that did, and when the thread has run long, summarize what was learned
+    before the next step. When a revision answers review, list what changed,
+    grouped by file. The commit rationale still describes only the final change,
+    as [the software design notes](docs/software-design.md) require.
   - In issues and review threads, a short greeting, thanks to the people and
     discussions that helped, and an offer to test or send a patch belong to the
     voice. Commit messages leave them out and follow the kernel conventions
     above.
   - Prefer everyday words and short sentences to formal connectives, and do not
-    end by restating what was just said.
+    end by restating what was just said. The general rules for clear prose are
+    in the design notes; this list covers only what makes the writing sound like
+    the owner.
 - These are good examples of that voice. Take the style from them, not their
   typos, old workarounds, or claims that have since changed; a date alone does
   not establish whether a passage was written without assistance.
@@ -918,10 +920,13 @@ source.
   permanent rationale. Address review feedback and identify what changed.
 - Preserve real contributor attribution when adapting another person's patch,
   and identify substantive maintainer changes. Do not invent sign-offs, tests,
-  or reviews. Use human `Tested-by:` and `Reviewed-by:` tags only with the
-  required permission and while they still apply to the revision; substantial
-  changes may need renewed testing or review. Record coding assistance with the
-  actual `Assisted-by:` metadata, not a simulated human review tag.
+  or reviews; an agent never adds `Signed-off-by:`, because it certifies the
+  Developer Certificate of Origin, which only the human submitter can do after
+  reviewing the change and taking responsibility for it. Use human `Tested-by:`
+  and `Reviewed-by:` tags only with the required permission and while they still
+  apply to the revision; substantial changes may need renewed testing or review.
+  Record coding assistance with the actual `Assisted-by:` metadata, not a
+  simulated human review tag.
 - Follow the subsystem's maintainer profile for its target tree, checks,
   submission format, and review cadence. For kernel email discussions, use
   plain-text patches and trimmed inline replies. Prioritize regressions and
