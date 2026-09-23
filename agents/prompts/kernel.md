@@ -232,11 +232,38 @@ X" as "let me check X" by default:
 - Portable patch files, apply scripts, and application command blocks must never
   push. Stop after applying and validating the local branch, state explicitly
   that nothing was pushed, and require the user to review and push it.
-- Agent-assisted commits must include an `Assisted-by:` trailer recording the
-  actual product, model/version, agent, and reasoning level for that session,
-  for example `Assisted-by: ChatGPT (gpt-5.6-sol, medium, Codex)`. Never copy
-  stale attribution metadata; if any field is unavailable, ask before committing
-  rather than guessing.
+- Agent-assisted commits must include an `Assisted-by:` trailer of the form
+  `Assisted-by: MODEL_ID:REASONING HARNESS [TOOL1] [TOOL2]`. For example,
+  `Assisted-by: claude-opus-5-5:xhigh oh-my-pi`, or
+  `Assisted-by: claude-opus-5-5:xhigh oh-my-pi coccinelle sparse` when
+  Coccinelle and sparse also contributed. Never copy attribution from an earlier
+  commit; if any field is unavailable, ask before committing rather than
+  guessing. ref: <https://docs.kernel.org/process/coding-assistants.html>.
+  - `MODEL_ID` is the name the model's developer publishes, such as
+    `claude-opus-5-5` or `kimi-k3`. The trailer records which model assisted,
+    never how or where it was reached: drop any gateway route, cloud provider or
+    hosting prefix, and deployment name from the string the harness reports. If
+    that string does not show the developer's name, ask rather than guess.
+  - `REASONING` is the level the session actually used. The kernel's form has no
+    such field; it is kept here because one model can behave quite differently
+    across levels.
+  - `HARNESS` is the agent product: `oh-my-pi`, `claude-code`, `codex`, or
+    `opencode`.
+  - Tools are specialized analysis tools such as `sparse`, `smatch`,
+    `coccinelle`, or `clang-tidy`, listed only when they contributed. Git,
+    compilers, make, and editors are not listed.
+- Never add a `Signed-off-by:` trailer. It certifies the Developer Certificate
+  of Origin, which only the human submitter can do after reviewing the change
+  and taking responsibility for it.
+- When a tool wrote a meaningful part of a change, say so in the commit body:
+  which parts it produced, the input it ran on (such as a Coccinelle script),
+  and how the result was tested. If a tool found the problem being fixed, name
+  it; that credits the tool and helps other developers find it. Formatting,
+  spelling fixes, identifier completion, and mechanical renames need no note.
+  For an upstream patch, summarize the prompts in the cover letter rather than
+  in the permanent rationale. The submitter must understand the whole change and
+  be able to defend it in review; if they cannot, it is not submitted. ref:
+  <https://docs.kernel.org/process/generated-content.html>.
 - Keep documentation updates in commits separate from technical changes. When a
   task needs both, commit the validated code, configuration, and tests first,
   then make a documentation-only commit. Never mix documentation into the
@@ -692,8 +719,9 @@ structure.
   of at most 72 characters, body explaining the problem before the
   implementation, prose wrapped at 80 columns. Keep documentation changes in
   their own commit, after the technical one. Every agent-assisted commit needs
-  an `Assisted-by:` trailer naming the real product, model, agent, and reasoning
-  level; ask rather than guess any field. Run
+  an `Assisted-by: MODEL_ID:REASONING HARNESS [TOOLS]` trailer, for example
+  `Assisted-by: claude-opus-5-5:xhigh oh-my-pi`, and never an agent-added
+  `Signed-off-by:`; ask rather than guess any field. Run
   `scripts/lint_commit_message.py <file>` before committing.
 
 ## Output shape
@@ -720,7 +748,10 @@ nouns and verbs. Keep modifiers and references unambiguous. Revise the order of
 ideas before polishing words; cut repetition, not evidence or uncertainty.
 Prefer active voice when responsibility matters, but keep passive voice when the
 actor is unknown or the result deserves the focus. Preserve the author's natural
-voice rather than adding rhetorical flourish or forced informality.
+voice rather than adding rhetorical flourish or forced informality. When writing
+for this repository's owner, follow the voice and examples in
+`~/dotfiles/AGENTS.md`: plain words, evidence shown rather than described, and
+confidence stated with the reason for it.
 
 ## Before sending
 

@@ -551,8 +551,11 @@ language data it needs.
 - **Commits:** one logical change each, imperative `subsystem: summary` subject
   of at most 72 characters, prose wrapped at 80 columns, documentation kept in
   its own commit after the technical one. Every agent-assisted commit needs an
-  `Assisted-by:` trailer naming the real product, model, agent, and reasoning
-  level; ask rather than guess any field.
+  `Assisted-by: MODEL_ID:REASONING HARNESS` trailer, for example
+  `Assisted-by: claude-opus-5-5:xhigh oh-my-pi`, and never an agent-added
+  `Signed-off-by:`. `MODEL_ID` is the developer's published model name, with no
+  gateway, cloud provider, or deployment that shows how or where it was reached;
+  ask rather than guess any field.
 
 ## Verification trail
 

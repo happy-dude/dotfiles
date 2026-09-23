@@ -24,7 +24,7 @@ def main() -> None:
 Keep commit messages readable as Markdown and enforce the repository's subject
 and body width limits before creating a commit.
 
-Assisted-by: ChatGPT (gpt-5.6-sol, medium, OpenCode)
+Assisted-by: claude-opus-5-5:xhigh oh-my-pi
 """,
         )
         assert not lint(valid)
@@ -38,7 +38,7 @@ Assisted-by: ChatGPT (gpt-5.6-sol, medium, OpenCode)
 
 Prettier must validate this message even though Git stores it under .git.
 
-Assisted-by: ChatGPT (gpt-5, medium, Codex)
+Assisted-by: claude-opus-5-5:xhigh claude-code
 Signed-off-by: Stanley Chan <schan@lostsanctum.dev>
 """,
         )
@@ -67,7 +67,7 @@ Signed-off-by: Stanley Chan <schan@lostsanctum.dev>
             "checks: keep long trailers exempt from the width limit\n\n"
             "Body.\n\n"
             f"Link: https://example.invalid/{'a' * 90}\n"
-            "Assisted-by: ChatGPT (gpt-5.6-sol, medium, OpenCode)\n",
+            "Assisted-by: claude-opus-5-5:xhigh oh-my-pi\n",
         )
         assert not lint(long_trailer)
 
@@ -76,7 +76,7 @@ Signed-off-by: Stanley Chan <schan@lostsanctum.dev>
             "prose-trailer-lookalike.md",
             "checks: wrap prose that merely starts like a trailer\n\n"
             f"Note: {('this prose paragraph must wrap ' * 4).rstrip()}\n\n"
-            "Assisted-by: ChatGPT (gpt-5.6-sol, medium, OpenCode)\n",
+            "Assisted-by: claude-opus-5-5:xhigh oh-my-pi\n",
         )
         assert "line 3 exceeds 80 characters" in lint(prose_trailer_lookalike)
 

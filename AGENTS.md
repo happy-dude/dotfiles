@@ -696,9 +696,9 @@ source.
   narrowly scoped fallback from the outset instead of discovering the failure
   after work has started.
 - Before starting work expected to produce commits, establish the exact
-  `Assisted-by:` product, model/version, agent, and reasoning-level text for the
-  current session. If any field is unavailable, ask the user before making
-  commit-intended changes rather than waiting until commit time.
+  `Assisted-by:` model ID, reasoning level, and harness for the current session.
+  If any field is unavailable, ask the user before making commit-intended
+  changes rather than waiting until commit time.
 - Keep documentation updates in commits separate from technical changes. When a
   task needs both, commit the validated code, configuration, and tests first,
   then make a documentation-only commit. Never mix documentation into the
@@ -732,11 +732,38 @@ source.
 - Portable patch files, apply scripts, and application command blocks must never
   push. Stop after applying and validating the local branch, state explicitly
   that nothing was pushed, and require the user to review and push it.
-- Agent-assisted commits must include an `Assisted-by:` trailer recording the
-  actual product, model/version, agent, and reasoning level for that session,
-  for example `Assisted-by: ChatGPT (gpt-5.6-sol, medium, Codex)`. Never copy
-  stale attribution metadata; if any field is unavailable, ask before committing
-  rather than guessing.
+- Agent-assisted commits must include an `Assisted-by:` trailer of the form
+  `Assisted-by: MODEL_ID:REASONING HARNESS [TOOL1] [TOOL2]`. For example,
+  `Assisted-by: claude-opus-5-5:xhigh oh-my-pi`, or
+  `Assisted-by: claude-opus-5-5:xhigh oh-my-pi coccinelle sparse` when
+  Coccinelle and sparse also contributed. Never copy attribution from an earlier
+  commit; if any field is unavailable, ask before committing rather than
+  guessing. ref: <https://docs.kernel.org/process/coding-assistants.html>.
+  - `MODEL_ID` is the name the model's developer publishes, such as
+    `claude-opus-5-5` or `kimi-k3`. The trailer records which model assisted,
+    never how or where it was reached: drop any gateway route, cloud provider or
+    hosting prefix, and deployment name from the string the harness reports. If
+    that string does not show the developer's name, ask rather than guess.
+  - `REASONING` is the level the session actually used. The kernel's form has no
+    such field; it is kept here because one model can behave quite differently
+    across levels.
+  - `HARNESS` is the agent product: `oh-my-pi`, `claude-code`, `codex`, or
+    `opencode`.
+  - Tools are specialized analysis tools such as `sparse`, `smatch`,
+    `coccinelle`, or `clang-tidy`, listed only when they contributed. Git,
+    compilers, make, and editors are not listed.
+- Agents must never add a `Signed-off-by:` trailer. It certifies the Developer
+  Certificate of Origin, which only the human submitter can do after reviewing
+  the change and taking responsibility for it.
+- When a tool wrote a meaningful part of a change, say so in the commit body:
+  which parts it produced, the input it ran on (such as a Coccinelle script),
+  and how the result was tested. If a tool found the problem being fixed, name
+  it; that credits the tool and helps other developers find it. Formatting,
+  spelling fixes, identifier completion, and mechanical renames need no note.
+  For an upstream patch, summarize the prompts in the cover letter rather than
+  in the permanent rationale. The submitter must understand the whole change and
+  be able to defend it in review; if they cannot, it is not submitted. ref:
+  <https://docs.kernel.org/process/generated-content.html>.
 - Follow the Linux kernel's commit-message conventions: one logical change per
   commit, an imperative `subsystem: summary` subject of at most 72 characters,
   and a self-contained body that explains the problem or ownership constraint
@@ -760,25 +787,71 @@ source.
   one. Separate what was checked from what still needs investigating. Use `ref:`
   or `refs:` for the upstream issue, patch, or documentation that explains the
   constraint.
-- When matching the owner's writing, prefer substantive older issues, PRs, and
-  commit bodies to lock-file updates or recent assisted prose. Useful examples:
-  the [vim-go POSIX fix](https://github.com/fatih/vim-go/pull/3691),
-  [RustOwl loading-order proposal](https://github.com/cordx56/rustowl/issues/45),
-  [Fish crash reproduction](https://github.com/fish-shell/fish-shell/issues/11052),
-  and
-  [rainbow-delimiters regression](https://gitlab.com/HiPhish/rainbow-delimiters.nvim/-/issues/21).
-  The
-  [cpupower CFLAGS patch](https://lore.kernel.org/all/20231127212049.455008-1-schan@cloudflare.com/)
-  illustrates concise patch rationale; the
-  [Falco syscall configuration documentation](https://github.com/falcosecurity/falco/pull/2515)
-  explains context, defaults, and configuration choices; the
-  [Falco timestamp investigation](https://github.com/falcosecurity/libs/issues/932)
-  shows diagnostic follow-through and correction of an unsuccessful fix; and the
-  [Falco service lifecycle change](https://github.com/falcosecurity/falco/pull/2138)
-  connects operational impact, lifecycle test cases, and review feedback. Those
-  show the explanation and verification style; they are not a reason to copy old
-  workarounds, typos, or claims into new documentation. A date alone does not
-  establish whether a passage was written without assistance.
+- Write in the owner's voice: plain, friendly, and grounded in evidence.
+  - Start with how the problem turned up or what changed upstream, then say what
+    the change does in a sentence or two. "Encountered this while editing a
+    `.cpp` file" and "In neovim nightly, neovim/neovim/pull/28400 was merged"
+    are typical openings.
+  - Show the evidence instead of describing it: the exact commands and their
+    output, version strings and commit hashes, permalinks to the relevant source
+    lines, and the arithmetic when a number is the point.
+  - Say how sure you are and why. Mark what was confirmed and how, what was
+    ruled out, and what is still a guess; phrase a guess as a question or with
+    "perhaps". Report a fix that did not work as plainly as one that did.
+  - Point to related issues, prior art, and upstream documentation, and quote
+    the passage that matters rather than paraphrasing it.
+  - When a thread has run long, summarize what was learned before the next step.
+    When a revision answers review, list what changed, grouped by file.
+  - In issues and review threads, a short greeting, thanks to the people and
+    discussions that helped, and an offer to test or send a patch belong to the
+    voice. Commit messages leave them out and follow the kernel conventions
+    above.
+  - Prefer everyday words and short sentences to formal connectives, and do not
+    end by restating what was just said.
+- These are good examples of that voice. Take the style from them, not their
+  typos, old workarounds, or claims that have since changed; a date alone does
+  not establish whether a passage was written without assistance.
+  - The [vim-go POSIX fix](https://github.com/fatih/vim-go/pull/3691) gives the
+    upstream cause, quotes it, and describes the fix in one sentence.
+  - The
+    [RustOwl loading-order proposal](https://github.com/cordx56/rustowl/issues/45)
+    makes its case in two sentences and a code block.
+  - The [Vim `:stopinsert` report](https://github.com/vim/vim/issues/7013) and
+    the
+    [Fish crash reproduction](https://github.com/fish-shell/fish-shell/issues/11052)
+    reproduce from a clean configuration in numbered steps, then state the
+    expected behavior and include the raw output.
+  - The
+    [rainbow-delimiters regression](https://gitlab.com/HiPhish/rainbow-delimiters.nvim/-/issues/21)
+    narrows a nightly error by disabling plugins and names the build where it
+    does not occur.
+  - The
+    [Home Manager aerc filters report](https://github.com/nix-community/home-manager/issues/6059)
+    connects a bug to earlier reports and the upstream format, then follows up
+    with the workaround that was adopted.
+  - The
+    [go-kmsg `PRINTK_CALLER` request](https://github.com/siderolabs/go-kmsg/issues/10)
+    proposes a representation and offers a patch, and
+    [its pull request](https://github.com/siderolabs/go-kmsg/pull/11) cites the
+    kernel sources it depends on.
+  - The
+    [Falco syscall priority request](https://github.com/falcosecurity/falco/issues/2400)
+    explains the need from the team's side and states the limit it accepts.
+  - The
+    [cpupower CFLAGS patch](https://lore.kernel.org/all/20231127212049.455008-1-schan@cloudflare.com/)
+    illustrates concise patch rationale, and the
+    [Falco syscall configuration documentation](https://github.com/falcosecurity/falco/pull/2515)
+    explains context, defaults, and configuration choices.
+  - The
+    [Falco timestamp investigation](https://github.com/falcosecurity/libs/issues/932)
+    and
+    [its fix](https://github.com/falcosecurity/libs/pull/1003#issuecomment-1483538662)
+    report a failed first fix, the commands that located the real cause, and a
+    summary of what the thread learned.
+  - The
+    [Falco service lifecycle change](https://github.com/falcosecurity/falco/pull/2138#issuecomment-1207140047)
+    lays out RPM scriptlet states in a table, says where it is not yet
+    confident, and asks for the specific testing it needs.
 - For a bug report, lead with the symptom and impact, not a proposed diagnosis.
   State what was expected and what actually happened. Include the exact error,
   commands, relevant input, versions, and environment needed to reproduce it.

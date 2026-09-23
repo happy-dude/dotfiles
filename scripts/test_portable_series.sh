@@ -78,7 +78,7 @@ content_path="$temporary_directory/content"
 cat >"$metadata_path.source" <<'EOF'
 tests: keep required attribution
 
-Assisted-by: ChatGPT (private-model, medium, Codex)
+Assisted-by: private-model:xhigh oh-my-pi
 EOF
 git interpret-trailers \
   --if-exists replace \
@@ -106,7 +106,7 @@ if scan_forbidden_content private-model "commit metadata" "$metadata_path" \
   exit 1
 fi
 
-printf '%s\n' '+Assisted-by: ChatGPT (private-model, medium, Codex)' \
+printf '%s\n' '+Assisted-by: private-model:xhigh oh-my-pi' \
   >"$content_path"
 if scan_forbidden_content private-model "changed content" "$content_path" \
   2>/dev/null; then
@@ -117,13 +117,13 @@ fi
 cat >"$content_path" <<'EOF'
 Subject: [PATCH] tests: preserve attribution
 
-Assisted-by: ChatGPT (private-model, medium, Codex)
+Assisted-by: private-model:xhigh oh-my-pi
 
 diff --git i/example w/example
 --- i/example
 +++ w/example
 @@ -0,0 +1 @@
-+Assisted-by: ChatGPT (private-model, medium, Codex)
++Assisted-by: private-model:xhigh oh-my-pi
 EOF
 if scan_final_patch private-model "$content_path" "$temporary_directory" \
   2>/dev/null; then
