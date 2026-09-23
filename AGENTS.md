@@ -696,9 +696,9 @@ source.
   narrowly scoped fallback from the outset instead of discovering the failure
   after work has started.
 - Before starting work expected to produce commits, establish the exact
-  `Assisted-by:` product, model/version, agent, and reasoning-level text for the
-  current session. If any field is unavailable, ask the user before making
-  commit-intended changes rather than waiting until commit time.
+  `Assisted-by:` model ID, reasoning level, and harness for the current session.
+  If any field is unavailable, ask the user before making commit-intended
+  changes rather than waiting until commit time.
 - Keep documentation updates in commits separate from technical changes. When a
   task needs both, commit the validated code, configuration, and tests first,
   then make a documentation-only commit. Never mix documentation into the
@@ -732,11 +732,38 @@ source.
 - Portable patch files, apply scripts, and application command blocks must never
   push. Stop after applying and validating the local branch, state explicitly
   that nothing was pushed, and require the user to review and push it.
-- Agent-assisted commits must include an `Assisted-by:` trailer recording the
-  actual product, model/version, agent, and reasoning level for that session,
-  for example `Assisted-by: ChatGPT (gpt-5.6-sol, medium, Codex)`. Never copy
-  stale attribution metadata; if any field is unavailable, ask before committing
-  rather than guessing.
+- Agent-assisted commits must include an `Assisted-by:` trailer of the form
+  `Assisted-by: MODEL_ID:REASONING HARNESS [TOOL1] [TOOL2]`. For example,
+  `Assisted-by: claude-opus-5-5:xhigh oh-my-pi`, or
+  `Assisted-by: claude-opus-5-5:xhigh oh-my-pi coccinelle sparse` when
+  Coccinelle and sparse also contributed. Never copy attribution from an earlier
+  commit; if any field is unavailable, ask before committing rather than
+  guessing. ref: <https://docs.kernel.org/process/coding-assistants.html>.
+  - `MODEL_ID` is the name the model's developer publishes, such as
+    `claude-opus-5-5` or `kimi-k3`. The trailer records which model assisted,
+    never how or where it was reached: drop any gateway route, cloud provider or
+    hosting prefix, and deployment name from the string the harness reports. If
+    that string does not show the developer's name, ask rather than guess.
+  - `REASONING` is the level the session actually used. The kernel's form has no
+    such field; it is kept here because one model can behave quite differently
+    across levels.
+  - `HARNESS` is the agent product: `oh-my-pi`, `claude-code`, `codex`, or
+    `opencode`.
+  - Tools are specialized analysis tools such as `sparse`, `smatch`,
+    `coccinelle`, or `clang-tidy`, listed only when they contributed. Git,
+    compilers, make, and editors are not listed.
+- Agents must never add a `Signed-off-by:` trailer. It certifies the Developer
+  Certificate of Origin, which only the human submitter can do after reviewing
+  the change and taking responsibility for it.
+- When a tool wrote a meaningful part of a change, say so in the commit body:
+  which parts it produced, the input it ran on (such as a Coccinelle script),
+  and how the result was tested. If a tool found the problem being fixed, name
+  it; that credits the tool and helps other developers find it. Formatting,
+  spelling fixes, identifier completion, and mechanical renames need no note.
+  For an upstream patch, summarize the prompts in the cover letter rather than
+  in the permanent rationale. The submitter must understand the whole change and
+  be able to defend it in review; if they cannot, it is not submitted. ref:
+  <https://docs.kernel.org/process/generated-content.html>.
 - Follow the Linux kernel's commit-message conventions: one logical change per
   commit, an imperative `subsystem: summary` subject of at most 72 characters,
   and a self-contained body that explains the problem or ownership constraint
