@@ -80,7 +80,7 @@ in {
 
       Enforce the shared commit-message policy without replacing local hooks.
 
-      Assisted-by: ChatGPT (gpt-5.6-sol, medium, OpenCode)
+      Assisted-by: claude-opus-5-5:xhigh oh-my-pi
       EOF
       commit-msg valid.md
       test -e local-hook-ran
@@ -161,7 +161,7 @@ in {
       cat >invalid-agent.md <<'EOF'
       Invalid agent subject
 
-      Assisted-by: ChatGPT (gpt-5.6-sol, medium, OpenCode)
+      Assisted-by: claude-opus-5-5:xhigh oh-my-pi
       EOF
       if commit-msg invalid-agent.md; then
         echo "accepted an invalid agent-assisted message" >&2
@@ -175,7 +175,7 @@ in {
 
       Reopen the preserved message and continue only after validation succeeds.
 
-      Assisted-by: ChatGPT (gpt-5.6-sol, medium, OpenCode)
+      Assisted-by: claude-opus-5-5:xhigh oh-my-pi
       MESSAGE
       EOF
       chmod 0755 editor
@@ -189,7 +189,7 @@ in {
       cat >unchanged.md <<'EOF'
       Invalid agent subject
 
-      Assisted-by: ChatGPT (gpt-5.6-sol, medium, OpenCode)
+      Assisted-by: claude-opus-5-5:xhigh oh-my-pi
       EOF
       cat >noop-editor <<'EOF'
       #!${pkgs.bash}/bin/bash
@@ -221,7 +221,7 @@ in {
 
       local-hook-reject
 
-      Assisted-by: ChatGPT (gpt-5.6-sol, medium, OpenCode)
+      Assisted-by: claude-opus-5-5:xhigh oh-my-pi
       MESSAGE
       EOF
       chmod 0755 rejected-editor
