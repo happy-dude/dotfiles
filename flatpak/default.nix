@@ -1,4 +1,15 @@
-{...}: {
+{config, ...}: {
+  # Flatpak sandboxes see host fonts only from /usr/share/fonts,
+  # ~/.local/share/fonts, and ~/.fonts, not the Home Manager profile, so fonts
+  # from fonts/default.nix (Noto CJK included) render as tofu in sandboxed
+  # apps. This links the profile's whole font tree into the user font
+  # directory. Its entries point into /nix/store, which each app must be
+  # allowed to read:
+  #   flatpak override --user --filesystem=/nix/store:ro [APP]
+  # That permission stays out of services.flatpak.overrides for the reason
+  # given below.
+  xdg.dataFile."fonts/home-manager".source = "${config.home.path}/share/fonts";
+
   services.flatpak = {
     enable = true;
 
