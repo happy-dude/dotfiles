@@ -1011,17 +1011,19 @@ source.
   baseline on a later Home Manager activation.
 - **`plasma/`** manages Plasma preferences for every Plasma profile through the
   pinned plasma-manager module, with `schan`'s session as the reference.
-  Touchpads, mice, and the Xwayland scale differ per machine, so they live in
-  `plasma/machines.nix`, keyed by username. Per-output scales stay in
-  `kwinoutputconfig.json`, which KWin rewrites on every display change. The
-  panel layout in `plasma/panels.nix` applies only where the profile sets
-  `managePlasmaPanels`. plasma-manager deletes and rebuilds
-  `plasma-org.kde.plasma.desktop-appletsrc` whenever that layout changes, so
-  panel edits made in the session are lost; turn it on only when Home Manager
-  should own the whole panel. Cursor and icon themes are declared here, and
-  Plasma copies them to GTK itself, so Home Manager's `gtk` module stays off.
-  The wallpaper, display topology, generated IDs, and session history stay
-  unmanaged.
+  Built-in touchpads, mice, and the Xwayland scale differ per machine, so they
+  live in `plasma/machines.nix`, keyed by username. External devices that move
+  between machines, the MX Vertical and the Magic Trackpad, are declared once in
+  `plasma/default.nix`; KWin applies an entry only to a connected device.
+  Per-output scales stay in `kwinoutputconfig.json`, which KWin rewrites on
+  every display change. The panel layout in `plasma/panels.nix` applies only
+  where the profile sets `managePlasmaPanels`. plasma-manager deletes and
+  rebuilds `plasma-org.kde.plasma.desktop-appletsrc` whenever that layout
+  changes, so panel edits made in the session are lost; turn it on only when
+  Home Manager should own the whole panel. Cursor and icon themes are declared
+  here, and Plasma copies them to GTK itself, so Home Manager's `gtk` module
+  stays off. The wallpaper, display topology, generated IDs, and session history
+  stay unmanaged.
 - **Vim runtime artifacts** are declarative: Home Manager links Tree-sitter
   parsers and queries under the XDG data directory through `xdg.dataFile`, and
   TypeScript is served by `tsc`, the Go compiler of the nixpkgs `typescript` 7
