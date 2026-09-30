@@ -147,9 +147,13 @@ in {
             OrderMinimizedMode = 1;
             ShowDesktopMode = 1;
           };
+          # KWin launches whichever Fcitx the profile provides.
           Wayland = {
             InputMethod = {
-              value = "/usr/share/applications/fcitx5-wayland-launcher.desktop";
+              value =
+                if profile.hostFcitx
+                then "/usr/share/applications/fcitx5-wayland-launcher.desktop"
+                else "${config.home.profileDirectory}/share/applications/fcitx5-wayland-launcher.desktop";
               shellExpand = true;
             };
             VirtualKeyboardEnabled = true;
