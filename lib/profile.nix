@@ -64,11 +64,27 @@ in {
       type = types.bool;
       description = "A Logitech receiver is attached and Solaar autostarts.";
     };
+
+    hostFcitx = mkOption {
+      type = types.bool;
+      description = ''
+        The host installs Fcitx 5 and its Rime addon, so Home Manager must
+        not install or start another daemon.
+      '';
+    };
+
+    managePlasmaPanels = mkOption {
+      type = types.bool;
+      description = ''
+        Home Manager owns the Plasma panel layout and discards panel edits
+        made in the session.
+      '';
+    };
   };
 
   config = {
     dotfiles.profile = {
-      inherit (profile) username desktop nixPackage hasRustup hasFlatpak usesFlatpakZed hasSolaar;
+      inherit (profile) username desktop nixPackage hasRustup hasFlatpak usesFlatpakZed hasSolaar hostFcitx managePlasmaPanels;
       hostProvidedNix = profile.nixPackage == null;
     };
 

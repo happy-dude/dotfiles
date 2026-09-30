@@ -2,18 +2,17 @@
   config,
   lib,
   ...
-}: {
-  options.dotfiles.plasma.managePanels = lib.mkEnableOption ''
-    Home Manager ownership of the complete Plasma panel layout
-  '';
-
+}: let
+  profile = config.dotfiles.profile;
+  machine = (import ./machines.nix).${profile.username};
+in {
   config = {
     programs.plasma = {
       enable = true;
       overrideConfig = false;
       immutableByDefault = false;
 
-      panels = lib.optionals config.dotfiles.plasma.managePanels (import ./panels.nix);
+      panels = lib.optionals profile.managePlasmaPanels (import ./panels.nix);
 
       workspace = {
         lookAndFeel = "org.kde.breezedark.desktop";
@@ -22,39 +21,8 @@
 
       input = {
         keyboard.numlockOnStartup = "on";
-        touchpads = [
-          {
-            name = "SNSL002D:00 2C2F:002D Touchpad";
-            vendorId = "2c2f";
-            productId = "002d";
-            pointerSpeed = 0.8;
-            naturalScroll = true;
-          }
-        ];
-        mice = [
-          {
-            name = "SNSL002D:00 2C2F:002D Mouse";
-            vendorId = "2c2f";
-            productId = "002d";
-            acceleration = 1.0;
-            naturalScroll = true;
-          }
-          {
-            name = "Logitech MX Vertical";
-            vendorId = "046d";
-            productId = "407b";
-            acceleration = 1.0;
-            naturalScroll = true;
-            scrollSpeed = 2;
-          }
-          {
-            name = "TPPS/2 Elan TrackPoint";
-            vendorId = "0002";
-            productId = "000a";
-            acceleration = 1.0;
-            naturalScroll = true;
-          }
-        ];
+        touchpads = machine.touchpads;
+        mice = map (m: removeAttrs m ["scrollMethod"]) machine.mice;
       };
 
       kwin = {
@@ -143,7 +111,7 @@
             VirtualKeyboardEnabled = true;
           };
           Windows.ElectricBorderDelay = 50;
-          Xwayland.Scale = 1.25;
+          Xwayland.Scale = machine.xwaylandScale;
         };
 
         kxkbrc.Layout = {

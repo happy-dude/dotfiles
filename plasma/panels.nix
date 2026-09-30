@@ -1,7 +1,6 @@
-# Captured Plasma panel layout, applied only when
-# dotfiles.plasma.managePanels is enabled. plasma-manager rebuilds
-# plasma-org.kde.plasma.desktop-appletsrc from scratch whenever this
-# declaration changes, discarding panel edits made in the session.
+# schan's panel, applied where the profile sets managePlasmaPanels.
+# plasma-manager rebuilds plasma-org.kde.plasma.desktop-appletsrc whenever
+# this changes, discarding panel edits made in the session.
 [
   {
     location = "bottom";

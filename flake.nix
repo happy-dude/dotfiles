@@ -169,6 +169,8 @@
         hasFlatpak = true;
         usesFlatpakZed = true;
         hasSolaar = true;
+        hostFcitx = true;
+        managePlasmaPanels = false;
       };
       stachan = {
         username = "stachan";
@@ -178,6 +180,8 @@
         hasFlatpak = false;
         usesFlatpakZed = false;
         hasSolaar = false;
+        hostFcitx = false;
+        managePlasmaPanels = false;
       };
     };
     # Build a Home Manager config from a machine's capability record.
