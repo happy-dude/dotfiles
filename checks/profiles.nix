@@ -15,7 +15,11 @@
     p = home.config.dotfiles.profile;
   in
     lib.optional (p.usesFlatpakZed && !p.hasFlatpak)
-    "${name}: usesFlatpakZed is set without hasFlatpak — Zed's Flatpak settings need a Flatpak installation";
+    "${name}: usesFlatpakZed is set without hasFlatpak — Zed's Flatpak settings need a Flatpak installation"
+    ++ lib.optional (p.managePlasmaPanels && p.desktop != "plasma")
+    "${name}: managePlasmaPanels is set on a ${p.desktop} profile — only Plasma profiles import plasma-manager"
+    ++ lib.optional (p.desktop == "plasma" && !(builtins.hasAttr p.username (import ../plasma/machines.nix)))
+    "${name}: Plasma profile has no plasma/machines.nix entry — plasma/default.nix cannot evaluate without its touchpads, mice, and xwaylandScale";
 
   problems = lib.concatLists (lib.mapAttrsToList problemsFor homes);
 in {

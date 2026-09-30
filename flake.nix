@@ -169,6 +169,8 @@
         hasFlatpak = true;
         usesFlatpakZed = true;
         hasSolaar = true;
+        hostFcitx = true;
+        managePlasmaPanels = false;
       };
       stachan = {
         username = "stachan";
@@ -178,6 +180,8 @@
         hasFlatpak = false;
         usesFlatpakZed = false;
         hasSolaar = false;
+        hostFcitx = false;
+        managePlasmaPanels = false;
       };
     };
     # Build a Home Manager config from a machine's capability record.
@@ -208,7 +212,7 @@
             ./opencode
             ./rclone
             ./rime
-            ./rime/gnome.nix
+            ./rime/fcitx.nix
             ./roswell
             ./rustowl
             ./tldr
@@ -223,7 +227,7 @@
           # Modules built on an external module's options (nix-flatpak,
           # plasma-manager) are composed here, because those options do not
           # exist without the import. Modules that use only core options
-          # (gnome, rime/gnome.nix) guard themselves on dotfiles.profile.
+          # (gnome, rime/fcitx.nix) guard themselves on dotfiles.profile.
           ++ lib.optionals profile.hasFlatpak [
             inputs.nix-flatpak.homeManagerModules.nix-flatpak
             ./flatpak

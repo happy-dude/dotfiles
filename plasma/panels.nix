@@ -1,7 +1,6 @@
-# Captured Plasma panel layout, applied only when
-# dotfiles.plasma.managePanels is enabled. plasma-manager rebuilds
-# plasma-org.kde.plasma.desktop-appletsrc from scratch whenever this
-# declaration changes, discarding panel edits made in the session.
+# schan's panel, applied where the profile sets managePlasmaPanels.
+# plasma-manager rebuilds plasma-org.kde.plasma.desktop-appletsrc whenever
+# this changes, discarding panel edits made in the session.
 [
   {
     location = "bottom";
@@ -14,6 +13,14 @@
         kickoff = {
           compactDisplayStyle = true;
           sortAlphabetically = true;
+          favoritesDisplayMode = "list";
+          showButtonsFor.custom = [
+            "suspend"
+            "hibernate"
+            "reboot"
+            "shutdown"
+          ];
+          settings.General.highlightNewlyInstalledApps = false;
         };
       }
       "org.kde.plasma.pager"
@@ -28,10 +35,11 @@
           launchers = [
             "preferred://filemanager"
             "applications:com.mitchellh.ghostty.desktop"
-            "preferred://browser"
+            "applications:firefox-nightly.desktop"
             "applications:org.mozilla.thunderbird.desktop"
           ];
           behavior.showTasks.onlyInCurrentDesktop = false;
+          settings.General.wheelEnabled = "TaskOnly";
         };
       }
       {
@@ -57,7 +65,10 @@
           };
         };
       }
-      "org.kde.plasma.digitalclock"
+      {
+        digitalClock.font = null;
+        digitalClock.settings.Appearance.fontWeight = 400;
+      }
       "org.kde.plasma.showdesktop"
     ];
   }

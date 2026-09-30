@@ -26,14 +26,15 @@ checkout is the Linux branch.
 - `flake.nix` declares per-user Home Manager outputs through `mkHome`, applied
   to an explicit per-machine capability record (`username`, `desktop`,
   `nixPackage`, and the `hasFlatpak` / `usesFlatpakZed` / `hasSolaar` /
-  `hasRustup` facts): `homeConfigurations."schan"` is the personal Fedora
-  Kinoite (KDE Plasma) profile at `/home/schan`, and
-  `homeConfigurations."stachan"` is the work GNOME profile at `/home/stachan`.
-  Both are `x86_64-linux` Home Manager configurations for generic Linux rather
-  than NixOS. `schan` sets `nixPackage = null` so Home Manager retains the
-  host-provided Determinate Nix installation; `stachan` uses the Nix package
-  from the locked Nixpkgs input. Each machine switches its own output (`.#schan`
-  / `.#stachan`); `scripts/update.sh` defaults to `.#$(whoami)`.
+  `hasRustup` / `hostFcitx` / `managePlasmaPanels` facts):
+  `homeConfigurations."schan"` is the personal Fedora Kinoite (KDE Plasma)
+  profile at `/home/schan`, and `homeConfigurations."stachan"` is the work GNOME
+  profile at `/home/stachan`. Both are `x86_64-linux` Home Manager
+  configurations for generic Linux rather than NixOS. `schan` sets
+  `nixPackage = null` so Home Manager retains the host-provided Determinate Nix
+  installation; `stachan` uses the Nix package from the locked Nixpkgs input.
+  Each machine switches its own output (`.#schan` / `.#stachan`);
+  `scripts/update.sh` defaults to `.#$(whoami)`.
 - On Kinoite, Determinate Nix runs natively on the host. Its persistent store at
   `/var/home/nix` is mounted at `/nix` before the daemon starts, while the
   OSTree/composefs root remains read-only. The former `nix-toolbox-42` container
@@ -117,10 +118,10 @@ checkout is the Linux branch.
   `dictionaries/`, `emacs/`, `fish/`, `fonts/`, `fzf/`, `ghostty/`, `git/`,
   `gnome/`, `gpg/`, `mail/`, `nix/`, `omp/`, `opencode/`, `rclone/`, `rime/`,
   `roswell/`, `rustowl/`, `tldr/`, `tmux/`, `vim/`, `virtme-ng/`, `xdg/`,
-  `yt-dlp/`, `zed/`, `zsh/`. The desktop-specific `rime/gnome.nix` module is
-  imported separately. The `modules` list in `flake.nix` is authoritative; this
-  inventory is a convenience copy. Adding a new app means creating
-  `<app>/default.nix` and adding it to that list.
+  `yt-dlp/`, `zed/`, `zsh/`. The `rime/fcitx.nix` module is imported separately.
+  The `modules` list in `flake.nix` is authoritative; this inventory is a
+  convenience copy. Adding a new app means creating `<app>/default.nix` and
+  adding it to that list.
 - `flake.nix` is composition-only: it declares inputs and external overlays,
   composes the Home Manager profiles once, and exposes imported formatter and
   check outputs. `treefmt.nix` owns formatter policy; `checks/default.nix`
@@ -145,7 +146,7 @@ checkout is the Linux branch.
 - `flatpak/` and `plasma/` are capability-conditional modules: `mkHome` imports
   the flatpak modules where `hasFlatpak` holds and the plasma modules where the
   desktop is Plasma, because their options come from external modules. Modules
-  that use only core options (`gnome/`, `rime/gnome.nix`) guard themselves on
+  that use only core options (`gnome/`, `rime/fcitx.nix`) guard themselves on
   `dotfiles.profile` instead.
 - `treefmt.nix` configures **treefmt** (run via `nix fmt`): the Linux kernel's
   `.clang-format` for C/C++, Alejandra for Nix, `fish_indent` for Fish, `shfmt`
@@ -999,22 +1000,24 @@ source.
   separates managed static inputs from writable generated and learned state. A
   source stamp refreshes the static snapshot, clears only generated `build/`
   data, and reloads Rime; keep generated state out of Git.
-- **`rime/gnome.nix`** enables Fcitx 5 through Home Manager only for
-  `desktop = "gnome"`, using its Wayland frontend with the Rime and GTK addons.
-  It also sets `QT_IM_MODULE=fcitx`, which Home Manager otherwise omits for that
-  frontend. Plasma uses the shared Rime files but retains host-managed Fcitx
-  integration through KWin's Virtual Keyboard setting.
+- **`rime/fcitx.nix`** installs Fcitx 5 with the Rime and GTK addons wherever
+  `hostFcitx` is false. On GNOME its systemd unit starts the daemon and it sets
+  `QT_IM_MODULE=fcitx`, which Home Manager omits for the Wayland frontend. On
+  Plasma, KWin starts Fcitx as its Wayland input method, so the unit is off.
+  `schan` keeps host Fcitx; both desktops share the Rime files from `rime/`.
 - **`gnome/`** manages stable GNOME preferences only when `desktop = "gnome"`.
   DConf values remain writable during the session and return to the declared
   baseline on a later Home Manager activation.
-- **`plasma/`** manages stable Plasma preferences for `schan` through the pinned
-  plasma-manager module. The captured panel layout lives in `plasma/panels.nix`
-  behind the `dotfiles.plasma.managePanels` option and is off by default:
-  enabling high-level panel management deletes and rebuilds
-  `plasma-org.kde.plasma.desktop-appletsrc` when the declaration changes,
-  discarding panel edits made in the session. Enable it only when Home Manager
-  should own the complete panel layout; leave display topology, generated IDs,
-  wallpaper, and session history unmanaged.
+- **`plasma/`** manages stable Plasma preferences for every Plasma profile
+  through the pinned plasma-manager module, taking `schan`'s session as the
+  reference. Touchpads, mice, and the Xwayland scale are per machine in
+  `plasma/machines.nix`, keyed by username; per-output scales stay in KWin-owned
+  `kwinoutputconfig.json`. The panel layout in `plasma/panels.nix` applies where
+  the profile sets `managePlasmaPanels`: high-level panel management deletes and
+  rebuilds `plasma-org.kde.plasma.desktop-appletsrc` when the declaration
+  changes, discarding panel edits made in the session. Enable it only when Home
+  Manager should own the complete panel layout; leave display topology,
+  generated IDs, wallpaper, and session history unmanaged.
 - **Vim runtime artifacts** are declarative: Home Manager links Tree-sitter
   parsers and queries under the XDG data directory through `xdg.dataFile`, and
   TypeScript is served by `tsc`, the Go compiler of the nixpkgs `typescript` 7

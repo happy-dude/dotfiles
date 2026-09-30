@@ -1,19 +1,23 @@
+# Plasma preferences for every Plasma profile. schan's session is the
+# reference; hardware and display values are per machine in ./machines.nix.
+#
+# plasma-manager writes only the declared keys (overrideConfig = false), so
+# anything else changed in System Settings survives activation.
 {
   config,
   lib,
   ...
-}: {
-  options.dotfiles.plasma.managePanels = lib.mkEnableOption ''
-    Home Manager ownership of the complete Plasma panel layout
-  '';
-
+}: let
+  profile = config.dotfiles.profile;
+  machine = (import ./machines.nix).${profile.username};
+in {
   config = {
     programs.plasma = {
       enable = true;
       overrideConfig = false;
       immutableByDefault = false;
 
-      panels = lib.optionals config.dotfiles.plasma.managePanels (import ./panels.nix);
+      panels = lib.optionals profile.managePlasmaPanels (import ./panels.nix);
 
       workspace = {
         lookAndFeel = "org.kde.breezedark.desktop";
@@ -21,41 +25,23 @@
       };
 
       input = {
-        keyboard.numlockOnStartup = "on";
-        touchpads = [
-          {
-            name = "SNSL002D:00 2C2F:002D Touchpad";
-            vendorId = "2c2f";
-            productId = "002d";
-            pointerSpeed = 0.8;
-            naturalScroll = true;
-          }
-        ];
-        mice = [
-          {
-            name = "SNSL002D:00 2C2F:002D Mouse";
-            vendorId = "2c2f";
-            productId = "002d";
-            acceleration = 1.0;
-            naturalScroll = true;
-          }
-          {
-            name = "Logitech MX Vertical";
-            vendorId = "046d";
-            productId = "407b";
-            acceleration = 1.0;
-            naturalScroll = true;
-            scrollSpeed = 2;
-          }
-          {
-            name = "TPPS/2 Elan TrackPoint";
-            vendorId = "0002";
-            productId = "000a";
-            acceleration = 1.0;
-            naturalScroll = true;
-          }
-        ];
+        keyboard = {
+          numlockOnStartup = "on";
+          layouts = [
+            {
+              layout = "us";
+              variant = "colemak";
+            }
+          ];
+        };
+        touchpads = machine.touchpads;
+        mice = map (m: removeAttrs m ["scrollMethod"]) machine.mice;
       };
+
+      # plasma-manager has no scroll-method option for mice.
+      configFile.kcminputrc = lib.mkMerge (map (m: {
+        "Libinput/${toString (lib.fromHexString m.vendorId)}/${toString (lib.fromHexString m.productId)}/${m.name}".ScrollMethod = m.scrollMethod;
+      }) (lib.filter (m: m ? scrollMethod) machine.mice));
 
       kwin = {
         edgeBarrier = 500;
@@ -65,12 +51,37 @@
         };
       };
 
+      powerdevil = {
+        AC = {
+          autoSuspend.action = "nothing";
+          displayBrightness = 100;
+          powerProfile = "performance";
+        };
+        battery = {
+          displayBrightness = 30;
+          powerProfile = "balanced";
+        };
+        lowBattery = {
+          displayBrightness = 10;
+          keyboardBrightness = 0;
+          powerProfile = "powerSaving";
+        };
+      };
+
       shortcuts = {
         "KDE Keyboard Layout Switcher" = {
           "Switch to Last-Used Keyboard Layout" = "Meta+Alt+L";
           "Switch to Next Keyboard Layout" = "Meta+Alt+K";
         };
         kwin = {
+          # Replaces the Meta+F<n> bindings for these actions.
+          "Expose" = "Ctrl+F9";
+          "ExposeAll" = ["Launch (C)" "Ctrl+F10"];
+          "ExposeClass" = "Ctrl+F7";
+          "Switch to Desktop 1" = "Ctrl+F1";
+          "Switch to Desktop 2" = "Ctrl+F2";
+          "Switch to Desktop 3" = "Ctrl+F3";
+          "Switch to Desktop 4" = "Ctrl+F4";
           "Window Move Center" = "Meta+C";
           "Window to Next Screen" = "Meta+Shift+Right";
           "Window to Previous Screen" = "Meta+Shift+Left";
@@ -127,6 +138,7 @@
             BottomRight = "LockScreen";
             TopRight = "ShowDesktop";
           };
+          Plugins.zoomEnabled = false;
           TabBox = {
             OrderMinimizedMode = 1;
             ShowDesktopMode = 1;
@@ -135,22 +147,24 @@
             OrderMinimizedMode = 1;
             ShowDesktopMode = 1;
           };
+          # KWin launches whichever Fcitx the profile provides.
           Wayland = {
             InputMethod = {
-              value = "/usr/share/applications/fcitx5-wayland-launcher.desktop";
+              value =
+                if profile.hostFcitx
+                then "/usr/share/applications/fcitx5-wayland-launcher.desktop"
+                else "${config.home.profileDirectory}/share/applications/fcitx5-wayland-launcher.desktop";
               shellExpand = true;
             };
             VirtualKeyboardEnabled = true;
           };
           Windows.ElectricBorderDelay = 50;
-          Xwayland.Scale = 1.25;
+          Xwayland.Scale = machine.xwaylandScale;
         };
 
-        kxkbrc.Layout = {
-          DisplayNames = "";
-          LayoutList = "us";
-          Use = true;
-          VariantList = "colemak";
+        kiorc.Confirmations = {
+          ConfirmDelete = true;
+          ConfirmEmptyTrash = true;
         };
 
         dolphinrc = {
@@ -162,7 +176,16 @@
           };
           MainWindow.MenuBar = "Disabled";
           "MainWindow/Toolbar mainToolBar".ToolButtonStyle = "TextUnderIcon";
+          Search.Location = "Everywhere";
         };
+
+        okularpartrc = {
+          "Core Performance".TextHinting = "Enabled";
+          "Main View".ShowLeftPanel = false;
+          PageView.MouseMode = "TextSelect";
+        };
+
+        kded5rc."Module-device_automounter".autoload = false;
 
         plasma-localerc.Formats.LANG = "en_US.UTF-8";
       };
