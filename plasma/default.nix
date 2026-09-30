@@ -10,6 +10,13 @@
 }: let
   profile = config.dotfiles.profile;
   machine = (import ./machines.nix).${profile.username};
+  # Set through kdeglobals below: workspace.iconTheme runs Nixpkgs'
+  # plasma-changeicons, which pulls a second Plasma and KWin into the profile.
+  iconTheme = "breeze-dark";
+  cursor = {
+    theme = "breeze_cursors";
+    size = 48;
+  };
 in {
   config = {
     programs.plasma = {
@@ -19,9 +26,12 @@ in {
 
       panels = lib.optionals profile.managePlasmaPanels (import ./panels.nix);
 
+      # Plasma copies these to GTK itself (settings.ini and
+      # org.gnome.desktop.interface). Home Manager's gtk module would make
+      # settings.ini a store link and fight that sync.
       workspace = {
         lookAndFeel = "org.kde.breezedark.desktop";
-        cursor.size = 48;
+        inherit cursor;
       };
 
       input = {
@@ -104,6 +114,7 @@ in {
             LastUsedCustomAccentColor = "248,108,0";
             TerminalService = "com.mitchellh.ghostty.desktop";
           };
+          Icons.Theme = iconTheme;
           KDE = {
             LookAndFeelPackage = "org.kde.breezedark.desktop";
             contrast = 4;

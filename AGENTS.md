@@ -1000,24 +1000,28 @@ source.
   separates managed static inputs from writable generated and learned state. A
   source stamp refreshes the static snapshot, clears only generated `build/`
   data, and reloads Rime; keep generated state out of Git.
-- **`rime/fcitx.nix`** installs Fcitx 5 with the Rime and GTK addons wherever
-  `hostFcitx` is false. On GNOME its systemd unit starts the daemon and it sets
+- **`rime/fcitx.nix`** installs Fcitx 5 with the Rime and GTK addons where
+  `hostFcitx` is false. On GNOME, its systemd unit starts the daemon and it sets
   `QT_IM_MODULE=fcitx`, which Home Manager omits for the Wayland frontend. On
-  Plasma, KWin starts Fcitx as its Wayland input method, so the unit is off.
-  `schan` keeps host Fcitx; both desktops share the Rime files from `rime/`.
+  Plasma, KWin starts Fcitx itself as its Wayland input method, so the unit
+  stays off; a second daemon would fight KWin's. `schan` uses the host's Fcitx.
+  Both desktops share the Rime files from `rime/`.
 - **`gnome/`** manages stable GNOME preferences only when `desktop = "gnome"`.
   DConf values remain writable during the session and return to the declared
   baseline on a later Home Manager activation.
-- **`plasma/`** manages stable Plasma preferences for every Plasma profile
-  through the pinned plasma-manager module, taking `schan`'s session as the
-  reference. Touchpads, mice, and the Xwayland scale are per machine in
-  `plasma/machines.nix`, keyed by username; per-output scales stay in KWin-owned
-  `kwinoutputconfig.json`. The panel layout in `plasma/panels.nix` applies where
-  the profile sets `managePlasmaPanels`: high-level panel management deletes and
-  rebuilds `plasma-org.kde.plasma.desktop-appletsrc` when the declaration
-  changes, discarding panel edits made in the session. Enable it only when Home
-  Manager should own the complete panel layout; leave display topology,
-  generated IDs, wallpaper, and session history unmanaged.
+- **`plasma/`** manages Plasma preferences for every Plasma profile through the
+  pinned plasma-manager module, with `schan`'s session as the reference.
+  Touchpads, mice, and the Xwayland scale differ per machine, so they live in
+  `plasma/machines.nix`, keyed by username. Per-output scales stay in
+  `kwinoutputconfig.json`, which KWin rewrites on every display change. The
+  panel layout in `plasma/panels.nix` applies only where the profile sets
+  `managePlasmaPanels`. plasma-manager deletes and rebuilds
+  `plasma-org.kde.plasma.desktop-appletsrc` whenever that layout changes, so
+  panel edits made in the session are lost; turn it on only when Home Manager
+  should own the whole panel. Cursor and icon themes are declared here, and
+  Plasma copies them to GTK itself, so Home Manager's `gtk` module stays off.
+  The wallpaper, display topology, generated IDs, and session history stay
+  unmanaged.
 - **Vim runtime artifacts** are declarative: Home Manager links Tree-sitter
   parsers and queries under the XDG data directory through `xdg.dataFile`, and
   TypeScript is served by `tsc`, the Go compiler of the nixpkgs `typescript` 7
