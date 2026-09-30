@@ -83,13 +83,7 @@ in {
         "Libinput/${toString (lib.fromHexString m.vendorId)}/${toString (lib.fromHexString m.productId)}/${m.name}".ScrollMethod = m.scrollMethod;
       }) (lib.filter (m: m ? scrollMethod) mice));
 
-      kwin = {
-        edgeBarrier = 500;
-        nightLight = {
-          enable = true;
-          temperature.night = 3200;
-        };
-      };
+      kwin.edgeBarrier = 500;
 
       powerdevil = {
         AC = {
@@ -170,6 +164,18 @@ in {
         };
 
         kwinrc = {
+          # Night light, written as keys rather than through kwin.nightLight:
+          # that option leaves every key it does not set as null, and
+          # plasma-manager deletes null keys on activation, so the saved Mode
+          # was dropped on every switch. Its mode choices also predate Plasma
+          # 6.5, where kwinrc keeps only Constant or DarkLight and
+          # knighttimed owns the schedule.
+          NightColor = {
+            Active = true;
+            Mode = "DarkLight";
+            DayTemperature = 6500;
+            NightTemperature = 3200;
+          };
           Desktops = {
             Number = 2;
             Rows = 1;
@@ -227,6 +233,13 @@ in {
         };
 
         kded5rc."Module-device_automounter".autoload = false;
+
+        # Sunset to sunrise at the location geoclue reports, falling back to
+        # knighttimed's fixed 06:00 and 18:00 when no location is available.
+        knighttimerc = {
+          General.Source = "Location";
+          Location.Automatic = true;
+        };
 
         plasma-localerc.Formats.LANG = "en_US.UTF-8";
       };

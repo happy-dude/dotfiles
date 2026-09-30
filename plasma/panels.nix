@@ -25,10 +25,7 @@
       }
       "org.kde.plasma.pager"
       {
-        panelSpacer = {
-          expanding = false;
-          length = 120;
-        };
+        panelSpacer.expanding = true;
       }
       {
         iconTasks = {
@@ -43,10 +40,7 @@
         };
       }
       {
-        panelSpacer = {
-          expanding = false;
-          length = 120;
-        };
+        panelSpacer.expanding = true;
       }
       "org.kde.plasma.marginsseparator"
       {
