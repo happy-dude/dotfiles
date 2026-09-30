@@ -33,27 +33,22 @@
 
   programs.notmuch = {
     enable = true;
-    extraConfig = {
-      database = {
-        path = "${config.home.homeDirectory}/.mail";
-      };
+    settings = {
+      database.path = "${config.home.homeDirectory}/.mail";
       user = {
         name = "Stanley Chan";
         primary_email = "schan@lostsanctum.dev";
       };
-      new = {
-        tags = "unread;inbox;";
-        ignore = "";
-      };
-      search = {
-        exclude_tags = "deleted;spam;";
-      };
-      maildir = {
-        synchronize_flags = "true";
-      };
-      crypto = {
-        gpg_path = "gpg";
-      };
+      new.tags = [
+        "unread"
+        "inbox"
+      ];
+      search.exclude_tags = [
+        "deleted"
+        "spam"
+      ];
+      maildir.synchronize_flags = true;
+      crypto.gpg_path = "gpg";
     };
   };
 }
