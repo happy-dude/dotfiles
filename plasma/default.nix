@@ -17,6 +17,36 @@
     theme = "breeze_cursors";
     size = 48;
   };
+  # Devices that move between machines. KWin only applies an entry to a
+  # connected device, so declaring them everywhere is harmless.
+  sharedTouchpads = [
+    # Over Bluetooth the trackpad reports Apple's Bluetooth vendor ID (004c);
+    # over USB it reports 05ac. KWin keys settings on both.
+    {
+      name = "Apple Inc. Magic Trackpad";
+      vendorId = "004c";
+      productId = "0265";
+      pointerSpeed = 1.0;
+    }
+    {
+      name = "Apple Inc. Magic Trackpad";
+      vendorId = "05ac";
+      productId = "0265";
+      pointerSpeed = 1.0;
+    }
+  ];
+  sharedMice = [
+    {
+      name = "Logitech MX Vertical";
+      vendorId = "046d";
+      productId = "407b";
+      acceleration = 1.0;
+      naturalScroll = true;
+      scrollSpeed = 2;
+    }
+  ];
+  touchpads = machine.touchpads ++ sharedTouchpads;
+  mice = machine.mice ++ sharedMice;
 in {
   config = {
     programs.plasma = {
@@ -44,14 +74,14 @@ in {
             }
           ];
         };
-        touchpads = machine.touchpads;
-        mice = map (m: removeAttrs m ["scrollMethod"]) machine.mice;
+        inherit touchpads;
+        mice = map (m: removeAttrs m ["scrollMethod"]) mice;
       };
 
       # plasma-manager has no scroll-method option for mice.
       configFile.kcminputrc = lib.mkMerge (map (m: {
         "Libinput/${toString (lib.fromHexString m.vendorId)}/${toString (lib.fromHexString m.productId)}/${m.name}".ScrollMethod = m.scrollMethod;
-      }) (lib.filter (m: m ? scrollMethod) machine.mice));
+      }) (lib.filter (m: m ? scrollMethod) mice));
 
       kwin = {
         edgeBarrier = 500;
