@@ -24,6 +24,8 @@
         productId = "002d";
         acceleration = 1.0;
         naturalScroll = true;
+        # libinput on-button-down scrolling.
+        scrollMethod = 4;
       }
       {
         name = "Logitech MX Vertical";
