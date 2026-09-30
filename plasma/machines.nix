@@ -1,4 +1,5 @@
-# Per-machine Plasma values, keyed by username.
+# Per-machine Plasma values, keyed by username: built-in input devices and the
+# Xwayland scale. Devices that move between machines are in default.nix.
 #
 # KWin matches input devices by libinput name and vendor/product ID:
 #   grep -H . /sys/class/input/event*/device/{name,id/vendor,id/product}
@@ -26,14 +27,6 @@
         naturalScroll = true;
         # libinput on-button-down scrolling.
         scrollMethod = 4;
-      }
-      {
-        name = "Logitech MX Vertical";
-        vendorId = "046d";
-        productId = "407b";
-        acceleration = 1.0;
-        naturalScroll = true;
-        scrollSpeed = 2;
       }
       {
         name = "TPPS\\/2 Elan TrackPoint";
