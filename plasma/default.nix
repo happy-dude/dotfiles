@@ -89,10 +89,12 @@ in {
         AC = {
           autoSuspend.action = "nothing";
           displayBrightness = 100;
+          keyboardBrightness = 100;
           powerProfile = "performance";
         };
         battery = {
           displayBrightness = 30;
+          keyboardBrightness = 50;
           powerProfile = "balanced";
         };
         lowBattery = {
