@@ -47,6 +47,42 @@
   ];
   touchpads = machine.touchpads ++ sharedTouchpads;
   mice = machine.mice ++ sharedMice;
+  # Dolphin view properties, in the .directory format of Dolphin 25.12
+  # (src/views/viewproperties.cpp). With GlobalViewProps off, a folder
+  # without saved settings of its own falls back to view_properties/global;
+  # nothing is inherited from parent folders. VisibleRoles is read in
+  # order, so it sets the column order.
+  #
+  # Dolphin ignores a folder's Downloads settings in favour of its own
+  # Downloads defaults when Timestamp is older than dolphinrc's
+  # ViewPropsTimestamp, and a missing Timestamp counts as older; the
+  # declared one is later than any real ViewPropsTimestamp.
+  dolphinView = {
+    Dolphin = {
+      Version = 4;
+      Timestamp = "2030,1,1,0,0,0";
+      ViewMode = 1; # details
+      VisibleRoles =
+        lib.concatMapStringsSep "," (role: "Details_${role}") [
+          "text"
+          "size"
+          "creationtime"
+          "accesstime"
+          "modificationtime"
+          "type"
+          "extension"
+          "permissions"
+        ]
+        + ",CustomizedDetails";
+      SortRole = "type";
+      SortOrder = 0; # ascending
+      SortFoldersFirst = true;
+      SortHiddenLast = true;
+      GroupedSorting = false;
+      PreviewsShown = true;
+    };
+    Settings.HiddenFilesShown = true;
+  };
 in {
   config = {
     programs.plasma = {
@@ -229,6 +265,9 @@ in {
 
         dolphinrc = {
           DetailsMode.IconSize = 22;
+          # Folders keep their own view settings, so Downloads can sort
+          # differently from the global view declared in dataFile below.
+          General.GlobalViewProps = false;
           InformationPanel.showHovered = false;
           "KFileDialog Settings" = {
             "Places Icons Auto-resize" = false;
@@ -280,6 +319,19 @@ in {
         };
 
         plasma-localerc.Formats.LANG = "en_US.UTF-8";
+      };
+
+      # Written in place, like configFile; activation resets the declared
+      # keys. Dolphin stores a folder's own changes in its
+      # user.kde.fm.viewproperties#1 extended attribute where the filesystem
+      # supports one, and then clears that folder's .directory groups.
+      # Downloads assumes the default XDG download directory, ~/Downloads.
+      dataFile."dolphin/view_properties/global/.directory" = dolphinView;
+      file."Downloads/.directory" = lib.recursiveUpdate dolphinView {
+        Dolphin = {
+          SortRole = "creationtime";
+          SortOrder = 1; # newest first
+        };
       };
     };
   };
