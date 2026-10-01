@@ -163,6 +163,13 @@ in {
             "Speedbar Width" = 154;
             "View Style" = "DetailTree";
           };
+          # Dolphin's Previews page keeps the remote limits in kdeglobals,
+          # where KIO's preview job reads them; MaximumRemoteSize is in
+          # bytes, so 0 skips every remote file.
+          PreviewSettings = {
+            EnableRemoteFolderThumbnail = false;
+            MaximumRemoteSize = 0;
+          };
         };
 
         kwinrc = {
@@ -229,6 +236,31 @@ in {
           };
           MainWindow.MenuBar = "Disabled";
           "MainWindow/Toolbar mainToolBar".ToolButtonStyle = "TextUnderIcon";
+          # The thumbnailers Dolphin may use, from schan. A pinned list
+          # leaves out any thumbnailer installed later until it is added
+          # here.
+          PreviewSettings.Plugins = lib.concatStringsSep "," [
+            "audiothumbnail"
+            "blenderthumbnail"
+            "comicbookthumbnail"
+            "cursorthumbnail"
+            "directorythumbnail"
+            "djvuthumbnail"
+            "ebookthumbnail"
+            "exrthumbnail"
+            "ffmpegthumbs"
+            "fontthumbnail"
+            "gsthumbnail"
+            "imagethumbnail"
+            "jpegthumbnail"
+            "kraorathumbnail"
+            "mobithumbnail"
+            "opendocumentthumbnail"
+            "rawthumbnail"
+            "svgthumbnail"
+            "windowsexethumbnail"
+            "windowsimagethumbnail"
+          ];
           Search.Location = "Everywhere";
         };
 
