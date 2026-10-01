@@ -211,9 +211,13 @@ in {
           Xwayland.Scale = machine.xwaylandScale;
         };
 
-        kiorc.Confirmations = {
-          ConfirmDelete = true;
-          ConfirmEmptyTrash = true;
+        kiorc = {
+          Confirmations = {
+            ConfirmDelete = true;
+            ConfirmEmptyTrash = true;
+            ConfirmTrash = true;
+          };
+          "Executable scripts".behaviourOnLaunch = "alwaysAsk";
         };
 
         dolphinrc = {
