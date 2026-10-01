@@ -1022,8 +1022,14 @@ source.
   changes, so panel edits made in the session are lost; turn it on only when
   Home Manager should own the whole panel. Cursor and icon themes are declared
   here, and Plasma copies them to GTK itself, so Home Manager's `gtk` module
-  stays off. The wallpaper, display topology, generated IDs, and session history
-  stay unmanaged.
+  stays off. Dolphin's folder views are written to
+  `~/.local/share/dolphin/view_properties/global/.directory` and
+  `~/Downloads/.directory`, as regular files Dolphin can update; activation
+  resets their declared keys. When a folder's view is changed in Dolphin, it
+  keeps that folder's own settings in the `user.kde.fm.viewproperties#1`
+  extended attribute and stops following the global view; remove the attribute
+  with `setfattr -x` to restore it. The wallpaper, display topology, generated
+  IDs, and session history stay unmanaged.
 - **Vim runtime artifacts** are declarative: Home Manager links Tree-sitter
   parsers and queries under the XDG data directory through `xdg.dataFile`, and
   TypeScript is served by `tsc`, the Go compiler of the nixpkgs `typescript` 7
