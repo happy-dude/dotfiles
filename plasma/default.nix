@@ -79,7 +79,7 @@
       SortFoldersFirst = true;
       SortHiddenLast = true;
       GroupedSorting = false;
-      PreviewsShown = true;
+      PreviewsShown = false;
     };
     Settings.HiddenFilesShown = true;
   };
