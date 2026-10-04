@@ -230,7 +230,10 @@ in {
             BottomRight = "LockScreen";
             TopRight = "ShowDesktop";
           };
-          Plugins.zoomEnabled = false;
+          Plugins = {
+            wobblywindowsEnabled = false;
+            zoomEnabled = false;
+          };
           TabBox = {
             OrderMinimizedMode = 1;
             ShowDesktopMode = 1;
