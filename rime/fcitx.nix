@@ -27,20 +27,6 @@ in {
       };
     };
 
-    # Fcitx stores this option as a list, one numbered key per entry under a
-    # [HiddenNotifications] group; a flat `HiddenNotifications=` key is ignored.
-    xdg.configFile."fcitx5/conf/notifications.conf" = {
-      force = true;
-      text = ''
-        [HiddenNotifications]
-        0=${
-          if desktop == "plasma"
-          then "wayland-diagnose-kde"
-          else "wayland-diagnose-gnome"
-        }
-      '';
-    };
-
     # Home Manager omits this for the Wayland frontend; GNOME Qt apps need it.
     home.sessionVariables = lib.mkIf (desktop == "gnome") {
       QT_IM_MODULE = "fcitx";

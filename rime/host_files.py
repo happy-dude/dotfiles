@@ -101,6 +101,11 @@ def deploy(source_dir: Path) -> None:
             config_dir / "conf/rime.conf",
             state_root / "rime.conf",
         ),
+        (
+            source_dir / "conf/notifications.conf",
+            config_dir / "conf/notifications.conf",
+            state_root / "notifications.conf",
+        ),
     )
     for source, target, snapshot in files:
         validate_materialize(source, target, snapshot)

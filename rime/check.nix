@@ -105,6 +105,7 @@ in {
       printf '%s\n' profile-v1 >"$source_root/profile"
       printf '%s\n' classic-v1 >"$source_root/conf/classicui.conf"
       printf '%s\n' rime-v1 >"$source_root/conf/rime.conf"
+      printf '%s\n' notifications-v1 >"$source_root/conf/notifications.conf"
       printf '%s\n' home-manager-rime-v1 >"$marker_source"
 
       HOME="$home" XDG_STATE_HOME="$state" \

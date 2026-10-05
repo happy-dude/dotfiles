@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   inputs,
@@ -144,6 +145,23 @@
   rimeRelativeArguments = lib.concatMapStringsSep " " (entry:
     lib.escapeShellArg entry.relative)
   rimeDataEntries;
+
+  # Fcitx rewrites notifications.conf when a notification is hidden, so it is
+  # materialized with the other host files. Fcitx stores the option as a list,
+  # one numbered key per entry; a flat `HiddenNotifications=` key is ignored.
+  # Copy only .config/fcitx5: `./.` would put all of rime/ in the store.
+  fcitxConfig = pkgs.runCommand "fcitx5-config" {} ''
+    cp -r ${./.config/fcitx5} "$out"
+    chmod u+w "$out/conf"
+    cat >"$out/conf/notifications.conf" <<'EOF'
+    [HiddenNotifications]
+    0=${
+      if config.dotfiles.profile.desktop == "plasma"
+      then "wayland-diagnose-kde"
+      else "wayland-diagnose-gnome"
+    }
+    EOF
+  '';
 in
   assert duplicateRimeDataTargetNames == []; {
     xdg.dataFile = themeFiles;
@@ -156,11 +174,9 @@ in
         ${lib.escapeShellArg legacyOwnershipMarker}
     '';
 
-    # Pass only the Fcitx configuration directory: `./.` would copy the whole
-    # rime/ tree, Rime data included, into the store as one more path.
     home.activation.rimeHostFiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
       $DRY_RUN_CMD ${lib.getExe rimeHostFiles} deploy \
-        ${lib.escapeShellArg ./.config/fcitx5}
+        ${lib.escapeShellArg fcitxConfig}
     '';
 
     home.activation.rimeSchemaBuild = lib.hm.dag.entryAfter ["rimeHostFiles"] ''
