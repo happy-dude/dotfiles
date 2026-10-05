@@ -12,6 +12,7 @@ UPDATE_SCRIPT="$SCRIPT_DIR/update.sh"
 
 # shellcheck disable=SC1091 # Sourced from the repository.
 source "$SCRIPT_DIR/lib/test-helpers.sh"
+test_setup
 
 # Run the updater and require it to refuse with the expected explanation.
 assert_rejects() {
