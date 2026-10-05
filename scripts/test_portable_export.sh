@@ -44,7 +44,12 @@ printf '#!%s\n' "$(command -v bash)" >"$fake_bin/nix"
 cat >>"$fake_bin/nix" <<'EOF'
 set -euo pipefail
 case $1 in
-fmt | flake) ;;
+fmt)
+  if [[ ${PORTABLE_TEST_FMT_CREATES:-} ]]; then
+    printf 'generated\n' >"$PORTABLE_TEST_FMT_CREATES"
+  fi
+  ;;
+flake) ;;
 eval)
   printf 'first\nsecond\n'
   exit "${PORTABLE_TEST_EVAL_STATUS:-0}"
@@ -89,6 +94,18 @@ fi
 [[ $(sha256sum "$output"/*) == "$before" ]] ||
   fail 'failed profile build replaced published artifacts'
 unset PORTABLE_TEST_BUILD_FAIL
+
+# A file the formatter creates is drift too.
+export PORTABLE_TEST_FMT_CREATES="$worktree/formatter-output"
+if run_portable export probe "$output"; then
+  fail 'export published artifacts after the formatter created a file'
+fi
+grep -q 'formatter changed the portable worktree' "$TMPDIR_TEST/export.log" ||
+  fail 'untracked formatter output was not reported'
+[[ $(sha256sum "$output"/*) == "$before" ]] ||
+  fail 'formatter drift replaced published artifacts'
+unset PORTABLE_TEST_FMT_CREATES
+rm -f -- "$worktree/formatter-output"
 
 # Apply needs one message per commit, and git am refuses an empty patch.
 git -C "$repo" config format.coverLetter true

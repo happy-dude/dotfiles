@@ -292,6 +292,7 @@ export_series() {
   local count
   local changing_count
   local profiles
+  local format_status
   local patch_name="dotfiles-$name.patch"
   local manifest_name="dotfiles-$name.manifest"
   local checksum_name="dotfiles-$name.sha256"
@@ -355,8 +356,16 @@ export_series() {
   (
     cd -- "$worktree" || exit 1
     nix fmt .
-    git diff --exit-code
-    git diff --cached --exit-code
+    # Untracked formatter output is drift too, so compare the full status.
+    format_status=$(git status --porcelain=v1 --untracked-files=all) || {
+      die "unable to read the portable worktree status after formatting"
+      exit 1
+    }
+    if [[ -n $format_status ]]; then
+      printf '%s\n' "$format_status" >&2
+      die "formatter changed the portable worktree"
+      exit 1
+    fi
     nix flake check --show-trace --no-update-lock-file
     # Every profile the flake declares, so a new machine cannot escape the
     # validation that gates the series.

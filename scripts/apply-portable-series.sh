@@ -136,8 +136,13 @@ applied_count=$(git -C "$repo" rev-list --count "$expected_base..HEAD")
 (
   cd -- "$repo"
   nix fmt .
-  git diff --exit-code
-  git diff --cached --exit-code
+  # Untracked formatter output is drift too, so compare the full status.
+  format_status=$(git status --porcelain=v1 --untracked-files=all) ||
+    die "unable to read the main worktree status after formatting"
+  if [[ -n $format_status ]]; then
+    printf '%s\n' "$format_status" >&2
+    die "formatter changed the applied series"
+  fi
   nix flake check --show-trace --no-update-lock-file
   nix run .#home-manager -- build --flake ".#$(whoami)" --show-trace \
     --no-out-link --no-update-lock-file
