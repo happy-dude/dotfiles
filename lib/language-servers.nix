@@ -79,6 +79,11 @@
       package = pkgs.rust-analyzer;
       exe = "rust-analyzer";
     };
+    # Formats Lua through `stylua --lsp`, which reads .stylua.toml.
+    "stylua" = {
+      package = pkgs.stylua;
+      exe = "stylua";
+    };
     "terraform-ls" = {
       package = pkgs.terraform-ls;
       exe = "terraform-ls";

@@ -128,6 +128,7 @@
     },
     "lua-language-server": {
       "command": "lua-language-server",
+      "disabledFeatures": ["documentFormatting", "documentRangeFormatting"],
       "filetypes": ["lua"],
       "rootPatterns": [".luarc.json", ".luarc.jsonc", ".git"]
     },
@@ -183,6 +184,11 @@
       "command": "ruff",
       "filetypes": ["python"],
       "rootPatterns": ["pyproject.toml", "ruff.toml", ".ruff.toml", ".git"]
+    },
+    "stylua": {
+      "args": ["--lsp"],
+      "command": "stylua",
+      "filetypes": ["lua"]
     },
     "terraform-ls": {
       "args": ["serve"],
