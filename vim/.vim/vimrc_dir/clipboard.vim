@@ -22,7 +22,13 @@ if !has('nvim') && exists('v:clipproviders')
     if a:register ==# '*'
       let l:command .= ' --primary'
     endif
-    let l:lines = split(system(l:command), "\n", 1)
+    let l:text = system(l:command)
+    " An empty clipboard fails with a message on stderr, which system()
+    " captures; an invalid result leaves the register unchanged.
+    if v:shell_error
+      return []
+    endif
+    let l:lines = split(l:text, "\n", 1)
     if len(l:lines) > 1 && l:lines[-1] ==# ''
       return ['V', l:lines[:-2]]
     endif
