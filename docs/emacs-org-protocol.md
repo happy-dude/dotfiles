@@ -261,10 +261,9 @@ emacsclient --eval "(featurep 'org-roam-protocol)"
 The expected handler is `emacs-org-protocol.desktop`, and the feature check
 should return `t`. Clicking the bookmark should open the `r` Org Roam reference
 capture template. Finalizing or aborting the capture closes its temporary frame.
-For a new reference, the quoted selection and notes go under the note's
-`* Notes` heading. When a node with that reference already exists, Org Roam
-still starts a capture, but files it into the existing node at the end of that
-node's first entry rather than creating a new file.
+The quoted selection and notes go under the note's `* Notes` heading. When a
+node with that reference already exists, Org Roam files the capture at the end
+of that node's `* Notes` heading instead of creating a new file.
 
 ### Flatpak Firefox
 
