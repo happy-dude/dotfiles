@@ -363,13 +363,12 @@ even when the daemon has no graphical frame to copy a display from."
 (setq org-roam-graph-executable "dot")
 (setq org-roam-graph-viewer #'browse-url-of-file)
 
-(defun dotfiles/org-roam-note-head (with-ref)
-  "Return the head of a new Org Roam note, with a ROAM_REFS line when WITH-REF."
+(defun dotfiles/org-roam-note-head (title)
+  "Return the head of a new Org Roam note whose #+TITLE line holds TITLE."
   (concat ":PROPERTIES:\n"
           ":ID: %(org-id-new)\n"
-          (if with-ref ":ROAM_REFS: ${ref}\n" "")
           ":END:\n"
-          "#+TITLE: ${title}\n"
+          "#+TITLE:" title "\n"
           "#+CREATED: %U\n"
           "#+LAST_MODIFIED: %U\n"
           "#+FILETAGS:\n"
@@ -390,13 +389,30 @@ even when the daemon has no graphical frame to copy a display from."
 (setq org-roam-capture-templates
       `(("d" "default" plain "%?"
          :target (file+head+olp "%<%Y%m%d>-${slug}.org"
-                                ,(dotfiles/org-roam-note-head nil) ("Notes"))
+                                ,(dotfiles/org-roam-note-head " ${title}")
+                                ("Notes"))
          :unnarrowed t)))
 
+(defun dotfiles/org-roam-insert-ref-fields ()
+  "Insert the browser's title and selection into the new capture verbatim.
+They come from the page, so they must not pass through Org Roam's ${} or
+Org's % template expansion. Org Roam adds ROAM_REFS itself."
+  (when (org-roam-capture--get :new-file)
+    (save-excursion
+      (save-restriction
+        (widen)
+        (goto-char (point-min))
+        (re-search-forward "^#\\+TITLE:")
+        (insert " " (org-roam-node-title org-roam-capture--node)))))
+  (save-excursion
+    (re-search-backward "^#\\+end_quote$")
+    (insert (or (plist-get org-roam-capture--info :body) "") "\n")))
+
 (setq org-roam-capture-ref-templates
-      `(("r" "ref" plain "#+begin_quote\n%i\n#+end_quote\n\n%?"
+      `(("r" "ref" plain "#+begin_quote\n#+end_quote\n\n%?"
          :target (file+head+olp "%<%Y%m%d>-${slug}.org"
-                                ,(dotfiles/org-roam-note-head t) ("Notes"))
+                                ,(dotfiles/org-roam-note-head "") ("Notes"))
+         :hook dotfiles/org-roam-insert-ref-fields
          :unnarrowed t)))
 
 

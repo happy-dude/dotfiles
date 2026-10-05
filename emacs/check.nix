@@ -87,6 +87,8 @@ in
         emacs --batch --quick --load ${runtimeTest}
         emacs --batch --quick --load ${initEl} \
           --load ${./secret-state-test.el}
+        emacs --batch --quick --load ${initEl} \
+          --load ${./org-protocol-test.el}
       '';
     };
   }
