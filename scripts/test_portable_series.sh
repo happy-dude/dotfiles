@@ -297,6 +297,29 @@ printf '%s\n' represented >"$series_worktree/represented"
 git -C "$series_worktree" add represented
 git -C "$series_worktree" commit --quiet -m 'tests: add represented change'
 
+# Export fails after staging here (the fixture has no commit-message linter);
+# the caller's test_setup trap must still remove its directory.
+caller_tmpdir=$(
+  bash -c 'set -euo pipefail
+    source scripts/lib/test-helpers.sh
+    source scripts/portable-series.sh
+    test_setup
+    printf "%s\n" "$TMPDIR_TEST"
+    export_series demo "$1"' _ "$output_directory" 2>/dev/null
+) && {
+  printf 'export succeeded without a commit-message linter\n' >&2
+  exit 1
+}
+[[ -n $caller_tmpdir && ! -e $caller_tmpdir ]] || {
+  printf 'export replaced the caller EXIT trap: %s\n' "$caller_tmpdir" >&2
+  exit 1
+}
+staging=("$output_directory"/.dotfiles-demo.*)
+[[ ! -e ${staging[0]} ]] || {
+  printf 'failed export left its staging directory\n' >&2
+  exit 1
+}
+
 if clean_series demo 2>/dev/null; then
   printf 'cleaned a series with unrepresented commits\n' >&2
   exit 1

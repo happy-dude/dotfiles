@@ -31,6 +31,13 @@ validate_name() {
     die "invalid series name: $1"
 }
 
+# Print the action of a `trap -p EXIT` line, or nothing when it is empty.
+exit_trap_action() {
+  [[ -n $1 ]] || return 0
+  eval "set -- ${1#trap }"
+  printf '%s' "$2"
+}
+
 reject_merge_commits() {
   local worktree=$1
   local base=$2
@@ -299,6 +306,8 @@ export_series() {
   local bundle_name="dotfiles-$name.tar.gz"
   local bundle_checksum_name="$bundle_name.sha256"
   local apply_name
+  local caller_exit_trap
+  local caller_exit_action
   local staging_directory
   local staged_patch_path
   local staged_manifest_path
@@ -348,8 +357,12 @@ export_series() {
 
   validate_forbidden_pattern "$forbidden_pattern"
   staging_directory=$(mktemp -d "$output_directory/.dotfiles-$name.XXXXXX")
+  # The caller may own an EXIT trap (test_setup does): run it after removing
+  # staging, and restore it when export finishes.
+  caller_exit_trap=$(trap -p EXIT)
+  caller_exit_action=$(exit_trap_action "$caller_exit_trap")
   # shellcheck disable=SC2064 # Early expansion is the point: EXIT runs after function scope ends.
-  trap "rm -rf -- $(printf '%q' "$staging_directory")" EXIT
+  trap "rm -rf -- $(printf '%q' "$staging_directory"); $caller_exit_action" EXIT
   lint_commits "$worktree" "$base" "$staging_directory/messages"
   scan_series "$forbidden_pattern" "$worktree" "$base" "$staging_directory"
 
@@ -425,7 +438,11 @@ EOF
     "$apply_name" \
     "$bundle_name"
   rm -rf -- "$staging_directory"
-  trap - EXIT
+  if [[ -n $caller_exit_trap ]]; then
+    eval "$caller_exit_trap"
+  else
+    trap - EXIT
+  fi
 
   printf '%s\n' \
     "Portable artifacts written to $output_directory" \
