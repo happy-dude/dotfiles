@@ -157,7 +157,9 @@ checkout is the Linux branch.
   and Magit policies. Treefmt's Git walk skips submodule contents and excludes
   `other/`, `karabiner/`, Rime YAML data, lock files, `LICENSE`, and
   `agents/prompts/kagi-*.md`, whose whitespace is preserved because the
-  `kagi-prompt-budget` check measures those files against a fixed budget.
+  `kagi-prompt-budget` check measures those files against a fixed budget. The
+  profiles install the same wrapper as `treefmt`, plus `alejandra`, which nixd
+  runs when CoC or Emacs formats a Nix file.
 - `nix/default.nix` pins both the `nixpkgs` registry entry and legacy `NIX_PATH`
   lookup to the locked root input. It optionally includes the untracked
   `~/.config/nix/local.conf` for per-machine access tokens and client settings;
