@@ -855,7 +855,7 @@ stash_dirty_submodules() {
 # Everything below runs only when this file is executed. The test suites
 # source it to exercise the functions above without performing an update.
 main() {
-  local section_result status
+  local section_result status unmerged
 
   # Argument parsing
   #--------------------------------------------------------------------------------------------------
@@ -971,6 +971,14 @@ main() {
       vmsg "Dirty top-level worktree is allowed here via --autostash."
       # Updating this checkout must not rewrite backup or topic branches.
       git -c rebase.updateRefs=false pull --rebase --autostash
+      # Git still exits 0 when it cannot restore the autostash; the conflict
+      # is left in the index and the stash is kept.
+      unmerged="$(git ls-files --unmerged)" ||
+        die "unable to read the index after pulling"
+      if [ -n "$unmerged" ]; then
+        section_end "failed"
+        die "the autostash could not be restored; resolve the conflicts, then drop the stash"
+      fi
       section_end "done"
     else
       warn "No upstream tracking branch configured; skipping pull (use --skip-pull to suppress this warning)"

@@ -67,3 +67,20 @@ PATH="$fake_bin:$PATH" bash "$SCRIPT_DIR/update.sh" update \
   fail 'pull did not restore autostashed edits'
 [[ $(<"$repo/first") == first && $(<"$repo/second") == second ]] ||
   fail 'pull lost local commits'
+
+# Git reports success when its autostash cannot be restored and leaves the
+# conflict in the index. Validation and the lock commit must not run on that.
+printf 'conflicting upstream\n' >"$seed/tracked"
+commit_all "$seed" 'tests: change the autostashed file upstream'
+git -C "$seed" push --quiet origin main
+if PATH="$fake_bin:$PATH" bash "$SCRIPT_DIR/update.sh" update \
+  --skip-submodules --skip-nix-fmt --skip-nix-flake --skip-home-manager \
+  "$repo" >"$TMPDIR_TEST/output" 2>&1; then
+  fail 'update continued after the autostash could not be restored'
+fi
+grep -q 'autostash could not be restored' "$TMPDIR_TEST/output" ||
+  fail 'autostash conflict was not reported'
+grep -q 'Validating flake checks' "$TMPDIR_TEST/output" &&
+  fail 'update validated a checkout with unresolved conflicts'
+[[ -n $(git -C "$repo" ls-files --unmerged) ]] ||
+  fail 'fixture did not produce an autostash conflict'
