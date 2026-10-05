@@ -78,6 +78,19 @@ in {
         echo "accepted an unmanaged Rime schema target" >&2
         exit 1
       fi
+
+      rm -r home/.local/share/fcitx5/rime/subdir
+      printf '%s\n' unmanaged >home/.local/share/fcitx5/rime/subdir
+      printf '%s\n' stamp-v4 >stamp
+      if HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
+        rime-state-manager deploy \
+          "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
+          subdir/schema.yaml 2>err; then
+        echo "accepted an unmanaged Rime parent path" >&2
+        exit 1
+      fi
+      grep -q 'Refusing unmanaged Rime path' err
+      grep -qx stamp-v3 state/rime/home-manager-source-stamp
     '';
   };
   rime-host-files = mkCheck {

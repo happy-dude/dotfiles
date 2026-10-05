@@ -62,8 +62,14 @@ def resolves_below(path: Path, root: Path) -> bool:
 
 
 def validate_schema_target(
-    target: Path, expected: Path, static_dir: Path
+    target: Path, expected: Path, static_dir: Path, data_dir: Path
 ) -> None:
+    for parent in target.relative_to(data_dir).parents[:-1]:
+        directory = data_dir / parent
+        if directory.is_symlink() or (
+            directory.exists() and not directory.is_dir()
+        ):
+            fail(f"Refusing unmanaged Rime path: {directory}")
     if target.is_symlink():
         if target.resolve(strict=False) != expected.resolve(
             strict=False
@@ -146,7 +152,7 @@ def deploy(
 
     for relative in relatives:
         validate_schema_target(
-            data_dir / relative, static_dir / relative, static_dir
+            data_dir / relative, static_dir / relative, static_dir, data_dir
         )
 
     changed = (
