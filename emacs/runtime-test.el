@@ -38,6 +38,9 @@
 (unless (eq (assoc-default "component.tsx" auto-mode-alist #'string-match-p)
             'web-mode)
   (error "TSX files do not open in web-mode"))
+(unless (eq (assoc-default "paper.typ" auto-mode-alist #'string-match-p)
+            'typst-ts-mode)
+  (error "Typst files do not open in typst-ts-mode"))
 (unless (equal (cdr (assq 'lsp-mode minor-mode-alist)) '(" LSP"))
   (error "lsp-mode retained a nested mode-line indicator"))
 
