@@ -65,12 +65,15 @@ in
         export XDG_DATA_HOME="$HOME/.local/share"
         export XDG_STATE_HOME="$HOME/.local/state"
         mkdir -p "$XDG_CONFIG_HOME/opencode"
-        grep -F 'unset OTEL_EXPORTER_OTLP_ENDPOINT' \
-          "$(command -v opencode)"
-        grep -F 'unset OTEL_EXPORTER_OTLP_HEADERS' \
-          "$(command -v opencode)"
-        grep -F 'unset OTEL_RESOURCE_ATTRIBUTES' \
-          "$(command -v opencode)"
+        for variable in \
+          OTEL_EXPORTER_OTLP_ENDPOINT \
+          OTEL_EXPORTER_OTLP_TRACES_ENDPOINT \
+          OTEL_EXPORTER_OTLP_LOGS_ENDPOINT \
+          OTEL_EXPORTER_OTLP_METRICS_ENDPOINT \
+          OTEL_EXPORTER_OTLP_HEADERS \
+          OTEL_RESOURCE_ATTRIBUTES; do
+          grep -Fx "unset $variable" "$(command -v opencode)"
+        done
         tui_schema=${opencode}/share/tui.json
         [ -e "$tui_schema" ] || tui_schema=${opencode}/share/opencode/tui.json
         check-jsonschema \
