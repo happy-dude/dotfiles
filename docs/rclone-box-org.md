@@ -51,7 +51,9 @@ creates, deletes, and moves. The first relevant event schedules a transient
 timer for five minutes later. Its fixed unit name makes later events reuse that
 pending batch instead of moving the deadline. The transient unit only queues the
 sync and exits, so a change made while a sync is running schedules the next
-batch.
+batch. That unit is ordered after the bisync service: if a sync is still running
+when the batch fires, systemd queues another run after it instead of merging the
+request into the running one.
 
 Watcher records use NUL delimiters and filesystem decoding, so embedded or
 trailing newlines and non-UTF-8 filename bytes do not change path identity
