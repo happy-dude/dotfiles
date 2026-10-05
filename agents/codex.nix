@@ -90,7 +90,9 @@
         '"""' \
         'model_reasoning_effort = "medium"' \
         >work/generated.toml
+      # A dotted key parses as a table, so it precedes the scalars below.
       printf '%s\n' \
+        'notice.seen = true' \
         'developer_instructions = "old instructions"' \
         'model_reasoning_effort = "low"' \
         'service_tier = "fast"' \
@@ -117,6 +119,7 @@
       assert profile["service_tier"] == "fast"
       assert profile["projects"]["/tmp/project"]["trust_level"] == "trusted"
       assert profile["tui"]["model_availability_nux"]["model"] == 2
+      assert profile["notice"]["seen"] is True
       assert stat.S_IMODE(path.stat().st_mode) == 0o600
       assert text.startswith(
           "#:schema ${configSchemaUrl}\n"
