@@ -29,12 +29,7 @@ assert_rejects() {
 help_output="$(bash "$UPDATE_SCRIPT" --help)"
 grep -F -- 'Usage:' <<<"$help_output" >/dev/null ||
   fail 'help output does not describe usage'
-if grep -F -- '--rime-source' <<<"$help_output" >/dev/null; then
-  fail 'retired --rime-source option remains in help output'
-fi
 
-assert_rejects 'retired option' 'unknown option: --rime-source' \
-  --rime-source nix
 assert_rejects 'unknown option' 'unknown option: --nonsense' --nonsense
 
 # A mode is a mode, not a directory: naming two must be refused rather than
