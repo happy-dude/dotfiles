@@ -558,11 +558,13 @@ Remote names are matched as written, without extra network access."
 (require 'undo-tree)
 (evil-set-undo-system 'undo-tree)
 ;; undo-tree
-
-(setq undo-tree-history-directory-alist
-      `(("." . ,(expand-file-name
-                   "emacs/undo-tree/"
-                   (or (getenv "XDG_CACHE_HOME") "~/.cache")))))
+;; History files hold buffer contents, so give them the same owner-only
+;; directory as backups and auto-saves.
+(let ((dir (expand-file-name "emacs/undo-tree/"
+                             (or (getenv "XDG_CACHE_HOME") "~/.cache"))))
+  (make-directory dir t)
+  (set-file-modes dir #o700)
+  (setq undo-tree-history-directory-alist `(("." . ,dir))))
 
 (global-undo-tree-mode)
 
