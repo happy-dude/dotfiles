@@ -271,7 +271,7 @@ even when the daemon has no graphical frame to copy a display from."
         ("et" "Tickets" entry (file+headline "~/org/work.org" "Tickets")
          "* [[https://jira.cfops.it/browse/%?]]" :prepend t)
         ("ei" "Incidents" entry (file+headline "~/org/work.org" "Incidents")
-         "* DETECT [[https://jira.cfops.it/browse/INCIDENT-%?" :prepend t)
+         "* DETECT [[https://jira.cfops.it/browse/INCIDENT-%?]]" :prepend t)
         ("ew" "Watching" entry (file+headline "~/org/work.org" "Watching")
          "* %?\n%U" :prepend t)
         ("ed" "Drive-by" entry (file+headline "~/org/work.org" "Drive-by")
