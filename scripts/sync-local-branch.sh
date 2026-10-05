@@ -237,6 +237,8 @@ main() {
     fi
   fi
 
+  git -C "$repo" show-ref --verify --quiet refs/remotes/origin/main ||
+    die "origin/main is not fetched; run sync mode first"
   origin_main=$(git -C "$repo" rev-parse refs/remotes/origin/main)
   main_head=$(git -C "$main_worktree" rev-parse refs/heads/main)
   [[ $main_head == "$origin_main" ]] ||
