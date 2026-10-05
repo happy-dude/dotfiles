@@ -139,8 +139,7 @@ applied_count=$(git -C "$repo" rev-list --count "$expected_base..HEAD")
   git diff --exit-code
   git diff --cached --exit-code
   nix flake check --show-trace --no-update-lock-file
-  nix --extra-experimental-features 'nix-command flakes' run \
-    .#home-manager -- build --flake ".#$(whoami)" --show-trace \
+  nix run .#home-manager -- build --flake ".#$(whoami)" --show-trace \
     --no-out-link --no-update-lock-file
 )
 
