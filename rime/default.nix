@@ -39,8 +39,13 @@
     inputs.rime_loengfan
   ];
 
-  isRimeDataFile = name:
-    (lib.hasSuffix ".yaml" name || lib.hasSuffix ".txt" name || lib.hasSuffix ".lua" name)
+  # OpenCC configs live under opencc/; other JSON (editor and language-server
+  # settings) is not Rime data.
+  isRimeDataFile = dir: name:
+    (lib.hasSuffix ".yaml" name
+      || lib.hasSuffix ".txt" name
+      || lib.hasSuffix ".lua" name
+      || (baseNameOf dir == "opencc" && lib.hasSuffix ".json" name))
     && !(builtins.elem name [
       "installation.yaml"
       "recipe.yaml"
@@ -55,7 +60,7 @@
       in
         if entries.${name} == "directory"
         then filesRecursively path
-        else lib.optional (isRimeDataFile name) path
+        else lib.optional (isRimeDataFile dir name) path
     ) (builtins.attrNames entries);
 
   relativeTo = source: path:

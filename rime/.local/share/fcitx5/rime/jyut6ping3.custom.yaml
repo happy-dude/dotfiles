@@ -19,12 +19,6 @@ patch:
     - simplifier@simplification
     - uniquifier
 
-  # Override upstream's t2hkf.json (not installed) with t2hk.json
-  variants_hk:
-    option_name: variants_hk
-    opencc_config: t2hk.json
-    tips: none
-
   # Missing upstream — required for Simplified toggle to work
   simplification:
     option_name: simplification
