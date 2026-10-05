@@ -39,7 +39,9 @@ in {
         fi
       done | sort >watcher-kept
       diff rclone-kept watcher-kept
-      while IFS= read -r rule; do
+      while read -r rule; do
+        # rclone trims each line, then skips it when empty or a # or ; comment.
+        [[ -z $rule || $rule == [#\;]* ]] && continue
         printf '%s\n' "$rule" >rule.filter
         if [[ $(kept rule.filter | wc -l) -eq ''${#samples[@]} ]]; then
           echo "no sample exercises filter rule: $rule" >&2
