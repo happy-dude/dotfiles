@@ -220,7 +220,9 @@ and installs StyLua's config under `~/.config/stylua`.
   dispatching it made a 100-commit rebase take seconds instead of milliseconds;
   the `commit-msg` dispatcher also lints every commit, reruns the repository
   hook and the linter after each interactive edit, and requires an initially
-  present `Assisted-by:` trailer to remain. Per-machine identity and signing
+  present `Assisted-by:` trailer to remain. The linter's Prettier pass ignores
+  the committing repository's Prettier, EditorConfig, and ignore files so the
+  verdict is the same in every repository. Per-machine identity and signing
   (`user.email`, `signingkey`, `commit`/`tag` `gpgsign`) live in an untracked
   `~/.config/git/local.config` that the module `include`s — SSH/GPG keys and
   email differ per box; template in `git/local.config.example`. Home Manager
@@ -644,20 +646,22 @@ activation rebuilds generated schemas when the static Rime source stamp changes,
 so no manual deploy is required. Add `--skip-nix-flake` to leave flake inputs
 locked.
 
-Update-mode step order is: repository pull; generic submodule handling when
-`.gitmodules` contains entries; `nix fmt .`; `nix flake update`; locked flake
-validation and Home Manager build; committing the refreshed `flake.lock`;
-optional activation; and the post-activation generation changelog. `apply` also
-commits a dirty `flake.lock` after a successful activation. Consecutive lock
-updates amend the previous `nix: update flake.lock` commit, but only while no
-remote-tracking branch contains it, HEAD is on a branch, and no other local
-branch contains it; every other case, including a containment check that cannot
-be determined, gets a fresh commit. The corresponding skip flags are
+Update-mode step order is: repository pull, which stops when Git cannot reapply
+the pull's autostash and leaves conflicts in the index; generic submodule
+handling when `.gitmodules` contains entries; `nix fmt .`; `nix flake update`;
+locked flake validation and Home Manager build; committing the refreshed
+`flake.lock`; optional activation; and the post-activation generation changelog.
+`apply` also commits a dirty `flake.lock` after a successful activation.
+Consecutive lock updates amend the previous `nix: update flake.lock` commit, but
+only while no remote-tracking branch contains it, HEAD is on a branch, and no
+other local branch contains it; every other case, including a containment check
+that cannot be determined, gets a fresh commit. The corresponding skip flags are
 `--skip-pull`, `--skip-submodules`, `--skip-status`, `--skip-nix-fmt`,
-`--skip-nix-flake`, and `--skip-home-manager`; `--quiet` suppresses the section
-banners, and an optional positional path selects the repository.
-`apply --skip-home-manager` is rejected because `check` already covers it.
-`HOME_MANAGER_FLAKE` defaults to `.#$(whoami)`.
+`--skip-nix-flake`, and `--skip-home-manager`; `--quiet` restores the default
+output after `--verbose` (section banners always print), and an optional
+positional path selects the repository. `apply --skip-home-manager` is rejected
+because `check` already covers it. `HOME_MANAGER_FLAKE` defaults to
+`.#$(whoami)`.
 
 The script refuses to update dirty submodules unless `--autostash-submodules` is
 passed, and it does **not** auto-pop stashes afterward. The auto-stash scan
