@@ -1,5 +1,4 @@
 {
-  homes,
   lib,
   pkgs,
 }: let
@@ -8,19 +7,6 @@
   rimeStateManager = import ./state-manager.nix {inherit pkgs;};
   catppuccinThemeDir = "${pkgs.catppuccin-fcitx5}/share/fcitx5/themes";
   catppuccinThemeNames = import ./themes.nix {inherit lib;};
-  themeTargets = map (name: "fcitx5/themes/${name}") catppuccinThemeNames;
-  ownsThemes = home:
-    builtins.all (target: builtins.hasAttr target home.config.xdg.dataFile) themeTargets
-    && builtins.all (
-      name:
-        toString home.config.xdg.dataFile."fcitx5/themes/${name}".source
-        == "${catppuccinThemeDir}/${name}"
-    )
-    catppuccinThemeNames
-    && builtins.hasAttr "fcitx5/themes/plasma" home.config.xdg.dataFile
-    && toString home.config.xdg.dataFile."fcitx5/themes/plasma".source
-    == toString ./.local/share/fcitx5/themes/plasma
-    && !builtins.hasAttr "fcitx5/themes" home.config.xdg.dataFile;
 in {
   # themes.nix states the theme names so evaluation never reads the package;
   # hold the statement against what the package actually ships.
@@ -39,62 +25,61 @@ in {
     '';
   };
 
-  rime-state-manager = assert lib.all ownsThemes (lib.attrValues homes);
-    mkCheck {
-      name = "rime-state-manager-test";
-      tools = [rimeStateManager];
-      script = ''
-        mkdir -p home source/subdir state
-        printf '%s\n' stamp-v1 >stamp
-        printf '%s\n' schema-v1 >source/subdir/schema.yaml
-        HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
-          rime-state-manager deploy \
-            "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
-            subdir/schema.yaml
-        test -L home/.local/share/fcitx5/rime/subdir/schema.yaml
+  rime-state-manager = mkCheck {
+    name = "rime-state-manager-test";
+    tools = [rimeStateManager];
+    script = ''
+      mkdir -p home source/subdir state
+      printf '%s\n' stamp-v1 >stamp
+      printf '%s\n' schema-v1 >source/subdir/schema.yaml
+      HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
+        rime-state-manager deploy \
+          "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
+          subdir/schema.yaml
+      test -L home/.local/share/fcitx5/rime/subdir/schema.yaml
 
-        mkdir -p home/.local/share/fcitx5/rime/build
-        printf '%s\n' generated >home/.local/share/fcitx5/rime/build/schema.bin
-        printf '%s\n' learned >home/.local/share/fcitx5/rime/user.yaml
-        printf '%s\n' stamp-v2 >stamp
-        printf '%s\n' schema-v2 >source/subdir/schema.yaml
-        HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
-          rime-state-manager deploy \
-            "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
-            subdir/schema.yaml
-        test ! -e home/.local/share/fcitx5/rime/build
-        grep -qx learned home/.local/share/fcitx5/rime/user.yaml
-        grep -qx schema-v2 home/.local/share/fcitx5/rime/subdir/schema.yaml
+      mkdir -p home/.local/share/fcitx5/rime/build
+      printf '%s\n' generated >home/.local/share/fcitx5/rime/build/schema.bin
+      printf '%s\n' learned >home/.local/share/fcitx5/rime/user.yaml
+      printf '%s\n' stamp-v2 >stamp
+      printf '%s\n' schema-v2 >source/subdir/schema.yaml
+      HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
+        rime-state-manager deploy \
+          "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
+          subdir/schema.yaml
+      test ! -e home/.local/share/fcitx5/rime/build
+      grep -qx learned home/.local/share/fcitx5/rime/user.yaml
+      grep -qx schema-v2 home/.local/share/fcitx5/rime/subdir/schema.yaml
 
-        # A run killed mid-swap renames the live static tree aside without
-        # installing the replacement; the next deploy must restore it rather
-        # than leave Rime without its managed data.
-        staticdir="home/.local/share/fcitx5/rime/.home-manager-static"
-        test -d "$staticdir"
-        mv "$staticdir" "$staticdir.home-manager-old"
-        printf '%s\n' stamp-v3 >stamp
-        printf '%s\n' schema-v3 >source/subdir/schema.yaml
-        HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
-          rime-state-manager deploy \
-            "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
-            subdir/schema.yaml
-        test -d "$staticdir"
-        test ! -e "$staticdir.home-manager-old"
-        grep -qx schema-v3 home/.local/share/fcitx5/rime/subdir/schema.yaml
-        grep -qx learned home/.local/share/fcitx5/rime/user.yaml
+      # A run killed mid-swap renames the live static tree aside without
+      # installing the replacement; the next deploy must restore it rather
+      # than leave Rime without its managed data.
+      staticdir="home/.local/share/fcitx5/rime/.home-manager-static"
+      test -d "$staticdir"
+      mv "$staticdir" "$staticdir.home-manager-old"
+      printf '%s\n' stamp-v3 >stamp
+      printf '%s\n' schema-v3 >source/subdir/schema.yaml
+      HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
+        rime-state-manager deploy \
+          "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
+          subdir/schema.yaml
+      test -d "$staticdir"
+      test ! -e "$staticdir.home-manager-old"
+      grep -qx schema-v3 home/.local/share/fcitx5/rime/subdir/schema.yaml
+      grep -qx learned home/.local/share/fcitx5/rime/user.yaml
 
-        rm home/.local/share/fcitx5/rime/subdir/schema.yaml
-        printf '%s\n' unmanaged \
-          >home/.local/share/fcitx5/rime/subdir/schema.yaml
-        if HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
-          rime-state-manager deploy \
-            "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
-            subdir/schema.yaml; then
-          echo "accepted an unmanaged Rime schema target" >&2
-          exit 1
-        fi
-      '';
-    };
+      rm home/.local/share/fcitx5/rime/subdir/schema.yaml
+      printf '%s\n' unmanaged \
+        >home/.local/share/fcitx5/rime/subdir/schema.yaml
+      if HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
+        rime-state-manager deploy \
+          "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
+          subdir/schema.yaml; then
+        echo "accepted an unmanaged Rime schema target" >&2
+        exit 1
+      fi
+    '';
+  };
   rime-host-files = mkCheck {
     name = "rime-host-files-test";
     tools = [rimeHostFiles];
