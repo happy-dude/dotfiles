@@ -9,9 +9,10 @@ lives in the [worldmind migration history](fedora-kinoite-migration-history.md).
 
 Use the narrowest rollback layer that addresses the failure:
 
-1. **Boot failure or missing `/nix`:** choose the pinned prior OSTree deployment
-   in the bootloader. Do not repair a failed mount by making the global root
-   writable.
+1. **Boot failure or missing `/nix`:** in the bootloader, choose the validated
+   native deployment pinned at the end of the
+   [post-reboot validation](fedora-kinoite-determinate-nix.md#5-validate-the-native-service-after-reboot).
+   Do not repair a failed mount by making the global root writable.
 2. **User-profile failure:** inspect the cutover backup and current profile
    targets before restoring anything. Restore only links that resolve into the
    active `/nix/store` namespace; do not recreate the retired Toolbx environment

@@ -528,6 +528,16 @@ Expected properties:
   machine is not logged in to FlakeHub; daemon health is evaluated separately.
 - No Nix-related SELinux denial appears during a real build.
 
+Once every property holds, pin this validated native deployment. This changes
+state: the pin is the rollback target when `/nix` goes missing.
+
+### 🟦 RUN DIRECTLY ON THE KINOITE HOST — FISH-COMPATIBLE
+
+```fish
+sudo ostree admin pin booted
+sudo ostree admin status
+```
+
 ## 6. Bootstrap this Home Manager configuration
 
 The `schan` output deliberately sets `nixPackage = null`. `nix/default.nix`
