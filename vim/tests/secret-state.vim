@@ -56,6 +56,18 @@ write
 call assert_true(empty(glob(s:backup_dir . '/*alias.conf~', 0, 1)))
 call assert_true(empty(glob(s:backup_dir . '/*rclone.conf~', 0, 1)))
 
+" A secret's name stays sensitive when it links to a file outside every
+" sensitive directory.
+call mkdir($HOME . '/private', 'p')
+call writefile(['token'], $HOME . '/private/token')
+call system(['ln', '-sf', $HOME . '/private/token', $HOME . '/.config/rclone/linked.conf'])
+execute 'edit! ' . fnameescape($HOME . '/.config/rclone/linked.conf')
+call assert_false(&l:swapfile)
+call assert_false(&l:undofile)
+call setline(1, 'v2')
+write
+call assert_false(filereadable(undofile(resolve(expand('%:p')))))
+
 " Visiting a secret must not switch backups off for the files that follow.
 execute 'edit ' . fnameescape($HOME . '/ordinary.txt')
 call assert_true(&backup)

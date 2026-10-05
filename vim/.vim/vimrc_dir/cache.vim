@@ -28,7 +28,15 @@ set writebackup
 set swapfile
 set undofile
 
-let s:sensitive_files = map([
+" A secret is sensitive under the name it was opened by and under the file it
+" resolves to, so keep both forms of every entry.
+function! s:both_forms(path) abort
+  let l:path = fnamemodify(expand(a:path), ':p')
+  return uniq([l:path, resolve(l:path)])
+endfunction
+
+let s:sensitive_files = []
+for s:path in [
       \ '~/.authinfo',
       \ '~/.authinfo.gpg',
       \ '~/.claude.json',
@@ -36,8 +44,11 @@ let s:sensitive_files = map([
       \ '~/.config/git/local.config',
       \ '~/.config/nix/local.conf',
       \ '~/.netrc',
-      \ ], {_, path -> resolve(fnamemodify(expand(path), ':p'))})
-let s:sensitive_dirs = map([
+      \ ]
+  call extend(s:sensitive_files, s:both_forms(s:path))
+endfor
+let s:sensitive_dirs = []
+for s:path in [
       \ '~/.aws',
       \ '~/.claude',
       \ '~/.codex',
@@ -50,7 +61,10 @@ let s:sensitive_dirs = map([
       \ '~/.kube',
       \ '~/.password-store',
       \ '~/.ssh',
-      \ ], {_, path -> resolve(fnamemodify(expand(path), ':p')) . '/'})
+      \ ]
+  call extend(s:sensitive_dirs,
+        \ map(s:both_forms(s:path), {_, dir -> substitute(dir, '/*$', '/', '')}))
+endfor
 
 " 'backup' and 'writebackup' are global options, so a buffer cannot switch
 " them off for itself; 'backupskip' excludes these files per name instead.
@@ -73,7 +87,7 @@ endfunction
 function! s:disable_sensitive_file_state() abort
   let l:buffer = fnamemodify(expand('%:p'), ':p')
   let l:path = resolve(l:buffer)
-  if !s:is_sensitive(l:path)
+  if !s:is_sensitive(l:buffer) && !s:is_sensitive(l:path)
     return
   endif
   setlocal noswapfile noundofile
@@ -91,4 +105,4 @@ augroup dotfiles_sensitive_file_state
   autocmd BufReadPre,BufNewFile,BufFilePost,BufWritePre * call <SID>disable_sensitive_file_state()
 augroup END
 
-unlet s:backup_dir s:dir s:state_dir s:swap_dir s:undo_dir s:view_dir
+unlet s:backup_dir s:dir s:path s:state_dir s:swap_dir s:undo_dir s:view_dir
