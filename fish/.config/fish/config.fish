@@ -17,7 +17,7 @@ function __confirm_tmux_exit
         return
     end
 
-    commandline --function exit
+    commandline --function delete-or-exit
 end
 
 # ctrl-x ctrl-e to open $EDITOR, like in zsh
