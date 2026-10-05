@@ -129,6 +129,31 @@ in {
         exit 1
       fi
 
+      # Only Git's comment string before the marker makes a scissors line;
+      # Git keeps a marker line behind any other prefix and the text after it.
+      cat >prefixed-scissors.md <<'EOF'
+      git: keep text after a marker behind another prefix
+
+      Example: ------------------------ >8 ------------------------
+      This deliberately overlong line after the marker must still reach the width check.
+      EOF
+      if commit-msg prefixed-scissors.md </dev/null; then
+        echo "accepted overlong text after a non-comment scissors marker" >&2
+        exit 1
+      fi
+
+      git config core.commentChar ';'
+      cat >custom-scissors.md <<'EOF'
+      git: cut the verbose diff at a custom comment string
+
+      Ignore the verbose diff below the configured scissors line.
+
+      ; ------------------------ >8 ------------------------
+      +This deliberately unformatted diff line must not reach Prettier or width checks.
+      EOF
+      commit-msg custom-scissors.md
+      git config --unset core.commentChar
+
       cat >merge-template.md <<'EOF'
       Merge branch 'main' into macos
 
