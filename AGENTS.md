@@ -245,7 +245,8 @@ and installs StyLua's config under `~/.config/stylua`.
   it uses the Flatpak-bundled `host-spawn` to reach that host executable. One
   local materializer atomically merges declared keys into the writable settings
   file on both profiles, preserving runtime-only keys and refusing malformed
-  files or symlinks. The Flatpak target is
+  files or symlinks. It writes strict JSON, so comments and trailing commas do
+  not survive. The Flatpak target is
   `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`; the native target
   is `${config.xdg.configHome}/zed/settings.json`, normally
   `~/.config/zed/settings.json`. Both use `zedSettingsActivation` and honor Home
