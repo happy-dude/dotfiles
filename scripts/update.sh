@@ -100,7 +100,8 @@ Modes:
 
   apply
       Run the same validation/build as check, then activate the selected
-      Home Manager configuration without updating the lock file.
+      Home Manager configuration without updating the lock file. A dirty
+      flake.lock is committed after a successful activation.
 
 Options:
 
