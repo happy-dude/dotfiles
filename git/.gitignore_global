@@ -7,7 +7,6 @@
 # pattern that can match a tracked file belongs in that project's .gitignore.
 
 # Editor and shell litter
-*.vscode
 *~
 
 # Ignore xmonad compiled files and executables
