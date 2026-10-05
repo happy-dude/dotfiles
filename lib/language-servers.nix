@@ -25,6 +25,22 @@
         --suffix PATH : ${lib.makeBinPath [pkgs.shfmt]}
     '';
   };
+  # The server formats and validates by running `terraform` from PATH and
+  # fails each request without it. Terraform is unfree (BUSL), so offer
+  # OpenTofu under that name; a host terraform earlier on PATH still wins.
+  terraformCli = pkgs.runCommand "opentofu-as-terraform" {} ''
+    mkdir -p "$out/bin"
+    ln -s ${lib.getExe pkgs.opentofu} "$out/bin/terraform"
+  '';
+  terraformLanguageServer = pkgs.symlinkJoin {
+    name = "terraform-ls-with-opentofu";
+    paths = [pkgs.terraform-ls];
+    nativeBuildInputs = [pkgs.makeBinaryWrapper];
+    postBuild = ''
+      wrapProgram "$out/bin/terraform-ls" \
+        --suffix PATH : ${lib.makeBinPath [terraformCli]}
+    '';
+  };
   servers = {
     "bash-language-server" = {
       package = bashLanguageServer;
@@ -96,7 +112,7 @@
       exe = "stylua";
     };
     "terraform-ls" = {
-      package = pkgs.terraform-ls;
+      package = terraformLanguageServer;
       exe = "terraform-ls";
     };
     "texlab" = {
