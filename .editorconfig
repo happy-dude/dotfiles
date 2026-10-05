@@ -340,7 +340,7 @@ trim_trailing_whitespace = true
 # Project policy: follow Linux kernel formatting.
 # ref:  https://lkml.org/lkml/2020/7/3/163
 #       https://github.com/vivien/vim-linux-coding-style/blob/master/plugin/linuxsty.vim
-[*.{tc}]
+[*.tc]
 indent_style = space
 indent_size = 4
 
