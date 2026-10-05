@@ -6,17 +6,25 @@ if !has('nvim') && exists('v:clipproviders')
     return !empty($WAYLAND_DISPLAY) && executable('wl-copy') && executable('wl-paste')
   endfunction
 
+  " The clipboard holds plain text, so a trailing newline is what marks a
+  " linewise register, as with Vim's own clipboard; blockwise becomes
+  " characterwise.
   function! s:wl_clipboard_copy(register, type, lines) abort
     let l:command = a:register ==# '*' ? 'wl-copy --primary' : 'wl-copy'
-    call system(l:command, a:lines)
+    let l:text = join(a:lines, "\n") . (a:type ==# 'V' ? "\n" : '')
+    call system(l:command, l:text)
   endfunction
 
   function! s:wl_clipboard_paste(register) abort
-    let l:command = 'wl-paste --type text/plain;charset=utf-8'
+    let l:command = 'wl-paste --no-newline --type text/plain;charset=utf-8'
     if a:register ==# '*'
       let l:command .= ' --primary'
     endif
-    return ['', systemlist(l:command)]
+    let l:lines = split(system(l:command), "\n", 1)
+    if len(l:lines) > 1 && l:lines[-1] ==# ''
+      return ['V', l:lines[:-2]]
+    endif
+    return ['v', l:lines]
   endfunction
 
   let v:clipproviders['wl_clipboard'] = {
