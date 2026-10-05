@@ -80,6 +80,7 @@ Remote names are matched as written, without extra network access."
              (not (dotfiles/sensitive-file-p name)))))
 
 ;; Suppress the auto-save file and any persisted undo-tree history per buffer.
+;; A major-mode change kills the buffer-local undo-tree setting, so reapply it.
 (defun dotfiles/harden-sensitive-buffer ()
   "Disable on-disk copies for the current buffer when it visits a secret."
   (when (dotfiles/sensitive-file-p buffer-file-name)
@@ -87,6 +88,7 @@ Remote names are matched as written, without extra network access."
     (setq-local undo-tree-auto-save-history nil)))
 (add-hook 'find-file-hook #'dotfiles/harden-sensitive-buffer)
 (add-hook 'after-set-visited-file-name-hook #'dotfiles/harden-sensitive-buffer)
+(add-hook 'after-change-major-mode-hook #'dotfiles/harden-sensitive-buffer)
 
 ;; Mimic vim rainbow parentheses settings:
 ;; red, green, blue-green, red-orange, blue, orange, violet, yellow, red-violet

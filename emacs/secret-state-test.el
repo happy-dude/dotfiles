@@ -1,8 +1,10 @@
 ;;; secret-state-test.el --- Exercise sensitive file state -*- lexical-binding: t; -*-
 
 ;; Loaded after init.el with the check's disposable HOME and XDG directories.
-(defun dotfiles-test/exercise-file-state (file sensitive &optional renamed-file)
-  "Edit FILE and check actual state copies, optionally after RENAMED-FILE."
+(defun dotfiles-test/exercise-file-state (file sensitive &optional renamed-file mode)
+  "Edit FILE and check actual state copies.
+Rename the buffer to RENAMED-FILE and then switch to major MODE first, when
+given."
   ;; Batch visits otherwise skip the normal auto-save initialization.
   (let ((buffer (let ((noninteractive nil))
                   (find-file-noselect file))))
@@ -10,6 +12,8 @@
         (with-current-buffer buffer
           (when renamed-file
             (set-visited-file-name renamed-file t))
+          (when mode
+            (funcall mode))
           (let ((auto-save-file (make-auto-save-file-name))
                 (history-file (undo-tree-make-history-save-file-name buffer-file-name))
                 (backup-file (make-backup-file-name buffer-file-name)))
@@ -46,6 +50,7 @@
   (dotfiles-test/exercise-file-state
    (expand-file-name "credential.txt" directory-alias) t)
   (dotfiles-test/exercise-file-state renamed t secret)
+  (dotfiles-test/exercise-file-state secret t nil #'fundamental-mode)
   ;; Visiting secrets must not disable state for subsequent ordinary buffers.
   (dotfiles-test/exercise-file-state ordinary nil))
 
