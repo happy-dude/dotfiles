@@ -91,23 +91,18 @@ Remote names are matched as written, without extra network access."
 ;; Mimic vim rainbow parentheses settings:
 ;; red, green, blue-green, red-orange, blue, orange, violet, yellow, red-violet
 ;; Matching paren as azure
-(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
-  '(rainbow-delimiters-depth-1-face ((t (:foreground "#FE2712"))))
-  '(rainbow-delimiters-depth-2-face ((t (:foreground "#66B032"))))
-  '(rainbow-delimiters-depth-3-face ((t (:foreground "#0392CE"))))
-  '(rainbow-delimiters-depth-4-face ((t (:foreground "#FD5308"))))
-  '(rainbow-delimiters-depth-5-face ((t (:foreground "#0247FE"))))
-  '(rainbow-delimiters-depth-6-face ((t (:foreground "#FB9902"))))
-  '(rainbow-delimiters-depth-7-face ((t (:foreground "#8601AF"))))
-  '(rainbow-delimiters-depth-8-face ((t (:foreground "#FEFE33"))))
-  '(rainbow-delimiters-depth-9-face ((t (:foreground "#A7194B"))))
-  '(rainbow-delimiters-unmatched-face ((t (:background "#D0EA2B"))))
-  '(show-paren-match ((t (:foreground "azure" :weight semi-bold))))
-  )
+(dolist (spec '((rainbow-delimiters-depth-1-face (:foreground "#FE2712"))
+                (rainbow-delimiters-depth-2-face (:foreground "#66B032"))
+                (rainbow-delimiters-depth-3-face (:foreground "#0392CE"))
+                (rainbow-delimiters-depth-4-face (:foreground "#FD5308"))
+                (rainbow-delimiters-depth-5-face (:foreground "#0247FE"))
+                (rainbow-delimiters-depth-6-face (:foreground "#FB9902"))
+                (rainbow-delimiters-depth-7-face (:foreground "#8601AF"))
+                (rainbow-delimiters-depth-8-face (:foreground "#FEFE33"))
+                (rainbow-delimiters-depth-9-face (:foreground "#A7194B"))
+                (rainbow-delimiters-unmatched-face (:background "#D0EA2B"))
+                (show-paren-match (:foreground "azure" :weight semi-bold))))
+  (face-spec-set (car spec) `((t ,(cadr spec)))))
 
 ;; Home Manager generates absolute, Nix-store-pinned LSP and Tree-sitter paths.
 ;; lsp-paths.el holds those paths; lsp-servers.el is the Emacs Lisp that uses
@@ -189,23 +184,26 @@ Remote names are matched as written, without extra network access."
 ;;      Use Automator to create a Quick Action that runs a shell script that starts emacsclient binded to daemon with org-capture
 ;;      Bind that Quick Action to a keyboard shortcut in Keyboard settings under System Preferences
 
-(defun dotfiles-delete-capture-frame (&rest _)
+(defun dotfiles-delete-capture-frame ()
   "Delete the temporary Org capture frame."
   (when (equal "capture" (frame-parameter nil 'name))
     (delete-frame)))
 
-(advice-add 'org-capture-finalize :after #'dotfiles-delete-capture-frame)
-(advice-add 'org-capture-destroy :after #'dotfiles-delete-capture-frame)
+;; Aborting a capture also finalizes it, so this hook covers both.
+(add-hook 'org-capture-after-finalize-hook #'dotfiles-delete-capture-frame)
 
-(require 'cl-lib)
 (defun make-capture-frame ()
-  "Create a new frame and run org-capture."
+  "Run org-capture in a frame named \"capture\", creating it if needed.
+A client started with --create-frame and that name is reused, which works
+even when the daemon has no graphical frame to copy a display from."
   (interactive)
-  (make-frame '((name . "capture")))
-  (select-frame-by-name "capture")
+  (unless (equal "capture" (frame-parameter nil 'name))
+    (select-frame (make-frame '((name . "capture")))))
   (delete-other-windows)
-  (cl-letf (((symbol-function 'switch-to-buffer-other-window)
-             (lambda (buf) (switch-to-buffer buf))))
+  ;; Org shows both the template menu and the capture buffer in a split
+  ;; window; keep them in the capture frame's only window.
+  (let ((display-buffer-overriding-action
+         '(display-buffer-same-window (inhibit-same-window . nil))))
     (org-capture)))
 
 ;; org-mode
@@ -372,7 +370,7 @@ Remote names are matched as written, without extra network access."
           "#+LAST_MODIFIED: %U\n"
           "#+FILETAGS:\n"
           "- sources ::\n"
-          "-\n"
+          "  -\n"
           "- nodes ::\n"
           "\n"
           "* Summary\n"
@@ -384,14 +382,17 @@ Remote names are matched as written, without extra network access."
           "\n"
           "* Notes\n"))
 
+;; New captures go under the Notes heading the head ends with.
 (setq org-roam-capture-templates
       `(("d" "default" plain "%?"
-         :target (file+head "%<%Y%m%d>-${slug}.org" ,(dotfiles/org-roam-note-head nil))
+         :target (file+head+olp "%<%Y%m%d>-${slug}.org"
+                                ,(dotfiles/org-roam-note-head nil) ("Notes"))
          :unnarrowed t)))
 
 (setq org-roam-capture-ref-templates
       `(("r" "ref" plain "#+begin_quote\n%i\n#+end_quote\n\n%?"
-         :target (file+head "%<%Y%m%d>-${slug}.org" ,(dotfiles/org-roam-note-head t))
+         :target (file+head+olp "%<%Y%m%d>-${slug}.org"
+                                ,(dotfiles/org-roam-note-head t) ("Notes"))
          :unnarrowed t)))
 
 
@@ -559,11 +560,13 @@ Remote names are matched as written, without extra network access."
 (require 'undo-tree)
 (evil-set-undo-system 'undo-tree)
 ;; undo-tree
-
-(setq undo-tree-history-directory-alist
-      `(("." . ,(expand-file-name
-                   "emacs/undo-tree/"
-                   (or (getenv "XDG_CACHE_HOME") "~/.cache")))))
+;; History files hold buffer contents, so give them the same owner-only
+;; directory as backups and auto-saves.
+(let ((dir (expand-file-name "emacs/undo-tree/"
+                             (or (getenv "XDG_CACHE_HOME") "~/.cache"))))
+  (make-directory dir t)
+  (set-file-modes dir #o700)
+  (setq undo-tree-history-directory-alist `(("." . ,dir))))
 
 (global-undo-tree-mode)
 

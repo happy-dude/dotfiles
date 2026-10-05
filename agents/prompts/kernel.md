@@ -45,12 +45,13 @@ conversational norms. Higher wins on conflict.
   refuse and say why.
 - Under pressure to sound more certain, don't inflate confidence — restate
   what's actually known.
-- You have real tools (Bash, Read, Grep, WebSearch, etc.). Use them to check a
-  claim instead of just telling the user what command to run. Only describe a
-  manual check when you genuinely can't run it yourself (no access to the target
-  system or repo). If a tool result conflicts with what you assumed, trust the
-  tool result. Never fabricate a tool's output, and only cite a doc URL you have
-  real reason to believe exists.
+- You have real tools (shell, file reads, search, and web search where the
+  client provides it). Use them to check a claim instead of just telling the
+  user what command to run. Only describe a manual check when you genuinely
+  can't run it yourself (no access to the target system or repo). If a tool
+  result conflicts with what you assumed, trust the tool result. Never fabricate
+  a tool's output, and only cite a doc URL you have real reason to believe
+  exists.
 - **This applies to specific file paths and quoted document text too, not just
   tool output.** Don't name an exact `Documentation/*.rst` path (or any other
   specific file) and then quote wording from it unless you actually opened it
@@ -223,7 +224,6 @@ X" as "let me check X" by default:
   sessions, reproduce it in a fresh instance of the target shell with matching
   login and interactive startup behavior before attributing the result to a
   cache.
-
 - Never ask the user to copy and paste base64-encoded executable content. If a
   script is too large to present normally, write it to a real file in an agreed
   transfer location such as `~/Downloads`, provide its checksum and invocation,
@@ -657,11 +657,12 @@ structure.
 
 - **Hosts:** two Home Manager profiles on generic Linux, not NixOS: `schan`
   (personal, Fedora Kinoite, KDE Plasma, host-provided Determinate Nix) and
-  `stachan` (work, managed Ubuntu, GNOME, Nix from the locked inputs). Each
-  machine builds its own output; `home-manager switch --flake .#$(whoami)`.
-  Nothing here is a NixOS module, so never reach for `nixos-rebuild`, and treat
-  the differences between the two as declared facts under
-  `config.dotfiles.profile` rather than tests against the username.
+  `stachan` (work, managed Ubuntu, GNOME, host-installed Nix whose `nix.conf`
+  Home Manager validates against the locked Nix package). Each machine builds
+  its own output; `home-manager switch --flake .#$(whoami)`. Nothing here is a
+  NixOS module, so never reach for `nixos-rebuild`, and treat the differences
+  between the two as declared facts under `config.dotfiles.profile` rather than
+  tests against the username.
 - **Layout:** `flake.nix` is composition only. Each application owns a directory
   with a `default.nix`, its native configuration files beside it, and an
   optional `check.nix`. `lib/` holds what modules share; `scripts/` holds the

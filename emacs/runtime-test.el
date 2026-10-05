@@ -38,6 +38,9 @@
 (unless (eq (assoc-default "component.tsx" auto-mode-alist #'string-match-p)
             'web-mode)
   (error "TSX files do not open in web-mode"))
+(unless (eq (assoc-default "paper.typ" auto-mode-alist #'string-match-p)
+            'typst-ts-mode)
+  (error "Typst files do not open in typst-ts-mode"))
 (unless (equal (cdr (assq 'lsp-mode minor-mode-alist)) '(" LSP"))
   (error "lsp-mode retained a nested mode-line indicator"))
 
@@ -55,7 +58,7 @@
       (error "%s retained a server downloader" server-id))))
 
 (dolist (language '(bash c clojure cpp css fennel fish go gomod haskell hcl
-                         html javascript json kotlin latex lua markdown
+                         html javascript jsdoc json kotlin latex lua markdown
                          markdown-inline nix perl python ruby rust sql
                          typescript typst vim yaml zig))
   (unless (treesit-language-available-p language)

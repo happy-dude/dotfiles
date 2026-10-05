@@ -2,7 +2,6 @@ import sys
 from pathlib import Path
 
 import tomlkit
-from tomlkit.items import AoT, Table
 
 from dotfiles_files import write_text
 
@@ -54,17 +53,11 @@ def materialize(source: Path, target: Path) -> None:
     for key in MANAGED_KEYS:
         if key in generated:
             merged.add(key, generated.item(key))
-    runtime_items = [
-        (key, item, item.unwrap())
-        for key, item in runtime.items()
-        if key not in MANAGED_KEYS
-    ]
-    for key, item, value in runtime_items:
-        if not isinstance(item, (Table, AoT)):
-            merged[key] = value
-    for key, item, value in runtime_items:
-        if isinstance(item, (Table, AoT)):
-            merged[key] = value
+    # tomlkit places a scalar added after a table before the first table
+    # header, so runtime keys can be copied in their original order.
+    for key, item in runtime.items():
+        if key not in MANAGED_KEYS:
+            merged[key] = item.unwrap()
 
     write_text(target, directive + tomlkit.dumps(merged), 0o600)
 

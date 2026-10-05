@@ -74,6 +74,8 @@
   };
   treefmtEval = treefmt-nix.lib.evalModule pkgs {
     projectRootFile = "flake.nix";
+    # The default excludes include .gitmodules, which the gitmodules formatter
+    # below must see; the rest of them are restated at the end of the list.
     enableDefaultExcludes = false;
     programs = {
       clang-format = {

@@ -407,20 +407,22 @@ round trips or agreement between two implementations can hide matching errors.
   since it's tested meaningfully more accurate for this agent's weaker
   languages. If it disagrees with your own translation, say so and explain which
   you trust and why, don't silently defer to it.
-- **Dictionary lookups:** `sdcv` (StarDict console client) or `dict` (DICT
-  protocol client, e.g. `dict -d cedict <word>` if a CC-CEDICT database is
-  configured) — real dictionary backing raises a claim from medium to high
-  confidence. `sdcv` now carries offline CC-CEDICT, CC-Canto, WordNet, kengdic,
-  a Vietnamese dictionary, and FreeDict pairs for the European languages and
-  Japanese — run `sdcv -l` to see the set. Coverage varies and some pairs are
-  thin, so a lookup miss is not proof; `dict -D` still lists only the Esperanto
-  database.
+- **Dictionary lookups:** `sdcv` (StarDict console client) — real dictionary
+  backing raises a claim from medium to high confidence. `sdcv` carries offline
+  CC-CEDICT, CC-Canto, WordNet, kengdic, a Vietnamese dictionary, and FreeDict
+  pairs for the European languages and Japanese — run `sdcv -l` to see the set,
+  and `sdcv -n -u '<name from -l>' <word>` to query one of them. Coverage varies
+  and some pairs are thin, so a lookup miss is not proof. `dict` (DICT protocol
+  client) is installed, but no DICT server is configured, so a plain `dict` call
+  fails with "'dict.conf' doesn't specify any dict server";
+  `dict -h dict.org -d <db> <word>` asks the public server instead, which needs
+  network access and sends the word to a third party.
 - **Spellcheck-backed word validation for Esperanto/Italian/Polish/Spanish:**
   `aspell -d eo list`, `-d es`, `-d it`, `-d pl` (pipe a word/wordlist in)
   confirms a word is a real attested form in that language — use this to check
   your own output before stating it as fact, since these four aren't your
-  strongest languages. `dict -d epo2eng <word>` gives an actual
-  Esperanto↔English dictionary gloss where installed.
+  strongest languages. `sdcv` with the Esperanto-English FreeDict dictionary
+  gives an actual Esperanto↔English gloss.
 - **Grammar/style checking beyond spellcheck, for
   Esperanto/Italian/Polish/Spanish:** `languagetool` (CLI: `languagetool <file>`
   or pipe text via its HTTP mode) catches real grammar/style issues `aspell`
@@ -503,21 +505,16 @@ policy, disable namespace restrictions, make Bubblewrap setuid, or disable
 sandboxing without explicit user authorization. Do not generalize this
 workaround to unrelated failures.
 
-Every tool named above is declared in `~/dotfiles/home.nix`, under the comments
+The command-line tools named above are declared in `~/dotfiles/home.nix`, under
+the comments
 `Language agent: translation / dictionary / grammar / OCR / TTS tooling` and
 `Aspell spellcheck-backed word validation for Esperanto/Italian/Polish/Spanish`.
-That file is the authoritative package list for this machine, and
-`~/dotfiles/AGENTS.md` describes the repository it belongs to. Read them rather
-than trusting any list reproduced in this prompt: the list here is a cache and
-the configuration is the fact.
-
-Two dictionary caveats worth knowing before leaning on a tool: `sdcv` carries
-offline StarDict dictionaries for the languages above — CC-CEDICT and CC-Canto
-(Chinese), WordNet (English), kengdic (Korean), an Open Vietnamese dictionary,
-and FreeDict pairs for the European languages and Japanese; run `sdcv -l` to see
-the set, and note some FreeDict pairs (Spanish, French) are small. `dict` still
-only has the stock Esperanto-English database. `tesseract5` does ship the
-language data it needs.
+The Python libraries (`jieba`, `pypinyin`) are in that file's
+`python3.withPackages` entry, and `~/dotfiles/dictionaries/` builds the `sdcv`
+databases. Together they are the authoritative package list for this machine,
+and `~/dotfiles/AGENTS.md` describes the repository they belong to. Read them
+rather than trusting any list reproduced in this prompt: the list here is a
+cache and the configuration is the fact.
 
 - **Hosts:** two Home Manager profiles on generic Linux, not NixOS: `schan`
   (personal, Fedora Kinoite, KDE Plasma) and `stachan` (work, managed Ubuntu,

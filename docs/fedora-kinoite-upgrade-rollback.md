@@ -88,7 +88,8 @@ the live system.
    - Home Manager generation, a locked build, repository status, and disk space;
    - Flatpak user/system remotes, applications, and overrides.
 5. Stop or finish active Nix builds and garbage collection.
-6. Determine the actual Btrfs layout with `btrfs subvolume show /var/home/nix`.
+6. Determine the actual Btrfs layout with `findmnt -T /var/home/nix`; the store
+   is a directory inside the `/home` subvolume, not a subvolume of its own.
    Select and test a backup or snapshot method appropriate to that layout; do
    not invent a snapshot command before checking it.
 7. Verify the pinned deployment is available in the bootloader.

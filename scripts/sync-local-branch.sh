@@ -229,11 +229,6 @@ main() {
         "Resolve conflicts in: $branch_worktree" \
         "Then continue with:" >&2
       printf '  git -C %q rebase --continue\n' "$branch_worktree" >&2
-      printf '%s\n' \
-        "If continue reports 'you have staged changes', the pick stopped" \
-        "in edit state because the resolution changed its content; fold" \
-        "the resolution into the current commit with:" >&2
-      printf '  git commit --amend --no-edit && git rebase --continue\n' >&2
       printf '%s\n' "After completion, validate with:" >&2
       print_validation_command
       printf '%s\n' "To restore the prior local branch, run:" >&2
@@ -252,22 +247,14 @@ main() {
 
   trap 'report_interruption SIGINT' INT
   trap 'report_interruption SIGTERM' TERM
-  if run_phase "Formatting $local_branch" \
-    format_worktree "$branch_worktree"; then
-    if run_phase "Validating flake checks" \
-      check_flake "$branch_worktree"; then
-      if run_phase "Building Home Manager profile $profile" \
-        build_profile "$branch_worktree" "$profile"; then
-        validation_status=0
-      else
-        validation_status=$?
-      fi
-    else
-      validation_status=$?
-    fi
-  else
+  validation_status=0
+  run_phase "Formatting $local_branch" \
+    format_worktree "$branch_worktree" &&
+    run_phase "Validating flake checks" \
+      check_flake "$branch_worktree" &&
+    run_phase "Building Home Manager profile $profile" \
+      build_profile "$branch_worktree" "$profile" ||
     validation_status=$?
-  fi
   trap - INT TERM
 
   if ((validation_status != 0)); then

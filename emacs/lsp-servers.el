@@ -38,6 +38,10 @@
 ;; back to fundamental-mode without one, which no LSP client serves.
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
 
+;; typst-ts-mode's autoloads call define-compilation-mode before compile.el
+;; is loaded, so package activation drops its autoloads and its .typ entry.
+(require 'typst-ts-mode)
+
 (require 'company)
 (require 'company-box)
 (global-company-mode 1)

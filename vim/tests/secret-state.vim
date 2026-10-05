@@ -84,6 +84,15 @@ call assert_false(&l:swapfile)
 call assert_false(&l:undofile)
 call assert_false(filereadable(undofile(expand('%:p'))))
 
+" Writing an unnamed buffer gives it the file's name without BufFilePost.
+" Both editors run in the same HOME, so the second one overwrites the file.
+enew!
+call setline(1, 'token')
+execute 'write! ' . fnameescape($HOME . '/.config/rclone/written.conf')
+call assert_false(&l:swapfile)
+call assert_false(&l:undofile)
+call assert_false(filereadable(undofile(expand('%:p'))))
+
 if !empty(v:errors)
   for error in v:errors
     echomsg error

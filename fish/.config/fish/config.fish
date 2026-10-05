@@ -36,7 +36,7 @@ function __confirm_tmux_exit
         return
     end
 
-    commandline --function exit
+    commandline --function delete-or-exit
 end
 
 # ctrl-x ctrl-e to open $EDITOR, like in zsh
@@ -135,7 +135,7 @@ alias gits="git --no-pager show --no-patch --format='commit %h (\"%s\")%n'"
 # An empty alternate editor starts the daemon if the user service is not ready.
 alias et='emacsclient --alternate-editor= --tty'
 alias ef='emacsclient --alternate-editor= --create-frame --no-wait'
-alias ec="emacsclient --alternate-editor= --no-wait --eval '(make-capture-frame)'"
+alias ec="emacsclient --alternate-editor= --create-frame --no-wait --frame-parameters='((name . \"capture\"))' --eval '(make-capture-frame)'"
 
 # Ubuntu/Fedora system libs (for Nix gcc/ld to find distro-installed libraries)
 set -gx LIBRARY_PATH "/usr/lib/x86_64-linux-gnu:/usr/lib64"
@@ -146,7 +146,7 @@ set -gx CPPFLAGS "-I$(brew --prefix)/opt/llvm/include"
 fish_add_path -p "$(brew --prefix)/opt/llvm/bin"
 set -gx SDKROOT $(xcrun --sdk macosx --show-sdk-path)
 
-# Run the current kernel tree with the usual AMD debugging defaults.
+# Run the current kernel tree with user networking and KASLR disabled.
 function vmeamd --wraps vng
     command vng \
         --run \
@@ -156,8 +156,6 @@ function vmeamd --wraps vng
         --append nokaslr \
         $argv
 end
-
-# programming language environments
 
 # eza
 if command -q eza

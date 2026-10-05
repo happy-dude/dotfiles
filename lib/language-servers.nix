@@ -14,9 +14,20 @@
     ps.PerlLanguageServer
     ps.PerlTidy
   ]);
+  # The server formats by running shfmt from PATH and quietly returns no
+  # edits when it is missing; nixpkgs only puts shellcheck on its PATH.
+  bashLanguageServer = pkgs.symlinkJoin {
+    name = "bash-language-server-with-shfmt";
+    paths = [pkgs.bash-language-server];
+    nativeBuildInputs = [pkgs.makeBinaryWrapper];
+    postBuild = ''
+      wrapProgram "$out/bin/bash-language-server" \
+        --suffix PATH : ${lib.makeBinPath [pkgs.shfmt]}
+    '';
+  };
   servers = {
     "bash-language-server" = {
-      package = pkgs.bash-language-server;
+      package = bashLanguageServer;
       exe = "bash-language-server";
     };
     "clangd" = {
@@ -78,6 +89,11 @@
     "rust-analyzer" = {
       package = pkgs.rust-analyzer;
       exe = "rust-analyzer";
+    };
+    # Formats Lua through `stylua --lsp`, which reads .stylua.toml.
+    "stylua" = {
+      package = pkgs.stylua;
+      exe = "stylua";
     };
     "terraform-ls" = {
       package = pkgs.terraform-ls;

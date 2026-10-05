@@ -23,7 +23,9 @@ api.nvim_create_autocmd('FileType', {
       end
 
       local lang = vim.treesitter.language.get_lang(filetype)
-      if not lang then
+      -- VimTeX's math text objects and conceal read its own syntax groups,
+      -- which Tree-sitter highlighting would switch off.
+      if not lang or lang == 'latex' then
         return
       end
 

@@ -21,6 +21,8 @@
       tree-sitter-hcl
       tree-sitter-html
       tree-sitter-javascript
+      # js-ts-mode embeds JSDoc and fails to start without its grammar.
+      tree-sitter-jsdoc
       tree-sitter-json
       tree-sitter-kotlin
       tree-sitter-latex

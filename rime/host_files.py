@@ -78,23 +78,23 @@ def migrate_theme_root(marker_source: Path) -> None:
     marker.unlink(missing_ok=True)
 
 
-def deploy(source_root: Path) -> None:
-    config_home = dotfiles_files.config_home()
+def deploy(source_dir: Path) -> None:
+    config_dir = dotfiles_files.config_home() / "fcitx5"
     state_root = dotfiles_files.state_home() / "rime/host-config"
     files = (
         (
-            source_root / ".config/fcitx5/profile",
-            config_home / "fcitx5/profile",
+            source_dir / "profile",
+            config_dir / "profile",
             state_root / "profile",
         ),
         (
-            source_root / ".config/fcitx5/conf/classicui.conf",
-            config_home / "fcitx5/conf/classicui.conf",
+            source_dir / "conf/classicui.conf",
+            config_dir / "conf/classicui.conf",
             state_root / "classicui.conf",
         ),
         (
-            source_root / ".config/fcitx5/conf/rime.conf",
-            config_home / "fcitx5/conf/rime.conf",
+            source_dir / "conf/rime.conf",
+            config_dir / "conf/rime.conf",
             state_root / "rime.conf",
         ),
     )
@@ -113,7 +113,7 @@ def main(arguments: list[str]) -> None:
         return
     raise SystemExit(
         "usage: rime-host-files "
-        "deploy SOURCE_ROOT | migrate-theme-root MARKER_SOURCE"
+        "deploy FCITX_CONFIG_DIR | migrate-theme-root MARKER_SOURCE"
     )
 
 

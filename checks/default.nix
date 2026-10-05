@@ -37,7 +37,7 @@ in
     (import ../emacs/check.nix {inherit homes lib pkgs self;})
     (import ../git/check.nix {inherit pkgs;})
     (import ../rclone/check.nix {inherit pkgs;})
-    (import ../rime/check.nix {inherit homes lib pkgs;})
+    (import ../rime/check.nix {inherit lib pkgs;})
     (import ../vim/check.nix {inherit homes lib pkgs self;})
     (import ../yt-dlp/check.nix {inherit homes lib pkgs;})
     (import ../zed/check.nix {inherit pkgs;})

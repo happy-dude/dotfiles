@@ -149,7 +149,6 @@ in {
         sparse
         stow
         strace
-        stylua
         texliveFull
         tokei
         traceroute

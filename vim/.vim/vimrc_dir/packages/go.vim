@@ -20,7 +20,6 @@ endfunction
 function! s:ConfigureGoBuffer() abort
   nmap <buffer> <localleader>r <Plug>(go-run)
   nmap <buffer> <localleader>c <Plug>(go-coverage-toggle)
-  nmap <buffer> <localleader>i <Plug>(go-info)
   nnoremap <buffer> <localleader>b :<C-u>call <SID>BuildGoFiles()<CR>
 
   command! -buffer -bang A  call go#alternate#Switch(<bang>0, 'edit')

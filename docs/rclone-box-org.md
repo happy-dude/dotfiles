@@ -49,8 +49,9 @@ content. Org Roam rebuilds its per-machine database under the local XDG cache.
 `rclone-box-org-watch.service` watches `~/org` recursively for closed writes,
 creates, deletes, and moves. The first relevant event schedules a transient
 timer for five minutes later. Its fixed unit name makes later events reuse that
-pending batch instead of moving the deadline. After it fires, a new event can
-schedule the next batch.
+pending batch instead of moving the deadline. The transient unit only queues the
+sync and exits, so a change made while a sync is running schedules the next
+batch.
 
 Watcher records use NUL delimiters and filesystem decoding, so embedded or
 trailing newlines and non-UTF-8 filename bytes do not change path identity
@@ -73,7 +74,7 @@ reports its planned resync without synchronizing either side:
 touch ~/org/RCLONE_TEST
 rclone copyto ~/org/RCLONE_TEST box:org/RCLONE_TEST
 rclone bisync ~/org box:org \
-  --filter-from ~/.config/rclone/org-bisync.filter \
+  --filters-file ~/.config/rclone/org-bisync.filter \
   --workdir ~/.cache/rclone/bisync \
   --check-access \
   --check-filename RCLONE_TEST \
@@ -109,6 +110,19 @@ Do not use `--resync` during normal scheduled operation. It is reserved for the
 initial run, deliberate filter changes, or recovery when bisync explicitly
 requires it.
 
+## Filter changes
+
+`--filters-file` stores the filter's MD5 in
+`~/.config/rclone/org-bisync.filter.md5` on each real `--resync`. When the
+filter later changes, every run stops with
+`filters file has changed (must run --resync)` before touching either side.
+Without that stop, files a new rule hides would look deleted and bisync would
+delete them on the other side. A machine that last resynced with the earlier
+`--filter-from` flag has no hash yet and stops with
+`filters file md5 hash not found (must run --resync)`. In both cases, run the
+initial-synchronization `--resync --dry-run` command above, review it, and
+repeat it without `--dry-run`.
+
 ## Validation and recovery
 
 ```bash
@@ -117,7 +131,7 @@ systemctl --user status rclone-box-org-bisync.service
 systemctl --user status rclone-box-org-watch.service
 journalctl --user -u rclone-box-org-bisync.service
 rclone bisync ~/org box:org \
-  --filter-from ~/.config/rclone/org-bisync.filter \
+  --filters-file ~/.config/rclone/org-bisync.filter \
   --workdir ~/.cache/rclone/bisync \
   --check-access \
   --check-filename RCLONE_TEST \

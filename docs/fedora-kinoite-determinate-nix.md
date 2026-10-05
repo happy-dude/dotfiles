@@ -235,7 +235,7 @@ grep -Eq '^\[composefs\]$' "$vendor" || fail 'vendor composefs section is missin
 grep -Eq '^\[sysroot\]$' "$vendor" || fail 'vendor sysroot section is missing'
 ! grep -Eq '^\[root\]$' "$vendor" || fail 'vendor root section requires manual review'
 
-sudo ostree admin pin 0
+sudo ostree admin pin booted
 cp -- "$vendor" "$temporary"
 printf '\n[root]\ntransient-ro = true\n' >>"$temporary"
 sudo install -D -o root -g root -m 0644 "$temporary" "$override"

@@ -2,14 +2,12 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-# Neutralise the user's global Git configuration: the managed commit-msg
-# hook lints every commit, so a suite that creates them must not depend on
-# whether that hook is installed on the machine running it.
-export GIT_CONFIG_GLOBAL=/dev/null
-
 source_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-temporary_directory=$(mktemp -d)
-trap 'rm -rf -- "$temporary_directory"' EXIT
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=lib/test-helpers.sh
+source "$source_root/scripts/lib/test-helpers.sh"
+test_setup
+temporary_directory=$TMPDIR_TEST
 repo="$temporary_directory/repo"
 mkdir -p "$repo/scripts"
 cp -- "$source_root/scripts/portable-series.sh" "$repo/scripts/"
@@ -357,19 +355,13 @@ git fetch --quiet origin refs/heads/main:refs/remotes/origin/main
 clean_series merged >/dev/null
 test ! -e "$merged_worktree"
 
-# lint_commits' EXIT trap must clean its staging directory even when the
-# linter kills the run; the path is baked into the trap at install time.
-lint_tmp="$temporary_directory/lint-tmp"
-mkdir "$lint_tmp"
+# lint_commits rejects a message through the repository linter.
 cp -- "$source_root/scripts/lint_commit_message.py" "$repo/scripts/"
 git -C "$repo" switch -qc bad-message "$base"
 git -C "$repo" commit -q --allow-empty -m 'no subsystem prefix'
 lint_rc=0
 lint_output=$(
-  cd -- "$repo"
-  TMPDIR="$lint_tmp" bash -c \
-    'source scripts/portable-series.sh && lint_commits "$1" "$2"' \
-    _ "$repo" "$base" 2>&1
+  lint_commits "$repo" "$base" "$temporary_directory/messages" 2>&1
 ) || lint_rc=$?
 if [ "$lint_rc" -eq 0 ]; then
   printf 'lint_commits accepted an invalid commit message\n' >&2
@@ -384,9 +376,12 @@ case $lint_output in
   exit 1
   ;;
 esac
-# mktemp staging directories are tmp.*; prettier's node cache
-# (node-compile-cache) also lands in TMPDIR and is not ours.
-if ls -d "$lint_tmp"/tmp.* >/dev/null 2>&1; then
-  printf 'lint staging directory leaked\n' >&2
-  exit 1
-fi
+
+# Every attribution trailer is dropped before scanning, not just the last.
+printf '%s\n' \
+  'tests: carry two attributions' '' 'Body.' '' \
+  'Assisted-by: private-model:xhigh oh-my-pi' \
+  'Assisted-by: other-model:high codex' |
+  strip_attribution_trailers >"$metadata_path"
+scan_forbidden_content model "commit metadata" "$metadata_path"
+grep -Fqx 'Body.' "$metadata_path"

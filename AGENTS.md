@@ -200,7 +200,9 @@ and installs StyLua's config under `~/.config/stylua`.
 - **`zsh/`** sets `ZDOTDIR` to `~/.config/zsh` and lets Home Manager compose its
   generated integrations with the tracked runcom files there. Only `~/.zshenv`
   remains at the home root because Zsh needs it to bootstrap `ZDOTDIR` before
-  reading the other startup files.
+  reading the other startup files. `programs.zsh.history.path` names the same
+  `$XDG_STATE_HOME/zsh/history` file that `.zpreztorc` gives Prezto, so Home
+  Manager's generated `HISTFILE` agrees with it.
 - **`git/`** is a module (`git/default.nix`, `programs.git`); enabling the
   program owns the package, so do not duplicate `git` in `home.packages`. It
   defines aliases, delta for diffs and bat as its pager, and
@@ -319,11 +321,13 @@ and installs StyLua's config under `~/.config/stylua`.
   and missed changes. The services remain inert until a manually reviewed
   initial resync creates `~/.local/state/rclone/org-bisync-ready`. Its filter
   keeps legacy and derived Org Roam databases, Home Manager links, locks, and
-  editor backups out of Box. The matching `RCLONE_TEST` access-check file is a
-  permanent safety sentinel on both sides, not a disposable test artifact. OAuth
-  state in `~/.config/rclone/rclone.conf` is machine-local and must never enter
-  Git or the Nix store. Setup and recovery are documented in
-  `docs/rclone-box-org.md`.
+  editor backups out of Box. bisync reads it through `--filters-file`, which
+  records its hash on each real `--resync` and stops later runs once the filter
+  changes, so a filter edit needs a reviewed manual resync. The matching
+  `RCLONE_TEST` access-check file is a permanent safety sentinel on both sides,
+  not a disposable test artifact. OAuth state in `~/.config/rclone/rclone.conf`
+  is machine-local and must never enter Git or the Nix store. Setup and recovery
+  are documented in `docs/rclone-box-org.md`.
 - **`rime/`** is a native Home Manager module (`rime/default.nix`). Locked
   schema inputs replace matching snapshot files and `pkgs.rime-zhwiki` supplies
   Zhwiki. Home Manager owns each immutable Catppuccin and Plasma theme
@@ -589,17 +593,15 @@ scripts/sync-local-branch.sh --validate <local-branch> <profile> [repository]
 Sync mode fetches `main` directly into the `origin/main` remote-tracking ref,
 fast-forwards local `main`, rebases the named local-only branch, and validates
 the selected profile. Before rebasing it reports local commits whose patches are
-already represented upstream and are therefore expected to disappear, and its
-conflict output names the amend-then-continue pattern for resolutions that
-change a pick's content. Only the `main` and named local-branch worktrees must
-be clean; unrelated linked worktrees are intentionally ignored. A dirty target
-refusal identifies its path and occurs before fetch or mutation. The script
-rejects prunable registrations and branches with an upstream, and never pushes
-or activates. Formatting, flake checks, and the profile build are reported as
-separate phases without a fixed timeout. Automated sync rebases and the
-updater's rebasing pull disable Git's automatic updates to other local branch
-refs. Backup and topic refs retain their original commits even when
-`rebase.updateRefs` is enabled for manual rebases.
+already represented upstream and are therefore expected to disappear. Only the
+`main` and named local-branch worktrees must be clean; unrelated linked
+worktrees are intentionally ignored. A dirty target refusal identifies its path
+and occurs before fetch or mutation. The script rejects prunable registrations
+and branches with an upstream, and never pushes or activates. Formatting, flake
+checks, and the profile build are reported as separate phases without a fixed
+timeout. Automated sync rebases and the updater's rebasing pull disable Git's
+automatic updates to other local branch refs. Backup and topic refs retain their
+original commits even when `rebase.updateRefs` is enabled for manual rebases.
 
 Validate mode performs no fetch or rebase. It requires local `main` to equal the
 cached `origin/main` tip and the local-only branch to descend from that tip. Use
