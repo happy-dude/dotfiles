@@ -57,7 +57,7 @@ make_patch() {
   printf 'changed\n' >"$repo/file.txt"
   git -C "$repo" add file.txt
   git_as "$repo" commit -q -m 'series: change the file'
-  git -C "$repo" format-patch -q -1 --stdout main \
+  git -C "$repo" format-patch -q --stdout main..series \
     >"$directory/dotfiles-probe.patch"
   git -C "$repo" switch -q main
   git -C "$repo" branch -q -D series
