@@ -61,6 +61,19 @@ in {
         assert stat.S_IMODE(path.stat().st_mode) == 0o600
         PYTHON
 
+        # Current settings are left in place: same bytes, same inode.
+        before=$(sha256sum work/settings.json)
+        inode=$(stat -c %i work/settings.json)
+        materialize-zed-settings work/static.json work/settings.json
+        [[ $before == "$(sha256sum work/settings.json)" ]]
+        [[ $inode == "$(stat -c %i work/settings.json)" ]]
+
+        # Current content with the wrong mode is still rewritten at 0600.
+        chmod 0644 work/settings.json
+        materialize-zed-settings work/static.json work/settings.json
+        [[ $(stat -c %a work/settings.json) == 600 ]]
+        [[ $before == "$(sha256sum work/settings.json)" ]]
+
         # A runtime file that is not a JSON object must be refused rather
         # than silently replaced by the declared keys.
         printf '[]\n' >work/array.json
