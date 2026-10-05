@@ -81,6 +81,10 @@ def migrate_theme_root(marker_source: Path) -> None:
 def deploy(source_dir: Path) -> None:
     config_dir = dotfiles_files.config_home() / "fcitx5"
     state_root = dotfiles_files.state_home() / "rime/host-config"
+    # A linked directory would carry managed writes to wherever it points.
+    for directory in (config_dir, config_dir / "conf"):
+        if directory.is_symlink():
+            fail(f"Refusing to replace unmanaged Rime link: {directory}")
     files = (
         (
             source_dir / "profile",

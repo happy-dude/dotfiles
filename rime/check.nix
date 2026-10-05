@@ -149,6 +149,16 @@ in {
         exit 1
       fi
 
+      linked_home="$PWD/linked-home"
+      mkdir -p "$linked_home/.config"
+      ln -s "$source_root" "$linked_home/.config/fcitx5"
+      if HOME="$linked_home" XDG_STATE_HOME="$PWD/linked-state" \
+        rime-host-files deploy "$source_root"; then
+        echo "deployed through a linked Fcitx config directory" >&2
+        exit 1
+      fi
+      test ! -e "$PWD/linked-state"
+
       migration_home="$PWD/migration-home"
       migration_state="$PWD/migration-state"
       mkdir -p "$migration_home/.local/share/fcitx5" \
