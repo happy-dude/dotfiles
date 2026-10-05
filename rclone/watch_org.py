@@ -19,7 +19,9 @@ def should_sync(relative: Path) -> bool:
 
 def schedule(systemd_run: str, systemctl: str) -> None:
     # A fixed unit name keeps the first five-minute deadline while later
-    # changes join the pending batch.
+    # changes join the pending batch; systemd-run fails while that unit
+    # exists. --no-block lets the transient unit exit as soon as the sync is
+    # queued, so changes made during a long sync can schedule the next one.
     subprocess.run(
         [
             systemd_run,
@@ -31,6 +33,7 @@ def schedule(systemd_run: str, systemctl: str) -> None:
             systemctl,
             "--user",
             "start",
+            "--no-block",
             "rclone-box-org-bisync.service",
         ],
         check=False,
