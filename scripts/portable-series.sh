@@ -218,7 +218,7 @@ start_series() {
   local existing_worktree
   local lookup_status
 
-  validate_name "$name"
+  validate_name "$name" || return 1
   if git -C "$repo_root" show-ref --verify --quiet "$branch_ref"; then
     if existing_worktree=$(worktree_for_branch "$repo_root" "$branch_ref"); then
       print_existing_series_help "$name" "$existing_worktree"
@@ -305,7 +305,7 @@ export_series() {
   local patch_sha256
   local forbidden_pattern=${PORTABLE_FORBIDDEN_PATTERN:-}
 
-  validate_name "$name"
+  validate_name "$name" || return 1
   apply_name=$(apply_artifact_name "$name")
   if worktree=$(worktree_for_branch "$repo_root" "$branch_ref"); then
     :

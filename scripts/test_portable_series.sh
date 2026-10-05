@@ -224,6 +224,26 @@ if start_series existing-path "$existing_path" 2>"$start_error"; then
 fi
 grep -Fq "worktree path already exists: $existing_path" "$start_error"
 
+# Sourced callers test these functions in conditions, where set -e is inert,
+# so a rejected name must stop the function itself.
+if start_series 'Bad Name' "$temporary_directory/bad-name" \
+  2>"$start_error"; then
+  printf 'started a series with an invalid name\n' >&2
+  exit 1
+fi
+grep -Fq 'invalid series name: Bad Name' "$start_error"
+test ! -e "$temporary_directory/bad-name"
+if git show-ref --verify --quiet 'refs/heads/replay/Bad Name'; then
+  printf 'created a replay branch for an invalid name\n' >&2
+  exit 1
+fi
+if export_series 'Bad Name' "$output_directory" 2>"$start_error"; then
+  printf 'exported a series with an invalid name\n' >&2
+  exit 1
+fi
+test "$(grep -c . "$start_error")" -eq 1
+grep -Fq 'invalid series name: Bad Name' "$start_error"
+
 for series_name in one two; do
   series_staging="$temporary_directory/staging-$series_name"
   apply_name=$(apply_artifact_name "$series_name")
