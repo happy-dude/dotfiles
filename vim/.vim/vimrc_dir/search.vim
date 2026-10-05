@@ -18,14 +18,9 @@ augroup SearchHighlights
   autocmd ColorScheme * call <SID>ApplySearchHighlights()
 augroup END
 
-function! s:ClearSearchHighlight() abort
-  nohlsearch
-  if &diff
-    diffupdate
-  endif
-endfunction
-
-nnoremap <silent> <C-L> <Cmd>call <SID>ClearSearchHighlight()<CR><C-L>
+" A function restores the search highlight state when it returns, so
+" :nohlsearch has to run from the mapping itself.
+nnoremap <silent> <C-L> <Cmd>nohlsearch<Bar>if &diff<Bar>diffupdate<Bar>endif<CR><C-L>
 
 if executable('rg')
   let &grepprg = 'rg --color=never --vimgrep --no-heading --smart-case --hidden --glob '
