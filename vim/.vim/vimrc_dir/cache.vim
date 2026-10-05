@@ -86,7 +86,9 @@ endfunction
 
 augroup dotfiles_sensitive_file_state
   autocmd!
-  autocmd BufReadPre,BufNewFile,BufFilePost * call <SID>disable_sensitive_file_state()
+  " Writing an unnamed buffer names it without BufFilePost; BufWritePre still
+  " runs before the undo file is written.
+  autocmd BufReadPre,BufNewFile,BufFilePost,BufWritePre * call <SID>disable_sensitive_file_state()
 augroup END
 
 unlet s:backup_dir s:dir s:state_dir s:swap_dir s:undo_dir s:view_dir
