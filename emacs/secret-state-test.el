@@ -50,6 +50,8 @@ given."
   (dotfiles-test/exercise-file-state
    (expand-file-name "credential.txt" directory-alias) t)
   (dotfiles-test/exercise-file-state renamed t secret)
+  (dotfiles-test/exercise-file-state
+   secret nil (expand-file-name "~/declassified.txt"))
   (dotfiles-test/exercise-file-state secret t nil #'fundamental-mode)
   ;; Visiting secrets must not disable state for subsequent ordinary buffers.
   (dotfiles-test/exercise-file-state ordinary nil))

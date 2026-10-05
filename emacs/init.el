@@ -83,9 +83,11 @@ Remote names are matched as written, without extra network access."
 ;; A major-mode change kills the buffer-local undo-tree setting, so reapply it.
 (defun dotfiles/harden-sensitive-buffer ()
   "Disable on-disk copies for the current buffer when it visits a secret."
-  (when (dotfiles/sensitive-file-p buffer-file-name)
-    (auto-save-mode -1)
-    (setq-local undo-tree-auto-save-history nil)))
+  (if (dotfiles/sensitive-file-p buffer-file-name)
+      (progn
+        (auto-save-mode -1)
+        (setq-local undo-tree-auto-save-history nil))
+    (kill-local-variable 'undo-tree-auto-save-history)))
 (add-hook 'find-file-hook #'dotfiles/harden-sensitive-buffer)
 (add-hook 'after-set-visited-file-name-hook #'dotfiles/harden-sensitive-buffer)
 (add-hook 'after-change-major-mode-hook #'dotfiles/harden-sensitive-buffer)
