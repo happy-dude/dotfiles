@@ -65,6 +65,7 @@
         "typescriptreact",
         "vue"
       ],
+      "requireRootPattern": true,
       "rootPatterns": [
         "eslint.config.js",
         "eslint.config.mjs",
@@ -78,8 +79,7 @@
         ".eslintrc.json",
         ".eslintrc.yaml",
         ".eslintrc.yml"
-      ],
-      "requireRootPattern": true
+      ]
     },
     "fennel-ls": {
       "args": ["--server"],
@@ -154,8 +154,8 @@
         "typescriptreact",
         "vue"
       ],
-      "rootPatterns": [".oxlintrc.json", ".oxlintrc.jsonc"],
-      "requireRootPattern": true
+      "requireRootPattern": true,
+      "rootPatterns": [".oxlintrc.json", ".oxlintrc.jsonc"]
     },
     "perl-language-server": {
       "args": ["-MPerl::LanguageServer", "-e", "Perl::LanguageServer::run"],
