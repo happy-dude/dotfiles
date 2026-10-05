@@ -194,8 +194,13 @@ in {
   rime-failure-recovery = mkCheck {
     name = "rime-failure-recovery-test";
     tools = [pkgs.python3];
-    script = ''
-      PYTHONPATH=${../lib/python}:${./.} \
+    script = let
+      helpers = lib.fileset.toSource {
+        root = ./.;
+        fileset = lib.fileset.unions [./host_files.py ./state_manager.py];
+      };
+    in ''
+      PYTHONPATH=${../lib/python}:${helpers} \
         python3 ${./tests/test_failure_recovery.py}
     '';
   };
@@ -205,10 +210,17 @@ in {
       pkgs.findutils
       pkgs.lua
     ];
-    script = ''
-      find ${./.} -type f -name '*.lua' -exec luac -p {} +
+    # Only the Lua sources, rooted at the repository so the tests' rime/...
+    # package.path still resolves; ./. would copy all of the Rime data too.
+    script = let
+      luaSources = lib.fileset.toSource {
+        root = ../.;
+        fileset = lib.fileset.fileFilter (file: file.hasExt "lua") ./.;
+      };
+    in ''
+      find ${luaSources} -type f -name '*.lua' -exec luac -p {} +
 
-      cd ${../.}
+      cd ${luaSources}
       lua rime/tests/cangjie5_colemak_remap.lua
       lua rime/tests/romanization.lua
     '';
