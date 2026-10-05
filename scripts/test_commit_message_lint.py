@@ -225,6 +225,25 @@ Explain the change.
         assert "-* item" in prettier_error
         assert "+- item" in prettier_error
 
+        # The global hook runs in whichever repository is committing. Its
+        # Prettier settings must neither skip nor break the Markdown check.
+        foreign = directory / "foreign"
+        foreign.mkdir()
+        write_message(foreign, ".prettierignore", "*.md\n")
+        write_message(
+            foreign, ".prettierrc", '{"plugins": ["prettier-plugin-absent"]}\n'
+        )
+        working_directory = Path.cwd()
+        os.chdir(foreign)
+        try:
+            assert not lint(valid)
+            assert any(
+                error.startswith("commit message differs from Prettier output")
+                for error in lint(invalid_markdown)
+            )
+        finally:
+            os.chdir(working_directory)
+
 
 if __name__ == "__main__":
     main()
