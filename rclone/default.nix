@@ -41,7 +41,10 @@ in {
         "bisync"
         (lib.escapeShellArg "${config.home.homeDirectory}/org")
         "box:org"
-        "--filter-from"
+        # Unlike --filter-from, --filters-file records the filter's MD5 on
+        # resync and aborts later runs when it changes: files a new rule
+        # hides would otherwise look deleted and be deleted on the far side.
+        "--filters-file"
         (lib.escapeShellArg filterFile)
         "--workdir"
         (lib.escapeShellArg workDir)
