@@ -5,10 +5,6 @@
   inputs,
   ...
 }: {
-  home.activation.createZshStateDirectory = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    $DRY_RUN_CMD ${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg "${config.xdg.stateHome}/zsh"}
-  '';
-
   xdg.configFile."zsh/.p10k.zsh".source = ./.config/zsh/.p10k.zsh;
   xdg.configFile."zsh/.zlogin".source = ./.config/zsh/.zlogin;
   xdg.configFile."zsh/.zlogout".source = ./.config/zsh/.zlogout;
@@ -24,6 +20,10 @@
 
     enable = true;
     enableCompletion = false; # Let prezto handle compinit
+    # Prezto's history module sets the same file from .zpreztorc and runs
+    # later; declaring it here makes Home Manager's own HISTFILE agree and
+    # create the directory.
+    history.path = "${config.xdg.stateHome}/zsh/history";
 
     envExtra = ''
       ${builtins.readFile ./.config/zsh/.zshenv}
