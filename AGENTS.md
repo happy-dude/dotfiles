@@ -256,22 +256,22 @@ and installs StyLua's config under `~/.config/stylua`.
   templates. `agents/codex.nix` owns the profile materializer, the guarded
   agent-directory ownership migration, and their focused checks. Home Manager
   stores the immutable templates under `~/.local/share/codex/generated-profiles`
-  and uses a Nix-built materializer to create missing writable mode-0600
-  profiles or refresh generator-owned keys when a template changes. Generated
-  profiles carry Codex's official `config.toml` schema directive and preserve
-  readable multiline instructions. Runtime-owned project trust, TUI state, and
-  other profile keys survive that merge. The independently maintained Kagi
-  Markdown prompts (`agents/prompts/kagi-*.md`) carry a different, fixed
-  instruction budget, so they are kept verbatim in the repo — whitespace
-  preserved and measured by the `kagi-prompt-budget` check — rather than
-  generated from the canonical agent prompts or deployed as client agents. Kagi
-  prompts target a chat interface with optional web search and uploads but no
-  shell, filesystem, or host access; they delegate commands to the user and
-  continue by interpreting returned results. Claude and Codex session state,
-  credentials, provider configuration, and project trust remain machine-local
-  and must never be committed. Activation requires `~/.claude`, `~/.codex`, and
-  `~/.omp` to be real directories and restricts them to mode `0700` while
-  leaving their contents writable.
+  and runs a Nix-built materializer on every activation to create missing
+  writable mode-0600 profiles and refresh their generator-owned keys; it leaves
+  a profile that is already current untouched. Generated profiles carry Codex's
+  official `config.toml` schema directive and preserve readable multiline
+  instructions. Runtime-owned project trust, TUI state, and other profile keys
+  survive that merge. The independently maintained Kagi Markdown prompts
+  (`agents/prompts/kagi-*.md`) carry a different, fixed instruction budget, so
+  they are kept verbatim in the repo — whitespace preserved and measured by the
+  `kagi-prompt-budget` check — rather than generated from the canonical agent
+  prompts or deployed as client agents. Kagi prompts target a chat interface
+  with optional web search and uploads but no shell, filesystem, or host access;
+  they delegate commands to the user and continue by interpreting returned
+  results. Claude and Codex session state, credentials, provider configuration,
+  and project trust remain machine-local and must never be committed. Activation
+  requires `~/.claude`, `~/.codex`, and `~/.omp` to be real directories and
+  restricts them to mode `0700` while leaving their contents writable.
 - **`omp/`** installs oh-my-pi (`omp`) for both Linux profiles on the same
   footing as OpenCode. omp rewrites its global `~/.omp/agent/config.yml` from
   `/settings` and `omp config set`, so Home Manager does not own that file; the
