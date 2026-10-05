@@ -27,9 +27,6 @@ xmonad-x86*
 *.o
 *.pyc
 
-# Logs and databases #
-######################
-
 # OS generated files #
 ######################
 .DS_Store
