@@ -157,6 +157,26 @@ in {
         exit 1
       fi
       test ! -e "$PWD/linked-state"
+
+      # Fcitx rewrites notifications.conf when a notification is hidden. On
+      # the first deploy that copy is kept; the other host files still refuse
+      # an unmanaged regular file.
+      fresh_home="$PWD/fresh-home"
+      mkdir -p "$fresh_home/.config/fcitx5/conf"
+      printf '%s\n' hidden-by-fcitx \
+        >"$fresh_home/.config/fcitx5/conf/notifications.conf"
+      HOME="$fresh_home" XDG_STATE_HOME="$PWD/fresh-state" \
+        rime-host-files deploy "$source_root"
+      grep -qx hidden-by-fcitx \
+        "$fresh_home/.config/fcitx5/conf/notifications.conf"
+      other_home="$PWD/other-home"
+      mkdir -p "$other_home/.config/fcitx5"
+      printf '%s\n' local-profile >"$other_home/.config/fcitx5/profile"
+      if HOME="$other_home" XDG_STATE_HOME="$PWD/other-state" \
+        rime-host-files deploy "$source_root"; then
+        echo "adopted an unmanaged Fcitx profile" >&2
+        exit 1
+      fi
     '';
   };
   rime-failure-recovery = mkCheck {

@@ -9,6 +9,7 @@ def validate_materialize(
     source: Path,
     target: Path,
     snapshot: Path,
+    adopt: bool = False,
 ) -> None:
     if not source.is_file() or source.is_symlink():
         fail(f"Rime source is not a regular file: {source}")
@@ -20,7 +21,7 @@ def validate_materialize(
     elif target.exists() and not target.is_file():
         fail(f"Refusing to replace unmanaged Rime path: {target}")
     elif target.is_file() and not snapshot.exists():
-        if not same_content(source, target):
+        if not adopt and not same_content(source, target):
             fail(f"Refusing unmanaged Rime host file: {target}")
     elif target.is_file() and snapshot.is_file():
         source_changed = not same_content(source, snapshot)
@@ -59,31 +60,38 @@ def deploy(source_dir: Path) -> None:
     for directory in (config_dir, config_dir / "conf"):
         if directory.is_symlink():
             fail(f"Refusing to replace unmanaged Rime link: {directory}")
+    # (source, target, snapshot, adopt). Fcitx writes notifications.conf
+    # itself when a notification is hidden, so an existing copy is kept on the
+    # first deploy instead of refused.
     files = (
         (
             source_dir / "profile",
             config_dir / "profile",
             state_root / "profile",
+            False,
         ),
         (
             source_dir / "conf/classicui.conf",
             config_dir / "conf/classicui.conf",
             state_root / "classicui.conf",
+            False,
         ),
         (
             source_dir / "conf/rime.conf",
             config_dir / "conf/rime.conf",
             state_root / "rime.conf",
+            False,
         ),
         (
             source_dir / "conf/notifications.conf",
             config_dir / "conf/notifications.conf",
             state_root / "notifications.conf",
+            True,
         ),
     )
-    for source, target, snapshot in files:
-        validate_materialize(source, target, snapshot)
-    for source, target, snapshot in files:
+    for source, target, snapshot, adopt in files:
+        validate_materialize(source, target, snapshot, adopt)
+    for source, target, snapshot, _ in files:
         materialize(source, target, snapshot)
 
 
