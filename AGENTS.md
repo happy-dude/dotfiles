@@ -224,12 +224,16 @@ and installs StyLua's config under `~/.config/stylua`.
   hook and the linter after each interactive edit, and requires an initially
   present `Assisted-by:` trailer to remain. The linter's Prettier pass ignores
   the committing repository's Prettier, EditorConfig, and ignore files so the
-  verdict is the same in every repository. Per-machine identity and signing
-  (`user.email`, `signingkey`, `commit`/`tag` `gpgsign`) live in an untracked
-  `~/.config/git/local.config` that the module `include`s — SSH/GPG keys and
-  email differ per box; template in `git/local.config.example`. Home Manager
-  writes `~/.config/git/config`, which an unmanaged `~/.gitconfig` silently
-  overrides (git reads it last).
+  verdict is the same in every repository. A repository that sets its own
+  `core.hooksPath` runs neither the linter nor the dispatchers. Run installers
+  that refuse a set `core.hooksPath`, such as `pre-commit install` and
+  `git lfs install --local`, as `GIT_CONFIG_GLOBAL=/dev/null <installer>`; the
+  dispatchers then run what they put in `.git/hooks`. Per-machine identity and
+  signing (`user.email`, `signingkey`, `commit`/`tag` `gpgsign`) live in an
+  untracked `~/.config/git/local.config` that the module `include`s — SSH/GPG
+  keys and email differ per box; template in `git/local.config.example`. Home
+  Manager writes `~/.config/git/config`, which an unmanaged `~/.gitconfig`
+  silently overrides (git reads it last).
 - **`xdg/`** owns generic-Linux XDG integration plus the nixGL-wrapped Solaar
   package and its `schan`-only autostart entry.
 
