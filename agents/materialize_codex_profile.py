@@ -1,3 +1,4 @@
+import stat
 import sys
 from pathlib import Path
 
@@ -9,6 +10,7 @@ MANAGED_KEYS = (
     "developer_instructions",
     "model_reasoning_effort",
 )
+PROFILE_MODE = 0o600
 
 
 def read_text(path: Path, description: str) -> str:
@@ -55,9 +57,10 @@ def materialize(source: Path, target: Path) -> None:
         raise SystemExit(f"Refusing non-regular Codex profile: {target}")
 
     description = "existing Codex profile"
+    runtime_text = read_text(target, description) if target.exists() else None
     runtime = (
-        parse_document(read_text(target, description), target, description)
-        if target.exists()
+        parse_document(runtime_text, target, description)
+        if runtime_text is not None
         else tomlkit.document()
     )
     merged = tomlkit.document()
@@ -72,7 +75,14 @@ def materialize(source: Path, target: Path) -> None:
         if key not in MANAGED_KEYS:
             merged[key] = runtime.item(key).unwrap()
 
-    write_text(target, directive + tomlkit.dumps(merged), 0o600)
+    rendered = directive + tomlkit.dumps(merged)
+    # Activation runs this on every switch.
+    if (
+        rendered == runtime_text
+        and stat.S_IMODE(target.stat().st_mode) == PROFILE_MODE
+    ):
+        return
+    write_text(target, rendered, PROFILE_MODE)
 
 
 def main(arguments: list[str]) -> None:

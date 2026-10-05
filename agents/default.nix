@@ -67,10 +67,7 @@ in {
   xdg.dataFile =
     lib.mapAttrs' (
       name: source:
-        lib.nameValuePair "codex/generated-profiles/${name}.config.toml" {
-          inherit source;
-          onChange = materializeProfile name source;
-        }
+        lib.nameValuePair "codex/generated-profiles/${name}.config.toml" {inherit source;}
     )
     profileFiles;
 
@@ -98,11 +95,11 @@ in {
       ${lib.escapeShellArg "language=${agentFiles.language}"}
   '';
 
-  home.activation.ensureCodexProfiles = lib.hm.dag.entryAfter ["onFilesChange"] (
+  # Run on every activation, not on a template change, so the next switch
+  # retries a refresh that failed. A current profile is left untouched.
+  home.activation.ensureCodexProfiles = lib.hm.dag.entryAfter ["linkGeneration"] (
     lib.concatMapStrings (name: ''
-      if [[ ! -e "$HOME/.codex/${name}.config.toml" ]]; then
-        $DRY_RUN_CMD ${materializeProfile name profileFiles.${name}}
-      fi
+      $DRY_RUN_CMD ${materializeProfile name profileFiles.${name}}
     '')
     agentNames
   );

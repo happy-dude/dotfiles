@@ -132,11 +132,22 @@
       assert text.count("#:schema ") == 1
       PYTHON
 
+      # A current profile is left in place: same bytes, same inode.
       before=$(sha256sum work/profile.toml)
+      inode=$(stat -c %i work/profile.toml)
       materialize-codex-profile work/generated.toml work/profile.toml
       after=$(sha256sum work/profile.toml)
       [[ $before == "$after" ]]
+      [[ $inode == "$(stat -c %i work/profile.toml)" ]]
 
+      # Current content with the wrong mode is still rewritten at 0600.
+      chmod 0644 work/profile.toml
+      materialize-codex-profile work/generated.toml work/profile.toml
+      [[ $(stat -c %a work/profile.toml) == 600 ]]
+      [[ $before == "$(sha256sum work/profile.toml)" ]]
+
+      # A changed template updates a profile that still holds the old
+      # managed keys.
       printf '%s\n' \
         '#:schema ${configSchemaUrl}' \
         'developer_instructions = """' \
