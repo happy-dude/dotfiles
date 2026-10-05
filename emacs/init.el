@@ -184,23 +184,24 @@ Remote names are matched as written, without extra network access."
 ;;      Use Automator to create a Quick Action that runs a shell script that starts emacsclient binded to daemon with org-capture
 ;;      Bind that Quick Action to a keyboard shortcut in Keyboard settings under System Preferences
 
-(defun dotfiles-delete-capture-frame (&rest _)
+(defun dotfiles-delete-capture-frame ()
   "Delete the temporary Org capture frame."
   (when (equal "capture" (frame-parameter nil 'name))
     (delete-frame)))
 
-(advice-add 'org-capture-finalize :after #'dotfiles-delete-capture-frame)
-(advice-add 'org-capture-destroy :after #'dotfiles-delete-capture-frame)
+;; Aborting a capture also finalizes it, so this hook covers both.
+(add-hook 'org-capture-after-finalize-hook #'dotfiles-delete-capture-frame)
 
-(require 'cl-lib)
 (defun make-capture-frame ()
   "Create a new frame and run org-capture."
   (interactive)
   (make-frame '((name . "capture")))
   (select-frame-by-name "capture")
   (delete-other-windows)
-  (cl-letf (((symbol-function 'switch-to-buffer-other-window)
-             (lambda (buf) (switch-to-buffer buf))))
+  ;; Org shows both the template menu and the capture buffer in a split
+  ;; window; keep them in the capture frame's only window.
+  (let ((display-buffer-overriding-action
+         '(display-buffer-same-window (inhibit-same-window . nil))))
     (org-capture)))
 
 ;; org-mode
