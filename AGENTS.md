@@ -505,16 +505,17 @@ prompt character budgets, the aerc deployed/tracked configuration mirror, CoC
 language-server package resolution, the sdcv dictionary lookup, the CurSearch
 highlight link, and editor secret-state exclusions; Emacs `check-parens` and Org
 lint for tracked Org files plus a runtime load of the evaluated Emacs
-configuration and published Org bookmarklet behavior; GitHub Actions syntax,
-pinned action revisions, and Dependabot config parsing; a Neovim run of each
-profile's evaluated runtime covering an Org Tree-sitter parse, CodeCompanion,
-startup, and MatchTag; Rime Lua syntax and focused tests; profile-capability
-invariants; and gitleaks secret scanning. CI runs those checks and evaluates
-both Home Manager configurations on pushes to `main` and on pull requests; the
-profile names are listed in `ci.yml` explicitly, so a new profile must be added
-there as well. Full builds of both configurations run weekly on a schedule and
-are opt-in through the `workflow_dispatch` `build_homes` input because builds
-are substantially more expensive than evaluation.
+configuration, literal Org Roam protocol capture fields, and published Org
+bookmarklet behavior; GitHub Actions syntax, pinned action revisions, and
+Dependabot config parsing; a Neovim run of each profile's evaluated runtime
+covering an Org Tree-sitter parse, CodeCompanion, startup, and MatchTag; Rime
+Lua syntax and focused tests; profile-capability invariants; and gitleaks secret
+scanning. CI runs those checks and evaluates both Home Manager configurations on
+pushes to `main` and on pull requests; the profile names are listed in `ci.yml`
+explicitly, so a new profile must be added there as well. Full builds of both
+configurations run weekly on a schedule and are opt-in through the
+`workflow_dispatch` `build_homes` input because builds are substantially more
+expensive than evaluation.
 
 ### Zed / agent config
 

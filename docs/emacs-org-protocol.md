@@ -183,9 +183,12 @@ The same code expanded for readability is:
    - `template=r` selects the `r` entry in `org-roam-capture-ref-templates`.
    - `ref` becomes the node's `ROAM_REFS` value.
    - `title` supplies the node title after whitespace normalization.
-   - `body` supplies the selected page text as the capture's initial content.
-     The reference template expands it with `%i` inside an Org quote block and
-     places `%?` afterward for additional notes.
+   - `body` supplies the selected page text. The reference template inserts it
+     inside an Org quote block and leaves `%?` afterward for additional notes.
+
+   Emacs inserts the title and body as plain text after expanding the template,
+   so page text such as `%(...)` or `${title}` is stored, not run.
+
 9. If the reference URL and title alone exceed the 8000-character encoded-URI
    budget, the bookmarklet reports the problem and sends no capture. Otherwise,
    the body is truncated by Unicode code point to keep the whole URL within
@@ -244,8 +247,8 @@ The canonical dotfiles bookmarklet additionally:
 
 Both forms assign the custom-scheme URL to `location.href`; neither prevents
 that explicit navigation. The desktop handoff and popup tradeoffs therefore
-apply equally to both. The configured `r` reference template consumes `body`
-through `%i`, quotes the selection, and leaves `%?` at the note insertion point.
+apply equally to both. The configured `r` reference template quotes `body` and
+leaves `%?` at the note insertion point.
 
 ## Activation and validation
 
