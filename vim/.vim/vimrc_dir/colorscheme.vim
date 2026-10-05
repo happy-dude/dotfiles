@@ -1,10 +1,13 @@
 " colorscheme settings
 
 " Packages join 'runtimepath' only after the vimrc has run, so look under
-" 'packpath' as well, as :colorscheme itself does.
+" 'packpath' as well, as :colorscheme itself does. Vim hands {a,b} to
+" 'shell' to expand, which sh and fish do not do, so glob each directory.
 function! s:ColorschemeAvailable(name) abort
-  return !empty(globpath(&runtimepath, 'colors/' . a:name . '.vim', 1))
-        \ || !empty(globpath(&packpath, 'pack/*/{start,opt}/*/colors/' . a:name . '.vim', 1))
+  let l:file = 'colors/' . a:name . '.vim'
+  return !empty(globpath(&runtimepath, l:file, 1))
+        \ || !empty(globpath(&packpath, 'pack/*/start/*/' . l:file, 1))
+        \ || !empty(globpath(&packpath, 'pack/*/opt/*/' . l:file, 1))
 endfunction
 
 if (&t_Co >= 16) && (($TERM =~# "color") || ($TERM =~# "alacritty") || ($TERM =~# "wezterm") || ($TERM =~# "ghostty")) && (has("termguicolors")) && (!has("gui_running"))
