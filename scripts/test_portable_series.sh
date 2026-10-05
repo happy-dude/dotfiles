@@ -226,23 +226,23 @@ grep -Fq "worktree path already exists: $existing_path" "$start_error"
 
 # Sourced callers test these functions in conditions, where set -e is inert,
 # so a rejected name must stop the function itself.
-if start_series 'Bad Name' "$temporary_directory/bad-name" \
+if start_series 'BadName' "$temporary_directory/bad-name" \
   2>"$start_error"; then
   printf 'started a series with an invalid name\n' >&2
   exit 1
 fi
-grep -Fq 'invalid series name: Bad Name' "$start_error"
+grep -Fq 'invalid series name: BadName' "$start_error"
 test ! -e "$temporary_directory/bad-name"
-if git show-ref --verify --quiet 'refs/heads/replay/Bad Name'; then
+if git show-ref --verify --quiet 'refs/heads/replay/BadName'; then
   printf 'created a replay branch for an invalid name\n' >&2
   exit 1
 fi
-if export_series 'Bad Name' "$output_directory" 2>"$start_error"; then
+if export_series 'BadName' "$output_directory" 2>"$start_error"; then
   printf 'exported a series with an invalid name\n' >&2
   exit 1
 fi
 test "$(grep -c . "$start_error")" -eq 1
-grep -Fq 'invalid series name: Bad Name' "$start_error"
+grep -Fq 'invalid series name: BadName' "$start_error"
 
 for series_name in one two; do
   series_staging="$temporary_directory/staging-$series_name"
@@ -359,11 +359,15 @@ if clean_series never-started 2>/dev/null; then
   exit 1
 fi
 
-# An invalid series name is refused before any state is created.
-if clean_series 'bad name' 2>/dev/null; then
+# An invalid series name is refused before anything else is checked, even
+# when a branch of that name exists.
+git branch --quiet replay/BadName main
+if clean_series 'BadName' 2>"$start_error"; then
   printf 'accepted an invalid series name\n' >&2
   exit 1
 fi
+grep -Fq 'invalid series name: BadName' "$start_error"
+git branch --quiet --delete --force replay/BadName
 
 # cherry omits merges: matching ordinary patches do not cover content added
 # while resolving or completing a merge.
