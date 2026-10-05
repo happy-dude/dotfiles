@@ -1,7 +1,7 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with
-code in this repository.
+This file guides coding agents working in this repository. `CLAUDE.md` is a
+symlink to it, because Claude Code reads only that name.
 
 ## Repository overview
 
@@ -95,9 +95,9 @@ checkout is the Linux branch.
 - `fish/.config/fish/config.fish` optionally sources
   `~/.config/fish/secrets.fish`. The committed example contains placeholders
   only; real values remain untracked, per-machine, and outside the Nix store.
-  Fish's `PATH` additions are session-only; a host whose `fish_variables` still
-  holds a persisted `fish_user_paths` from earlier configurations clears it once
-  with `set -e fish_user_paths`.
+  Fish's `PATH` additions are session-only. The configuration does not clear a
+  persisted `fish_user_paths` left in `fish_variables`; run
+  `set -e fish_user_paths` once on such a host.
 - `roswell/default.nix` applies the locked `roswell_src` source override and
   installs Roswell. `virtme-ng/default.nix` builds `virtme_ng_src` with its
   runtime helpers on `PATH` and installs `vng`. Ghidra comes from the locked
@@ -323,9 +323,9 @@ and installs StyLua's config under `~/.config/stylua`.
   `~/.claude/skills` without copying them into this repository. Provider
   credentials and client-specific state remain outside generated Nix paths.
   `opencode/check.nix` owns the focused package, global and project LSP, schema,
-  theme, and telemetry checks; `flake.nix` only imports that check. Resolved
-  debug output may contain substituted credentials and must not be copied
-  wholesale into logs or bug reports.
+  theme, and telemetry checks; `checks/default.nix` imports it. Resolved debug
+  output may contain substituted credentials and must not be copied wholesale
+  into logs or bug reports.
 - **`rclone/`** installs the pinned rclone client and schedules guarded bisync
   between `~/org` and `box:org`. A recursive inotify watcher batches local
   changes five minutes after the first event; a 15-minute timer catches remote
@@ -522,12 +522,13 @@ Both are Home Manager-managed; neither uses a separate Stow step. Edit
 `zed/.config/zed/settings.json` (Zed) or `agents/prompts/*.md` (agents)
 directly. Zed and generated Codex and oh-my-pi changes require a validated Home
 Manager switch. Claude prompt changes are live immediately once the out-of-store
-agents symlink has been installed by an initial switch. The writable Codex
-profiles at `~/.codex/{kernel,language}.config.toml` are runtime state, not
-canonical prompt sources; do not edit their generated keys manually. Their
-schema directive points editors at Codex's current official `config.toml`
-schema. Standalone custom-agent TOMLs use Codex's separate custom-agent schema
-and therefore do not carry the `config.toml` directive.
+agents symlink has been installed by an initial switch. Those links point into
+`~/dotfiles`, so the checkout must live there. The writable Codex profiles at
+`~/.codex/{kernel,language}.config.toml` are runtime state, not canonical prompt
+sources; do not edit their generated keys manually. Their schema directive
+points editors at Codex's current official `config.toml` schema. Standalone
+custom-agent TOMLs use Codex's separate custom-agent schema and therefore do not
+carry the `config.toml` directive.
 
 For omp settings, edit `omp/settings.nix` when the value should be shared. Use
 `/settings` or `omp config set` for settings that belong to this machine. The
@@ -1031,17 +1032,18 @@ source.
 - **`plasma/`** manages Plasma preferences for every Plasma profile through the
   pinned plasma-manager module, with `schan`'s session as the reference.
   Built-in touchpads, mice, and the Xwayland scale differ per machine, so they
-  live in `plasma/machines.nix`, keyed by username. External devices that move
-  between machines, the MX Vertical and the Magic Trackpad, are declared once in
-  `plasma/default.nix`; KWin applies an entry only to a connected device.
-  Per-output scales stay in `kwinoutputconfig.json`, which KWin rewrites on
-  every display change. The panel layout in `plasma/panels.nix` applies only
-  where the profile sets `managePlasmaPanels`. plasma-manager deletes and
-  rebuilds `plasma-org.kde.plasma.desktop-appletsrc` whenever that layout
-  changes, so panel edits made in the session are lost; turn it on only when
-  Home Manager should own the whole panel. Cursor and icon themes are declared
-  here, and Plasma copies them to GTK itself, so Home Manager's `gtk` module
-  stays off. Dolphin's folder views are written to
+  live in `plasma/machines.nix`, keyed by username; a Plasma profile without an
+  entry there fails evaluation. External devices that move between machines, the
+  MX Vertical and the Magic Trackpad, are declared once in `plasma/default.nix`;
+  KWin applies an entry only to a connected device. Per-output scales stay in
+  `kwinoutputconfig.json`, which KWin rewrites on every display change. The
+  panel layout in `plasma/panels.nix` applies only where the profile sets
+  `managePlasmaPanels`. plasma-manager deletes and rebuilds
+  `plasma-org.kde.plasma.desktop-appletsrc` whenever that layout changes, so
+  panel edits made in the session are lost; turn it on only when Home Manager
+  should own the whole panel. Cursor and icon themes are declared here, and
+  Plasma copies them to GTK itself, so Home Manager's `gtk` module stays off.
+  Dolphin's folder views are written to
   `~/.local/share/dolphin/view_properties/global/.directory` and
   `~/Downloads/.directory`, as regular files Dolphin can update; activation
   resets their declared keys. When a folder's view is changed in Dolphin, it
