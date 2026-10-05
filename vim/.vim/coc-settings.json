@@ -79,7 +79,10 @@
         ".eslintrc.json",
         ".eslintrc.yaml",
         ".eslintrc.yml"
-      ]
+      ],
+      "settings": {
+        "validate": "on"
+      }
     },
     "fennel-ls": {
       "args": ["--server"],
