@@ -27,11 +27,13 @@ in {
       };
     };
 
+    # Fcitx stores this option as a list, one numbered key per entry under a
+    # [HiddenNotifications] group; a flat `HiddenNotifications=` key is ignored.
     xdg.configFile."fcitx5/conf/notifications.conf" = {
       force = true;
       text = ''
-        # Hidden Notifications
-        HiddenNotifications=${
+        [HiddenNotifications]
+        0=${
           if desktop == "plasma"
           then "wayland-diagnose-kde"
           else "wayland-diagnose-gnome"
