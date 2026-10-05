@@ -529,12 +529,22 @@ Expected properties:
 - No Nix-related SELinux denial appears during a real build.
 
 Once every property holds, pin this validated native deployment. This changes
-state: the pin is the rollback target when `/nix` goes missing.
+state: the pin is the rollback target when `/nix` goes missing. Then remove the
+§2 pin from the pre-install deployment, which has no `nix.mount`, so the
+bootloader offers one pinned target. `ostree admin status` must show the
+pre-install deployment as the rollback entry before it is unpinned.
 
 ### 🟦 RUN DIRECTLY ON THE KINOITE HOST — FISH-COMPATIBLE
 
 ```fish
 sudo ostree admin pin booted
+sudo ostree admin status
+```
+
+### 🟦 RUN DIRECTLY ON THE KINOITE HOST — FISH-COMPATIBLE
+
+```fish
+sudo ostree admin pin --unpin rollback
 sudo ostree admin status
 ```
 
