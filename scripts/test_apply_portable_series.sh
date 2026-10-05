@@ -154,6 +154,27 @@ output=$(assert_refuses 'dirty worktree' "$repo" "$manifest")
   fail "dirty worktree: unexpected message: $output"
 git -C "$repo" checkout -q -- file.txt
 
+# A broken submodule makes git status fail while fetch still works, so only
+# the status check can stop this.
+broken=$(make_destination broken)
+git init -q --initial-branch=main "$TMPDIR_TEST/broken-sub"
+git_as "$TMPDIR_TEST/broken-sub" commit -q --allow-empty -m 'sub: seed'
+git -C "$broken" -c protocol.file.allow=always \
+  submodule -q add "$TMPDIR_TEST/broken-sub" sub
+git_as "$broken" commit -q -m 'seed: add a submodule'
+git -C "$broken" push -q origin main
+broken_artifacts="$TMPDIR_TEST/broken-artifacts"
+make_patch "$broken" "$broken_artifacts"
+write_manifest "$broken_artifacts" "$(git -C "$broken" rev-parse main)" \
+  "$(sha256sum "$broken_artifacts/dotfiles-probe.patch" | cut -d ' ' -f 1)"
+rm -rf -- "$broken/.git/modules/sub/objects"
+output=$(
+  assert_refuses 'unreadable status' "$broken" \
+    "$broken_artifacts/dotfiles-probe.manifest"
+)
+[[ $output == *"unable to read the main worktree status"* ]] ||
+  fail "unreadable status: unexpected message: $output"
+
 # The placeholder identity used while preparing a series must never author
 # commits on the destination.
 git -C "$repo" config user.email 'portable@localhost'

@@ -66,8 +66,9 @@ git -C "$repo" rev-parse --is-inside-work-tree >/dev/null 2>&1 ||
   die "not a Git worktree: $repo"
 [[ $(git -C "$repo" branch --show-current) == main ]] ||
   die "expected the main branch"
-[[ -z $(git -C "$repo" status --porcelain=v1 --untracked-files=all) ]] ||
-  die "main worktree is not clean"
+main_status=$(git -C "$repo" status --porcelain=v1 --untracked-files=all) ||
+  die "unable to read the main worktree status: $repo"
+[[ -z $main_status ]] || die "main worktree is not clean"
 
 git -C "$repo" fetch origin refs/heads/main:refs/remotes/origin/main
 head=$(git -C "$repo" rev-parse HEAD)
