@@ -36,7 +36,7 @@ explicitly marked as state-changing.
 | SELinux                   | Enforcing, with the installer-provided Nix policy loaded                   |
 | User configuration        | Generic-Linux Home Manager output `.#schan`, not NixOS                     |
 | Nix package selection     | `nixPackage = null`; Home Manager must not install a competing Nix client  |
-| Recovery layers           | Pinned OSTree deployment, native-store backup, and profile/cutover backups |
+| Recovery layers           | Pinned OSTree deployments, profile/cutover backups; no native-store backup |
 
 The validated snapshot also recorded:
 
