@@ -96,6 +96,8 @@
         'developer_instructions = "old instructions"' \
         'model_reasoning_effort = "low"' \
         'service_tier = "fast"' \
+        'hide_agent_reasoning = true' \
+        'show_raw_agent_reasoning = false' \
         "" \
         '[projects."/tmp/project"]' \
         'trust_level = "trusted"' \
@@ -117,6 +119,8 @@
       assert profile["developer_instructions"] == "new instructions\n"
       assert profile["model_reasoning_effort"] == "medium"
       assert profile["service_tier"] == "fast"
+      assert profile["hide_agent_reasoning"] is True
+      assert profile["show_raw_agent_reasoning"] is False
       assert profile["projects"]["/tmp/project"]["trust_level"] == "trusted"
       assert profile["tui"]["model_availability_nux"]["model"] == 2
       assert profile["notice"]["seen"] is True

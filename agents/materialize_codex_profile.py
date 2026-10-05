@@ -55,9 +55,11 @@ def materialize(source: Path, target: Path) -> None:
             merged.add(key, generated.item(key))
     # tomlkit places a scalar added after a table before the first table
     # header, so runtime keys can be copied in their original order.
-    for key, item in runtime.items():
+    # Iterating returns top-level booleans as plain bool, which has no
+    # unwrap(); runtime.item() always returns a tomlkit item.
+    for key in runtime:
         if key not in MANAGED_KEYS:
-            merged[key] = item.unwrap()
+            merged[key] = runtime.item(key).unwrap()
 
     write_text(target, directive + tomlkit.dumps(merged), 0o600)
 
