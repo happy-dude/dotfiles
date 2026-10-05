@@ -367,7 +367,7 @@ Remote names are matched as written, without extra network access."
           "#+LAST_MODIFIED: %U\n"
           "#+FILETAGS:\n"
           "- sources ::\n"
-          "-\n"
+          "  -\n"
           "- nodes ::\n"
           "\n"
           "* Summary\n"
@@ -379,14 +379,17 @@ Remote names are matched as written, without extra network access."
           "\n"
           "* Notes\n"))
 
+;; New captures go under the Notes heading the head ends with.
 (setq org-roam-capture-templates
       `(("d" "default" plain "%?"
-         :target (file+head "%<%Y%m%d>-${slug}.org" ,(dotfiles/org-roam-note-head nil))
+         :target (file+head+olp "%<%Y%m%d>-${slug}.org"
+                                ,(dotfiles/org-roam-note-head nil) ("Notes"))
          :unnarrowed t)))
 
 (setq org-roam-capture-ref-templates
       `(("r" "ref" plain "#+begin_quote\n%i\n#+end_quote\n\n%?"
-         :target (file+head "%<%Y%m%d>-${slug}.org" ,(dotfiles/org-roam-note-head t))
+         :target (file+head+olp "%<%Y%m%d>-${slug}.org"
+                                ,(dotfiles/org-roam-note-head t) ("Notes"))
          :unnarrowed t)))
 
 
