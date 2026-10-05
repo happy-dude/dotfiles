@@ -23,9 +23,23 @@ call assert_equal(['firstmiddle', 'last'], getline(1, '$'))
 undo
 call assert_equal(['first', 'middle', 'last'], getline(1, '$'))
 
+" Perl keeps the newline of a line it empties, as :range!perl does.
 call s:Fixture(['first', 'middle', 'last'])
-2S/.*//
+1,2S/.*//
+call assert_equal(['', '', 'last'], getline(1, '$'))
+undo
+call assert_equal(['first', 'middle', 'last'], getline(1, '$'))
+
+call s:Fixture(['first', 'middle', 'last'])
+2S/.*\n//
 call assert_equal(['first', 'last'], getline(1, '$'))
+undo
+call assert_equal(['first', 'middle', 'last'], getline(1, '$'))
+
+" No output at all removes every addressed line.
+call s:Fixture(['first', 'middle', 'last'])
+%S/.*\n//
+call assert_equal([''], getline(1, '$'))
 undo
 call assert_equal(['first', 'middle', 'last'], getline(1, '$'))
 
