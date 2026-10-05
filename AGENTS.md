@@ -981,8 +981,9 @@ source.
   store; the wrapper is what makes it importable by the `python3` on `PATH`.
   After changing it, verify with a fresh shell: `python3 -c "import <module>"`.
 - Package ownership follows four tiers: retain the tested base image; use
-  rpm-ostree only for host integration such as input methods and udev rules; use
-  user Flatpak for ordinary desktop applications; use Nix/Home Manager for the
+  rpm-ostree only for host integration such as input methods and udev rules, and
+  for applications that ship only as an RPM, such as Firefox Nightly; use user
+  Flatpak for ordinary desktop applications; use Nix/Home Manager for the
   remaining user tools and packages. Do not enable `nix-flatpak` on `stachan`
   unless its host Flatpak/AppArmor boundary is deliberately redesigned.
 - For GUI/GL apps on generic (non-NixOS) Linux, wrap them with

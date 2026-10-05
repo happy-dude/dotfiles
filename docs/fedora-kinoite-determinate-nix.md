@@ -748,8 +748,9 @@ Keep the nixGL package input and per-application wrappers on generic Linux even
 though Nix is native; they bridge Nix-built GUI applications to the host
 graphics stack without altering the package set through a nixGL overlay. On
 worldmind, Home Manager owns the wrapped Solaar executable and user autostart
-entry. The host retains only an explicit `solaar-udev` RPM overlay because
-generic-Linux Home Manager cannot activate udev rules from the Nix store.
+entry. The host layers two RPMs: `solaar-udev`, because generic-Linux Home
+Manager cannot activate udev rules from the Nix store, and `firefox-nightly`, an
+application with no Flatpak source.
 
 ## Related documents
 
