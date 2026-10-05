@@ -52,32 +52,6 @@ def materialize(source: Path, target: Path, snapshot: Path) -> None:
         target.chmod(0o644)
 
 
-def migrate_theme_root(marker_source: Path) -> None:
-    if not marker_source.is_file() or marker_source.is_symlink():
-        fail(f"Rime ownership source is not a regular file: {marker_source}")
-
-    marker = dotfiles_files.state_home() / "rime/home-manager-ownership-v1"
-    target = dotfiles_files.data_home() / "fcitx5/themes"
-
-    if marker.is_symlink() or (marker.exists() and not marker.is_file()):
-        fail(f"Refusing malformed Rime ownership marker: {marker}")
-    if marker.is_file() and not same_content(marker_source, marker):
-        fail(f"Refusing unrecognized Rime ownership marker: {marker}")
-
-    if target.is_symlink():
-        actual = target.resolve(strict=False)
-        managed_store_link = actual.parent == Path(
-            "/nix/store"
-        ) and actual.name.endswith("-fcitx5-themes")
-        if not marker.is_file() or not managed_store_link:
-            fail(f"Refusing to migrate unmanaged Rime link: {target}")
-        target.unlink()
-    elif target.exists() and not target.is_dir():
-        fail(f"Refusing to migrate unmanaged Rime path: {target}")
-
-    marker.unlink(missing_ok=True)
-
-
 def deploy(source_dir: Path) -> None:
     config_dir = dotfiles_files.config_home() / "fcitx5"
     state_root = dotfiles_files.state_home() / "rime/host-config"
@@ -117,13 +91,7 @@ def main(arguments: list[str]) -> None:
     if len(arguments) == 2 and arguments[0] == "deploy":
         deploy(Path(arguments[1]))
         return
-    if len(arguments) == 2 and arguments[0] == "migrate-theme-root":
-        migrate_theme_root(Path(arguments[1]))
-        return
-    raise SystemExit(
-        "usage: rime-host-files "
-        "deploy FCITX_CONFIG_DIR | migrate-theme-root MARKER_SOURCE"
-    )
+    raise SystemExit("usage: rime-host-files deploy FCITX_CONFIG_DIR")
 
 
 if __name__ == "__main__":

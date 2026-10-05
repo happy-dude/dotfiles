@@ -100,13 +100,11 @@ in {
       source_root="$PWD/source/fcitx5"
       home="$PWD/home"
       state="$PWD/state"
-      marker_source="$PWD/marker"
       mkdir -p "$source_root/conf"
       printf '%s\n' profile-v1 >"$source_root/profile"
       printf '%s\n' classic-v1 >"$source_root/conf/classicui.conf"
       printf '%s\n' rime-v1 >"$source_root/conf/rime.conf"
       printf '%s\n' notifications-v1 >"$source_root/conf/notifications.conf"
-      printf '%s\n' home-manager-rime-v1 >"$marker_source"
 
       HOME="$home" XDG_STATE_HOME="$state" \
         rime-host-files deploy "$source_root"
@@ -159,60 +157,6 @@ in {
         exit 1
       fi
       test ! -e "$PWD/linked-state"
-
-      migration_home="$PWD/migration-home"
-      migration_state="$PWD/migration-state"
-      mkdir -p "$migration_home/.local/share/fcitx5" \
-        "$migration_state/rime"
-      cp "$marker_source" \
-        "$migration_state/rime/home-manager-ownership-v1"
-      ln -s /nix/store/legacy-fcitx5-themes \
-        "$migration_home/.local/share/fcitx5/themes"
-      HOME="$migration_home" XDG_STATE_HOME="$migration_state" \
-        rime-host-files migrate-theme-root "$marker_source"
-      test ! -e "$migration_home/.local/share/fcitx5/themes"
-      test ! -e "$migration_state/rime/home-manager-ownership-v1"
-
-      mkdir -p "$migration_home/.local/share/fcitx5/themes"
-      cp "$marker_source" \
-        "$migration_state/rime/home-manager-ownership-v1"
-      HOME="$migration_home" XDG_STATE_HOME="$migration_state" \
-        rime-host-files migrate-theme-root "$marker_source"
-      test -d "$migration_home/.local/share/fcitx5/themes"
-      test ! -e "$migration_state/rime/home-manager-ownership-v1"
-
-      rmdir "$migration_home/.local/share/fcitx5/themes"
-      ln -s /tmp/unmanaged-fcitx5-themes \
-        "$migration_home/.local/share/fcitx5/themes"
-      cp "$marker_source" \
-        "$migration_state/rime/home-manager-ownership-v1"
-      if HOME="$migration_home" XDG_STATE_HOME="$migration_state" \
-        rime-host-files migrate-theme-root "$marker_source"; then
-        echo "migrated an unmanaged Rime theme link" >&2
-        exit 1
-      fi
-      test -L "$migration_home/.local/share/fcitx5/themes"
-      test -f "$migration_state/rime/home-manager-ownership-v1"
-
-      rm "$migration_home/.local/share/fcitx5/themes" \
-        "$migration_state/rime/home-manager-ownership-v1"
-      ln -s /nix/store/unrecorded-fcitx5-themes \
-        "$migration_home/.local/share/fcitx5/themes"
-      if HOME="$migration_home" XDG_STATE_HOME="$migration_state" \
-        rime-host-files migrate-theme-root "$marker_source"; then
-        echo "migrated an unrecorded Rime theme link" >&2
-        exit 1
-      fi
-      test -L "$migration_home/.local/share/fcitx5/themes"
-
-      rm "$migration_home/.local/share/fcitx5/themes"
-      mkdir "$migration_state/rime/home-manager-ownership-v1"
-      if HOME="$migration_home" XDG_STATE_HOME="$migration_state" \
-        rime-host-files migrate-theme-root "$marker_source"; then
-        echo "accepted a malformed Rime ownership marker" >&2
-        exit 1
-      fi
-      test -d "$migration_state/rime/home-manager-ownership-v1"
     '';
   };
   rime-failure-recovery = mkCheck {

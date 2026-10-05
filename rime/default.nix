@@ -137,11 +137,6 @@
     }
   );
 
-  # The prior custom deployment wrote this marker. Keep its exact payload only
-  # to authorize the one-way migration to native Home Manager theme ownership.
-  legacyOwnershipMarker = pkgs.writeText "rime-home-manager-ownership-v1" ''
-    home-manager-rime-v1
-  '';
   rimeRelativeArguments = lib.concatMapStringsSep " " (entry:
     lib.escapeShellArg entry.relative)
   rimeDataEntries;
@@ -165,14 +160,6 @@
 in
   assert duplicateRimeDataTargetNames == []; {
     xdg.dataFile = themeFiles;
-
-    # The old activation created the theme root itself, outside Home Manager's
-    # file manifest. Remove only that marked Nix-store link before collision
-    # checks so Home Manager can own the individual immutable theme directories.
-    home.activation.rimeMigrateThemeRoot = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
-      $DRY_RUN_CMD ${lib.getExe rimeHostFiles} migrate-theme-root \
-        ${lib.escapeShellArg legacyOwnershipMarker}
-    '';
 
     home.activation.rimeHostFiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
       $DRY_RUN_CMD ${lib.getExe rimeHostFiles} deploy \
