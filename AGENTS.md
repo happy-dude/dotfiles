@@ -403,18 +403,19 @@ guidance detectable.
   in silent Ex mode and fails on any recorded error.
 - Home Manager builds Tree-sitter parsers and queries in `vim/default.nix`,
   including an explicit `org.so` from `tree-sitter-org-nvim` because
-  `nvim-treesitter.withAllGrammars` omits it. The `neovim-org` flake check opens
-  a real Org file with each profile's evaluated Neovim package, configuration,
-  plugin pack, parsers, and queries. It verifies that Orgmode is configured
-  before its filetype hook and that the resulting buffer parses successfully.
-  Home Manager also builds the RustOwl server and matching optional Neovim
-  client, CoC plus its extensions, and all formatter, helper, and
-  language-server executables. `flake.lock` and the locked Nixpkgs revision
-  determine editor updates. Do not run mutable plugin, parser, CoC extension, or
-  vim-go binary update commands. Vim and Neovim retain backup, swap, and
-  persistent undo for ordinary files, but exclude known credentials and secret
-  directories when opening local aliases or changing a buffer's filename too.
-  These guards prevent future state copies; they do not erase existing copies.
+  `nvim-treesitter.withAllGrammars` omits it. The `neovim-profile` flake check
+  runs each profile's evaluated Neovim package, configuration, plugin pack,
+  parsers, and queries. It opens a real Org file, verifies that Orgmode is
+  configured before its filetype hook and that the buffer parses, and runs the
+  CodeCompanion, startup colorscheme, and MatchTag tests. Home Manager also
+  builds the RustOwl server and matching optional Neovim client, CoC plus its
+  extensions, and all formatter, helper, and language-server executables.
+  `flake.lock` and the locked Nixpkgs revision determine editor updates. Do not
+  run mutable plugin, parser, CoC extension, or vim-go binary update commands.
+  Vim and Neovim retain backup, swap, and persistent undo for ordinary files,
+  but exclude known credentials and secret directories when opening local
+  aliases or changing a buffer's filename too. These guards prevent future state
+  copies; they do not erase existing copies.
 - CoC loads in both editors and owns LSP, diagnostics, completion, navigation,
   and format-on-save. vim-go retains non-LSP Go commands. Vim uses its bundled
   EditorConfig support and Neovim uses native EditorConfig. Do not reintroduce
@@ -505,15 +506,15 @@ language-server package resolution, the sdcv dictionary lookup, the CurSearch
 highlight link, and editor secret-state exclusions; Emacs `check-parens` and Org
 lint for tracked Org files plus a runtime load of the evaluated Emacs
 configuration and published Org bookmarklet behavior; GitHub Actions syntax,
-pinned action revisions, and Dependabot config parsing; a real Neovim Org
-Tree-sitter parse against the evaluated Home Manager runtime; Rime Lua syntax
-and focused tests; profile-capability invariants; and gitleaks secret scanning.
-CI runs those checks and evaluates both Home Manager configurations on pushes to
-`main` and on pull requests; the profile names are listed in `ci.yml`
-explicitly, so a new profile must be added there as well. Full builds of both
-configurations run weekly on a schedule and are opt-in through the
-`workflow_dispatch` `build_homes` input because builds are substantially more
-expensive than evaluation.
+pinned action revisions, and Dependabot config parsing; a Neovim run of each
+profile's evaluated runtime covering an Org Tree-sitter parse, CodeCompanion,
+startup, and MatchTag; Rime Lua syntax and focused tests; profile-capability
+invariants; and gitleaks secret scanning. CI runs those checks and evaluates
+both Home Manager configurations on pushes to `main` and on pull requests; the
+profile names are listed in `ci.yml` explicitly, so a new profile must be added
+there as well. Full builds of both configurations run weekly on a schedule and
+are opt-in through the `workflow_dispatch` `build_homes` input because builds
+are substantially more expensive than evaluation.
 
 ### Zed / agent config
 
