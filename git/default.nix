@@ -7,13 +7,14 @@
   commitMsgHook = import ./commit-msg-hook.nix {inherit pkgs;};
   localHook = import ./local-hook.nix {inherit pkgs;};
   # Every hook githooks(5) documents other than commit-msg, which has its own
-  # dispatcher below, and the three Git consults as protocols or overrides
-  # rather than as notifications or vetoes: fsmonitor-watchman must answer
-  # with a file list, proc-receive speaks the receive-pack report protocol,
-  # and an existing push-to-checkout replaces Git's own checkout update, so a
-  # stand-in that exits 0 would leave the receiving worktree behind. The
-  # receive-side hooks matter too: a push into a local bare repository runs
-  # git-receive-pack under this user's core.hooksPath.
+  # dispatcher below, and four that a stand-in would break or slow down:
+  # fsmonitor-watchman must answer with a file list, proc-receive speaks the
+  # receive-pack report protocol, and an existing push-to-checkout replaces
+  # Git's own checkout update, so a stand-in that exits 0 would leave the
+  # receiving worktree behind. reference-transaction runs several times per
+  # ref update; dispatching it took a 100-commit rebase from 0.07 s to 9.9 s.
+  # The receive-side hooks matter too: a push into a local bare repository
+  # runs git-receive-pack under this user's core.hooksPath.
   dispatchedHooks = [
     "p4-changelist"
     "p4-prepare-changelist"
@@ -37,7 +38,6 @@
     "post-rewrite"
     "pre-auto-gc"
     "post-index-change"
-    "reference-transaction"
     "sendemail-validate"
   ];
 in {
