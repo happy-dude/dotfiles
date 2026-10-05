@@ -49,7 +49,7 @@ fmt)
     printf 'generated\n' >"$PORTABLE_TEST_FMT_CREATES"
   fi
   ;;
-flake) ;;
+flake) exit "${PORTABLE_TEST_CHECK_STATUS:-0}" ;;
 eval)
   printf 'first\nsecond\n'
   exit "${PORTABLE_TEST_EVAL_STATUS:-0}"
@@ -106,6 +106,34 @@ grep -q 'formatter changed the portable worktree' "$TMPDIR_TEST/export.log" ||
   fail 'formatter drift replaced published artifacts'
 unset PORTABLE_TEST_FMT_CREATES
 rm -f -- "$worktree/formatter-output"
+
+# A caller that tests export_series in a condition turns set -e off, so each
+# step must stop the export itself, before staging and after it. Two failed
+# exports run in one shell, so the second also proves the first restored the
+# caller's EXIT trap. A separate shell keeps the export's trap away from
+# this suite's.
+export PORTABLE_TEST_CHECK_STATUS=23
+if (
+  cd -- "$repo"
+  bash -c 'source scripts/portable-series.sh
+    trap "printf %s \$? >\"$2\"" EXIT
+    if export_series probe "$1"; then exit 0; fi
+    git -C "$3" commit --quiet --amend --no-edit \
+      --author "Someone <someone@example.invalid>"
+    if export_series probe "$1"; then exit 0; fi
+    exit 1' _ "$output" "$TMPDIR_TEST/caller-status" "$worktree"
+) >"$TMPDIR_TEST/export.log" 2>&1; then
+  fail 'export published artifacts after a failed step in a condition'
+fi
+[[ $(sha256sum "$output"/*) == "$before" ]] ||
+  fail 'a failed export in a condition replaced published artifacts'
+grep -q 'non-portable author identity' "$TMPDIR_TEST/export.log" ||
+  fail 'the second export did not stop at the author check'
+[[ $(<"$TMPDIR_TEST/caller-status") == 1 ]] ||
+  fail 'repeated exports did not hand the caller EXIT trap its status'
+git -C "$worktree" commit --quiet --amend --no-edit \
+  --author 'Portable Dotfiles <portable@localhost>'
+unset PORTABLE_TEST_CHECK_STATUS
 
 # Apply needs one message per commit, and git am refuses an empty patch.
 git -C "$repo" config format.coverLetter true
