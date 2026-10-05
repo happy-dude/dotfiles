@@ -28,6 +28,8 @@ end
 
 # History toggle: `nohist` selects Fish's private, unsaved history session.
 # `yeshist` restores the previous session, including the default session.
+# Export fish_history: Tide draws the prompt in a background `fish -c`, which
+# sees only exported and universal variables.
 function nohist
     set -q fish_history; and test -z "$fish_history"; and return
     if set -q fish_history
@@ -35,13 +37,13 @@ function nohist
     else
         set -e _nohist_previous_fish_history
     end
-    set -g fish_history ''
+    set -gx fish_history ''
     echo 'history off'
 end
 
 function yeshist
     if set -q _nohist_previous_fish_history
-        set -g fish_history $_nohist_previous_fish_history
+        set -gx fish_history $_nohist_previous_fish_history
         set -e _nohist_previous_fish_history
     else
         set -e fish_history
@@ -49,10 +51,9 @@ function yeshist
     echo 'history on'
 end
 
-# Home Manager supplies the prompt for interactive sessions.
-if status is-interactive
-    source (status dirname)/tide.fish
-end
+# Tide's background `fish -c` is not interactive, so load its settings in every
+# shell.
+source (status dirname)/tide.fish
 
 # Hardened C compiler wrapper for small standalone builds.
 function c

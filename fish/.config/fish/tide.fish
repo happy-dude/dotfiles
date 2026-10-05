@@ -1,4 +1,4 @@
-# Declarative Tide settings, sourced by config.fish in interactive shells.
+# Declarative Tide settings, sourced by config.fish in every shell.
 # These globals deliberately override any per-machine universal Tide defaults.
 
 set -g tide_aws_bg_color yellow
