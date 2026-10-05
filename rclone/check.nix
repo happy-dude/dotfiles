@@ -3,7 +3,10 @@
 in {
   rclone-org-watcher = mkCheck {
     name = "rclone-org-watcher-test";
-    tools = [pkgs.python3];
+    tools = [
+      pkgs.python3
+      pkgs.rclone
+    ];
     script = ''
       test "$(python3 ${./watch_org.py} classify notes.org)" = sync
       test "$(python3 ${./watch_org.py} classify org-roam.db)" = ignore
@@ -12,6 +15,37 @@ in {
       test "$(python3 ${./watch_org.py} classify notes.org~)" = ignore
       test "$(python3 ${./watch_org.py} classify .dir-locals.el)" = ignore
       test "$(python3 ${./watch_org.py} classify sub/.dir-locals.el)" = ignore
+
+      # The bisync filter and should_sync must keep the same files, and every
+      # filter rule must drop a sample on its own, so a new rule needs one.
+      samples=(
+        notes.org sub/notes.org image.png org-roam.db org-roam.db-wal
+        org-roam.bak/note.org sub/org-roam.bak/note.org .dir-locals.el
+        sub/.dir-locals.el .#note.org sub/.#note.org notes.org~
+      )
+      mkdir tree
+      for sample in "''${samples[@]}"; do
+        mkdir -p "tree/$(dirname "$sample")"
+        touch "tree/$sample"
+      done
+      export RCLONE_CONFIG=/dev/null
+      kept() {
+        rclone lsf --recursive --files-only --filter-from "$1" tree | sort
+      }
+      kept ${./org-bisync.filter} >rclone-kept
+      for sample in "''${samples[@]}"; do
+        if [[ $(python3 ${./watch_org.py} classify "$sample") == sync ]]; then
+          printf '%s\n' "$sample"
+        fi
+      done | sort >watcher-kept
+      diff rclone-kept watcher-kept
+      while IFS= read -r rule; do
+        printf '%s\n' "$rule" >rule.filter
+        if [[ $(kept rule.filter | wc -l) -eq ''${#samples[@]} ]]; then
+          echo "no sample exercises filter rule: $rule" >&2
+          exit 1
+        fi
+      done <${./org-bisync.filter}
 
       python3 - <<'PYTHON'
       import os
