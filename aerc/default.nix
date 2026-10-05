@@ -22,10 +22,7 @@ in {
     # inside a string. The tracked aerc.conf mirrors this, and the
     # aerc-config-mirror check fails if the two ever disagree.
     extraConfig = {
-      general = {
-        unsafe-accounts-conf = true;
-        enable-osc8 = true;
-      };
+      general.unsafe-accounts-conf = true;
 
       ui = {
         index-columns = "date<12,name<18,flags>2,subject<*";
