@@ -81,13 +81,24 @@ Remote names are matched as written, without extra network access."
 
 ;; Suppress the auto-save file and any persisted undo-tree history per buffer.
 ;; A major-mode change kills the buffer-local undo-tree setting, so reapply it.
+(defvar-local dotfiles/sensitive-buffer-p nil
+  "Non-nil when the secret guard set this buffer's undo-tree history off.")
+;; Survives a major-mode change, so the guard still knows the override is its
+;; own and can lift it when the buffer is saved under an ordinary name.
+(put 'dotfiles/sensitive-buffer-p 'permanent-local t)
+
 (defun dotfiles/harden-sensitive-buffer ()
-  "Disable on-disk copies for the current buffer when it visits a secret."
-  (if (dotfiles/sensitive-file-p buffer-file-name)
-      (progn
-        (auto-save-mode -1)
-        (setq-local undo-tree-auto-save-history nil))
-    (kill-local-variable 'undo-tree-auto-save-history)))
+  "Disable on-disk copies for the current buffer when it visits a secret.
+When it no longer does, lift only the override this guard set, so a
+setting from directory locals or a mode hook is kept."
+  (cond
+   ((dotfiles/sensitive-file-p buffer-file-name)
+    (auto-save-mode -1)
+    (setq-local undo-tree-auto-save-history nil)
+    (setq dotfiles/sensitive-buffer-p t))
+   (dotfiles/sensitive-buffer-p
+    (kill-local-variable 'undo-tree-auto-save-history)
+    (setq dotfiles/sensitive-buffer-p nil))))
 (add-hook 'find-file-hook #'dotfiles/harden-sensitive-buffer)
 (add-hook 'after-set-visited-file-name-hook #'dotfiles/harden-sensitive-buffer)
 (add-hook 'after-change-major-mode-hook #'dotfiles/harden-sensitive-buffer)

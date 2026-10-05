@@ -60,4 +60,21 @@ given."
   (unless (dotfiles/sensitive-file-p (expand-file-name file))
     (error "Sensitive path is not guarded: %s" file)))
 
+;; The guard lifts only its own override: an ordinary file whose directory
+;; locals turn undo history off keeps that setting.
+(let* ((project (expand-file-name "~/no-undo-history/"))
+       (file (expand-file-name "notes.txt" project))
+       (enable-local-variables :all))
+  (make-directory project t)
+  (with-temp-file (expand-file-name ".dir-locals.el" project)
+    (insert "((nil . ((undo-tree-auto-save-history . nil))))\n"))
+  (with-temp-file file
+    (insert "initial fixture\n"))
+  (with-current-buffer (find-file-noselect file)
+    (unwind-protect
+        (unless (and (local-variable-p 'undo-tree-auto-save-history)
+                     (null undo-tree-auto-save-history))
+          (error "Guard discarded a directory-local undo history setting"))
+      (kill-buffer))))
+
 ;;; secret-state-test.el ends here
