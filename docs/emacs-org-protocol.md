@@ -199,16 +199,8 @@ The same code expanded for readability is:
 
 Canonical URLs are occasionally incorrect, and removing fragments deliberately
 collapses section-level links into one page-level reference. Use the current
-page URL and retain `ref.hash` if either behavior is undesirable. The selected
-text is transported inside the URL, so the body is truncated by Unicode code
-point until the whole encoded org-protocol URL fits `MAX_ENCODED_URL_CHARS`
-(8000 characters of encoded URI); a longer selection is shortened rather than
-risking a length overrun that silently drops the capture, a surrogate pair is
-never split, and the `%?` insertion point remains for adding more by hand.
-
-If the reference URL and title already exceed that budget, the bookmarklet
-reports the problem without dispatching the URL. It does not truncate the
-reference and silently change the page identity; use a manual capture with
+page URL and retain `ref.hash` if either behavior is undesirable. When the
+reference URL and title alone exceed the budget, use a manual capture with
 suitable metadata.
 
 Firefox normally hands the external scheme to the desktop handler without
@@ -269,8 +261,10 @@ emacsclient --eval "(featurep 'org-roam-protocol)"
 The expected handler is `emacs-org-protocol.desktop`, and the feature check
 should return `t`. Clicking the bookmark should open the `r` Org Roam reference
 capture template. Finalizing or aborting the capture closes its temporary frame.
-A reference that already exists opens its node in the dedicated frame instead of
-starting another capture.
+For a new reference, the quoted selection and notes go under the note's
+`* Notes` heading. When a node with that reference already exists, Org Roam
+still starts a capture, but files it into the existing node at the end of that
+node's first entry rather than creating a new file.
 
 ### Flatpak Firefox
 
