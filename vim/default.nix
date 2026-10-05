@@ -78,6 +78,10 @@
       name = "vimrc_dir";
       path = ./.vim/vimrc_dir;
     }
+    {
+      name = "after";
+      path = ./.vim/after;
+    }
   ];
   mkRuntime = name: extraFiles: pkgs.linkFarm name (sharedRuntimeFiles ++ extraFiles);
   vimRuntime = mkRuntime "vim-config-runtime" [];
@@ -85,10 +89,6 @@
     {
       name = "lua";
       path = ./.vim/lua;
-    }
-    {
-      name = "after";
-      path = ./.vim/after;
     }
   ];
   # Plugin scripts under after/ run once every package is on the runtimepath.
