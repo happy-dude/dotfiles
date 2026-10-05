@@ -297,21 +297,28 @@ printf '%s\n' represented >"$series_worktree/represented"
 git -C "$series_worktree" add represented
 git -C "$series_worktree" commit --quiet -m 'tests: add represented change'
 
-# Export fails after staging here (the fixture has no commit-message linter);
-# the caller's test_setup trap must still remove its directory.
+# Export fails after staging here (the fixture has no commit-message linter).
+# The caller's own EXIT trap must still run, with the failing status, after
+# staging is removed.
+caller_status="$temporary_directory/caller status"
 caller_tmpdir=$(
   bash -c 'set -euo pipefail
     source scripts/lib/test-helpers.sh
     source scripts/portable-series.sh
     test_setup
+    trap "printf %s \$? >\"$2\"; cleanup_test_tmpdir" EXIT
     printf "%s\n" "$TMPDIR_TEST"
-    export_series demo "$1"' _ "$output_directory" 2>/dev/null
+    export_series demo "$1"' _ "$output_directory" "$caller_status" 2>/dev/null
 ) && {
   printf 'export succeeded without a commit-message linter\n' >&2
   exit 1
 }
 [[ -n $caller_tmpdir && ! -e $caller_tmpdir ]] || {
   printf 'export replaced the caller EXIT trap: %s\n' "$caller_tmpdir" >&2
+  exit 1
+}
+[[ $(<"$caller_status") != 0 ]] || {
+  printf 'the caller EXIT trap saw a failed export as success\n' >&2
   exit 1
 }
 staging=("$output_directory"/.dotfiles-demo.*)

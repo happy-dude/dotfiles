@@ -38,6 +38,26 @@ exit_trap_action() {
   printf '%s' "$2"
 }
 
+# EXIT handler while an export is staging: remove the staging directory, then
+# run the caller's own EXIT action with the exit status the shell had. The
+# action runs in a list guarded by `|| :` so `set -e` cannot skip it, and
+# return_status sets `$?` for it in that same list.
+export_staging_directory=""
+export_caller_exit_action=""
+return_status() { return "$1"; }
+cleanup_export_staging() {
+  local status=$?
+
+  rm -rf -- "$export_staging_directory"
+  if [[ -n $export_caller_exit_action ]]; then
+    {
+      return_status "$status"
+      eval "$export_caller_exit_action"
+    } || :
+  fi
+  return "$status"
+}
+
 reject_merge_commits() {
   local worktree=$1
   local base=$2
@@ -307,7 +327,6 @@ export_series() {
   local bundle_checksum_name="$bundle_name.sha256"
   local apply_name
   local caller_exit_trap
-  local caller_exit_action
   local staging_directory
   local staged_patch_path
   local staged_manifest_path
@@ -357,12 +376,12 @@ export_series() {
 
   validate_forbidden_pattern "$forbidden_pattern"
   staging_directory=$(mktemp -d "$output_directory/.dotfiles-$name.XXXXXX")
-  # The caller may own an EXIT trap (test_setup does): run it after removing
-  # staging, and restore it when export finishes.
+  # The caller may own an EXIT trap (test_setup does): keep running it after
+  # staging is removed, and restore it when export finishes.
   caller_exit_trap=$(trap -p EXIT)
-  caller_exit_action=$(exit_trap_action "$caller_exit_trap")
-  # shellcheck disable=SC2064 # Early expansion is the point: EXIT runs after function scope ends.
-  trap "rm -rf -- $(printf '%q' "$staging_directory"); $caller_exit_action" EXIT
+  export_caller_exit_action=$(exit_trap_action "$caller_exit_trap")
+  export_staging_directory=$staging_directory
+  trap cleanup_export_staging EXIT
   lint_commits "$worktree" "$base" "$staging_directory/messages"
   scan_series "$forbidden_pattern" "$worktree" "$base" "$staging_directory"
 
