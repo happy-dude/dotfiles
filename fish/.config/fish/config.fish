@@ -116,7 +116,7 @@ alias gits="git --no-pager show --no-patch --format='commit %h (\"%s\")%n'"
 # An empty alternate editor starts the daemon if the user service is not ready.
 alias et='emacsclient --alternate-editor= --tty'
 alias ef='emacsclient --alternate-editor= --create-frame --no-wait'
-alias ec="emacsclient --alternate-editor= --no-wait --eval '(make-capture-frame)'"
+alias ec="emacsclient --alternate-editor= --create-frame --no-wait --frame-parameters='((name . \"capture\"))' --eval '(make-capture-frame)'"
 
 # Run the current kernel tree with user networking and KASLR disabled.
 function vmeamd --wraps vng

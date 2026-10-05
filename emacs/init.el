@@ -193,10 +193,12 @@ Remote names are matched as written, without extra network access."
 (add-hook 'org-capture-after-finalize-hook #'dotfiles-delete-capture-frame)
 
 (defun make-capture-frame ()
-  "Create a new frame and run org-capture."
+  "Run org-capture in a frame named \"capture\", creating it if needed.
+A client started with --create-frame and that name is reused, which works
+even when the daemon has no graphical frame to copy a display from."
   (interactive)
-  (make-frame '((name . "capture")))
-  (select-frame-by-name "capture")
+  (unless (equal "capture" (frame-parameter nil 'name))
+    (select-frame (make-frame '((name . "capture")))))
   (delete-other-windows)
   ;; Org shows both the template menu and the capture buffer in a split
   ;; window; keep them in the capture frame's only window.
