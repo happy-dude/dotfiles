@@ -141,7 +141,14 @@
     "nixd": {
       "command": "nixd",
       "filetypes": ["nix"],
-      "rootPatterns": ["flake.nix", ".git"]
+      "rootPatterns": ["flake.nix", ".git"],
+      "settings": {
+        "nixd": {
+          "formatting": {
+            "command": ["alejandra"]
+          }
+        }
+      }
     },
     "oxlint": {
       "args": ["--lsp"],

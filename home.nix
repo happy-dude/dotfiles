@@ -41,6 +41,7 @@ in {
 
     packages =
       (with pkgs; [
+        alejandra # nixd formats with it in CoC and Emacs, matching `nix fmt`
         asmfmt
         asciinema
         ast-grep
@@ -113,7 +114,6 @@ in {
         ninja
         nix-prefetch-github
         nix-zsh-completions
-        nixfmt
         nmap
         nodejs
         openssl
@@ -192,7 +192,9 @@ in {
         (lib.lowPrio llvm) # llvm-ar, llvm-nm, etc.
       ])
       # clangd arrives here with clang-tools at low priority.
-      ++ languageServers.packages;
+      ++ languageServers.packages
+      # treefmt with this repository's treefmt.nix, the same as `nix fmt`.
+      ++ [inputs.self.formatter.${pkgs.stdenv.hostPlatform.system}];
 
     file = {
       ".clang-format".source = ./.clang-format;

@@ -151,6 +151,8 @@ references that navigator lacks, mirroring the CoC configuration."
 (dotfiles/lsp-register 'dotfiles-lua '(lua-mode lua-ts-mode))
 (dotfiles/lsp-register 'dotfiles-marksman '(markdown-mode gfm-mode))
 (dotfiles/lsp-register 'dotfiles-nixd '(nix-mode nix-ts-mode))
+;; nixd formats with nixfmt unless told otherwise; match `nix fmt'.
+(lsp-register-custom-settings '(("nixd.formatting.command" ["alejandra"])))
 (dotfiles/lsp-register 'dotfiles-perl-navigator '(perl-mode cperl-mode) :priority 1)
 (dotfiles/lsp-register 'dotfiles-perl-language-server '(perl-mode cperl-mode)
                        :add-on t
