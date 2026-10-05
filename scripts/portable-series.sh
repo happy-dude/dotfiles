@@ -290,6 +290,7 @@ export_series() {
   local base
   local merge_base
   local count
+  local changing_count
   local profiles
   local patch_name="dotfiles-$name.patch"
   local manifest_name="dotfiles-$name.manifest"
@@ -332,6 +333,11 @@ export_series() {
   count=$(git -C "$worktree" rev-list --count "$base..HEAD")
   ((count > 0)) || die "portable branch contains no commits"
   reject_merge_commits "$worktree" "$base"
+  # Merges are refused above, so a commit that changes no path is empty, and
+  # git am refuses an empty patch.
+  changing_count=$(git -C "$worktree" rev-list --count "$base..HEAD" -- .)
+  ((changing_count == count)) ||
+    die "portable history contains an empty commit"
 
   local authors
   authors=$(git -C "$worktree" log --format='%an <%ae>' "$base..HEAD")
@@ -367,8 +373,9 @@ export_series() {
   staged_patch_path="$staging_directory/$patch_name"
   staged_manifest_path="$staging_directory/$manifest_name"
   staged_apply_path="$staging_directory/$apply_name"
-  git -C "$worktree" format-patch --stdout --base="$base" "$base..HEAD" \
-    >"$staged_patch_path"
+  # One message per counted commit: apply rejects any other mailbox size.
+  git -C "$worktree" format-patch --stdout --no-cover-letter --base="$base" \
+    "$base..HEAD" >"$staged_patch_path"
   scan_final_patch \
     "$forbidden_pattern" "$staged_patch_path" "$staging_directory"
   patch_sha256=$(sha256sum "$staged_patch_path" | cut -d ' ' -f 1)

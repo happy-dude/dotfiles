@@ -90,6 +90,24 @@ fi
   fail 'failed profile build replaced published artifacts'
 unset PORTABLE_TEST_BUILD_FAIL
 
+# Apply needs one message per commit, and git am refuses an empty patch.
+git -C "$repo" config format.coverLetter true
+run_portable export probe "$output" ||
+  fail 'export failed with format.coverLetter configured'
+[[ $(grep -c '^From [0-9a-f]\{40\} ' "$output/dotfiles-probe.patch") == 1 ]] ||
+  fail 'export published a cover letter the apply count rejects'
+git -C "$repo" config --unset format.coverLetter
+before=$(sha256sum "$output"/*)
+git -C "$worktree" commit --quiet --allow-empty -m 'tests: an empty commit'
+if run_portable export probe "$output"; then
+  fail 'export published an empty commit git am refuses'
+fi
+grep -q 'empty commit' "$TMPDIR_TEST/export.log" ||
+  fail 'empty commit was not reported'
+[[ $(sha256sum "$output"/*) == "$before" ]] ||
+  fail 'empty-commit rejection replaced published artifacts'
+git -C "$worktree" reset --quiet --hard HEAD~1
+
 # A narrow fetch mapping must not leave export validating against a stale base.
 git -C "$repo" config --unset-all remote.origin.fetch
 git -C "$repo" config --add remote.origin.fetch \
