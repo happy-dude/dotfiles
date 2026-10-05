@@ -157,10 +157,12 @@ def deploy(
     if changed:
         print("Refreshing generated Rime schemas...")
         data_dir.mkdir(parents=True, exist_ok=True)
+        # Replace the tree before dropping the old links: a failed copy then
+        # leaves the previous deployment reachable under its usual names.
+        refresh_static(static_source, static_dir)
         for link in iter_symlinks(data_dir, static_dir):
             if resolves_below(link, static_dir):
                 link.unlink()
-        refresh_static(static_source, static_dir)
         build = data_dir / "build"
         if build.is_symlink() or build.is_file():
             build.unlink()

@@ -49,6 +49,39 @@ class FailureRecoveryTests(unittest.TestCase):
             )
             self.assertFalse(backup.exists())
 
+    def test_failed_static_copy_keeps_schema_links(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source"
+            source.mkdir()
+            (source / "schema.yaml").write_bytes(b"old schema\n")
+            stamp = root / "stamp"
+            stamp.write_bytes(b"stamp-v1\n")
+            environment = {
+                "XDG_DATA_HOME": str(root / "data"),
+                "XDG_STATE_HOME": str(root / "state"),
+            }
+            link = root / "data/fcitx5/rime/schema.yaml"
+            with patch.dict(os.environ, environment):
+                state_manager.deploy(source, stamp, "true", ["schema.yaml"])
+                self.assertTrue(link.is_symlink())
+
+                (source / "schema.yaml").write_bytes(b"new schema\n")
+                stamp.write_bytes(b"stamp-v2\n")
+                with (
+                    patch.object(
+                        state_manager.shutil,
+                        "copytree",
+                        side_effect=OSError(errno.ENOSPC, "injected"),
+                    ),
+                    self.assertRaises(OSError),
+                ):
+                    state_manager.deploy(
+                        source, stamp, "true", ["schema.yaml"]
+                    )
+
+            self.assertEqual(link.read_bytes(), b"old schema\n")
+
     def test_failed_host_link_migration_keeps_original_readable(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
