@@ -87,6 +87,21 @@ in {
     Install.WantedBy = ["default.target"];
   };
 
+  # systemd checks the watcher's conditions only at start, so this starts it
+  # once ~/org exists. It repeats the other two conditions: a skipped service
+  # makes a path unit retrigger until it fails with trigger-limit-hit.
+  systemd.user.paths.rclone-box-org-watch = {
+    Unit = {
+      Description = "Start the Org change watcher once ~/org exists";
+      ConditionPathExists = [
+        rcloneConfig
+        readyMarker
+      ];
+    };
+    Path.PathExists = "%h/org";
+    Install.WantedBy = ["default.target"];
+  };
+
   systemd.user.timers.rclone-box-org-bisync = {
     Unit.Description = "Synchronize Org files with Box every 15 minutes";
     Timer = {
