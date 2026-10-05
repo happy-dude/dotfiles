@@ -11,10 +11,18 @@ MANAGED_KEYS = (
 )
 
 
-def load_document(path: Path, description: str):
+def read_text(path: Path, description: str) -> str:
     try:
-        return tomlkit.parse(path.read_text(encoding="utf-8"))
-    except (OSError, tomlkit.exceptions.ParseError) as error:
+        return path.read_text(encoding="utf-8")
+    except OSError as error:
+        message = f"Unable to read {description} {path}: {error}"
+        raise SystemExit(message) from error
+
+
+def parse_document(text: str, path: Path, description: str):
+    try:
+        return tomlkit.parse(text)
+    except tomlkit.exceptions.ParseError as error:
         message = f"Unable to read {description} {path}: {error}"
         raise SystemExit(message) from error
 
@@ -24,10 +32,12 @@ def materialize(source: Path, target: Path) -> None:
         message = f"Generated Codex profile is not a regular file: {source}"
         raise SystemExit(message)
 
-    generated = load_document(source, "generated Codex profile")
+    description = "generated Codex profile"
+    source_text = read_text(source, description)
+    generated = parse_document(source_text, source, description)
     # Nix writes the schema directive into the template; carry it over
     # verbatim.
-    first_line = source.read_text(encoding="utf-8").split("\n", 1)[0]
+    first_line = source_text.split("\n", 1)[0]
     directive = first_line + "\n" if first_line.startswith("#:schema ") else ""
     unexpected = set(generated) - set(MANAGED_KEYS)
     if unexpected:
@@ -44,8 +54,9 @@ def materialize(source: Path, target: Path) -> None:
     if target.exists() and not target.is_file():
         raise SystemExit(f"Refusing non-regular Codex profile: {target}")
 
+    description = "existing Codex profile"
     runtime = (
-        load_document(target, "existing Codex profile")
+        parse_document(read_text(target, description), target, description)
         if target.exists()
         else tomlkit.document()
     )
