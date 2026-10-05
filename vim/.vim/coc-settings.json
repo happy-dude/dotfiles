@@ -13,6 +13,7 @@
     "javascript",
     "javascriptreact",
     "json",
+    "latex",
     "lua",
     "markdown",
     "perl",
@@ -21,7 +22,6 @@
     "rust",
     "sh",
     "terraform",
-    "tex",
     "typescript",
     "typescriptreact",
     "typst",
@@ -205,7 +205,7 @@
     },
     "texlab": {
       "command": "texlab",
-      "filetypes": ["tex", "plaintex"],
+      "filetypes": ["latex", "plaintex"],
       "rootPatterns": [".latexmkrc", "latexmkrc", ".git"]
     },
     "tinymist": {
