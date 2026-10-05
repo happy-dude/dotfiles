@@ -77,20 +77,24 @@ fi
 #stty -ixon -ixoff              macOS
 
 # Confirm Ctrl-D before an empty interactive shell exits its tmux pane.
+# Without IGNORE_EOF, ZLE treats Ctrl-D on an empty line as end of input and
+# exits before any widget bound to it runs.
+setopt IGNORE_EOF
 function confirm-tmux-exit() {
-  if [[ -n $TMUX && -z $BUFFER ]]; then
-    local reply
-    zle -I
-    if read -q "reply?Exit this shell? [y/N] "; then
-      print
-      exit
-    fi
-    print
-    zle reset-prompt
+  if [[ -n $BUFFER ]]; then
+    zle .delete-char-or-list
     return
   fi
 
-  zle .delete-char-or-list
+  if [[ -n $TMUX ]]; then
+    local reply
+    if ! read -q "reply?Exit this shell? [y/N] "; then
+      print
+      zle reset-prompt
+      return 0
+    fi
+  fi
+  exit
 }
 zle -N confirm-tmux-exit
 bindkey "^D" confirm-tmux-exit
