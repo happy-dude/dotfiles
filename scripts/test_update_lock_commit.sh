@@ -22,6 +22,8 @@ printf 'lock-v1\n' >"$repo/flake.lock"
 commit_all "$repo" 'nix: initial lock'
 git -C "$repo" config user.name 'Update Test'
 git -C "$repo" config user.email 'update-test@example.invalid'
+# Without this, Git falls back to $EMAIL and the failure cases below commit.
+git -C "$repo" config user.useConfigOnly true
 
 # A validated update leaves a dirty lock; the helper commits just it.
 printf 'lock-v2\n' >"$repo/flake.lock"
