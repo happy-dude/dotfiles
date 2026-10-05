@@ -16,7 +16,9 @@ if !has('nvim') && exists('v:clipproviders')
   endfunction
 
   function! s:wl_clipboard_paste(register) abort
-    let l:command = 'wl-paste --no-newline --type text/plain;charset=utf-8'
+    " Quote the type: the shell would otherwise end the command at ';'.
+    let l:command = 'wl-paste --no-newline --type '
+          \ . shellescape('text/plain;charset=utf-8')
     if a:register ==# '*'
       let l:command .= ' --primary'
     endif
