@@ -342,7 +342,8 @@ and installs StyLua's config under `~/.config/stylua`.
   evaluation never reads the package. Activation materializes the Fcitx profile
   and host configuration as writable regular files with prior-source snapshots
   under `~/.local/state/rime/host-config`. It rejects malformed or unmanaged
-  conflicts, materializes managed static data under
+  conflicts, except an existing `conf/notifications.conf` on the first deploy,
+  which Fcitx writes itself; it materializes managed static data under
   `~/.local/share/fcitx5/rime/.home-manager-static`, and leaves generated
   schemas, learned user databases, and sync state writable beside it. Host-file
   updates preserve runtime-only edits, replace an unchanged managed baseline,
@@ -351,7 +352,9 @@ and installs StyLua's config under `~/.config/stylua`.
   start. A failed static-tree rollback retains the backup for the next
   activation; the directory replacement is recoverable, not one atomic swap.
   Authorized host-file links stay readable until their staged replacement is
-  ready.
+  ready. Edit Rime data in `rime/.local/share/fcitx5/rime/`; edits made through
+  the deployed links land in `.home-manager-static` and are discarded at the
+  next source change.
 - `scripts/update.sh` updates Rime only through the locked flake inputs.
 - **`yt-dlp/`** uses the locked Nixpkgs bgutil-ytdlp-pot-provider package. Home
   Manager links its Python plugin for yt-dlp discovery and points script mode at
@@ -487,25 +490,25 @@ compilation for Python; Bash syntax and ShellCheck for `scripts/*.sh` and
 from the directory rather than listed; native syntax checks for the managed Fish
 and Zsh files; focused tests for the Codex profile materializer, agent-directory
 ownership migration, `.gitmodules` formatter, rclone event classification and
-decoding, guarded Rime host-file and ownership-state materialization, the Rime
-theme names against the Catppuccin package, Zed settings materialization,
-focused OpenCode package/LSP/schema/theme/telemetry checks, the oh-my-pi
-wrapper, overlay, agent, and theme checks, Git commit-message hook behavior and
-the repository-hook dispatcher, a silent Ex-mode load of each profile's Vim
-configuration, Kagi prompt character budgets, the aerc deployed/tracked
-configuration mirror, CoC language-server package resolution, the sdcv
-dictionary lookup, the CurSearch highlight link, and editor secret-state
-exclusions; Emacs `check-parens` and Org lint for tracked Org files plus a
-runtime load of the evaluated Emacs configuration and published Org bookmarklet
-behavior; GitHub Actions syntax, pinned action revisions, and Dependabot config
-parsing; a real Neovim Org Tree-sitter parse against the evaluated Home Manager
-runtime; Rime Lua syntax and focused tests; profile-capability invariants; and
-gitleaks secret scanning. CI runs those checks and evaluates both Home Manager
-configurations on pushes to `main` and on pull requests; the profile names are
-listed in `ci.yml` explicitly, so a new profile must be added there as well.
-Full builds of both configurations run weekly on a schedule and are opt-in
-through the `workflow_dispatch` `build_homes` input because builds are
-substantially more expensive than evaluation.
+decoding, guarded Rime host-file materialization, the Rime theme names against
+the Catppuccin package, Zed settings materialization, focused OpenCode
+package/LSP/schema/theme/telemetry checks, the oh-my-pi wrapper, overlay, agent,
+and theme checks, Git commit-message hook behavior and the repository-hook
+dispatcher, a silent Ex-mode load of each profile's Vim configuration, Kagi
+prompt character budgets, the aerc deployed/tracked configuration mirror, CoC
+language-server package resolution, the sdcv dictionary lookup, the CurSearch
+highlight link, and editor secret-state exclusions; Emacs `check-parens` and Org
+lint for tracked Org files plus a runtime load of the evaluated Emacs
+configuration and published Org bookmarklet behavior; GitHub Actions syntax,
+pinned action revisions, and Dependabot config parsing; a real Neovim Org
+Tree-sitter parse against the evaluated Home Manager runtime; Rime Lua syntax
+and focused tests; profile-capability invariants; and gitleaks secret scanning.
+CI runs those checks and evaluates both Home Manager configurations on pushes to
+`main` and on pull requests; the profile names are listed in `ci.yml`
+explicitly, so a new profile must be added there as well. Full builds of both
+configurations run weekly on a schedule and are opt-in through the
+`workflow_dispatch` `build_homes` input because builds are substantially more
+expensive than evaluation.
 
 ### Zed / agent config
 
