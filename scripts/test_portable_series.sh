@@ -2,14 +2,12 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-# Neutralise the user's global Git configuration: the managed commit-msg
-# hook lints every commit, so a suite that creates them must not depend on
-# whether that hook is installed on the machine running it.
-export GIT_CONFIG_GLOBAL=/dev/null
-
 source_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-temporary_directory=$(mktemp -d)
-trap 'rm -rf -- "$temporary_directory"' EXIT
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=lib/test-helpers.sh
+source "$source_root/scripts/lib/test-helpers.sh"
+test_setup
+temporary_directory=$TMPDIR_TEST
 repo="$temporary_directory/repo"
 mkdir -p "$repo/scripts"
 cp -- "$source_root/scripts/portable-series.sh" "$repo/scripts/"
