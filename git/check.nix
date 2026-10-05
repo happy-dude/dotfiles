@@ -296,6 +296,30 @@ in {
         exit 1
       fi
 
+      # Real commits: without an editor Git keeps '#' lines, so the hook must
+      # lint them; through an editor Git strips them, so the hook must too.
+      mkdir -p ../hooks
+      ln -s ${pkgs.lib.getExe commitMsgHook} ../hooks/commit-msg
+      long_comment="# This deliberately overlong comment line is kept by git commit -m and must reach the width check."
+      if git -c core.hooksPath="$PWD/../hooks" -c user.name=test \
+        -c user.email=test@example.invalid commit --quiet --allow-empty \
+        -m 'git: keep comment lines without an editor' -m "$long_comment" \
+        </dev/null; then
+        echo "accepted an overlong '#' line that git commit -m keeps" >&2
+        exit 1
+      fi
+      cat >comment-editor <<EOF
+      #!${pkgs.bash}/bin/bash
+      printf '%s\n\n%s\n' 'git: strip comment lines from an edited message' \
+        '$long_comment' >"\$1"
+      EOF
+      chmod 0755 comment-editor
+      GIT_EDITOR="$PWD/comment-editor" git -c core.hooksPath="$PWD/../hooks" \
+        -c user.name=test -c user.email=test@example.invalid \
+        commit --quiet --allow-empty </dev/null
+      test "$(git log -1 --format=%B)" = \
+        'git: strip comment lines from an edited message'
+
     '';
   };
 }

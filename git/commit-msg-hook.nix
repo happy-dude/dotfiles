@@ -41,6 +41,13 @@ in
           return 1
         fi
 
+        # GIT_EDITOR=: means -m, -F, or --no-edit: Git keeps '#' lines, so
+        # lint the message as written. --cleanup=strip is invisible here.
+        if [[ $(git var GIT_EDITOR) == : ]]; then
+          ${pkgs.lib.getExe commitMessageLinter} "$message_path"
+          return
+        fi
+
         cleaned_message=$(mktemp)
         normalized_message=$(mktemp)
         raw_errors=$(mktemp)
