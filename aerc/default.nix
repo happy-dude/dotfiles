@@ -5,9 +5,6 @@
   template = name:
     lib.trim (builtins.readFile (./.config/aerc/templates + "/${name}")) + "\n";
 in {
-  # aerc.conf itself is mirrored: the tracked native file is the reference
-  # and the attributes below are the live configuration, kept equal by the
-  # aerc-config-mirror check.
   xdg.configFile."aerc/notmuch-map.conf".source = ./.config/aerc/notmuch-map.conf;
 
   programs.aerc = {
@@ -62,20 +59,12 @@ in {
     # verbatim so the file stays editable in aerc's native format.
     extraBinds = builtins.readFile ./.config/aerc/binds.conf;
 
-    stylesets = {
-      gruvbox = ''
-        ${builtins.readFile ./.config/aerc/stylesets/gruvbox}
-      '';
-      gruvbox_material_dark_hard = ''
-        ${builtins.readFile ./.config/aerc/stylesets/gruvbox_material_dark_hard}
-      '';
-      gruvbox_material_dark_medium = ''
-        ${builtins.readFile ./.config/aerc/stylesets/gruvbox_material_dark_medium}
-      '';
-      gruvbox_material_dark_soft = ''
-        ${builtins.readFile ./.config/aerc/stylesets/gruvbox_material_dark_soft}
-      '';
-    };
+    stylesets = lib.genAttrs [
+      "gruvbox"
+      "gruvbox_material_dark_hard"
+      "gruvbox_material_dark_medium"
+      "gruvbox_material_dark_soft"
+    ] (name: builtins.readFile (./.config/aerc/stylesets + "/${name}"));
 
     templates = {
       thanks = template "thanks";
