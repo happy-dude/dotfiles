@@ -426,6 +426,27 @@ Org's % template expansion. Org Roam adds ROAM_REFS itself."
          :hook dotfiles/org-roam-insert-ref-fields
          :unnarrowed t)))
 
+(defun dotfiles/org-roam-capture-to-ref-notes ()
+  "File a capture for an existing ref under its note's Notes heading.
+Org Roam's own handler puts it at the node's start, ahead of the note
+head's headings.  This runs first, for a file-level node whose note has
+a top-level Notes heading, and returns the node ID the same way; any
+other node is left to Org Roam."
+  (when-let* ((ref (plist-get org-roam-capture--info :ref))
+              (node (org-roam-node-from-ref ref))
+              ((= (org-roam-node-level node) 0))
+              (buffer (org-capture-target-buffer (org-roam-node-file node)))
+              (notes (with-current-buffer buffer
+                       (org-with-wide-buffer
+                        (goto-char (point-min))
+                        (and (re-search-forward "^\\* Notes[ \t]*$" nil t)
+                             (line-beginning-position))))))
+    (set-buffer buffer)
+    (widen)
+    (goto-char notes)
+    (org-roam-node-id node)))
+(add-hook 'org-roam-capture-preface-hook #'dotfiles/org-roam-capture-to-ref-notes)
+
 
 (define-key global-map (kbd "C-c n l") 'org-roam-buffer-toggle)
 (define-key global-map (kbd "C-c n f") 'org-roam-node-find)
