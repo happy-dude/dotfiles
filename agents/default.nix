@@ -48,7 +48,7 @@
   legacyAgentDirectory = "${repo}/agents/generated/codex-agents";
 in {
   # Claude Code registers a subagent only from a prompt carrying YAML
-  # frontmatter, so link the generated prompts individually rather than the
+  # frontmatter, so link the canonical prompts individually rather than the
   # directory, which also holds the frontmatterless Kagi chat prompts.
   home.file =
     lib.mapAttrs' (
@@ -73,9 +73,9 @@ in {
 
   # Validate the agent state parents before anything writes through them. A
   # symlinked or non-directory ~/.claude, ~/.codex, or ~/.omp must be rejected
-  # before the migration moves files into it and before linkGeneration creates
-  # links inside it, otherwise a redirected parent is followed before activation
-  # refuses it.
+  # before the migration removes legacy links there and before linkGeneration
+  # creates links inside it, otherwise a redirected parent is followed before
+  # activation refuses it.
   home.activation.secureAgentStateDirectories = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
     for directory in "$HOME/.claude" "$HOME/.codex" "$HOME/.omp"; do
       if [[ -L $directory || (-e $directory && ! -d $directory) ]]; then
