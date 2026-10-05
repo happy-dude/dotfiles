@@ -45,12 +45,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # User-scoped declarative Flatpak management on worldmind.
+    # User-scoped declarative Flatpak management where hasFlatpak holds.
     nix-flatpak = {
       url = "github:gmodena/nix-flatpak?ref=v0.7.0";
     };
 
-    # Declarative KDE Plasma preferences on worldmind.
+    # Declarative KDE Plasma preferences for Plasma profiles.
     plasma-manager = {
       url = "github:nix-community/plasma-manager";
       inputs.nixpkgs.follows = "nixpkgs";

@@ -118,7 +118,7 @@ alias et='emacsclient --alternate-editor= --tty'
 alias ef='emacsclient --alternate-editor= --create-frame --no-wait'
 alias ec="emacsclient --alternate-editor= --no-wait --eval '(make-capture-frame)'"
 
-# Run the current kernel tree with the usual AMD debugging defaults.
+# Run the current kernel tree with user networking and KASLR disabled.
 function vmeamd --wraps vng
     command vng \
         --run \
@@ -128,8 +128,6 @@ function vmeamd --wraps vng
         --append nokaslr \
         $argv
 end
-
-# programming language environments
 
 # eza
 if command -q eza

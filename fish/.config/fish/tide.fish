@@ -1,4 +1,4 @@
-# Declarative Tide settings shared by Home Manager and Stow installations.
+# Declarative Tide settings, sourced by config.fish in interactive shells.
 # These globals deliberately override any per-machine universal Tide defaults.
 
 set -g tide_aws_bg_color yellow

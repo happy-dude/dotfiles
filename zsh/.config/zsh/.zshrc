@@ -167,8 +167,6 @@ function vmeamd() {
         "$@"
 }
 
-# programming language environments
-
 # eza
 if command -v eza &> /dev/null
 then
