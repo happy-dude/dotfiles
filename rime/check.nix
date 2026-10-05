@@ -99,15 +99,14 @@ in {
     name = "rime-host-files-test";
     tools = [rimeHostFiles];
     script = ''
-      source_root="$PWD/source"
+      source_root="$PWD/source/fcitx5"
       home="$PWD/home"
       state="$PWD/state"
       marker_source="$PWD/marker"
-      mkdir -p "$source_root/.config/fcitx5/conf"
-      printf '%s\n' profile-v1 >"$source_root/.config/fcitx5/profile"
-      printf '%s\n' classic-v1 \
-        >"$source_root/.config/fcitx5/conf/classicui.conf"
-      printf '%s\n' rime-v1 >"$source_root/.config/fcitx5/conf/rime.conf"
+      mkdir -p "$source_root/conf"
+      printf '%s\n' profile-v1 >"$source_root/profile"
+      printf '%s\n' classic-v1 >"$source_root/conf/classicui.conf"
+      printf '%s\n' rime-v1 >"$source_root/conf/rime.conf"
       printf '%s\n' home-manager-rime-v1 >"$marker_source"
 
       HOME="$home" XDG_STATE_HOME="$state" \
@@ -140,13 +139,12 @@ in {
         rime-host-files deploy "$source_root"
       grep -qx runtime-edit "$home/.config/fcitx5/profile"
 
-      printf '%s\n' classic-v2 \
-        >"$source_root/.config/fcitx5/conf/classicui.conf"
+      printf '%s\n' classic-v2 >"$source_root/conf/classicui.conf"
       HOME="$home" XDG_STATE_HOME="$state" \
         rime-host-files deploy "$source_root"
       grep -qx classic-v2 "$home/.config/fcitx5/conf/classicui.conf"
 
-      printf '%s\n' profile-v2 >"$source_root/.config/fcitx5/profile"
+      printf '%s\n' profile-v2 >"$source_root/profile"
       if HOME="$home" XDG_STATE_HOME="$state" \
         rime-host-files deploy "$source_root"; then
         echo "accepted conflicting Rime host-file updates" >&2

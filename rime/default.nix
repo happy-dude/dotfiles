@@ -151,8 +151,11 @@ in
         ${lib.escapeShellArg legacyOwnershipMarker}
     '';
 
+    # Pass only the Fcitx configuration directory: `./.` would copy the whole
+    # rime/ tree, Rime data included, into the store as one more path.
     home.activation.rimeHostFiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
-      $DRY_RUN_CMD ${lib.getExe rimeHostFiles} deploy ${lib.escapeShellArg ./.}
+      $DRY_RUN_CMD ${lib.getExe rimeHostFiles} deploy \
+        ${lib.escapeShellArg ./.config/fcitx5}
     '';
 
     home.activation.rimeSchemaBuild = lib.hm.dag.entryAfter ["rimeHostFiles"] ''
