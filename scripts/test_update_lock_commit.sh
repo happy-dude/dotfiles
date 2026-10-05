@@ -22,6 +22,8 @@ printf 'lock-v1\n' >"$repo/flake.lock"
 commit_all "$repo" 'nix: initial lock'
 git -C "$repo" config user.name 'Update Test'
 git -C "$repo" config user.email 'update-test@example.invalid'
+# Without this, Git falls back to $EMAIL and the failure cases below commit.
+git -C "$repo" config user.useConfigOnly true
 
 # A validated update leaves a dirty lock; the helper commits just it.
 printf 'lock-v2\n' >"$repo/flake.lock"
@@ -93,7 +95,7 @@ test "$(git -C "$repo" rev-parse HEAD^)" = "$(git -C "$repo" rev-parse "$tip_bef
 upstream="$TMPDIR_TEST/upstream.git"
 git init -q --bare "$upstream"
 git -C "$repo" remote add origin "$upstream"
-git -C "$repo" push -q origin 'HEAD^:refs/heads/master'
+git -C "$repo" push -q origin 'HEAD^:refs/heads/main'
 printf 'lock-v5\n' >"$repo/flake.lock"
 commit_flake_lock "$repo" >/dev/null
 test "$(git -C "$repo" rev-list --count --grep='^nix: update flake.lock$' \
@@ -103,7 +105,7 @@ test "$(git -C "$repo" show HEAD:flake.lock)" = lock-v5 ||
   fail 'the uncontained-upstream fold missed the newer lock'
 
 # A lock commit that is already published gets a fresh commit instead.
-git -C "$repo" push -q origin 'HEAD:refs/heads/master'
+git -C "$repo" push -q origin 'HEAD:refs/heads/main'
 printf 'lock-v6\n' >"$repo/flake.lock"
 commit_flake_lock "$repo" >/dev/null
 test "$(git -C "$repo" rev-list --count --grep='^nix: update flake.lock$' \
@@ -136,7 +138,7 @@ test "$(git -C "$repo" log -1 --format=%s)" = 'nix: update flake.lock' ||
   fail 'detached HEAD did not get a fresh lock commit'
 test "$(git -C "$repo" rev-parse HEAD^)" = "$detached_before" ||
   fail 'detached HEAD rewrote the lock commit'
-git -C "$repo" switch -q master
+git -C "$repo" switch -q main
 
 tip_before_branch=$(git -C "$repo" rev-parse HEAD)
 printf 'lock-v9\n' >"$repo/flake.lock"

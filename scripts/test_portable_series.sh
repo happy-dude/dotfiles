@@ -224,6 +224,26 @@ if start_series existing-path "$existing_path" 2>"$start_error"; then
 fi
 grep -Fq "worktree path already exists: $existing_path" "$start_error"
 
+# Sourced callers test these functions in conditions, where set -e is inert,
+# so a rejected name must stop the function itself.
+if start_series 'BadName' "$temporary_directory/bad-name" \
+  2>"$start_error"; then
+  printf 'started a series with an invalid name\n' >&2
+  exit 1
+fi
+grep -Fq 'invalid series name: BadName' "$start_error"
+test ! -e "$temporary_directory/bad-name"
+if git show-ref --verify --quiet 'refs/heads/replay/BadName'; then
+  printf 'created a replay branch for an invalid name\n' >&2
+  exit 1
+fi
+if export_series 'BadName' "$output_directory" 2>"$start_error"; then
+  printf 'exported a series with an invalid name\n' >&2
+  exit 1
+fi
+test "$(grep -c . "$start_error")" -eq 1
+grep -Fq 'invalid series name: BadName' "$start_error"
+
 for series_name in one two; do
   series_staging="$temporary_directory/staging-$series_name"
   apply_name=$(apply_artifact_name "$series_name")
@@ -277,6 +297,36 @@ printf '%s\n' represented >"$series_worktree/represented"
 git -C "$series_worktree" add represented
 git -C "$series_worktree" commit --quiet -m 'tests: add represented change'
 
+# Export fails after staging here (the fixture has no commit-message linter).
+# The caller's own EXIT trap must still run, with the failing status, after
+# staging is removed.
+caller_status="$temporary_directory/caller status"
+caller_tmpdir=$(
+  bash -c 'set -euo pipefail
+    source scripts/lib/test-helpers.sh
+    source scripts/portable-series.sh
+    test_setup
+    trap "printf %s \$? >\"$2\"; cleanup_test_tmpdir" EXIT
+    printf "%s\n" "$TMPDIR_TEST"
+    export_series demo "$1"' _ "$output_directory" "$caller_status" 2>/dev/null
+) && {
+  printf 'export succeeded without a commit-message linter\n' >&2
+  exit 1
+}
+[[ -n $caller_tmpdir && ! -e $caller_tmpdir ]] || {
+  printf 'export replaced the caller EXIT trap: %s\n' "$caller_tmpdir" >&2
+  exit 1
+}
+[[ $(<"$caller_status") != 0 ]] || {
+  printf 'the caller EXIT trap saw a failed export as success\n' >&2
+  exit 1
+}
+staging=("$output_directory"/.dotfiles-demo.*)
+[[ ! -e ${staging[0]} ]] || {
+  printf 'failed export left its staging directory\n' >&2
+  exit 1
+}
+
 if clean_series demo 2>/dev/null; then
   printf 'cleaned a series with unrepresented commits\n' >&2
   exit 1
@@ -309,11 +359,15 @@ if clean_series never-started 2>/dev/null; then
   exit 1
 fi
 
-# An invalid series name is refused before any state is created.
-if clean_series 'bad name' 2>/dev/null; then
+# An invalid series name is refused before anything else is checked, even
+# when a branch of that name exists.
+git branch --quiet replay/BadName main
+if clean_series 'BadName' 2>"$start_error"; then
   printf 'accepted an invalid series name\n' >&2
   exit 1
 fi
+grep -Fq 'invalid series name: BadName' "$start_error"
+git branch --quiet --delete --force replay/BadName
 
 # cherry omits merges: matching ordinary patches do not cover content added
 # while resolving or completing a merge.

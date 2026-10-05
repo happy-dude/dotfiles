@@ -44,7 +44,12 @@ printf '#!%s\n' "$(command -v bash)" >"$fake_bin/nix"
 cat >>"$fake_bin/nix" <<'EOF'
 set -euo pipefail
 case $1 in
-fmt | flake) ;;
+fmt)
+  if [[ ${PORTABLE_TEST_FMT_CREATES:-} ]]; then
+    printf 'generated\n' >"$PORTABLE_TEST_FMT_CREATES"
+  fi
+  ;;
+flake) exit "${PORTABLE_TEST_CHECK_STATUS:-0}" ;;
 eval)
   printf 'first\nsecond\n'
   exit "${PORTABLE_TEST_EVAL_STATUS:-0}"
@@ -89,6 +94,64 @@ fi
 [[ $(sha256sum "$output"/*) == "$before" ]] ||
   fail 'failed profile build replaced published artifacts'
 unset PORTABLE_TEST_BUILD_FAIL
+
+# A file the formatter creates is drift too.
+export PORTABLE_TEST_FMT_CREATES="$worktree/formatter-output"
+if run_portable export probe "$output"; then
+  fail 'export published artifacts after the formatter created a file'
+fi
+grep -q 'formatter changed the portable worktree' "$TMPDIR_TEST/export.log" ||
+  fail 'untracked formatter output was not reported'
+[[ $(sha256sum "$output"/*) == "$before" ]] ||
+  fail 'formatter drift replaced published artifacts'
+unset PORTABLE_TEST_FMT_CREATES
+rm -f -- "$worktree/formatter-output"
+
+# A caller that tests export_series in a condition turns set -e off, so each
+# step must stop the export itself, before staging and after it. Two failed
+# exports run in one shell, so the second also proves the first restored the
+# caller's EXIT trap. A separate shell keeps the export's trap away from
+# this suite's.
+export PORTABLE_TEST_CHECK_STATUS=23
+if (
+  cd -- "$repo"
+  bash -c 'source scripts/portable-series.sh
+    trap "printf %s \$? >\"$2\"" EXIT
+    if export_series probe "$1"; then exit 0; fi
+    git -C "$3" commit --quiet --amend --no-edit \
+      --author "Someone <someone@example.invalid>"
+    if export_series probe "$1"; then exit 0; fi
+    exit 1' _ "$output" "$TMPDIR_TEST/caller-status" "$worktree"
+) >"$TMPDIR_TEST/export.log" 2>&1; then
+  fail 'export published artifacts after a failed step in a condition'
+fi
+[[ $(sha256sum "$output"/*) == "$before" ]] ||
+  fail 'a failed export in a condition replaced published artifacts'
+grep -q 'non-portable author identity' "$TMPDIR_TEST/export.log" ||
+  fail 'the second export did not stop at the author check'
+[[ $(<"$TMPDIR_TEST/caller-status") == 1 ]] ||
+  fail 'repeated exports did not hand the caller EXIT trap its status'
+git -C "$worktree" commit --quiet --amend --no-edit \
+  --author 'Portable Dotfiles <portable@localhost>'
+unset PORTABLE_TEST_CHECK_STATUS
+
+# Apply needs one message per commit, and git am refuses an empty patch.
+git -C "$repo" config format.coverLetter true
+run_portable export probe "$output" ||
+  fail 'export failed with format.coverLetter configured'
+[[ $(grep -c '^From [0-9a-f]\{40\} ' "$output/dotfiles-probe.patch") == 1 ]] ||
+  fail 'export published a cover letter the apply count rejects'
+git -C "$repo" config --unset format.coverLetter
+before=$(sha256sum "$output"/*)
+git -C "$worktree" commit --quiet --allow-empty -m 'tests: an empty commit'
+if run_portable export probe "$output"; then
+  fail 'export published an empty commit git am refuses'
+fi
+grep -q 'empty commit' "$TMPDIR_TEST/export.log" ||
+  fail 'empty commit was not reported'
+[[ $(sha256sum "$output"/*) == "$before" ]] ||
+  fail 'empty-commit rejection replaced published artifacts'
+git -C "$worktree" reset --quiet --hard HEAD~1
 
 # A narrow fetch mapping must not leave export validating against a stale base.
 git -C "$repo" config --unset-all remote.origin.fetch

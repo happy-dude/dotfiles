@@ -1,3 +1,4 @@
+import stat
 import sys
 from pathlib import Path
 
@@ -9,12 +10,21 @@ MANAGED_KEYS = (
     "developer_instructions",
     "model_reasoning_effort",
 )
+PROFILE_MODE = 0o600
 
 
-def load_document(path: Path, description: str):
+def read_text(path: Path, description: str) -> str:
     try:
-        return tomlkit.parse(path.read_text(encoding="utf-8"))
-    except (OSError, tomlkit.exceptions.ParseError) as error:
+        return path.read_text(encoding="utf-8")
+    except OSError as error:
+        message = f"Unable to read {description} {path}: {error}"
+        raise SystemExit(message) from error
+
+
+def parse_document(text: str, path: Path, description: str):
+    try:
+        return tomlkit.parse(text)
+    except tomlkit.exceptions.ParseError as error:
         message = f"Unable to read {description} {path}: {error}"
         raise SystemExit(message) from error
 
@@ -24,10 +34,12 @@ def materialize(source: Path, target: Path) -> None:
         message = f"Generated Codex profile is not a regular file: {source}"
         raise SystemExit(message)
 
-    generated = load_document(source, "generated Codex profile")
+    description = "generated Codex profile"
+    source_text = read_text(source, description)
+    generated = parse_document(source_text, source, description)
     # Nix writes the schema directive into the template; carry it over
     # verbatim.
-    first_line = source.read_text(encoding="utf-8").split("\n", 1)[0]
+    first_line = source_text.split("\n", 1)[0]
     directive = first_line + "\n" if first_line.startswith("#:schema ") else ""
     unexpected = set(generated) - set(MANAGED_KEYS)
     if unexpected:
@@ -44,9 +56,11 @@ def materialize(source: Path, target: Path) -> None:
     if target.exists() and not target.is_file():
         raise SystemExit(f"Refusing non-regular Codex profile: {target}")
 
+    description = "existing Codex profile"
+    runtime_text = read_text(target, description) if target.exists() else None
     runtime = (
-        load_document(target, "existing Codex profile")
-        if target.exists()
+        parse_document(runtime_text, target, description)
+        if runtime_text is not None
         else tomlkit.document()
     )
     merged = tomlkit.document()
@@ -55,11 +69,20 @@ def materialize(source: Path, target: Path) -> None:
             merged.add(key, generated.item(key))
     # tomlkit places a scalar added after a table before the first table
     # header, so runtime keys can be copied in their original order.
-    for key, item in runtime.items():
+    # Iterating returns top-level booleans as plain bool, which has no
+    # unwrap(); runtime.item() always returns a tomlkit item.
+    for key in runtime:
         if key not in MANAGED_KEYS:
-            merged[key] = item.unwrap()
+            merged[key] = runtime.item(key).unwrap()
 
-    write_text(target, directive + tomlkit.dumps(merged), 0o600)
+    rendered = directive + tomlkit.dumps(merged)
+    # Activation runs this on every switch.
+    if (
+        rendered == runtime_text
+        and stat.S_IMODE(target.stat().st_mode) == PROFILE_MODE
+    ):
+        return
+    write_text(target, rendered, PROFILE_MODE)
 
 
 def main(arguments: list[str]) -> None:

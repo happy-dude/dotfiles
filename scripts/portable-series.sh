@@ -31,6 +31,33 @@ validate_name() {
     die "invalid series name: $1"
 }
 
+# Print the action of a `trap -p EXIT` line, or nothing when it is empty.
+exit_trap_action() {
+  [[ -n $1 ]] || return 0
+  eval "set -- ${1#trap }"
+  printf '%s' "$2"
+}
+
+# EXIT handler while an export is staging: remove the staging directory, then
+# run the caller's own EXIT action with the exit status the shell had. The
+# action runs in a list guarded by `|| :` so `set -e` cannot skip it, and
+# return_status sets `$?` for it in that same list.
+export_staging_directory=""
+export_caller_exit_action=""
+return_status() { return "$1"; }
+cleanup_export_staging() {
+  local status=$?
+
+  rm -rf -- "$export_staging_directory"
+  if [[ -n $export_caller_exit_action ]]; then
+    {
+      return_status "$status"
+      eval "$export_caller_exit_action"
+    } || :
+  fi
+  return "$status"
+}
+
 reject_merge_commits() {
   local worktree=$1
   local base=$2
@@ -218,7 +245,7 @@ start_series() {
   local existing_worktree
   local lookup_status
 
-  validate_name "$name"
+  validate_name "$name" || return 1
   if git -C "$repo_root" show-ref --verify --quiet "$branch_ref"; then
     if existing_worktree=$(worktree_for_branch "$repo_root" "$branch_ref"); then
       print_existing_series_help "$name" "$existing_worktree"
@@ -290,13 +317,16 @@ export_series() {
   local base
   local merge_base
   local count
+  local changing_count
   local profiles
+  local format_status
   local patch_name="dotfiles-$name.patch"
   local manifest_name="dotfiles-$name.manifest"
   local checksum_name="dotfiles-$name.sha256"
   local bundle_name="dotfiles-$name.tar.gz"
   local bundle_checksum_name="$bundle_name.sha256"
   local apply_name
+  local caller_exit_trap
   local staging_directory
   local staged_patch_path
   local staged_manifest_path
@@ -304,8 +334,9 @@ export_series() {
   local bundle_directory="dotfiles-$name"
   local patch_sha256
   local forbidden_pattern=${PORTABLE_FORBIDDEN_PATTERN:-}
+  local status
 
-  validate_name "$name"
+  validate_name "$name" || return 1
   apply_name=$(apply_artifact_name "$name")
   if worktree=$(worktree_for_branch "$repo_root" "$branch_ref"); then
     :
@@ -318,62 +349,116 @@ export_series() {
     fi
     return 1
   fi
-  [[ -d $output_directory ]] || die "output directory not found: $output_directory"
+  # Each check returns on failure itself: set -e is inert when a caller tests
+  # export_series in a condition.
+  [[ -d $output_directory ]] ||
+    { die "output directory not found: $output_directory" || return 1; }
   worktree_status=$(
     git -C "$worktree" status --porcelain=v1 --untracked-files=all
-  ) || die "unable to read the portable worktree status: $worktree"
-  [[ -z $worktree_status ]] || die "portable worktree is not clean"
+  ) || { die "unable to read the portable worktree status: $worktree" || return 1; }
+  [[ -z $worktree_status ]] ||
+    { die "portable worktree is not clean" || return 1; }
 
-  git -C "$repo_root" fetch origin refs/heads/main:refs/remotes/origin/main
-  base=$(git -C "$repo_root" rev-parse origin/main)
-  merge_base=$(git -C "$worktree" merge-base HEAD origin/main)
+  git -C "$repo_root" fetch origin refs/heads/main:refs/remotes/origin/main ||
+    return 1
+  base=$(git -C "$repo_root" rev-parse origin/main) || return 1
+  merge_base=$(git -C "$worktree" merge-base HEAD origin/main) || return 1
   [[ $merge_base == "$base" ]] ||
-    die "portable branch is not based on current origin/main"
-  count=$(git -C "$worktree" rev-list --count "$base..HEAD")
-  ((count > 0)) || die "portable branch contains no commits"
-  reject_merge_commits "$worktree" "$base"
+    { die "portable branch is not based on current origin/main" || return 1; }
+  count=$(git -C "$worktree" rev-list --count "$base..HEAD") || return 1
+  ((count > 0)) || { die "portable branch contains no commits" || return 1; }
+  reject_merge_commits "$worktree" "$base" || return 1
+  # Merges are refused above, so a commit that changes no path is empty, and
+  # git am refuses an empty patch.
+  changing_count=$(git -C "$worktree" rev-list --count "$base..HEAD" -- .) ||
+    return 1
+  ((changing_count == count)) ||
+    { die "portable history contains an empty commit" || return 1; }
 
   local authors
-  authors=$(git -C "$worktree" log --format='%an <%ae>' "$base..HEAD")
+  authors=$(git -C "$worktree" log --format='%an <%ae>' "$base..HEAD") ||
+    return 1
   if grep -Ev '^Portable Dotfiles <portable@localhost>$' <<<"$authors"; then
     die "portable history contains a non-portable author identity"
+    return 1
   fi
 
-  validate_forbidden_pattern "$forbidden_pattern"
-  staging_directory=$(mktemp -d "$output_directory/.dotfiles-$name.XXXXXX")
-  # shellcheck disable=SC2064 # Early expansion is the point: EXIT runs after function scope ends.
-  trap "rm -rf -- $(printf '%q' "$staging_directory")" EXIT
-  lint_commits "$worktree" "$base" "$staging_directory/messages"
-  scan_series "$forbidden_pattern" "$worktree" "$base" "$staging_directory"
+  validate_forbidden_pattern "$forbidden_pattern" || return 1
+  staging_directory=$(mktemp -d "$output_directory/.dotfiles-$name.XXXXXX") ||
+    return 1
+  # The caller may own an EXIT trap (test_setup does). Ours removes staging
+  # and then runs the caller's action; the caller's trap is restored whether
+  # the staged steps succeed or fail, so a later export never sees ours.
+  caller_exit_trap=$(trap -p EXIT)
+  export_caller_exit_action=$(exit_trap_action "$caller_exit_trap")
+  export_staging_directory=$staging_directory
+  trap cleanup_export_staging EXIT
+  if export_staged_series; then
+    status=0
+  else
+    status=$?
+  fi
+  rm -rf -- "$staging_directory"
+  if [[ -n $caller_exit_trap ]]; then
+    eval "$caller_exit_trap"
+  else
+    trap - EXIT
+  fi
+  ((status == 0)) || return "$status"
+
+  printf '%s\n' \
+    "Portable artifacts written to $output_directory" \
+    "$patch_name" "$manifest_name" "$checksum_name" "$apply_name" \
+    "$bundle_name" "$bundle_checksum_name" \
+    "Nothing was pushed. Transfer, review, and apply them on the destination computer."
+}
+
+# Validate, build, and publish the series from export_series's staging
+# directory. Uses export_series's locals; every step returns on failure.
+export_staged_series() {
+  lint_commits "$worktree" "$base" "$staging_directory/messages" || return 1
+  scan_series "$forbidden_pattern" "$worktree" "$base" "$staging_directory" ||
+    return 1
 
   (
     cd -- "$worktree" || exit 1
-    nix fmt .
-    git diff --exit-code
-    git diff --cached --exit-code
-    nix flake check --show-trace --no-update-lock-file
+    nix fmt . || exit 1
+    # Untracked formatter output is drift too, so compare the full status.
+    format_status=$(git status --porcelain=v1 --untracked-files=all) || {
+      die "unable to read the portable worktree status after formatting"
+      exit 1
+    }
+    if [[ -n $format_status ]]; then
+      printf '%s\n' "$format_status" >&2
+      die "formatter changed the portable worktree"
+      exit 1
+    fi
+    nix flake check --show-trace --no-update-lock-file || exit 1
     # Every profile the flake declares, so a new machine cannot escape the
     # validation that gates the series.
     profiles=$(
       nix eval --no-update-lock-file --raw .#homeConfigurations \
         --apply 'homes: builtins.concatStringsSep "\n" (builtins.attrNames homes) + "\n"'
-    )
+    ) || exit 1
     while IFS= read -r profile; do
       home-manager build --flake ".#$profile" --show-trace \
-        --no-out-link --no-update-lock-file
+        --no-out-link --no-update-lock-file || exit 1
     done <<<"$profiles"
-  )
+  ) || return 1
 
   staged_patch_path="$staging_directory/$patch_name"
   staged_manifest_path="$staging_directory/$manifest_name"
   staged_apply_path="$staging_directory/$apply_name"
-  git -C "$worktree" format-patch --stdout --base="$base" "$base..HEAD" \
-    >"$staged_patch_path"
+  # One message per counted commit: apply rejects any other mailbox size.
+  git -C "$worktree" format-patch --stdout --no-cover-letter --base="$base" \
+    "$base..HEAD" >"$staged_patch_path" || return 1
   scan_final_patch \
-    "$forbidden_pattern" "$staged_patch_path" "$staging_directory"
-  patch_sha256=$(sha256sum "$staged_patch_path" | cut -d ' ' -f 1)
+    "$forbidden_pattern" "$staged_patch_path" "$staging_directory" ||
+    return 1
+  patch_sha256=$(sha256sum "$staged_patch_path" | cut -d ' ' -f 1) ||
+    return 1
 
-  cat >"$staged_manifest_path" <<EOF
+  cat >"$staged_manifest_path" <<EOF || return 1
 version=1
 name=$name
 base=$base
@@ -382,13 +467,13 @@ patch=$patch_name
 sha256=$patch_sha256
 EOF
   cp -- "$worktree/scripts/apply-portable-series.sh" \
-    "$staged_apply_path"
-  chmod 0755 "$staged_apply_path"
+    "$staged_apply_path" || return 1
+  chmod 0755 "$staged_apply_path" || return 1
   (
-    cd -- "$staging_directory"
+    cd -- "$staging_directory" || exit 1
     sha256sum "$patch_name" "$manifest_name" "$apply_name" \
       >"$checksum_name"
-  )
+  ) || return 1
 
   create_bundle \
     "$staging_directory" \
@@ -398,7 +483,7 @@ EOF
     "$patch_name" \
     "$manifest_name" \
     "$checksum_name" \
-    "$apply_name"
+    "$apply_name" || return 1
   publish_artifacts \
     "$staging_directory" \
     "$output_directory" \
@@ -407,15 +492,7 @@ EOF
     "$patch_name" \
     "$manifest_name" \
     "$apply_name" \
-    "$bundle_name"
-  rm -rf -- "$staging_directory"
-  trap - EXIT
-
-  printf '%s\n' \
-    "Portable artifacts written to $output_directory" \
-    "$patch_name" "$manifest_name" "$checksum_name" "$apply_name" \
-    "$bundle_name" "$bundle_checksum_name" \
-    "Nothing was pushed. Transfer, review, and apply them on the destination computer."
+    "$bundle_name" || return 1
 }
 
 clean_series() {

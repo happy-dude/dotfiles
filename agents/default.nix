@@ -48,7 +48,7 @@
   legacyAgentDirectory = "${repo}/agents/generated/codex-agents";
 in {
   # Claude Code registers a subagent only from a prompt carrying YAML
-  # frontmatter, so link the generated prompts individually rather than the
+  # frontmatter, so link the canonical prompts individually rather than the
   # directory, which also holds the frontmatterless Kagi chat prompts.
   home.file =
     lib.mapAttrs' (
@@ -67,18 +67,15 @@ in {
   xdg.dataFile =
     lib.mapAttrs' (
       name: source:
-        lib.nameValuePair "codex/generated-profiles/${name}.config.toml" {
-          inherit source;
-          onChange = materializeProfile name source;
-        }
+        lib.nameValuePair "codex/generated-profiles/${name}.config.toml" {inherit source;}
     )
     profileFiles;
 
   # Validate the agent state parents before anything writes through them. A
   # symlinked or non-directory ~/.claude, ~/.codex, or ~/.omp must be rejected
-  # before the migration moves files into it and before linkGeneration creates
-  # links inside it, otherwise a redirected parent is followed before activation
-  # refuses it.
+  # before the migration removes legacy links there and before linkGeneration
+  # creates links inside it, otherwise a redirected parent is followed before
+  # activation refuses it.
   home.activation.secureAgentStateDirectories = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
     for directory in "$HOME/.claude" "$HOME/.codex" "$HOME/.omp"; do
       if [[ -L $directory || (-e $directory && ! -d $directory) ]]; then
@@ -98,11 +95,11 @@ in {
       ${lib.escapeShellArg "language=${agentFiles.language}"}
   '';
 
-  home.activation.ensureCodexProfiles = lib.hm.dag.entryAfter ["onFilesChange"] (
+  # Run on every activation, not on a template change, so the next switch
+  # retries a refresh that failed. A current profile is left untouched.
+  home.activation.ensureCodexProfiles = lib.hm.dag.entryAfter ["linkGeneration"] (
     lib.concatMapStrings (name: ''
-      if [[ ! -e "$HOME/.codex/${name}.config.toml" ]]; then
-        $DRY_RUN_CMD ${materializeProfile name profileFiles.${name}}
-      fi
+      $DRY_RUN_CMD ${materializeProfile name profileFiles.${name}}
     '')
     agentNames
   );

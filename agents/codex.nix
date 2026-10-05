@@ -96,6 +96,8 @@
         'developer_instructions = "old instructions"' \
         'model_reasoning_effort = "low"' \
         'service_tier = "fast"' \
+        'hide_agent_reasoning = true' \
+        'show_raw_agent_reasoning = false' \
         "" \
         '[projects."/tmp/project"]' \
         'trust_level = "trusted"' \
@@ -117,6 +119,8 @@
       assert profile["developer_instructions"] == "new instructions\n"
       assert profile["model_reasoning_effort"] == "medium"
       assert profile["service_tier"] == "fast"
+      assert profile["hide_agent_reasoning"] is True
+      assert profile["show_raw_agent_reasoning"] is False
       assert profile["projects"]["/tmp/project"]["trust_level"] == "trusted"
       assert profile["tui"]["model_availability_nux"]["model"] == 2
       assert profile["notice"]["seen"] is True
@@ -128,11 +132,22 @@
       assert text.count("#:schema ") == 1
       PYTHON
 
+      # A current profile is left in place: same bytes, same inode.
       before=$(sha256sum work/profile.toml)
+      inode=$(stat -c %i work/profile.toml)
       materialize-codex-profile work/generated.toml work/profile.toml
       after=$(sha256sum work/profile.toml)
       [[ $before == "$after" ]]
+      [[ $inode == "$(stat -c %i work/profile.toml)" ]]
 
+      # Current content with the wrong mode is still rewritten at 0600.
+      chmod 0644 work/profile.toml
+      materialize-codex-profile work/generated.toml work/profile.toml
+      [[ $(stat -c %a work/profile.toml) == 600 ]]
+      [[ $before == "$(sha256sum work/profile.toml)" ]]
+
+      # A changed template updates a profile that still holds the old
+      # managed keys.
       printf '%s\n' \
         '#:schema ${configSchemaUrl}' \
         'developer_instructions = """' \

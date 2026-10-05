@@ -22,7 +22,14 @@ if executable('perl')
     " -CSDA instructs Perl to treat standard input, file handles, and command line arguments as "UTF-8" by default
           " '#line 1' makes error messages prettier, displayed below:
           " Substitution replacement not terminated at PerlSubstitute line 1.
-    let l:sysresult = systemlist("perl -CSDA -e 'use utf8;' -e '#line 1 \"PerlSubstitute\"' -pe ". shellescape("s".escape(a:sstring,"%!").";"), l:lines)
+    " Send every line newline-terminated, as :range!perl would, and read
+    " the output back the same way: Vim's and Neovim's systemlist() treat a
+    " lone trailing newline differently.
+    let l:output = system("perl -CSDA -e 'use utf8;' -e '#line 1 \"PerlSubstitute\"' -pe ". shellescape("s".escape(a:sstring,"%!").";"), l:lines + [''])
+    let l:sysresult = split(l:output, "\n", 1)
+    if l:sysresult[-1] ==# ''
+      call remove(l:sysresult, -1)
+    endif
     if v:shell_error
       echo l:sysresult
       return

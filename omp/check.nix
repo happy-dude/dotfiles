@@ -15,7 +15,7 @@
     shared homes "home.file.${path}" (
       home: toString home.config.home.file.${path}.source
     );
-  agentNames = ["kernel" "language"];
+  agentNames = lib.attrNames (import ../agents/prompts.nix {inherit lib;});
   agents = lib.genAttrs agentNames (name: sharedFile ".omp/agent/agents/${name}.md");
   theme = sharedFile ".omp/agent/themes/gruvbox-material.json";
   mixTheme = sharedFile ".omp/agent/themes/gruvbox-material-mix-dark-medium.json";

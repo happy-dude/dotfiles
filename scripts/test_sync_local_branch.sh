@@ -234,6 +234,15 @@ grep -Fq '?? formatter-output' "$output"
 grep -Fq 'Validation failed during: Formatting work' "$output"
 grep -Fq 'Validation mode performed no fetch or rebase.' "$output"
 
+create_fixture unfetched
+git -C "$main_worktree" update-ref -d refs/remotes/origin/main
+if run_sync --validate work test-profile "$main_worktree"; then
+  printf 'validated without a fetched origin/main\n' >&2
+  exit 1
+fi
+grep -Fq 'origin/main is not fetched; run sync mode first' "$output"
+test ! -s "$log"
+
 create_fixture check-failure
 advance_origin upstream-only upstream
 export SYNC_TEST_FAIL_CHECK=true

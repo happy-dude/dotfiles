@@ -23,8 +23,10 @@
       "--prefix"
       "PATH"
       ":"
+      # virtme-run takes only a busybox that `file -L` reports as static.
       (pkgs.lib.makeBinPath [
-        pkgs.busybox
+        pkgs.file
+        pkgs.pkgsStatic.busybox
         pkgs.openssh
         pkgs.qemu
         pkgs.socat

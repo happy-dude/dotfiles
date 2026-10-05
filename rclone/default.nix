@@ -4,6 +4,7 @@
   pkgs,
   ...
 }: let
+  rcloneConfig = "${config.xdg.configHome}/rclone/rclone.conf";
   filterFile = "${config.xdg.configHome}/rclone/org-bisync.filter";
   readyMarker = "${config.xdg.stateHome}/rclone/org-bisync-ready";
   workDir = "${config.xdg.cacheHome}/rclone/bisync";
@@ -28,7 +29,7 @@ in {
     Unit = {
       Description = "Synchronize Org files with Box";
       ConditionPathExists = [
-        "%h/.config/rclone/rclone.conf"
+        rcloneConfig
         readyMarker
       ];
     };
@@ -73,7 +74,7 @@ in {
     Unit = {
       Description = "Schedule Box synchronization after local Org changes";
       ConditionPathExists = [
-        "%h/.config/rclone/rclone.conf"
+        rcloneConfig
         "%h/org"
         readyMarker
       ];
@@ -83,6 +84,21 @@ in {
       Restart = "always";
       RestartSec = "5s";
     };
+    Install.WantedBy = ["default.target"];
+  };
+
+  # systemd checks the watcher's conditions only at start, so this starts it
+  # once ~/org exists. It repeats the other two conditions: a skipped service
+  # makes a path unit retrigger until it fails with trigger-limit-hit.
+  systemd.user.paths.rclone-box-org-watch = {
+    Unit = {
+      Description = "Start the Org change watcher once ~/org exists";
+      ConditionPathExists = [
+        rcloneConfig
+        readyMarker
+      ];
+    };
+    Path.PathExists = "%h/org";
     Install.WantedBy = ["default.target"];
   };
 

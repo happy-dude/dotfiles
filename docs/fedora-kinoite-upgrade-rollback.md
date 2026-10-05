@@ -9,16 +9,17 @@ lives in the [worldmind migration history](fedora-kinoite-migration-history.md).
 
 Use the narrowest rollback layer that addresses the failure:
 
-1. **Boot failure or missing `/nix`:** choose the pinned prior OSTree deployment
-   in the bootloader. Do not repair a failed mount by making the global root
-   writable.
+1. **Boot failure or missing `/nix`:** in the bootloader, choose the validated
+   native deployment pinned at the end of the
+   [post-reboot validation](fedora-kinoite-determinate-nix.md#5-validate-the-native-service-after-reboot).
+   Do not repair a failed mount by making the global root writable.
 2. **User-profile failure:** inspect the cutover backup and current profile
    targets before restoring anything. Restore only links that resolve into the
    active `/nix/store` namespace; do not recreate the retired Toolbx environment
    as a profile fallback.
-3. **Native-store damage:** preserve the failed store and use the separately
-   recorded tested backup procedure. Do not improvise a direct Btrfs subvolume
-   snapshot or restore at `/var/home/nix`.
+3. **Native-store damage:** no native-store backup exists yet. Preserve the
+   failed store. Do not improvise a direct Btrfs subvolume snapshot or restore
+   at `/var/home/nix`.
 4. **Daemon or SELinux failure:** capture `findmnt`, unit definitions and
    ordering, boot journals, labels, and AVCs. Fix the specific ordering or
    policy regression; do not disable SELinux.
@@ -29,19 +30,20 @@ Use the narrowest rollback layer that addresses the failure:
    this runbook. Uninstall and active-store deletion require a separate
    destructive-operation plan.
 
-Never delete `/var/home/nix`, the pinned deployment, its tested backup, or
-cutover recovery artifacts merely to retry an installation.
+Never delete `/var/home/nix`, the pinned deployments, or cutover recovery
+artifacts merely to retry an installation.
 
 ## Retired Toolbx state
 
 The retirement gate is complete: native Nix survived multiple cold boots and a
 later Fedora deployment, the full native updater passed, application smoke tests
-passed, container-only state and submodule stashes were inventoried, and tested
-backup and rollback paths exist.
+passed, container-only state and submodule stashes were inventoried, and the
+pinned deployments and cutover artifacts provide rollback paths. No native-store
+backup exists yet.
 
 The `nix-toolbox-42` container and `ghcr.io/thrix/nix-toolbox:42` image were
 removed on 2026-07-10. Do not recreate them as a first-line repair path; use the
-pinned deployment, native-store backup, and cutover artifacts instead.
+pinned deployments and cutover artifacts instead.
 
 Keep the pinned deployment until after the first successful major-upgrade
 postflight. Treat legacy-store cleanup and Determinate installer removal as

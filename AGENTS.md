@@ -1,7 +1,7 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with
-code in this repository.
+This file guides coding agents working in this repository. `CLAUDE.md` is a
+symlink to it, because Claude Code reads only that name.
 
 ## Repository overview
 
@@ -95,9 +95,9 @@ checkout is the Linux branch.
 - `fish/.config/fish/config.fish` optionally sources
   `~/.config/fish/secrets.fish`. The committed example contains placeholders
   only; real values remain untracked, per-machine, and outside the Nix store.
-  Fish's `PATH` additions are session-only; a host whose `fish_variables` still
-  holds a persisted `fish_user_paths` from earlier configurations clears it once
-  with `set -e fish_user_paths`.
+  Fish's `PATH` additions are session-only. The configuration does not clear a
+  persisted `fish_user_paths` left in `fish_variables`; run
+  `set -e fish_user_paths` once on such a host.
 - `roswell/default.nix` applies the locked `roswell_src` source override and
   installs Roswell. `virtme-ng/default.nix` builds `virtme_ng_src` with its
   runtime helpers on `PATH` and installs `vng`. Ghidra comes from the locked
@@ -157,7 +157,9 @@ checkout is the Linux branch.
   and Magit policies. Treefmt's Git walk skips submodule contents and excludes
   `other/`, `karabiner/`, Rime YAML data, lock files, `LICENSE`, and
   `agents/prompts/kagi-*.md`, whose whitespace is preserved because the
-  `kagi-prompt-budget` check measures those files against a fixed budget.
+  `kagi-prompt-budget` check measures those files against a fixed budget. The
+  profiles install the same wrapper as `treefmt`, plus `alejandra`, which nixd
+  runs when CoC or Emacs formats a Nix file.
 - `nix/default.nix` pins both the `nixpkgs` registry entry and legacy `NIX_PATH`
   lookup to the locked root input. It optionally includes the untracked
   `~/.config/nix/local.conf` for per-machine access tokens and client settings;
@@ -220,12 +222,18 @@ and installs StyLua's config under `~/.config/stylua`.
   dispatching it made a 100-commit rebase take seconds instead of milliseconds;
   the `commit-msg` dispatcher also lints every commit, reruns the repository
   hook and the linter after each interactive edit, and requires an initially
-  present `Assisted-by:` trailer to remain. Per-machine identity and signing
-  (`user.email`, `signingkey`, `commit`/`tag` `gpgsign`) live in an untracked
-  `~/.config/git/local.config` that the module `include`s — SSH/GPG keys and
-  email differ per box; template in `git/local.config.example`. Home Manager
-  writes `~/.config/git/config`, which an unmanaged `~/.gitconfig` silently
-  overrides (git reads it last).
+  present `Assisted-by:` trailer to remain. The linter's Prettier pass ignores
+  the committing repository's Prettier, EditorConfig, and ignore files so the
+  verdict is the same in every repository. A repository that sets its own
+  `core.hooksPath` runs neither the linter nor the dispatchers. Run installers
+  that refuse a set `core.hooksPath`, such as `pre-commit install` and
+  `git lfs install --local`, as `GIT_CONFIG_GLOBAL=/dev/null <installer>`; the
+  dispatchers then run what they put in `.git/hooks`. Per-machine identity and
+  signing (`user.email`, `signingkey`, `commit`/`tag` `gpgsign`) live in an
+  untracked `~/.config/git/local.config` that the module `include`s — SSH/GPG
+  keys and email differ per box; template in `git/local.config.example`. Home
+  Manager writes `~/.config/git/config`, which an unmanaged `~/.gitconfig`
+  silently overrides (git reads it last).
 - **`xdg/`** owns generic-Linux XDG integration plus the nixGL-wrapped Solaar
   package and its `schan`-only autostart entry.
 
@@ -237,7 +245,8 @@ and installs StyLua's config under `~/.config/stylua`.
   it uses the Flatpak-bundled `host-spawn` to reach that host executable. One
   local materializer atomically merges declared keys into the writable settings
   file on both profiles, preserving runtime-only keys and refusing malformed
-  files or symlinks. The Flatpak target is
+  files or symlinks. It writes strict JSON, so comments and trailing commas do
+  not survive. The Flatpak target is
   `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`; the native target
   is `${config.xdg.configHome}/zed/settings.json`, normally
   `~/.config/zed/settings.json`. Both use `zedSettingsActivation` and honor Home
@@ -248,22 +257,22 @@ and installs StyLua's config under `~/.config/stylua`.
   templates. `agents/codex.nix` owns the profile materializer, the guarded
   agent-directory ownership migration, and their focused checks. Home Manager
   stores the immutable templates under `~/.local/share/codex/generated-profiles`
-  and uses a Nix-built materializer to create missing writable mode-0600
-  profiles or refresh generator-owned keys when a template changes. Generated
-  profiles carry Codex's official `config.toml` schema directive and preserve
-  readable multiline instructions. Runtime-owned project trust, TUI state, and
-  other profile keys survive that merge. The independently maintained Kagi
-  Markdown prompts (`agents/prompts/kagi-*.md`) carry a different, fixed
-  instruction budget, so they are kept verbatim in the repo — whitespace
-  preserved and measured by the `kagi-prompt-budget` check — rather than
-  generated from the canonical agent prompts or deployed as client agents. Kagi
-  prompts target a chat interface with optional web search and uploads but no
-  shell, filesystem, or host access; they delegate commands to the user and
-  continue by interpreting returned results. Claude and Codex session state,
-  credentials, provider configuration, and project trust remain machine-local
-  and must never be committed. Activation requires `~/.claude`, `~/.codex`, and
-  `~/.omp` to be real directories and restricts them to mode `0700` while
-  leaving their contents writable.
+  and runs a Nix-built materializer on every activation to create missing
+  writable mode-0600 profiles and refresh their generator-owned keys; it leaves
+  a profile that is already current untouched. Generated profiles carry Codex's
+  official `config.toml` schema directive and preserve readable multiline
+  instructions. Runtime-owned project trust, TUI state, and other profile keys
+  survive that merge. The independently maintained Kagi Markdown prompts
+  (`agents/prompts/kagi-*.md`) carry a different, fixed instruction budget, so
+  they are kept verbatim in the repo — whitespace preserved and measured by the
+  `kagi-prompt-budget` check — rather than generated from the canonical agent
+  prompts or deployed as client agents. Kagi prompts target a chat interface
+  with optional web search and uploads but no shell, filesystem, or host access;
+  they delegate commands to the user and continue by interpreting returned
+  results. Claude and Codex session state, credentials, provider configuration,
+  and project trust remain machine-local and must never be committed. Activation
+  requires `~/.claude`, `~/.codex`, and `~/.omp` to be real directories and
+  restricts them to mode `0700` while leaving their contents writable.
 - **`omp/`** installs oh-my-pi (`omp`) for both Linux profiles on the same
   footing as OpenCode. omp rewrites its global `~/.omp/agent/config.yml` from
   `/settings` and `omp config set`, so Home Manager does not own that file; the
@@ -314,9 +323,9 @@ and installs StyLua's config under `~/.config/stylua`.
   `~/.claude/skills` without copying them into this repository. Provider
   credentials and client-specific state remain outside generated Nix paths.
   `opencode/check.nix` owns the focused package, global and project LSP, schema,
-  theme, and telemetry checks; `flake.nix` only imports that check. Resolved
-  debug output may contain substituted credentials and must not be copied
-  wholesale into logs or bug reports.
+  theme, and telemetry checks; `checks/default.nix` imports it. Resolved debug
+  output may contain substituted credentials and must not be copied wholesale
+  into logs or bug reports.
 - **`rclone/`** installs the pinned rclone client and schedules guarded bisync
   between `~/org` and `box:org`. A recursive inotify watcher batches local
   changes five minutes after the first event; a 15-minute timer catches remote
@@ -338,7 +347,8 @@ and installs StyLua's config under `~/.config/stylua`.
   evaluation never reads the package. Activation materializes the Fcitx profile
   and host configuration as writable regular files with prior-source snapshots
   under `~/.local/state/rime/host-config`. It rejects malformed or unmanaged
-  conflicts, materializes managed static data under
+  conflicts, except an existing `conf/notifications.conf` on the first deploy,
+  which Fcitx writes itself; it materializes managed static data under
   `~/.local/share/fcitx5/rime/.home-manager-static`, and leaves generated
   schemas, learned user databases, and sync state writable beside it. Host-file
   updates preserve runtime-only edits, replace an unchanged managed baseline,
@@ -347,7 +357,9 @@ and installs StyLua's config under `~/.config/stylua`.
   start. A failed static-tree rollback retains the backup for the next
   activation; the directory replacement is recoverable, not one atomic swap.
   Authorized host-file links stay readable until their staged replacement is
-  ready.
+  ready. Edit Rime data in `rime/.local/share/fcitx5/rime/`; edits made through
+  the deployed links land in `.home-manager-static` and are discarded at the
+  next source change.
 - `scripts/update.sh` updates Rime only through the locked flake inputs.
 - **`yt-dlp/`** uses the locked Nixpkgs bgutil-ytdlp-pot-provider package. Home
   Manager links its Python plugin for yt-dlp discovery and points script mode at
@@ -391,18 +403,19 @@ guidance detectable.
   in silent Ex mode and fails on any recorded error.
 - Home Manager builds Tree-sitter parsers and queries in `vim/default.nix`,
   including an explicit `org.so` from `tree-sitter-org-nvim` because
-  `nvim-treesitter.withAllGrammars` omits it. The `neovim-org` flake check opens
-  a real Org file with each profile's evaluated Neovim package, configuration,
-  plugin pack, parsers, and queries. It verifies that Orgmode is configured
-  before its filetype hook and that the resulting buffer parses successfully.
-  Home Manager also builds the RustOwl server and matching optional Neovim
-  client, CoC plus its extensions, and all formatter, helper, and
-  language-server executables. `flake.lock` and the locked Nixpkgs revision
-  determine editor updates. Do not run mutable plugin, parser, CoC extension, or
-  vim-go binary update commands. Vim and Neovim retain backup, swap, and
-  persistent undo for ordinary files, but exclude known credentials and secret
-  directories when opening local aliases or changing a buffer's filename too.
-  These guards prevent future state copies; they do not erase existing copies.
+  `nvim-treesitter.withAllGrammars` omits it. The `neovim-profile` flake check
+  runs each profile's evaluated Neovim package, configuration, plugin pack,
+  parsers, and queries. It opens a real Org file, verifies that Orgmode is
+  configured before its filetype hook and that the buffer parses, and runs the
+  CodeCompanion, startup colorscheme, and MatchTag tests. Home Manager also
+  builds the RustOwl server and matching optional Neovim client, CoC plus its
+  extensions, and all formatter, helper, and language-server executables.
+  `flake.lock` and the locked Nixpkgs revision determine editor updates. Do not
+  run mutable plugin, parser, CoC extension, or vim-go binary update commands.
+  Vim and Neovim retain backup, swap, and persistent undo for ordinary files,
+  but exclude known credentials and secret directories when opening local
+  aliases or changing a buffer's filename too. These guards prevent future state
+  copies; they do not erase existing copies.
 - CoC loads in both editors and owns LSP, diagnostics, completion, navigation,
   and format-on-save. vim-go retains non-LSP Go commands. Vim uses its bundled
   EditorConfig support and Neovim uses native EditorConfig. Do not reintroduce
@@ -483,25 +496,26 @@ compilation for Python; Bash syntax and ShellCheck for `scripts/*.sh` and
 from the directory rather than listed; native syntax checks for the managed Fish
 and Zsh files; focused tests for the Codex profile materializer, agent-directory
 ownership migration, `.gitmodules` formatter, rclone event classification and
-decoding, guarded Rime host-file and ownership-state materialization, the Rime
-theme names against the Catppuccin package, Zed settings materialization,
-focused OpenCode package/LSP/schema/theme/telemetry checks, the oh-my-pi
-wrapper, overlay, agent, and theme checks, Git commit-message hook behavior and
-the repository-hook dispatcher, a silent Ex-mode load of each profile's Vim
-configuration, Kagi prompt character budgets, the aerc deployed/tracked
-configuration mirror, CoC language-server package resolution, the sdcv
-dictionary lookup, the CurSearch highlight link, and editor secret-state
-exclusions; Emacs `check-parens` and Org lint for tracked Org files plus a
-runtime load of the evaluated Emacs configuration and published Org bookmarklet
-behavior; GitHub Actions syntax, pinned action revisions, and Dependabot config
-parsing; a real Neovim Org Tree-sitter parse against the evaluated Home Manager
-runtime; Rime Lua syntax and focused tests; profile-capability invariants; and
-gitleaks secret scanning. CI runs those checks and evaluates both Home Manager
-configurations on pushes to `main` and on pull requests; the profile names are
-listed in `ci.yml` explicitly, so a new profile must be added there as well.
-Full builds of both configurations run weekly on a schedule and are opt-in
-through the `workflow_dispatch` `build_homes` input because builds are
-substantially more expensive than evaluation.
+decoding, guarded Rime host-file materialization, the Rime theme names against
+the Catppuccin package, Zed settings materialization, focused OpenCode
+package/LSP/schema/theme/telemetry checks, the oh-my-pi wrapper, overlay, agent,
+and theme checks, Git commit-message hook behavior and the repository-hook
+dispatcher, a silent Ex-mode load of each profile's Vim configuration, Kagi
+prompt character budgets, the aerc deployed/tracked configuration mirror, CoC
+language-server package resolution, the sdcv dictionary lookup, the CurSearch
+highlight link, and editor secret-state exclusions; Emacs `check-parens` and Org
+lint for tracked Org files plus a runtime load of the evaluated Emacs
+configuration, literal Org Roam protocol capture fields, and published Org
+bookmarklet behavior; GitHub Actions syntax, pinned action revisions, and
+Dependabot config parsing; a Neovim run of each profile's evaluated runtime
+covering an Org Tree-sitter parse, CodeCompanion, startup, and MatchTag; Rime
+Lua syntax and focused tests; profile-capability invariants; and gitleaks secret
+scanning. CI runs those checks and evaluates both Home Manager configurations on
+pushes to `main` and on pull requests; the profile names are listed in `ci.yml`
+explicitly, so a new profile must be added there as well. Full builds of both
+configurations run weekly on a schedule and are opt-in through the
+`workflow_dispatch` `build_homes` input because builds are substantially more
+expensive than evaluation.
 
 ### Zed / agent config
 
@@ -509,12 +523,13 @@ Both are Home Manager-managed; neither uses a separate Stow step. Edit
 `zed/.config/zed/settings.json` (Zed) or `agents/prompts/*.md` (agents)
 directly. Zed and generated Codex and oh-my-pi changes require a validated Home
 Manager switch. Claude prompt changes are live immediately once the out-of-store
-agents symlink has been installed by an initial switch. The writable Codex
-profiles at `~/.codex/{kernel,language}.config.toml` are runtime state, not
-canonical prompt sources; do not edit their generated keys manually. Their
-schema directive points editors at Codex's current official `config.toml`
-schema. Standalone custom-agent TOMLs use Codex's separate custom-agent schema
-and therefore do not carry the `config.toml` directive.
+agents symlink has been installed by an initial switch. Those links point into
+`~/dotfiles`, so the checkout must live there. The writable Codex profiles at
+`~/.codex/{kernel,language}.config.toml` are runtime state, not canonical prompt
+sources; do not edit their generated keys manually. Their schema directive
+points editors at Codex's current official `config.toml` schema. Standalone
+custom-agent TOMLs use Codex's separate custom-agent schema and therefore do not
+carry the `config.toml` directive.
 
 For omp settings, edit `omp/settings.nix` when the value should be shared. Use
 `/settings` or `omp config set` for settings that belong to this machine. The
@@ -644,20 +659,22 @@ activation rebuilds generated schemas when the static Rime source stamp changes,
 so no manual deploy is required. Add `--skip-nix-flake` to leave flake inputs
 locked.
 
-Update-mode step order is: repository pull; generic submodule handling when
-`.gitmodules` contains entries; `nix fmt .`; `nix flake update`; locked flake
-validation and Home Manager build; committing the refreshed `flake.lock`;
-optional activation; and the post-activation generation changelog. `apply` also
-commits a dirty `flake.lock` after a successful activation. Consecutive lock
-updates amend the previous `nix: update flake.lock` commit, but only while no
-remote-tracking branch contains it, HEAD is on a branch, and no other local
-branch contains it; every other case, including a containment check that cannot
-be determined, gets a fresh commit. The corresponding skip flags are
+Update-mode step order is: repository pull, which stops when Git cannot reapply
+the pull's autostash and leaves conflicts in the index; generic submodule
+handling when `.gitmodules` contains entries; `nix fmt .`; `nix flake update`;
+locked flake validation and Home Manager build; committing the refreshed
+`flake.lock`; optional activation; and the post-activation generation changelog.
+`apply` also commits a dirty `flake.lock` after a successful activation.
+Consecutive lock updates amend the previous `nix: update flake.lock` commit, but
+only while no remote-tracking branch contains it, HEAD is on a branch, and no
+other local branch contains it; every other case, including a containment check
+that cannot be determined, gets a fresh commit. The corresponding skip flags are
 `--skip-pull`, `--skip-submodules`, `--skip-status`, `--skip-nix-fmt`,
-`--skip-nix-flake`, and `--skip-home-manager`; `--quiet` suppresses the section
-banners, and an optional positional path selects the repository.
-`apply --skip-home-manager` is rejected because `check` already covers it.
-`HOME_MANAGER_FLAKE` defaults to `.#$(whoami)`.
+`--skip-nix-flake`, and `--skip-home-manager`; `--quiet` restores the default
+output after `--verbose` (section banners always print), and an optional
+positional path selects the repository. `apply --skip-home-manager` is rejected
+because `check` already covers it. `HOME_MANAGER_FLAKE` defaults to
+`.#$(whoami)`.
 
 The script refuses to update dirty submodules unless `--autostash-submodules` is
 passed, and it does **not** auto-pop stashes afterward. The auto-stash scan
@@ -965,8 +982,9 @@ source.
   store; the wrapper is what makes it importable by the `python3` on `PATH`.
   After changing it, verify with a fresh shell: `python3 -c "import <module>"`.
 - Package ownership follows four tiers: retain the tested base image; use
-  rpm-ostree only for host integration such as input methods and udev rules; use
-  user Flatpak for ordinary desktop applications; use Nix/Home Manager for the
+  rpm-ostree only for host integration such as input methods and udev rules, and
+  for applications that ship only as an RPM, such as Firefox Nightly; use user
+  Flatpak for ordinary desktop applications; use Nix/Home Manager for the
   remaining user tools and packages. Do not enable `nix-flatpak` on `stachan`
   unless its host Flatpak/AppArmor boundary is deliberately redesigned.
 - For GUI/GL apps on generic (non-NixOS) Linux, wrap them with
@@ -1016,17 +1034,18 @@ source.
 - **`plasma/`** manages Plasma preferences for every Plasma profile through the
   pinned plasma-manager module, with `schan`'s session as the reference.
   Built-in touchpads, mice, and the Xwayland scale differ per machine, so they
-  live in `plasma/machines.nix`, keyed by username. External devices that move
-  between machines, the MX Vertical and the Magic Trackpad, are declared once in
-  `plasma/default.nix`; KWin applies an entry only to a connected device.
-  Per-output scales stay in `kwinoutputconfig.json`, which KWin rewrites on
-  every display change. The panel layout in `plasma/panels.nix` applies only
-  where the profile sets `managePlasmaPanels`. plasma-manager deletes and
-  rebuilds `plasma-org.kde.plasma.desktop-appletsrc` whenever that layout
-  changes, so panel edits made in the session are lost; turn it on only when
-  Home Manager should own the whole panel. Cursor and icon themes are declared
-  here, and Plasma copies them to GTK itself, so Home Manager's `gtk` module
-  stays off. Dolphin's folder views are written to
+  live in `plasma/machines.nix`, keyed by username; a Plasma profile without an
+  entry there fails evaluation. External devices that move between machines, the
+  MX Vertical and the Magic Trackpad, are declared once in `plasma/default.nix`;
+  KWin applies an entry only to a connected device. Per-output scales stay in
+  `kwinoutputconfig.json`, which KWin rewrites on every display change. The
+  panel layout in `plasma/panels.nix` applies only where the profile sets
+  `managePlasmaPanels`. plasma-manager deletes and rebuilds
+  `plasma-org.kde.plasma.desktop-appletsrc` whenever that layout changes, so
+  panel edits made in the session are lost; turn it on only when Home Manager
+  should own the whole panel. Cursor and icon themes are declared here, and
+  Plasma copies them to GTK itself, so Home Manager's `gtk` module stays off.
+  Dolphin's folder views are written to
   `~/.local/share/dolphin/view_properties/global/.directory` and
   `~/Downloads/.directory`, as regular files Dolphin can update; activation
   resets their declared keys. When a folder's view is changed in Dolphin, it

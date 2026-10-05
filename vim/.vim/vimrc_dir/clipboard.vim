@@ -22,7 +22,13 @@ if !has('nvim') && exists('v:clipproviders')
     if a:register ==# '*'
       let l:command .= ' --primary'
     endif
-    let l:lines = split(system(l:command), "\n", 1)
+    let l:text = system(l:command)
+    " An empty clipboard fails with a message on stderr, which system()
+    " captures; an invalid result leaves the register unchanged.
+    if v:shell_error
+      return []
+    endif
+    let l:lines = split(l:text, "\n", 1)
     if len(l:lines) > 1 && l:lines[-1] ==# ''
       return ['V', l:lines[:-2]]
     endif
@@ -40,7 +46,9 @@ if !has('nvim') && exists('v:clipproviders')
         \   '*': function('s:wl_clipboard_paste'),
         \ },
         \ }
-  set clipmethod^=wl_clipboard
+  " Try the provider only after the native methods, where the compositor
+  " lacks data-control.
+  set clipmethod+=wl_clipboard
 endif
 
 if has('unnamedplus')

@@ -19,7 +19,7 @@
     '';
   in
     mkCheck {
-      name = "dotfiles-neovim-org-${username}-check";
+      name = "dotfiles-neovim-profile-${username}-check";
       script = ''
         mkdir -p data/nvim/site/pack home/cache home/state fixture
         ln -s ${parserDirectory} data/nvim/site/parser
@@ -165,8 +165,8 @@ in {
       nvim --headless -u NONE -i NONE -S ${./tests/secret-state.vim}
     '';
   };
-  neovim-org = mkCheck {
-    name = "dotfiles-neovim-org-check";
+  neovim-profile = mkCheck {
+    name = "dotfiles-neovim-profile-check";
     script = lib.concatMapStringsSep "\n" (check: "test -e ${check}") profileChecks;
   };
   vim-startup = mkCheck {

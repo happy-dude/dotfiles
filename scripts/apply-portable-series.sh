@@ -66,8 +66,9 @@ git -C "$repo" rev-parse --is-inside-work-tree >/dev/null 2>&1 ||
   die "not a Git worktree: $repo"
 [[ $(git -C "$repo" branch --show-current) == main ]] ||
   die "expected the main branch"
-[[ -z $(git -C "$repo" status --porcelain=v1 --untracked-files=all) ]] ||
-  die "main worktree is not clean"
+main_status=$(git -C "$repo" status --porcelain=v1 --untracked-files=all) ||
+  die "unable to read the main worktree status: $repo"
+[[ -z $main_status ]] || die "main worktree is not clean"
 
 git -C "$repo" fetch origin refs/heads/main:refs/remotes/origin/main
 head=$(git -C "$repo" rev-parse HEAD)
@@ -135,11 +136,15 @@ applied_count=$(git -C "$repo" rev-list --count "$expected_base..HEAD")
 (
   cd -- "$repo"
   nix fmt .
-  git diff --exit-code
-  git diff --cached --exit-code
+  # Untracked formatter output is drift too, so compare the full status.
+  format_status=$(git status --porcelain=v1 --untracked-files=all) ||
+    die "unable to read the main worktree status after formatting"
+  if [[ -n $format_status ]]; then
+    printf '%s\n' "$format_status" >&2
+    die "formatter changed the applied series"
+  fi
   nix flake check --show-trace --no-update-lock-file
-  nix --extra-experimental-features 'nix-command flakes' run \
-    .#home-manager -- build --flake ".#$(whoami)" --show-trace \
+  nix run .#home-manager -- build --flake ".#$(whoami)" --show-trace \
     --no-out-link --no-update-lock-file
 )
 

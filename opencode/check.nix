@@ -19,6 +19,7 @@
   tui = sharedFile "opencode/tui.json";
   theme = sharedFile "opencode/themes/gruvbox-material.json";
   mixTheme = sharedFile "opencode/themes/gruvbox-material-mix-dark-medium.json";
+  agentNames = lib.attrNames (import ../agents/prompts.nix {inherit lib;});
 in
   assert lib.all (
     home: lib.all (package: lib.elem package home.config.home.packages) languageServerPackages
@@ -65,12 +66,15 @@ in
         export XDG_DATA_HOME="$HOME/.local/share"
         export XDG_STATE_HOME="$HOME/.local/state"
         mkdir -p "$XDG_CONFIG_HOME/opencode"
-        grep -F 'unset OTEL_EXPORTER_OTLP_ENDPOINT' \
-          "$(command -v opencode)"
-        grep -F 'unset OTEL_EXPORTER_OTLP_HEADERS' \
-          "$(command -v opencode)"
-        grep -F 'unset OTEL_RESOURCE_ATTRIBUTES' \
-          "$(command -v opencode)"
+        for variable in \
+          OTEL_EXPORTER_OTLP_ENDPOINT \
+          OTEL_EXPORTER_OTLP_TRACES_ENDPOINT \
+          OTEL_EXPORTER_OTLP_LOGS_ENDPOINT \
+          OTEL_EXPORTER_OTLP_METRICS_ENDPOINT \
+          OTEL_EXPORTER_OTLP_HEADERS \
+          OTEL_RESOURCE_ATTRIBUTES; do
+          grep -Fx "unset $variable" "$(command -v opencode)"
+        done
         tui_schema=${opencode}/share/tui.json
         [ -e "$tui_schema" ] || tui_schema=${opencode}/share/opencode/tui.json
         check-jsonschema \
@@ -100,7 +104,7 @@ in
           "$XDG_CONFIG_HOME/opencode/opencode.json"
 
         opencode debug config >resolved.json
-        jq -e '
+        jq -e --argjson agents ${lib.escapeShellArg (builtins.toJSON agentNames)} '
           .share == "disabled" and
           .autoupdate == false and
           .experimental.openTelemetry == false and
@@ -110,8 +114,7 @@ in
           .lsp == false and
           (.model == null) and
           (.enabled_providers == null) and
-          .agent.kernel.mode == "all" and
-          .agent.language.mode == "all"
+          (. as $root | all($agents[]; $root.agent[.].mode == "all"))
         ' resolved.json >/dev/null
 
         mkdir project

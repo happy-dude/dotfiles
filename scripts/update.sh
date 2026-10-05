@@ -100,7 +100,8 @@ Modes:
 
   apply
       Run the same validation/build as check, then activate the selected
-      Home Manager configuration without updating the lock file.
+      Home Manager configuration without updating the lock file. A dirty
+      flake.lock is committed after a successful activation.
 
 Options:
 
@@ -855,7 +856,7 @@ stash_dirty_submodules() {
 # Everything below runs only when this file is executed. The test suites
 # source it to exercise the functions above without performing an update.
 main() {
-  local section_result status
+  local section_result status unmerged repo_top
 
   # Argument parsing
   #--------------------------------------------------------------------------------------------------
@@ -932,9 +933,11 @@ main() {
     die "git not found in PATH"
   fi
 
-  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+  if ! repo_top="$(git rev-parse --show-toplevel 2>/dev/null)"; then
     die "not a git repository"
   fi
+  # Submodule detection and the lock commit use top-level paths.
+  cd "$repo_top"
 
   UPDATE_START_GIT_HEAD="$(git rev-parse --verify HEAD)"
 
@@ -971,6 +974,14 @@ main() {
       vmsg "Dirty top-level worktree is allowed here via --autostash."
       # Updating this checkout must not rewrite backup or topic branches.
       git -c rebase.updateRefs=false pull --rebase --autostash
+      # Git still exits 0 when it cannot restore the autostash; the conflict
+      # is left in the index and the stash is kept.
+      unmerged="$(git ls-files --unmerged)" ||
+        die "unable to read the index after pulling"
+      if [ -n "$unmerged" ]; then
+        section_end "failed"
+        die "the autostash could not be restored; resolve the conflicts, then drop the stash"
+      fi
       section_end "done"
     else
       warn "No upstream tracking branch configured; skipping pull (use --skip-pull to suppress this warning)"

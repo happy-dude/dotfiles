@@ -36,7 +36,7 @@ explicitly marked as state-changing.
 | SELinux                   | Enforcing, with the installer-provided Nix policy loaded                   |
 | User configuration        | Generic-Linux Home Manager output `.#schan`, not NixOS                     |
 | Nix package selection     | `nixPackage = null`; Home Manager must not install a competing Nix client  |
-| Recovery layers           | Pinned OSTree deployment, native-store backup, and profile/cutover backups |
+| Recovery layers           | Pinned OSTree deployments, profile/cutover backups; no native-store backup |
 
 The validated snapshot also recorded:
 
@@ -503,7 +503,7 @@ end
 /nix/var/nix/profiles/default/bin/nix --version
 /nix/var/nix/profiles/default/bin/nix store info --store daemon
 getenforce
-sudo semodule -lfull | rg '(^|[[:space:]])nix([[:space:]]|$)'
+sudo semodule -lfull | grep -E '(^|[[:space:]])nix([[:space:]]|$)'
 sudo journalctl -b \
     -u nix-ostree-mountpoint.service \
     -u nix-directory.service \
@@ -528,6 +528,26 @@ Expected properties:
   machine is not logged in to FlakeHub; daemon health is evaluated separately.
 - No Nix-related SELinux denial appears during a real build.
 
+Once every property holds, pin this validated native deployment. This changes
+state: the pin is the rollback target when `/nix` goes missing. Then remove the
+§2 pin from the pre-install deployment, which has no `nix.mount`, so the
+bootloader offers one pinned target. `ostree admin status` must show the
+pre-install deployment as the rollback entry before it is unpinned.
+
+### 🟦 RUN DIRECTLY ON THE KINOITE HOST — FISH-COMPATIBLE
+
+```fish
+sudo ostree admin pin booted
+sudo ostree admin status
+```
+
+### 🟦 RUN DIRECTLY ON THE KINOITE HOST — FISH-COMPATIBLE
+
+```fish
+sudo ostree admin pin --unpin rollback
+sudo ostree admin status
+```
+
 ## 6. Bootstrap this Home Manager configuration
 
 The `schan` output deliberately sets `nixPackage = null`. `nix/default.nix`
@@ -535,7 +555,8 @@ installs only the user flake configuration and locked registry, while the flake
 exports its locked Home Manager package as `.#home-manager` for first use.
 
 A fresh installation can clone normally. A Toolbox migration must first back up
-and quarantine the old user profile namespace; see the migration record below.
+and quarantine the old user profile namespace; see the
+[worldmind migration history](fedora-kinoite-migration-history.md).
 
 ### 🟦 RUN DIRECTLY ON THE KINOITE HOST — FISH-COMPATIBLE
 
@@ -549,9 +570,9 @@ set native_nix /nix/var/nix/profiles/default/bin/nix
     --show-trace \
     --no-update-lock-file
 
-"$native_nix" \
+and "$native_nix" \
     --extra-experimental-features 'nix-command flakes' \
-    run .#home-manager -- \
+    run --no-update-lock-file .#home-manager -- \
     build \
     --flake .#schan \
     --show-trace \
@@ -564,7 +585,7 @@ Review the build. The first switch changes the live user profile:
 ```fish
 "$native_nix" \
     --extra-experimental-features 'nix-command flakes' \
-    run .#home-manager -- \
+    run --no-update-lock-file .#home-manager -- \
     switch \
     --flake .#schan \
     --show-trace \
@@ -747,8 +768,9 @@ Keep the nixGL package input and per-application wrappers on generic Linux even
 though Nix is native; they bridge Nix-built GUI applications to the host
 graphics stack without altering the package set through a nixGL overlay. On
 worldmind, Home Manager owns the wrapped Solaar executable and user autostart
-entry. The host retains only an explicit `solaar-udev` RPM overlay because
-generic-Linux Home Manager cannot activate udev rules from the Nix store.
+entry. The host layers two RPMs: `solaar-udev`, because generic-Linux Home
+Manager cannot activate udev rules from the Nix store, and `firefox-nightly`, an
+application with no Flatpak source.
 
 ## Related documents
 

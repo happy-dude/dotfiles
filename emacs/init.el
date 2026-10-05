@@ -80,13 +80,28 @@ Remote names are matched as written, without extra network access."
              (not (dotfiles/sensitive-file-p name)))))
 
 ;; Suppress the auto-save file and any persisted undo-tree history per buffer.
+;; A major-mode change kills the buffer-local undo-tree setting, so reapply it.
+(defvar-local dotfiles/sensitive-buffer-p nil
+  "Non-nil when the secret guard set this buffer's undo-tree history off.")
+;; Survives a major-mode change, so the guard still knows the override is its
+;; own and can lift it when the buffer is saved under an ordinary name.
+(put 'dotfiles/sensitive-buffer-p 'permanent-local t)
+
 (defun dotfiles/harden-sensitive-buffer ()
-  "Disable on-disk copies for the current buffer when it visits a secret."
-  (when (dotfiles/sensitive-file-p buffer-file-name)
+  "Disable on-disk copies for the current buffer when it visits a secret.
+When it no longer does, lift only the override this guard set, so a
+setting from directory locals or a mode hook is kept."
+  (cond
+   ((dotfiles/sensitive-file-p buffer-file-name)
     (auto-save-mode -1)
-    (setq-local undo-tree-auto-save-history nil)))
+    (setq-local undo-tree-auto-save-history nil)
+    (setq dotfiles/sensitive-buffer-p t))
+   (dotfiles/sensitive-buffer-p
+    (kill-local-variable 'undo-tree-auto-save-history)
+    (setq dotfiles/sensitive-buffer-p nil))))
 (add-hook 'find-file-hook #'dotfiles/harden-sensitive-buffer)
 (add-hook 'after-set-visited-file-name-hook #'dotfiles/harden-sensitive-buffer)
+(add-hook 'after-change-major-mode-hook #'dotfiles/harden-sensitive-buffer)
 
 ;; Mimic vim rainbow parentheses settings:
 ;; red, green, blue-green, red-orange, blue, orange, violet, yellow, red-violet
@@ -271,7 +286,7 @@ even when the daemon has no graphical frame to copy a display from."
         ("et" "Tickets" entry (file+headline "~/org/work.org" "Tickets")
          "* [[https://jira.cfops.it/browse/%?]]" :prepend t)
         ("ei" "Incidents" entry (file+headline "~/org/work.org" "Incidents")
-         "* DETECT [[https://jira.cfops.it/browse/INCIDENT-%?" :prepend t)
+         "* DETECT [[https://jira.cfops.it/browse/INCIDENT-%?]]" :prepend t)
         ("ew" "Watching" entry (file+headline "~/org/work.org" "Watching")
          "* %?\n%U" :prepend t)
         ("ed" "Drive-by" entry (file+headline "~/org/work.org" "Drive-by")
@@ -359,13 +374,12 @@ even when the daemon has no graphical frame to copy a display from."
 (setq org-roam-graph-executable "dot")
 (setq org-roam-graph-viewer #'browse-url-of-file)
 
-(defun dotfiles/org-roam-note-head (with-ref)
-  "Return the head of a new Org Roam note, with a ROAM_REFS line when WITH-REF."
+(defun dotfiles/org-roam-note-head (title)
+  "Return the head of a new Org Roam note whose #+TITLE line holds TITLE."
   (concat ":PROPERTIES:\n"
           ":ID: %(org-id-new)\n"
-          (if with-ref ":ROAM_REFS: ${ref}\n" "")
           ":END:\n"
-          "#+TITLE: ${title}\n"
+          "#+TITLE:" title "\n"
           "#+CREATED: %U\n"
           "#+LAST_MODIFIED: %U\n"
           "#+FILETAGS:\n"
@@ -386,14 +400,52 @@ even when the daemon has no graphical frame to copy a display from."
 (setq org-roam-capture-templates
       `(("d" "default" plain "%?"
          :target (file+head+olp "%<%Y%m%d>-${slug}.org"
-                                ,(dotfiles/org-roam-note-head nil) ("Notes"))
+                                ,(dotfiles/org-roam-note-head " ${title}")
+                                ("Notes"))
          :unnarrowed t)))
 
+(defun dotfiles/org-roam-insert-ref-fields ()
+  "Insert the browser's title and selection into the new capture verbatim.
+They come from the page, so they must not pass through Org Roam's ${} or
+Org's % template expansion. Org Roam adds ROAM_REFS itself."
+  (when (org-roam-capture--get :new-file)
+    (save-excursion
+      (save-restriction
+        (widen)
+        (goto-char (point-min))
+        (re-search-forward "^#\\+TITLE:")
+        (insert " " (org-roam-node-title org-roam-capture--node)))))
+  (save-excursion
+    (re-search-backward "^#\\+end_quote$")
+    (insert (or (plist-get org-roam-capture--info :body) "") "\n")))
+
 (setq org-roam-capture-ref-templates
-      `(("r" "ref" plain "#+begin_quote\n%i\n#+end_quote\n\n%?"
+      `(("r" "ref" plain "#+begin_quote\n#+end_quote\n\n%?"
          :target (file+head+olp "%<%Y%m%d>-${slug}.org"
-                                ,(dotfiles/org-roam-note-head t) ("Notes"))
+                                ,(dotfiles/org-roam-note-head "") ("Notes"))
+         :hook dotfiles/org-roam-insert-ref-fields
          :unnarrowed t)))
+
+(defun dotfiles/org-roam-capture-to-ref-notes ()
+  "File a capture for an existing ref under its note's Notes heading.
+Org Roam's own handler puts it at the node's start, ahead of the note
+head's headings.  This runs first, for a file-level node whose note has
+a top-level Notes heading, and returns the node ID the same way; any
+other node is left to Org Roam."
+  (when-let* ((ref (plist-get org-roam-capture--info :ref))
+              (node (org-roam-node-from-ref ref))
+              ((= (org-roam-node-level node) 0))
+              (buffer (org-capture-target-buffer (org-roam-node-file node)))
+              (notes (with-current-buffer buffer
+                       (org-with-wide-buffer
+                        (goto-char (point-min))
+                        (and (re-search-forward "^\\* Notes[ \t]*$" nil t)
+                             (line-beginning-position))))))
+    (set-buffer buffer)
+    (widen)
+    (goto-char notes)
+    (org-roam-node-id node)))
+(add-hook 'org-roam-capture-preface-hook #'dotfiles/org-roam-capture-to-ref-notes)
 
 
 (define-key global-map (kbd "C-c n l") 'org-roam-buffer-toggle)

@@ -62,8 +62,14 @@ def resolves_below(path: Path, root: Path) -> bool:
 
 
 def validate_schema_target(
-    target: Path, expected: Path, static_dir: Path
+    target: Path, expected: Path, static_dir: Path, data_dir: Path
 ) -> None:
+    for parent in target.relative_to(data_dir).parents[:-1]:
+        directory = data_dir / parent
+        if directory.is_symlink() or (
+            directory.exists() and not directory.is_dir()
+        ):
+            fail(f"Refusing unmanaged Rime path: {directory}")
     if target.is_symlink():
         if target.resolve(strict=False) != expected.resolve(
             strict=False
@@ -146,7 +152,7 @@ def deploy(
 
     for relative in relatives:
         validate_schema_target(
-            data_dir / relative, static_dir / relative, static_dir
+            data_dir / relative, static_dir / relative, static_dir, data_dir
         )
 
     changed = (
@@ -157,10 +163,12 @@ def deploy(
     if changed:
         print("Refreshing generated Rime schemas...")
         data_dir.mkdir(parents=True, exist_ok=True)
+        # Replace the tree before dropping the old links: a failed copy then
+        # leaves the previous deployment reachable under its usual names.
+        refresh_static(static_source, static_dir)
         for link in iter_symlinks(data_dir, static_dir):
             if resolves_below(link, static_dir):
                 link.unlink()
-        refresh_static(static_source, static_dir)
         build = data_dir / "build"
         if build.is_symlink() or build.is_file():
             build.unlink()

@@ -281,7 +281,7 @@ never a narration of what you tried.)
   and a self-contained body that explains the problem or ownership constraint
   before the implementation. Commit messages are valid Markdown and ordinary
   prose never exceeds 80 characters; trailers and unbreakable tokens are exempt.
-  Before committing through Claude Code, Codex, or OpenCode, run
+  Before committing through any agent harness, run
   `scripts/lint_commit_message.py <message-file>`; the managed global
   `commit-msg` hook enforces the same policy for every commit and preserves any
   initial `Assisted-by:` trailer. See
@@ -548,7 +548,7 @@ cache and the configuration is the fact.
 - **Commits:** one logical change each, imperative `subsystem: summary` subject
   of at most 72 characters, prose wrapped at 80 columns, documentation kept in
   its own commit after the technical one. Every agent-assisted commit needs an
-  `Assisted-by: MODEL_ID:REASONING HARNESS` trailer, for example
+  `Assisted-by: MODEL_ID:REASONING HARNESS [TOOLS]` trailer, for example
   `Assisted-by: claude-opus-5-5:xhigh oh-my-pi`, and never an agent-added
   `Signed-off-by:`. `MODEL_ID` is the developer's published model name, with no
   gateway, cloud provider, or deployment that shows how or where it was reached;

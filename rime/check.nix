@@ -78,6 +78,19 @@ in {
         echo "accepted an unmanaged Rime schema target" >&2
         exit 1
       fi
+
+      rm -r home/.local/share/fcitx5/rime/subdir
+      printf '%s\n' unmanaged >home/.local/share/fcitx5/rime/subdir
+      printf '%s\n' stamp-v4 >stamp
+      if HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
+        rime-state-manager deploy \
+          "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
+          subdir/schema.yaml 2>err; then
+        echo "accepted an unmanaged Rime parent path" >&2
+        exit 1
+      fi
+      grep -q 'Refusing unmanaged Rime path' err
+      grep -qx stamp-v3 state/rime/home-manager-source-stamp
     '';
   };
   rime-host-files = mkCheck {
@@ -87,12 +100,11 @@ in {
       source_root="$PWD/source/fcitx5"
       home="$PWD/home"
       state="$PWD/state"
-      marker_source="$PWD/marker"
       mkdir -p "$source_root/conf"
       printf '%s\n' profile-v1 >"$source_root/profile"
       printf '%s\n' classic-v1 >"$source_root/conf/classicui.conf"
       printf '%s\n' rime-v1 >"$source_root/conf/rime.conf"
-      printf '%s\n' home-manager-rime-v1 >"$marker_source"
+      printf '%s\n' notifications-v1 >"$source_root/conf/notifications.conf"
 
       HOME="$home" XDG_STATE_HOME="$state" \
         rime-host-files deploy "$source_root"
@@ -136,59 +148,35 @@ in {
         exit 1
       fi
 
-      migration_home="$PWD/migration-home"
-      migration_state="$PWD/migration-state"
-      mkdir -p "$migration_home/.local/share/fcitx5" \
-        "$migration_state/rime"
-      cp "$marker_source" \
-        "$migration_state/rime/home-manager-ownership-v1"
-      ln -s /nix/store/legacy-fcitx5-themes \
-        "$migration_home/.local/share/fcitx5/themes"
-      HOME="$migration_home" XDG_STATE_HOME="$migration_state" \
-        rime-host-files migrate-theme-root "$marker_source"
-      test ! -e "$migration_home/.local/share/fcitx5/themes"
-      test ! -e "$migration_state/rime/home-manager-ownership-v1"
-
-      mkdir -p "$migration_home/.local/share/fcitx5/themes"
-      cp "$marker_source" \
-        "$migration_state/rime/home-manager-ownership-v1"
-      HOME="$migration_home" XDG_STATE_HOME="$migration_state" \
-        rime-host-files migrate-theme-root "$marker_source"
-      test -d "$migration_home/.local/share/fcitx5/themes"
-      test ! -e "$migration_state/rime/home-manager-ownership-v1"
-
-      rmdir "$migration_home/.local/share/fcitx5/themes"
-      ln -s /tmp/unmanaged-fcitx5-themes \
-        "$migration_home/.local/share/fcitx5/themes"
-      cp "$marker_source" \
-        "$migration_state/rime/home-manager-ownership-v1"
-      if HOME="$migration_home" XDG_STATE_HOME="$migration_state" \
-        rime-host-files migrate-theme-root "$marker_source"; then
-        echo "migrated an unmanaged Rime theme link" >&2
+      linked_home="$PWD/linked-home"
+      mkdir -p "$linked_home/.config"
+      ln -s "$source_root" "$linked_home/.config/fcitx5"
+      if HOME="$linked_home" XDG_STATE_HOME="$PWD/linked-state" \
+        rime-host-files deploy "$source_root"; then
+        echo "deployed through a linked Fcitx config directory" >&2
         exit 1
       fi
-      test -L "$migration_home/.local/share/fcitx5/themes"
-      test -f "$migration_state/rime/home-manager-ownership-v1"
+      test ! -e "$PWD/linked-state"
 
-      rm "$migration_home/.local/share/fcitx5/themes" \
-        "$migration_state/rime/home-manager-ownership-v1"
-      ln -s /nix/store/unrecorded-fcitx5-themes \
-        "$migration_home/.local/share/fcitx5/themes"
-      if HOME="$migration_home" XDG_STATE_HOME="$migration_state" \
-        rime-host-files migrate-theme-root "$marker_source"; then
-        echo "migrated an unrecorded Rime theme link" >&2
+      # Fcitx rewrites notifications.conf when a notification is hidden. On
+      # the first deploy that copy is kept; the other host files still refuse
+      # an unmanaged regular file.
+      fresh_home="$PWD/fresh-home"
+      mkdir -p "$fresh_home/.config/fcitx5/conf"
+      printf '%s\n' hidden-by-fcitx \
+        >"$fresh_home/.config/fcitx5/conf/notifications.conf"
+      HOME="$fresh_home" XDG_STATE_HOME="$PWD/fresh-state" \
+        rime-host-files deploy "$source_root"
+      grep -qx hidden-by-fcitx \
+        "$fresh_home/.config/fcitx5/conf/notifications.conf"
+      other_home="$PWD/other-home"
+      mkdir -p "$other_home/.config/fcitx5"
+      printf '%s\n' local-profile >"$other_home/.config/fcitx5/profile"
+      if HOME="$other_home" XDG_STATE_HOME="$PWD/other-state" \
+        rime-host-files deploy "$source_root"; then
+        echo "adopted an unmanaged Fcitx profile" >&2
         exit 1
       fi
-      test -L "$migration_home/.local/share/fcitx5/themes"
-
-      rm "$migration_home/.local/share/fcitx5/themes"
-      mkdir "$migration_state/rime/home-manager-ownership-v1"
-      if HOME="$migration_home" XDG_STATE_HOME="$migration_state" \
-        rime-host-files migrate-theme-root "$marker_source"; then
-        echo "accepted a malformed Rime ownership marker" >&2
-        exit 1
-      fi
-      test -d "$migration_state/rime/home-manager-ownership-v1"
     '';
   };
   rime-failure-recovery = mkCheck {

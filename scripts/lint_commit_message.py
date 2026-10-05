@@ -2,6 +2,7 @@
 
 import argparse
 import difflib
+import os
 import re
 import subprocess
 from pathlib import Path
@@ -103,9 +104,15 @@ def lint(message_path: Path) -> list[str]:
         errors.append("fenced code block is never closed")
 
     try:
+        # The global hook runs in every repository; that repository's
+        # Prettier and EditorConfig settings must not change this verdict.
         prettier = subprocess.run(
             [
                 "prettier",
+                "--no-config",
+                "--no-editorconfig",
+                "--ignore-path",
+                os.devnull,
                 "--parser",
                 "markdown",
                 "--stdin-filepath",

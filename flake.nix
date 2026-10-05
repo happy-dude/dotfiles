@@ -117,11 +117,6 @@
     };
 
     # Rolling source inputs consumed by local Nix modules.
-    coc_zuban = {
-      url = "github:yaegassy/coc-zuban";
-      flake = false;
-    };
-
     roswell_src = {
       url = "github:roswell/roswell";
       flake = false;
@@ -129,6 +124,12 @@
 
     virtme_ng_src = {
       url = "github:arighi/virtme-ng";
+      flake = false;
+    };
+
+    # Pinned: vim/default.nix fixes the pnpm dependency hash for this tree.
+    coc_zuban = {
+      url = "github:yaegassy/coc-zuban?rev=bdd08b4e20868d1f0155f934946e4cea0c33c252";
       flake = false;
     };
 

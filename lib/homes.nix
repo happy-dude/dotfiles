@@ -14,7 +14,7 @@
       throw (
         "profiles disagree on ${description}: "
         + lib.concatStringsSep ", " (
-          lib.mapAttrsToList (name: value: "${name} = ${toString value}") perProfile
+          lib.mapAttrsToList (name: value: "${name} = ${lib.generators.toPretty {} value}") perProfile
         )
       );
 }

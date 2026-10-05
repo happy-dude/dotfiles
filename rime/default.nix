@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   inputs,
@@ -39,8 +40,13 @@
     inputs.rime_loengfan
   ];
 
-  isRimeDataFile = name:
-    (lib.hasSuffix ".yaml" name || lib.hasSuffix ".txt" name || lib.hasSuffix ".lua" name)
+  # OpenCC configs live under opencc/; other JSON (editor and language-server
+  # settings) is not Rime data.
+  isRimeDataFile = dir: name:
+    (lib.hasSuffix ".yaml" name
+      || lib.hasSuffix ".txt" name
+      || lib.hasSuffix ".lua" name
+      || (baseNameOf dir == "opencc" && lib.hasSuffix ".json" name))
     && !(builtins.elem name [
       "installation.yaml"
       "recipe.yaml"
@@ -55,7 +61,7 @@
       in
         if entries.${name} == "directory"
         then filesRecursively path
-        else lib.optional (isRimeDataFile name) path
+        else lib.optional (isRimeDataFile dir name) path
     ) (builtins.attrNames entries);
 
   relativeTo = source: path:
@@ -131,31 +137,33 @@
     }
   );
 
-  # The prior custom deployment wrote this marker. Keep its exact payload only
-  # to authorize the one-way migration to native Home Manager theme ownership.
-  legacyOwnershipMarker = pkgs.writeText "rime-home-manager-ownership-v1" ''
-    home-manager-rime-v1
-  '';
   rimeRelativeArguments = lib.concatMapStringsSep " " (entry:
     lib.escapeShellArg entry.relative)
   rimeDataEntries;
+
+  # Fcitx rewrites notifications.conf when a notification is hidden, so it is
+  # materialized with the other host files. Fcitx stores the option as a list,
+  # one numbered key per entry; a flat `HiddenNotifications=` key is ignored.
+  # Copy only .config/fcitx5: `./.` would put all of rime/ in the store.
+  fcitxConfig = pkgs.runCommand "fcitx5-config" {} ''
+    cp -r ${./.config/fcitx5} "$out"
+    chmod u+w "$out/conf"
+    cat >"$out/conf/notifications.conf" <<'EOF'
+    [HiddenNotifications]
+    0=${
+      if config.dotfiles.profile.desktop == "plasma"
+      then "wayland-diagnose-kde"
+      else "wayland-diagnose-gnome"
+    }
+    EOF
+  '';
 in
   assert duplicateRimeDataTargetNames == []; {
     xdg.dataFile = themeFiles;
 
-    # The old activation created the theme root itself, outside Home Manager's
-    # file manifest. Remove only that marked Nix-store link before collision
-    # checks so Home Manager can own the individual immutable theme directories.
-    home.activation.rimeMigrateThemeRoot = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
-      $DRY_RUN_CMD ${lib.getExe rimeHostFiles} migrate-theme-root \
-        ${lib.escapeShellArg legacyOwnershipMarker}
-    '';
-
-    # Pass only the Fcitx configuration directory: `./.` would copy the whole
-    # rime/ tree, Rime data included, into the store as one more path.
     home.activation.rimeHostFiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
       $DRY_RUN_CMD ${lib.getExe rimeHostFiles} deploy \
-        ${lib.escapeShellArg ./.config/fcitx5}
+        ${lib.escapeShellArg fcitxConfig}
     '';
 
     home.activation.rimeSchemaBuild = lib.hm.dag.entryAfter ["rimeHostFiles"] ''

@@ -9,6 +9,7 @@ def validate_materialize(
     source: Path,
     target: Path,
     snapshot: Path,
+    adopt: bool = False,
 ) -> None:
     if not source.is_file() or source.is_symlink():
         fail(f"Rime source is not a regular file: {source}")
@@ -20,7 +21,7 @@ def validate_materialize(
     elif target.exists() and not target.is_file():
         fail(f"Refusing to replace unmanaged Rime path: {target}")
     elif target.is_file() and not snapshot.exists():
-        if not same_content(source, target):
+        if not adopt and not same_content(source, target):
             fail(f"Refusing unmanaged Rime host file: {target}")
     elif target.is_file() and snapshot.is_file():
         source_changed = not same_content(source, snapshot)
@@ -52,55 +53,45 @@ def materialize(source: Path, target: Path, snapshot: Path) -> None:
         target.chmod(0o644)
 
 
-def migrate_theme_root(marker_source: Path) -> None:
-    if not marker_source.is_file() or marker_source.is_symlink():
-        fail(f"Rime ownership source is not a regular file: {marker_source}")
-
-    marker = dotfiles_files.state_home() / "rime/home-manager-ownership-v1"
-    target = dotfiles_files.data_home() / "fcitx5/themes"
-
-    if marker.is_symlink() or (marker.exists() and not marker.is_file()):
-        fail(f"Refusing malformed Rime ownership marker: {marker}")
-    if marker.is_file() and not same_content(marker_source, marker):
-        fail(f"Refusing unrecognized Rime ownership marker: {marker}")
-
-    if target.is_symlink():
-        actual = target.resolve(strict=False)
-        managed_store_link = actual.parent == Path(
-            "/nix/store"
-        ) and actual.name.endswith("-fcitx5-themes")
-        if not marker.is_file() or not managed_store_link:
-            fail(f"Refusing to migrate unmanaged Rime link: {target}")
-        target.unlink()
-    elif target.exists() and not target.is_dir():
-        fail(f"Refusing to migrate unmanaged Rime path: {target}")
-
-    marker.unlink(missing_ok=True)
-
-
 def deploy(source_dir: Path) -> None:
     config_dir = dotfiles_files.config_home() / "fcitx5"
     state_root = dotfiles_files.state_home() / "rime/host-config"
+    # A linked directory would carry managed writes to wherever it points.
+    for directory in (config_dir, config_dir / "conf"):
+        if directory.is_symlink():
+            fail(f"Refusing to replace unmanaged Rime link: {directory}")
+    # (source, target, snapshot, adopt). Fcitx writes notifications.conf
+    # itself when a notification is hidden, so an existing copy is kept on the
+    # first deploy instead of refused.
     files = (
         (
             source_dir / "profile",
             config_dir / "profile",
             state_root / "profile",
+            False,
         ),
         (
             source_dir / "conf/classicui.conf",
             config_dir / "conf/classicui.conf",
             state_root / "classicui.conf",
+            False,
         ),
         (
             source_dir / "conf/rime.conf",
             config_dir / "conf/rime.conf",
             state_root / "rime.conf",
+            False,
+        ),
+        (
+            source_dir / "conf/notifications.conf",
+            config_dir / "conf/notifications.conf",
+            state_root / "notifications.conf",
+            True,
         ),
     )
-    for source, target, snapshot in files:
-        validate_materialize(source, target, snapshot)
-    for source, target, snapshot in files:
+    for source, target, snapshot, adopt in files:
+        validate_materialize(source, target, snapshot, adopt)
+    for source, target, snapshot, _ in files:
         materialize(source, target, snapshot)
 
 
@@ -108,13 +99,7 @@ def main(arguments: list[str]) -> None:
     if len(arguments) == 2 and arguments[0] == "deploy":
         deploy(Path(arguments[1]))
         return
-    if len(arguments) == 2 and arguments[0] == "migrate-theme-root":
-        migrate_theme_root(Path(arguments[1]))
-        return
-    raise SystemExit(
-        "usage: rime-host-files "
-        "deploy FCITX_CONFIG_DIR | migrate-theme-root MARKER_SOURCE"
-    )
+    raise SystemExit("usage: rime-host-files deploy FCITX_CONFIG_DIR")
 
 
 if __name__ == "__main__":

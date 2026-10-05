@@ -40,7 +40,7 @@ create_repo() {
   local repo="$1"
 
   mkdir -p -- "$repo"
-  git -C "$repo" init -q
+  git -C "$repo" init -q --initial-branch=main
   printf 'initial\n' >"$repo/tracked"
   commit_all "$repo" initial
 }

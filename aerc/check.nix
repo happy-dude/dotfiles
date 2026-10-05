@@ -12,7 +12,7 @@
   deployed =
     lib.mapAttrsToList (
       _: home:
-        home.config.home.file."${home.config.home.homeDirectory}/.config/aerc/aerc.conf".source
+        home.config.home.file."${home.config.xdg.configHome}/aerc/aerc.conf".source
     )
     homes;
 in {

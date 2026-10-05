@@ -53,6 +53,7 @@ typeset -gU cdpath fpath mailpath path
 path=(
   $path
   $HOME/{,s}bin(N)
+  $HOME/.local/bin(N)
   /usr/local/{,s}bin(N)
 )
 

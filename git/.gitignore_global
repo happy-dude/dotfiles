@@ -3,11 +3,10 @@
 # Github: https://github.com/Happy-Dude
 # Deployed by Home Manager as ~/.config/git/ignore, which Git reads without
 # any core.excludesFile setting. Patterns here apply to every repository, so
-# they name only object and bytecode files, OS litter, and editor state; a
-# pattern that can match a tracked file belongs in that project's .gitignore.
+# they name only generated and machine-local files; a pattern that can match
+# a tracked file belongs in that project's .gitignore.
 
 # Editor and shell litter
-*.vscode
 *~
 
 # Ignore xmonad compiled files and executables

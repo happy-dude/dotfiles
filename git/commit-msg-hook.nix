@@ -41,16 +41,40 @@ in
           return 1
         fi
 
+        # GIT_EDITOR=: means -m, -F, or --no-edit: Git keeps '#' lines, so
+        # lint the message as written. --cleanup=strip is invisible here.
+        if [[ $(git var GIT_EDITOR) == : ]]; then
+          ${pkgs.lib.getExe commitMessageLinter} "$message_path"
+          return
+        fi
+
         cleaned_message=$(mktemp)
         normalized_message=$(mktemp)
         raw_errors=$(mktemp)
 
-        # Git's scissors line is the comment prefix and the marker on a line
-        # of their own; the marker inside prose is message text.
-        if grep -Eq -- '^[^[:space:]]+ -{24} >8 -{24}$' "$message_path"; then
-          if ! awk \
-            '/^[^[:space:]]+ -{24} >8 -{24}$/ { exit } { print }' \
-            "$message_path" | git stripspace --strip-comments \
+        # Git cuts only at its comment string, a space, and the marker on a
+        # line of their own. The last core.commentChar or core.commentString
+        # wins; "auto" can be any of Git's candidates; unset means '#'.
+        comment_string=$(
+          { git config --get-regexp '^core\.comment(char|string)$' || :; } |
+            awk 'END { sub(/^[^ ]* /, ""); print }'
+        )
+        case ''${comment_string,,} in
+        "") comment_strings=('#') ;;
+        auto) comment_strings=('#' ';' '@' '!' '$' '%' '^' '&' '|' ':') ;;
+        *) comment_strings=("$comment_string") ;;
+        esac
+        scissors_lines=()
+        for comment_string in "''${comment_strings[@]}"; do
+          scissors_lines+=(
+            "$comment_string ------------------------ >8 ------------------------"
+          )
+        done
+        if printf '%s\n' "''${scissors_lines[@]}" |
+          grep -Fxqf - -- "$message_path"; then
+          if ! printf '%s\n' "''${scissors_lines[@]}" |
+            awk 'NR == FNR { cut[$0]; next } $0 in cut { exit } { print }' \
+              - "$message_path" | git stripspace --strip-comments \
             >"$cleaned_message"; then
             rm -f -- "$cleaned_message" "$normalized_message" "$raw_errors"
             return 1

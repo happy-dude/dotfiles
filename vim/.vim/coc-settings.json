@@ -13,6 +13,7 @@
     "javascript",
     "javascriptreact",
     "json",
+    "latex",
     "lua",
     "markdown",
     "perl",
@@ -21,7 +22,6 @@
     "rust",
     "sh",
     "terraform",
-    "tex",
     "typescript",
     "typescriptreact",
     "typst",
@@ -79,7 +79,10 @@
         ".eslintrc.json",
         ".eslintrc.yaml",
         ".eslintrc.yml"
-      ]
+      ],
+      "settings": {
+        "validate": "on"
+      }
     },
     "fennel-ls": {
       "args": ["--server"],
@@ -141,7 +144,14 @@
     "nixd": {
       "command": "nixd",
       "filetypes": ["nix"],
-      "rootPatterns": ["flake.nix", ".git"]
+      "rootPatterns": ["flake.nix", ".git"],
+      "settings": {
+        "nixd": {
+          "formatting": {
+            "command": ["alejandra"]
+          }
+        }
+      }
     },
     "oxlint": {
       "args": ["--lsp"],
@@ -168,7 +178,6 @@
         "definition",
         "documentSymbol",
         "workspaceSymbol",
-        "formatting",
         "documentFormatting",
         "documentRangeFormatting"
       ],
@@ -198,7 +207,7 @@
     },
     "texlab": {
       "command": "texlab",
-      "filetypes": ["tex", "plaintex"],
+      "filetypes": ["latex", "plaintex"],
       "rootPatterns": [".latexmkrc", "latexmkrc", ".git"]
     },
     "tinymist": {

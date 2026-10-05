@@ -8,7 +8,9 @@ machine-local and must never enter Git or the Nix store.
 
 The services are fail-closed. They require both the machine-local rclone
 configuration and `~/.local/state/rclone/org-bisync-ready`, which is created
-only after the first bisync has been reviewed and completed manually.
+only after the first bisync has been reviewed and completed manually. The
+watcher also needs `~/org`; `rclone-box-org-watch.path` starts it once `~/org`
+exists.
 
 ## Fresh-machine bootstrap
 
@@ -101,7 +103,7 @@ start the timer:
 mkdir -p ~/.local/state/rclone
 touch ~/.local/state/rclone/org-bisync-ready
 systemctl --user start rclone-box-org-bisync.timer
-systemctl --user start rclone-box-org-watch.service
+systemctl --user start rclone-box-org-watch.path
 ```
 
 Keep `RCLONE_TEST` on both sides permanently. Every scheduled run verifies that
@@ -130,6 +132,7 @@ repeat it without `--dry-run`.
 ```bash
 systemctl --user status rclone-box-org-bisync.timer
 systemctl --user status rclone-box-org-bisync.service
+systemctl --user status rclone-box-org-watch.path
 systemctl --user status rclone-box-org-watch.service
 journalctl --user -u rclone-box-org-bisync.service
 rclone bisync ~/org box:org \
