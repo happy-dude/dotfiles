@@ -215,10 +215,12 @@ and installs StyLua's config under `~/.config/stylua`.
   there to the repository's own hook of that name — receive-side hooks included,
   since a push into a local bare repository runs under the same setting — except
   the protocol and override hooks `fsmonitor-watchman`, `proc-receive`, and
-  `push-to-checkout`, where a stand-in would change Git's behaviour; the
-  `commit-msg` dispatcher also lints every commit, reruns the repository hook
-  and the linter after each interactive edit, and requires an initially present
-  `Assisted-by:` trailer to remain. Per-machine identity and signing
+  `push-to-checkout`, where a stand-in would change Git's behaviour, and
+  `reference-transaction`, which Git runs several times per ref update, so
+  dispatching it made a 100-commit rebase take seconds instead of milliseconds;
+  the `commit-msg` dispatcher also lints every commit, reruns the repository
+  hook and the linter after each interactive edit, and requires an initially
+  present `Assisted-by:` trailer to remain. Per-machine identity and signing
   (`user.email`, `signingkey`, `commit`/`tag` `gpgsign`) live in an untracked
   `~/.config/git/local.config` that the module `include`s — SSH/GPG keys and
   email differ per box; template in `git/local.config.example`. Home Manager
