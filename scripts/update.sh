@@ -415,6 +415,14 @@ current_home_manager_generation() {
   readlink -f -- "$profile"
 }
 
+# True when before and after are two different commits, so before..after is
+# a range worth reporting.
+git_head_advanced() {
+  [ -n "$1" ] && [ -n "$2" ] && [ "$1" != "$2" ] &&
+    git cat-file -e "${1}^{commit}" 2>/dev/null &&
+    git cat-file -e "${2}^{commit}" 2>/dev/null
+}
+
 print_git_changes() {
   local git_before="$1"
   local git_after="$2"
@@ -422,11 +430,7 @@ print_git_changes() {
 
   [ "$show_changes" -eq 1 ] || return 1
 
-  if [ -n "$git_before" ] &&
-    [ -n "$git_after" ] &&
-    [ "$git_before" != "$git_after" ] &&
-    git cat-file -e "${git_before}^{commit}" 2>/dev/null &&
-    git cat-file -e "${git_after}^{commit}" 2>/dev/null; then
+  if git_head_advanced "$git_before" "$git_after"; then
     msg
     msg "Committed Git changes:"
     git --no-pager diff --no-ext-diff "${git_before}..${git_after}" --
@@ -482,11 +486,7 @@ print_generation_changelog() {
     warn "Could not resolve both Home Manager generation paths"
   fi
 
-  if [ -n "$git_before" ] &&
-    [ -n "$git_after" ] &&
-    [ "$git_before" != "$git_after" ] &&
-    git cat-file -e "${git_before}^{commit}" 2>/dev/null &&
-    git cat-file -e "${git_after}^{commit}" 2>/dev/null; then
+  if git_head_advanced "$git_before" "$git_after"; then
     if shortlog="$(
       git shortlog --format='%h %s' --no-merges \
         "${git_before}..${git_after}"
