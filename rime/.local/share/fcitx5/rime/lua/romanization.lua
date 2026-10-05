@@ -25,7 +25,8 @@ function M.convert_tones(pinyin)
   end
 
   pinyin = pinyin:gsub('5', '')
-  return pinyin:gsub('v', 'ü')
+  -- Parenthesized so callers get only the string, not gsub's match count.
+  return (pinyin:gsub('v', 'ü'))
 end
 
 return M

@@ -14,6 +14,10 @@ local cases = {
 }
 
 for _, case in ipairs(cases) do
+  -- Callers pass the result straight into table.insert, which rejects a
+  -- third argument, so the converter must return exactly one value.
+  local count = select('#', romanization.convert_tones(case[1]))
+  assert(count == 1, string.format('%s: expected 1 result, got %d', case[1], count))
   local actual = romanization.convert_tones(case[1])
   assert(actual == case[2], string.format('%s: expected %s, got %s', case[1], case[2], actual))
 end
