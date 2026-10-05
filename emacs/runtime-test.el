@@ -55,7 +55,7 @@
       (error "%s retained a server downloader" server-id))))
 
 (dolist (language '(bash c clojure cpp css fennel fish go gomod haskell hcl
-                         html javascript json kotlin latex lua markdown
+                         html javascript jsdoc json kotlin latex lua markdown
                          markdown-inline nix perl python ruby rust sql
                          typescript typst vim yaml zig))
   (unless (treesit-language-available-p language)
