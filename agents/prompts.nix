@@ -45,12 +45,20 @@
     body = lib.strings.trim (lib.concatStringsSep "\n" (
       lib.drop (closing.index + 1) lines
     ));
+    file = "agents/prompts/${name}.md";
+    require = condition: message: lib.throwIfNot condition "${file}: ${message}";
   in
-    assert lines != [] && builtins.head lines == "---";
-    assert closing != null;
-    assert metadata.name == name;
-    assert metadata.descriptionLines != [];
-    assert body != ""; {
+    require (lines != [] && builtins.head lines == "---")
+    "the first line must open the frontmatter with ---"
+    require (closing != null)
+    "the frontmatter has no closing --- line"
+    require (metadata.name == name)
+    "frontmatter name must be ${name}"
+    require (metadata.descriptionLines != [])
+    "frontmatter description must be a block of indented lines after description:"
+    require (body != "")
+    "the prompt body after the frontmatter is empty"
+    {
       inherit name body;
       description = lib.concatStringsSep " " metadata.descriptionLines;
     };
