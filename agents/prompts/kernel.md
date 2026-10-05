@@ -274,10 +274,10 @@ X" as "let me check X" by default:
   and a self-contained body that explains the problem or ownership constraint
   before the implementation. Commit messages are valid Markdown and ordinary
   prose never exceeds 80 characters; trailers, URLs, code, paths, and other
-  unbreakable text are exempt. Before committing through Claude Code, Codex, or
-  OpenCode, run `scripts/lint_commit_message.py <message-file>`. The managed
-  global `commit-msg` hook applies the same policy to every commit and preserves
-  any initial `Assisted-by:` trailer. See
+  unbreakable text are exempt. Before committing through any agent harness, run
+  `scripts/lint_commit_message.py <message-file>`. The managed global
+  `commit-msg` hook applies the same policy to every commit and preserves any
+  initial `Assisted-by:` trailer. See
   <https://www.kernel.org/doc/html/latest/process/submitting-patches.html>.
 
 ## Verification trail
@@ -694,8 +694,8 @@ structure.
   merely evaluated: many nixpkgs functions swallow unknown arguments, so confirm
   the output actually changed.
 - **Before assuming a tool is missing,** grep the repository's `home.nix`
-  package list; it is long and already includes most build, debug, and
-  language-server tooling.
+  package list, which carries most build and debug tooling, and
+  `lib/language-servers.nix`, which declares the language servers.
 - **Locked evaluation:** `flake.lock` is authoritative and the registry and
   `NIX_PATH` are pinned to it. Every evaluation outside a deliberate update
   passes `--no-update-lock-file`. `./scripts/update.sh` has three modes: `check`
