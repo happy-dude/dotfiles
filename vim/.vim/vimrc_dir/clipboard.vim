@@ -46,7 +46,9 @@ if !has('nvim') && exists('v:clipproviders')
         \   '*': function('s:wl_clipboard_paste'),
         \ },
         \ }
-  set clipmethod^=wl_clipboard
+  " Try the provider only after the native methods, where the compositor
+  " lacks data-control.
+  set clipmethod+=wl_clipboard
 endif
 
 if has('unnamedplus')
