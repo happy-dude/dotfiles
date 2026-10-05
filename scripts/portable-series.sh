@@ -75,6 +75,28 @@ scan_forbidden_content() {
   fi
 }
 
+# Print a commit message read from stdin without its Assisted-by: trailers.
+# Each interpret-trailers pass removes only the trailer nearest the end, so
+# repeat until a pass changes nothing.
+strip_attribution_trailers() {
+  local message
+  local stripped
+
+  message=$(cat)
+  while :; do
+    stripped=$(
+      git interpret-trailers \
+        --if-exists replace \
+        --if-missing doNothing \
+        --trim-empty \
+        --trailer 'Assisted-by:' <<<"$message"
+    )
+    [[ $stripped != "$message" ]] || break
+    message=$stripped
+  done
+  printf '%s\n' "$message"
+}
+
 write_scan_inputs() {
   local worktree=$1
   local base=$2
@@ -85,10 +107,7 @@ write_scan_inputs() {
   : >"$metadata_path"
   while IFS= read -r commit; do
     git -C "$worktree" show -s --format=%B "$commit" |
-      git interpret-trailers \
-        --if-exists replace \
-        --if-missing doNothing \
-        --trailer 'Assisted-by:' >>"$metadata_path"
+      strip_attribution_trailers >>"$metadata_path"
     printf '\n' >>"$metadata_path"
   done < <(git -C "$worktree" rev-list --reverse "$base..HEAD")
   git -C "$worktree" diff --binary --full-index --unified=0 \
@@ -237,30 +256,27 @@ start_series() {
     "Nothing was pushed. Develop and commit only portable changes there."
 }
 
+# Lint every commit message in base..HEAD. Each message is written under
+# message_directory, which the caller owns and removes.
 lint_commits() {
   local worktree=$1
   local base=$2
-  local temporary_directory
+  local message_directory=$3
   local index=0
   local commit
+  local message
+  local message_path
 
-  temporary_directory=$(mktemp -d)
-  trap 'rm -rf -- "$temporary_directory"' RETURN
-  # EXIT traps run after function scope ends; bake the path in.
-  # shellcheck disable=SC2064 # Early expansion is the point: EXIT runs after function scope ends.
-  trap "rm -rf -- $(printf '%q' "$temporary_directory")" EXIT
+  mkdir -p -- "$message_directory"
   while IFS= read -r commit; do
-    git -C "$worktree" show -s --format=%B "$commit" |
-      python3 -c \
-        'import sys; print(sys.stdin.read().rstrip() + "\n", end="")' \
-        >"$temporary_directory/$(printf '%03d' "$index").md"
-    python3 "$worktree/scripts/lint_commit_message.py" \
-      "$temporary_directory/$(printf '%03d' "$index").md"
+    printf -v message_path '%s/%03d.md' "$message_directory" "$index"
+    # Command substitution drops trailing newlines; the file ends in one.
+    message=$(git -C "$worktree" show -s --format=%B "$commit")
+    printf '%s\n' "$message" >"$message_path"
+    python3 "$worktree/scripts/lint_commit_message.py" "$message_path" ||
+      return
     index=$((index + 1))
   done < <(git -C "$worktree" rev-list --reverse "$base..HEAD")
-  rm -rf -- "$temporary_directory"
-  trap - RETURN
-  trap - EXIT
 }
 
 export_series() {
@@ -322,15 +338,12 @@ export_series() {
   if grep -Ev '^Portable Dotfiles <portable@localhost>$' <<<"$authors"; then
     die "portable history contains a non-portable author identity"
   fi
-  lint_commits "$worktree" "$base"
 
   validate_forbidden_pattern "$forbidden_pattern"
-  # lint_commits clears the process-wide traps when it returns; the staging
-  # traps must be installed after it runs.
   staging_directory=$(mktemp -d "$output_directory/.dotfiles-$name.XXXXXX")
-  trap 'rm -rf -- "$staging_directory"' RETURN
   # shellcheck disable=SC2064 # Early expansion is the point: EXIT runs after function scope ends.
   trap "rm -rf -- $(printf '%q' "$staging_directory")" EXIT
+  lint_commits "$worktree" "$base" "$staging_directory/messages"
   scan_series "$forbidden_pattern" "$worktree" "$base" "$staging_directory"
 
   (
@@ -358,10 +371,6 @@ export_series() {
     >"$staged_patch_path"
   scan_final_patch \
     "$forbidden_pattern" "$staged_patch_path" "$staging_directory"
-  rm -f -- \
-    "$staging_directory/commit-metadata.txt" \
-    "$staging_directory/changed-content.diff" \
-    "$staging_directory/final-patch.txt"
   patch_sha256=$(sha256sum "$staged_patch_path" | cut -d ' ' -f 1)
 
   cat >"$staged_manifest_path" <<EOF
@@ -400,7 +409,6 @@ EOF
     "$apply_name" \
     "$bundle_name"
   rm -rf -- "$staging_directory"
-  trap - RETURN
   trap - EXIT
 
   printf '%s\n' \
