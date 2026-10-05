@@ -855,7 +855,7 @@ stash_dirty_submodules() {
 # Everything below runs only when this file is executed. The test suites
 # source it to exercise the functions above without performing an update.
 main() {
-  local section_result status unmerged
+  local section_result status unmerged repo_top
 
   # Argument parsing
   #--------------------------------------------------------------------------------------------------
@@ -932,9 +932,11 @@ main() {
     die "git not found in PATH"
   fi
 
-  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+  if ! repo_top="$(git rev-parse --show-toplevel 2>/dev/null)"; then
     die "not a git repository"
   fi
+  # Submodule detection and the lock commit use top-level paths.
+  cd "$repo_top"
 
   UPDATE_START_GIT_HEAD="$(git rev-parse --verify HEAD)"
 

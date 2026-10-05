@@ -84,3 +84,20 @@ grep -q 'Validating flake checks' "$TMPDIR_TEST/output" &&
   fail 'update validated a checkout with unresolved conflicts'
 [[ -n $(git -C "$repo" ls-files --unmerged) ]] ||
   fail 'fixture did not produce an autostash conflict'
+
+# A subdirectory path still selects the whole repository.
+nested="$TMPDIR_TEST/nested"
+create_repo "$nested"
+mkdir "$nested/subdirectory"
+printf 'lock-v1\n' >"$nested/flake.lock"
+printf 'kept\n' >"$nested/subdirectory/file"
+commit_all "$nested" 'tests: create a nested checkout'
+git -C "$nested" config user.name 'Update Test'
+git -C "$nested" config user.email 'update-test@example.invalid'
+printf 'lock-v2\n' >"$nested/flake.lock"
+PATH="$fake_bin:$PATH" bash "$SCRIPT_DIR/update.sh" update \
+  --skip-pull --skip-nix-fmt --skip-nix-flake --skip-home-manager \
+  "$nested/subdirectory" >"$TMPDIR_TEST/output" 2>&1 ||
+  fail 'update from a subdirectory failed'
+[[ $(git -C "$nested" log -1 --format=%s) == 'nix: update flake.lock' ]] ||
+  fail 'update from a subdirectory did not commit the root flake.lock'
