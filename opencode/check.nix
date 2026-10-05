@@ -19,6 +19,7 @@
   tui = sharedFile "opencode/tui.json";
   theme = sharedFile "opencode/themes/gruvbox-material.json";
   mixTheme = sharedFile "opencode/themes/gruvbox-material-mix-dark-medium.json";
+  agentNames = lib.attrNames (import ../agents/prompts.nix {inherit lib;});
 in
   assert lib.all (
     home: lib.all (package: lib.elem package home.config.home.packages) languageServerPackages
@@ -103,7 +104,7 @@ in
           "$XDG_CONFIG_HOME/opencode/opencode.json"
 
         opencode debug config >resolved.json
-        jq -e '
+        jq -e --argjson agents ${lib.escapeShellArg (builtins.toJSON agentNames)} '
           .share == "disabled" and
           .autoupdate == false and
           .experimental.openTelemetry == false and
@@ -113,8 +114,7 @@ in
           .lsp == false and
           (.model == null) and
           (.enabled_providers == null) and
-          .agent.kernel.mode == "all" and
-          .agent.language.mode == "all"
+          (. as $root | all($agents[]; $root.agent[.].mode == "all"))
         ' resolved.json >/dev/null
 
         mkdir project
