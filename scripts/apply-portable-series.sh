@@ -97,20 +97,22 @@ cleanup() {
   local am_directory
 
   rm -rf -- "$mail_directory"
-  if [[ $success != true ]]; then
-    active_branch=$(git -C "$repo" branch --show-current || true)
-    am_directory=$(
-      git -C "$repo" rev-parse --path-format=absolute \
-        --git-path rebase-apply || true
-    )
-    printf '%s\n' \
-      "Application stopped before main was updated." \
-      "Temporary branch: $temporary_branch" \
-      "Active branch: ${active_branch:-unknown}" >&2
-    if [[ -n $am_directory && -d $am_directory ]]; then
-      printf 'A git am operation is active; abort it with: git -C %q am --abort\n' \
-        "$repo" >&2
-    fi
+  [[ $success != true ]] || return 0
+  # A failure before switch -c leaves main checked out and nothing to clean.
+  git -C "$repo" show-ref --verify --quiet "refs/heads/$temporary_branch" ||
+    return 0
+  active_branch=$(git -C "$repo" branch --show-current || true)
+  am_directory=$(
+    git -C "$repo" rev-parse --path-format=absolute \
+      --git-path rebase-apply || true
+  )
+  printf '%s\n' \
+    "Application stopped before main was updated." \
+    "Temporary branch: $temporary_branch" \
+    "Active branch: ${active_branch:-unknown}" >&2
+  if [[ -n $am_directory && -d $am_directory ]]; then
+    printf 'A git am operation is active; abort it with: git -C %q am --abort\n' \
+      "$repo" >&2
   fi
 }
 trap cleanup EXIT
