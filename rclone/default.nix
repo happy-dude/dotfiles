@@ -4,6 +4,7 @@
   pkgs,
   ...
 }: let
+  rcloneConfig = "${config.xdg.configHome}/rclone/rclone.conf";
   filterFile = "${config.xdg.configHome}/rclone/org-bisync.filter";
   readyMarker = "${config.xdg.stateHome}/rclone/org-bisync-ready";
   workDir = "${config.xdg.cacheHome}/rclone/bisync";
@@ -28,7 +29,7 @@ in {
     Unit = {
       Description = "Synchronize Org files with Box";
       ConditionPathExists = [
-        "%h/.config/rclone/rclone.conf"
+        rcloneConfig
         readyMarker
       ];
     };
@@ -73,7 +74,7 @@ in {
     Unit = {
       Description = "Schedule Box synchronization after local Org changes";
       ConditionPathExists = [
-        "%h/.config/rclone/rclone.conf"
+        rcloneConfig
         "%h/org"
         readyMarker
       ];
