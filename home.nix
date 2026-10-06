@@ -149,6 +149,7 @@ in {
         sparse
         stow
         strace
+        stress-ng
         texliveFull
         tokei
         traceroute
