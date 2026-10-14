@@ -8,6 +8,7 @@
   localConfig = "${config.xdg.configHome}/nix/local.conf";
 in {
   nix = {
+    keepOldNixPath = false;
     nixPath = ["nixpkgs=${inputs.nixpkgs}"];
     package = nixPackage;
     registry.nixpkgs.flake = inputs.nixpkgs;
@@ -21,6 +22,11 @@ in {
       ];
     };
   };
+
+  # targets.genericLinux sets systemd.user.sessionVariables.NIX_PATH to
+  # ~/.nix-defexpr/channels; override it so user services such as the Emacs
+  # daemon see the same locked nixpkgs input as login shells.
+  systemd.user.sessionVariables.NIX_PATH = lib.mkForce "nixpkgs=${inputs.nixpkgs}";
 
   home.sessionVariablesExtra = lib.mkIf hostProvidedNix (lib.mkForce ''
     # Native Nix provides its own shell integration. Retain the generic-Linux
