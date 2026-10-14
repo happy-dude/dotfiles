@@ -7,8 +7,8 @@
 # rewriting them; later user overlays and runtime overrides can still win.
 {
   # Approve read/write-tier tools and prompt for exec-tier tools unless a
-  # more specific policy applies. This is not a workspace boundary like
-  # OpenCode's external_directory policy.
+  # more specific policy applies. Like OpenCode's external_directory prompt,
+  # this is an approval gate rather than a filesystem sandbox.
   tools.approvalMode = "write";
   # The Nix store is the update path.
   startup.checkUpdate = false;
