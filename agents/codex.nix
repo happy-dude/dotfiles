@@ -48,6 +48,31 @@
       [[ ! -e work/legacy/language.toml && ! -L work/legacy/language.toml ]]
       [[ -f work/legacy/kagi-kernel.toml ]]
 
+
+      # Former Claude whole-directory links (dangling claude/.claude/agents or
+      # live agents/prompts with tracked regular files) are unlinked without
+      # touching the tracked prompt files.
+      mkdir -p \
+        work/prompts \
+        work/store/old-claude-home-manager-files/.claude
+      touch work/prompts/kernel.md work/prompts/language.md
+      ln -s \
+        "$PWD/work/deleted-claude-agents" \
+        work/store/old-claude-home-manager-files/.claude/agents
+      ln -s \
+        "$PWD/work/store/old-claude-home-manager-files/.claude/agents" \
+        work/claude-agents
+      migrate-codex-agent-directory \
+        "$PWD/work/deleted-claude-agents:$PWD/work/prompts" \
+        "$PWD/work/claude-agents"
+      [[ ! -e work/claude-agents && ! -L work/claude-agents ]]
+
+      ln -s "$PWD/work/prompts" work/claude-agents
+      migrate-codex-agent-directory \
+        "$PWD/work/deleted-claude-agents:$PWD/work/prompts" \
+        "$PWD/work/claude-agents"
+      [[ ! -e work/claude-agents && ! -L work/claude-agents ]]
+      [[ -f work/prompts/kernel.md && -f work/prompts/language.md ]]
       mkdir work/agents
       migrate-codex-agent-directory \
         "$PWD/work/legacy" \

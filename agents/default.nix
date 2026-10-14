@@ -45,7 +45,8 @@
       ${profile} \
       "$HOME/.codex/${name}.config.toml"
   '';
-  legacyAgentDirectory = "${repo}/agents/generated/codex-agents";
+  legacyClaudeDirectories = "${repo}/claude/.claude/agents:${repo}/agents/prompts";
+  legacyCodexDirectory = "${repo}/agents/generated/codex-agents";
 in {
   # Claude Code registers a subagent only from a prompt carrying YAML
   # frontmatter, so link the canonical prompts individually rather than the
@@ -89,7 +90,10 @@ in {
 
   home.activation.migrateCodexAgentDirectory = lib.hm.dag.entryBetween ["checkLinkTargets"] ["secureAgentStateDirectories"] ''
     $DRY_RUN_CMD ${lib.getExe codex.agentDirectoryMigration} \
-      ${lib.escapeShellArg legacyAgentDirectory} \
+      ${lib.escapeShellArg legacyClaudeDirectories} \
+      "$HOME/.claude/agents"
+    $DRY_RUN_CMD ${lib.getExe codex.agentDirectoryMigration} \
+      ${lib.escapeShellArg legacyCodexDirectory} \
       "$HOME/.codex/agents" \
       ${lib.escapeShellArg "kernel=${agentFiles.kernel}"} \
       ${lib.escapeShellArg "language=${agentFiles.language}"}

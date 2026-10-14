@@ -10,25 +10,31 @@ def fail(message: str, status: int = 1) -> NoReturn:
 
 
 def main(arguments: list[str]) -> None:
-    if len(arguments) < 3:
+    if len(arguments) < 2:
         fail(
             "usage: migrate-codex-agent-directory "
-            "LEGACY TARGET NAME=SOURCE...",
+            "LEGACY[:LEGACY...] TARGET [NAME=SOURCE...]",
             2,
         )
 
-    legacy = Path(arguments[0])
+    legacy_roots = [
+        Path(part).resolve(strict=False)
+        for part in arguments[0].split(":")
+        if part
+    ]
+    if not legacy_roots:
+        fail("No legacy agent directory supplied", 2)
+    legacy = legacy_roots[0]
     target = Path(arguments[1])
     remove_target = False
     legacy_links: list[Path] = []
 
     if target.is_symlink():
-        if target.resolve(strict=False) != legacy.resolve(strict=False):
+        if target.resolve(strict=False) not in legacy_roots:
             fail(f"Refusing unrelated Codex agent directory link: {target}")
         remove_target = True
     elif target.exists() and not target.is_dir():
         fail(f"Refusing non-directory Codex agent path: {target}")
-
     for mapping in arguments[2:]:
         if "=" not in mapping:
             fail(f"Invalid Codex agent migration mapping: {mapping}", 2)
