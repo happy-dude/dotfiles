@@ -25,7 +25,7 @@ def schedule(systemd_run: str, systemctl: str) -> None:
     # while the oneshot sync is still running would merge into that run;
     # ordering the transient unit after it makes systemd queue a fresh run
     # instead.
-    subprocess.run(
+    result = subprocess.run(
         [
             systemd_run,
             "--user",
@@ -42,8 +42,14 @@ def schedule(systemd_run: str, systemctl: str) -> None:
         ],
         check=False,
         stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        text=True,
     )
+    if result.returncode != 0 and "already exists" not in result.stderr:
+        sys.stderr.write(
+            result.stderr
+            or f"systemd-run exited with status {result.returncode}\n"
+        )
 
 
 def event_paths(stream: BufferedReader, org_directory: Path) -> Iterator[Path]:
