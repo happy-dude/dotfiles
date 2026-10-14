@@ -618,9 +618,8 @@ other node is left to Org Roam."
 ;; use undo-tree for evil-mode
 (require 'undo-tree)
 (evil-set-undo-system 'undo-tree)
-;; undo-tree
-;; History files hold buffer contents, so give them the same owner-only
-;; directory as backups and auto-saves.
+;; History files hold buffer contents, so keep their cache directory mode 0700
+;; like the backup and auto-save directories.
 (let ((dir (expand-file-name "emacs/undo-tree/"
                              (or (getenv "XDG_CACHE_HOME") "~/.cache"))))
   (make-directory dir t)
