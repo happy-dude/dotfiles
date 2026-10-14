@@ -51,7 +51,6 @@
   rustOwlPlugin =
     (import ../rustowl/package.nix {
       inherit inputs pkgs;
-      lib = pkgs.lib;
     }).neovimPlugin;
   vimSandwichWithLicense = pkgs.vimPlugins.vim-sandwich.overrideAttrs (old: {
     meta =

@@ -1,8 +1,7 @@
 {
   inputs,
-  lib,
   pkgs,
   ...
 }: {
-  home.packages = [(import ./package.nix {inherit inputs lib pkgs;}).server];
+  home.packages = [(import ./package.nix {inherit inputs pkgs;}).server];
 }
