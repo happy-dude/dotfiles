@@ -54,7 +54,7 @@
 (cl-defun dotfiles/lsp-register (server-id major-modes
                                            &key add-on activation-fn
                                            initialization-options initialized-fn
-                                           priority)
+                                           notification-handlers priority)
   (lsp-register-client
    (make-lsp-client
     :new-connection (lsp-stdio-connection (dotfiles/lsp-command server-id))
@@ -64,28 +64,56 @@
     :priority (or priority 0)
     :add-on? add-on
     :multi-root t
+    :notification-handlers (or notification-handlers
+                               (make-hash-table :test 'equal))
     :initialized-fn initialized-fn
     :initialization-options initialization-options)))
 
-(defun dotfiles/perl-language-server-trim (workspace)
-  "Keep Perl::LanguageServer to the features perl-navigator does not provide.
-Navigator is faster and, as the primary Perl client, owns hover, completion,
-definition, document symbols, and formatting.  lsp-mode sends a request to
-every workspace that advertises the capability, so leaving Perl::LanguageServer
-advertising definition and document symbols would query the slower server on
-every jump.  Drop those two capabilities, leaving it the signature help and
-references that navigator lacks, mirroring the CoC configuration."
+(defun dotfiles/lsp-trim-capabilities (workspace names keywords)
   (let ((caps (lsp--workspace-server-capabilities workspace)))
     (cond
      ((hash-table-p caps)
-      (remhash "definitionProvider" caps)
-      (remhash "documentSymbolProvider" caps))
+      (dolist (name names)
+        (remhash name caps)))
      ((listp caps)
       (setf (lsp--workspace-server-capabilities workspace)
             (cl-loop for (k v) on caps by #'cddr
-                     unless (memq k '(:definitionProvider :documentSymbolProvider))
+                     unless (memq k keywords)
                      append (list k v)))))))
 
+(defun dotfiles/lua-language-server-trim (workspace)
+  "Disable LuaLS formatting so dotfiles-stylua owns Lua formatting."
+  (dotfiles/lsp-trim-capabilities
+   workspace
+   '("documentFormattingProvider" "documentRangeFormattingProvider")
+   '(:documentFormattingProvider :documentRangeFormattingProvider)))
+
+(defun dotfiles/perl-language-server-trim (workspace)
+  "Keep Perl::LanguageServer to the features perlnavigator does not provide.
+perlnavigator is faster and owns hover, completion, definition, document and
+workspace symbols, and formatting.  lsp-mode sends requests to every client in
+the buffer that advertises a capability, so strip the overlapping capabilities
+from Perl::LanguageServer and leave it signature help and references, matching
+vim/.vim/coc-settings.json.  Send workspace/didChangeConfiguration so
+Perl::LanguageServer starts its background symbol indexer."
+  (dotfiles/lsp-trim-capabilities
+   workspace
+   '("completionProvider"
+     "hoverProvider"
+     "definitionProvider"
+     "documentSymbolProvider"
+     "workspaceSymbolProvider"
+     "documentFormattingProvider"
+     "documentRangeFormattingProvider")
+   '(:completionProvider
+     :hoverProvider
+     :definitionProvider
+     :documentSymbolProvider
+     :workspaceSymbolProvider
+     :documentFormattingProvider
+     :documentRangeFormattingProvider))
+  (with-lsp-workspace workspace
+    (lsp--set-configuration '(:perl (:enable t)))))
 (defun dotfiles/lsp-rooted-p (file-name markers)
   (and file-name
        (seq-some (lambda (marker)
@@ -148,15 +176,19 @@ references that navigator lacks, mirroring the CoC configuration."
 (dotfiles/lsp-register 'dotfiles-haskell '(haskell-mode haskell-ts-mode literate-haskell-mode))
 (dotfiles/lsp-register 'dotfiles-json '(js-json-mode json-ts-mode))
 (dotfiles/lsp-register 'dotfiles-kotlin '(kotlin-mode kotlin-ts-mode))
-(dotfiles/lsp-register 'dotfiles-lua '(lua-mode lua-ts-mode))
+(dotfiles/lsp-register 'dotfiles-lua '(lua-mode lua-ts-mode)
+                       :initialized-fn #'dotfiles/lua-language-server-trim)
+(dotfiles/lsp-register 'dotfiles-stylua '(lua-mode lua-ts-mode) :add-on t)
 (dotfiles/lsp-register 'dotfiles-marksman '(markdown-mode gfm-mode))
 (dotfiles/lsp-register 'dotfiles-nixd '(nix-mode nix-ts-mode))
 ;; nixd formats with nixfmt unless told otherwise; match `nix fmt'.
 (lsp-register-custom-settings '(("nixd.formatting.command" ["alejandra"])))
 (dotfiles/lsp-register 'dotfiles-perl-navigator '(perl-mode cperl-mode) :priority 1)
-(dotfiles/lsp-register 'dotfiles-perl-language-server '(perl-mode cperl-mode)
-                       :add-on t
-                       :initialized-fn #'dotfiles/perl-language-server-trim)
+(dotfiles/lsp-register
+ 'dotfiles-perl-language-server '(perl-mode cperl-mode)
+ :add-on t
+ :notification-handlers (lsp-ht ("textDocument/publishDiagnostics" #'ignore))
+ :initialized-fn #'dotfiles/perl-language-server-trim)
 (dotfiles/lsp-register 'dotfiles-rust-analyzer '(rust-mode rust-ts-mode))
 (dotfiles/lsp-register 'dotfiles-terraform '(terraform-mode hcl-mode))
 (dotfiles/lsp-register 'dotfiles-texlab '(LaTeX-mode latex-mode plain-tex-mode))

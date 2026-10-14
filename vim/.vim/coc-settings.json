@@ -195,7 +195,7 @@
       "rootPatterns": ["pyproject.toml", "ruff.toml", ".ruff.toml", ".git"]
     },
     "stylua": {
-      "args": ["--lsp"],
+      "args": ["--lsp", "--search-parent-directories"],
       "command": "stylua",
       "filetypes": ["lua"]
     },
