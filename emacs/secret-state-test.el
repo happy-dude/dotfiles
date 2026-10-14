@@ -1,5 +1,13 @@
 ;;; secret-state-test.el --- Exercise sensitive file state -*- lexical-binding: t; -*-
 
+(unless (equal (face-attribute 'rainbow-delimiters-depth-1-face :foreground nil t)
+               "#FE2712")
+  (error "Declarative rainbow face palette did not apply"))
+(custom-set-faces '(rainbow-delimiters-depth-1-face ((t (:foreground "#112233")))))
+(unless (equal (face-attribute 'rainbow-delimiters-depth-1-face :foreground nil t)
+               "#112233")
+  (error "custom-set-faces did not override the declarative rainbow face"))
+
 ;; Loaded after init.el with the check's disposable HOME and XDG directories.
 (defun dotfiles-test/exercise-file-state (file sensitive &optional renamed-file mode)
   "Edit FILE and check actual state copies.

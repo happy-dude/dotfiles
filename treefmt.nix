@@ -37,6 +37,11 @@
         exit 1
       fi
 
+      ln -s missing.gitmodules dangling.gitmodules
+      if sort-gitmodules dangling.gitmodules 2>/dev/null; then
+        echo 'accepted a dangling .gitmodules symlink' >&2
+        exit 1
+      fi
       # Lines before the first section survive an actual reorder.
       printf '%s\n' '# vendored modules' >preamble.gitmodules
       printf '%s\n' \

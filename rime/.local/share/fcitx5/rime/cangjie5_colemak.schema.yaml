@@ -47,11 +47,13 @@ engine:
     - punct_translator
     - reverse_lookup_translator
     - table_translator
+  # Run before simplifier: cangjie_display looks up Traditional characters in
+  # cangjie5, and setting a comment on a simplified ShadowCandidate is a no-op.
   filters:
+    - lua_filter@cangjie_display
     - simplifier
     - uniquifier
     - single_char_filter
-    - lua_filter@cangjie_display
 
 speller:
   alphabet: zyxwvutsrqponmlkjihgfedcba
@@ -91,7 +93,7 @@ reverse_lookup:
     - "xlit|abcdefghijklmnopqrstuvwxyz|日月金木水火土竹戈十大中一弓人心手口尸廿山女田難卜符|"
 
 simplifier:
-  tips: all
+  tips: none
 
 punctuator:
   import_preset: symbols

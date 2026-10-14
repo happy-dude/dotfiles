@@ -136,6 +136,36 @@ grep -F 'No committed or staged Git changes to show.' \
 grep -Fx 'RESULT=skipped' <<<"$empty_output" >/dev/null ||
   fail 'empty changelog was not recorded as skipped'
 
+printf 'lock-v2\n' >"$changelog_repo/flake.lock"
+git -C "$changelog_repo" add flake.lock
+git -C "$changelog_repo" -c user.name='Test User' \
+  -c user.email='test@example.invalid' -c commit.gpgsign=false \
+  commit -qm 'nix: initial lock'
+apply_start_head="$(git -C "$changelog_repo" rev-parse HEAD)"
+printf 'lock-v3\n' >"$changelog_repo/flake.lock"
+apply_output="$(
+  cd "$changelog_repo"
+  git config user.name 'Test User'
+  git config user.email 'test@example.invalid'
+  export MODE=apply
+  SHOW_CHANGES=1
+  export UPDATE_START_GIT_HEAD="$apply_start_head"
+  export HOME_MANAGER_FLAKE='.#test'
+  SECTION_RESULTS=()
+  # shellcheck disable=SC2329 # Mock invoked by the sourced script under test.
+  home-manager() {
+    return 0
+  }
+  # shellcheck disable=SC2329 # Mock invoked by the sourced script under test.
+  current_home_manager_generation() {
+    printf '%s\n' "$generation_new"
+  }
+  run_home_manager_switch
+)"
+grep -F 'nix: update flake.lock' <<<"$apply_output" >/dev/null ||
+  fail 'apply mode omitted the committed flake.lock update from the shortlog'
+grep -F '+lock-v3' <<<"$apply_output" >/dev/null ||
+  fail 'apply --show-changes omitted the committed flake.lock diff'
 closure_error="$TMPDIR_TEST/closure-error"
 failure_status=0
 failure_output="$(

@@ -105,6 +105,17 @@ call assert_false(&l:swapfile)
 call assert_false(&l:undofile)
 call assert_false(filereadable(undofile(expand('%:p'))))
 
+
+" Writing an already-named ordinary buffer to a sensitive path keeps % as the
+" ordinary name while <afile> names the sensitive destination.
+execute 'edit! ' . fnameescape($HOME . '/ordinary.txt')
+call assert_true(&l:swapfile)
+call assert_true(&l:undofile)
+call setline(1, 'secret-copy')
+execute 'write! ' . fnameescape($HOME . '/.config/rclone/from-ordinary.conf')
+call assert_false(&l:swapfile)
+call assert_false(&l:undofile)
+call assert_false(filereadable(undofile($HOME . '/.config/rclone/from-ordinary.conf')))
 if !empty(v:errors)
   for error in v:errors
     echomsg error

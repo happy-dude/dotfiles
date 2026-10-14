@@ -2,7 +2,7 @@
 
 let g:airline#extensions#fzf#enabled = 1      " Enable airline fzf integration
 
-" Delegate search responsibliity to ripgrep by restarting ripgrep whenever
+" Delegate search responsibility to ripgrep by restarting ripgrep whenever
 " query string is updated. fzf becomes a simple selector interface
 function! RipgrepFzf(query, fullscreen)
   let command_fmt = 'rg --column --line-number --no-heading --color=always --smart-case -- %s || true'
@@ -15,16 +15,14 @@ endfunction
 command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
 
 " git grep (with --no-index outside a repository)
-function! s:GGrepRoot() abort
-  return get(systemlist('git rev-parse --show-toplevel 2>/dev/null'), 0, '')
+function! s:GGrep(query, fullscreen) abort
+  let l:root = get(systemlist('git rev-parse --show-toplevel 2>/dev/null'), 0, '')
+  let l:cmd = 'git grep --line-number ' . (empty(l:root) ? '--no-index ' : '') . '-- ' . shellescape(a:query)
+  let l:dir = empty(l:root) ? getcwd() : l:root
+  call fzf#vim#grep(l:cmd, 0, fzf#vim#with_preview({'dir': l:dir}), a:fullscreen)
 endfunction
 
-command! -bang -nargs=* GGrep
-  \ call fzf#vim#grep(
-  \   'git grep --line-number ' . (empty(s:GGrepRoot()) ? '--no-index ' : '') . '-- '.shellescape(<q-args>),
-  \   0,
-  \   fzf#vim#with_preview({'dir': empty(s:GGrepRoot()) ? getcwd() : s:GGrepRoot()}),
-  \   <bang>0)
+command! -bang -nargs=* GGrep call s:GGrep(<q-args>, <bang>0)
 
 " Search and apply mappings on selection objects
 nmap      <leader><tab>             <plug>(fzf-maps-n)

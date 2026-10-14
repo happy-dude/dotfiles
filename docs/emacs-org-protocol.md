@@ -229,21 +229,15 @@ javascript:location.href =
 That form correctly percent-encodes the current URL, page title, and selection.
 The canonical dotfiles bookmarklet additionally:
 
-- prefers the publisher's canonical URL, but only when it is a well-formed
-  http(s) URL, and otherwise falls back to the current page;
-- clears any embedded basic-auth credentials so they never enter `ROAM_REFS`;
-- removes the `utm_` family and the click and campaign tokens of the major ad,
-  social, and marketing platforms while retaining meaningful query parameters;
-- caps the whole encoded URL, rejecting oversized metadata and truncating the
-  selection without splitting a surrogate pair;
-- removes the fragment so sections of one page share an Org Roam reference;
-- normalizes title whitespace, falls back to the host for an empty title, and
-  trims the selected text;
-- also captures selections made inside a `<textarea>` or textual `<input>`,
-  which `getSelection()` alone would miss;
-- uses `URLSearchParams` to encode the complete parameter map rather than
-  manually interleaving field names and encoded values; and
-- returns `undefined` explicitly so the bookmarklet has no renderable result.
+- prefers a well-formed `http(s)` canonical URL and strips fragments, basic-auth
+  credentials, and ad or campaign tracking parameters;
+- normalizes title whitespace, falls back to the hostname for an empty title,
+  and captures selections from `<textarea>` and textual `<input>` elements as
+  well as `window.getSelection()`;
+- caps the encoded URL at 8,000 characters, truncating the selection without
+  splitting a UTF-16 surrogate pair; and
+- encodes parameters with `URLSearchParams` and returns `undefined` so the
+  bookmarklet has no renderable result.
 
 Both forms assign the custom-scheme URL to `location.href`; neither prevents
 that explicit navigation. The desktop handoff and popup tradeoffs therefore

@@ -58,6 +58,10 @@ def materialize(static_path: Path, target: Path) -> None:
         fail(f"Refusing symlinked Zed settings: {target}")
     if target.exists() and not target.is_file():
         fail(f"Refusing non-regular Zed settings: {target}")
+    if target.parent.is_symlink() or (
+        target.parent.exists() and not target.parent.is_dir()
+    ):
+        fail(f"Refusing malformed Zed settings directory: {target.parent}")
 
     static_description = "managed Zed settings"
     static = parse_json(

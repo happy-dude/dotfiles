@@ -64,7 +64,7 @@ function yeshist
     if set -q _nohist_previous_fish_history
         set -gx fish_history $_nohist_previous_fish_history
         set -e _nohist_previous_fish_history
-    else
+    else if set -q fish_history; and test -z "$fish_history"
         set -e fish_history
     end
     echo 'history on'
@@ -75,6 +75,7 @@ end
 source (status dirname)/tide.fish
 
 # Hardened C compiler wrapper for small standalone builds.
+# Keep in sync with c() in zsh/.config/zsh/.zshrc.
 function c
     set -l compiler
     set -l flags

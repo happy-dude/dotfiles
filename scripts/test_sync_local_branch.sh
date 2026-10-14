@@ -224,6 +224,25 @@ fi
 grep -Fq 'local main does not match origin/main' "$output"
 test ! -s "$log"
 
+create_fixture ahead-main
+commit_work work-only local-work
+work_before=$(git -C "$branch_worktree" rev-parse work)
+advance_origin upstream-only upstream
+git -C "$main_worktree" fetch --quiet origin \
+  refs/heads/main:refs/remotes/origin/main
+git -C "$main_worktree" merge --quiet --ff-only origin/main
+printf '%s\n' ahead >"$main_worktree/ahead"
+git -C "$main_worktree" add ahead
+git -C "$main_worktree" -c user.name='Test User' \
+  -c user.email='test@example.invalid' -c commit.gpgsign=false \
+  commit --quiet -m 'test: advance local main ahead of origin'
+if run_sync work test-profile "$main_worktree"; then
+  printf 'synchronized while local main was ahead of origin/main\n' >&2
+  exit 1
+fi
+grep -Fq 'Local main is ahead of origin/main.' "$output"
+grep -Fq 'Nothing was rebased, pushed, or activated.' "$output"
+test "$(git -C "$branch_worktree" rev-parse work)" = "$work_before"
 create_fixture formatter-output
 export SYNC_TEST_FORMAT_UNTRACKED=true
 if run_sync --validate work test-profile "$main_worktree"; then

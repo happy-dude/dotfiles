@@ -56,7 +56,7 @@ in {
       from pathlib import Path
 
       sys.path.insert(0, "${./.}")
-      from watch_org import event_paths, should_sync
+      from watch_org import event_paths, schedule, should_sync
 
       class FragmentedStream(BytesIO):
           def readinto(self, buffer):
@@ -86,7 +86,36 @@ in {
               pass
           else:
               raise AssertionError("an incomplete event was accepted")
+      # Expected active-unit collisions stay quiet; unexpected systemd-run
+      # failures are forwarded to stderr.
+      collision = Path("collision-systemd-run")
+      collision.write_text(
+          "#!/bin/sh\n"
+          "echo 'Failed to start transient timer unit: Unit "
+          "rclone-box-org-bisync-change.timer already exists.' >&2\n"
+          "exit 1\n",
+          encoding="utf-8",
+      )
+      collision.chmod(0o755)
+      broken = Path("broken-systemd-run")
+      broken.write_text(
+          "#!/bin/sh\n"
+          "echo 'Failed to connect to user scope bus' >&2\n"
+          "exit 1\n",
+          encoding="utf-8",
+      )
+      broken.chmod(0o755)
+      import io
+      import contextlib
+      captured = io.StringIO()
+      with contextlib.redirect_stderr(captured):
+          schedule(str(collision.resolve()), "/bin/true")
+      assert captured.getvalue() == ""
+      with contextlib.redirect_stderr(captured):
+          schedule(str(broken.resolve()), "/bin/true")
+      assert "Failed to connect to user scope bus" in captured.getvalue()
       PYTHON
+
     '';
   };
 }

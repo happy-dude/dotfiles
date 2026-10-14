@@ -19,8 +19,9 @@
     ++ lib.optional (p.managePlasmaPanels && p.desktop != "plasma")
     "${name}: managePlasmaPanels is set on a ${p.desktop} profile — only Plasma profiles import plasma-manager"
     ++ lib.optional (p.desktop == "plasma" && !(builtins.hasAttr p.username (import ../plasma/machines.nix)))
-    "${name}: Plasma profile has no plasma/machines.nix entry — plasma/default.nix cannot evaluate without its touchpads, mice, and xwaylandScale";
-
+    "${name}: Plasma profile has no plasma/machines.nix entry — plasma/default.nix cannot evaluate without its touchpads, mice, and xwaylandScale"
+    ++ lib.optional ((home.config.home.sessionVariables.NIX_PATH or null) != (home.config.systemd.user.sessionVariables.NIX_PATH or null))
+    "${name}: home.sessionVariables.NIX_PATH and systemd.user.sessionVariables.NIX_PATH disagree";
   problems = lib.concatLists (lib.mapAttrsToList problemsFor homes);
 in {
   profile-invariants = mkCheck {

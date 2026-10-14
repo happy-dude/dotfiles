@@ -85,17 +85,22 @@ function! s:is_sensitive(path) abort
 endfunction
 
 function! s:disable_sensitive_file_state() abort
-  let l:buffer = fnamemodify(expand('%:p'), ':p')
-  let l:path = resolve(l:buffer)
-  if !s:is_sensitive(l:buffer) && !s:is_sensitive(l:path)
-    return
-  endif
-  setlocal noswapfile noundofile
-  " Vim matches 'backupskip' against the buffer name, so a symlink to a
-  " sensitive file needs its own entry.
-  if l:buffer !=# l:path && index(split(&backupskip, ','), escape(l:buffer, ',\')) < 0
-    let &backupskip .= ',' . escape(l:buffer, ',\')
-  endif
+  for l:raw in [expand('<afile>:p'), expand('%:p')]
+    if empty(l:raw)
+      continue
+    endif
+    let l:candidate = fnamemodify(l:raw, ':p')
+    let l:path = resolve(l:candidate)
+    if !s:is_sensitive(l:candidate) && !s:is_sensitive(l:path)
+      continue
+    endif
+    setlocal noswapfile noundofile
+    " Vim matches 'backupskip' against the written path, so a symlink to a
+    " sensitive file needs its own entry.
+    if l:candidate !=# l:path && index(split(&backupskip, ','), escape(l:candidate, ',\')) < 0
+      let &backupskip .= ',' . escape(l:candidate, ',\')
+    endif
+  endfor
 endfunction
 
 augroup dotfiles_sensitive_file_state

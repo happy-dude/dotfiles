@@ -213,27 +213,25 @@ and installs StyLua's config under `~/.config/stylua`.
   checkout's working state so that a fresh clone hides it before the first
   activation deploys the global file; the global list applies to every
   repository, so it holds only generated and machine-local patterns. The module
-  sets `core.hooksPath`, and every hook name githooks(5) documents dispatches
-  there to the repository's own hook of that name — receive-side hooks included,
-  since a push into a local bare repository runs under the same setting — except
-  the protocol and override hooks `fsmonitor-watchman`, `proc-receive`, and
-  `push-to-checkout`, where a stand-in would change Git's behaviour, and
-  `reference-transaction`, which Git runs several times per ref update, so
-  dispatching it made a 100-commit rebase take seconds instead of milliseconds;
-  the `commit-msg` dispatcher also lints every commit, reruns the repository
-  hook and the linter after each interactive edit, and requires an initially
-  present `Assisted-by:` trailer to remain. The linter's Prettier pass ignores
-  the committing repository's Prettier, EditorConfig, and ignore files so the
-  verdict is the same in every repository. A repository that sets its own
-  `core.hooksPath` runs neither the linter nor the dispatchers. Run installers
-  that refuse a set `core.hooksPath`, such as `pre-commit install` and
-  `git lfs install --local`, as `GIT_CONFIG_GLOBAL=/dev/null <installer>`; the
-  dispatchers then run what they put in `.git/hooks`. Per-machine identity and
-  signing (`user.email`, `signingkey`, `commit`/`tag` `gpgsign`) live in an
-  untracked `~/.config/git/local.config` that the module `include`s — SSH/GPG
-  keys and email differ per box; template in `git/local.config.example`. Home
-  Manager writes `~/.config/git/config`, which an unmanaged `~/.gitconfig`
-  silently overrides (git reads it last).
+  sets `core.hooksPath`, and its dispatchers forward to the repository's own
+  hook of that name — receive-side hooks included, since a push into a local
+  bare repository runs under the same setting. `git/default.nix` skips
+  `fsmonitor-watchman`, `proc-receive`, `push-to-checkout`, and
+  `reference-transaction` and documents why. The `commit-msg` dispatcher also
+  lints every commit, reruns the repository hook and the linter after each
+  interactive edit, and requires an initially present `Assisted-by:` trailer to
+  remain. The linter's Prettier pass ignores the committing repository's
+  Prettier, EditorConfig, and ignore files so the verdict is the same in every
+  repository. A repository that sets its own `core.hooksPath` runs neither the
+  linter nor the dispatchers. Run installers that refuse a set `core.hooksPath`,
+  such as `pre-commit install` and `git lfs install --local`, as
+  `GIT_CONFIG_GLOBAL=/dev/null <installer>`; the dispatchers then run what they
+  put in `.git/hooks`. Per-machine identity and signing (`user.email`,
+  `signingkey`, `commit`/`tag` `gpgsign`) live in an untracked
+  `~/.config/git/local.config` that the module `include`s — SSH/GPG keys and
+  email differ per box; template in `git/local.config.example`. Home Manager
+  writes `~/.config/git/config`, which an unmanaged `~/.gitconfig` silently
+  overrides (git reads it last).
 - **`xdg/`** owns generic-Linux XDG integration plus the nixGL-wrapped Solaar
   package and its `schan`-only autostart entry.
 
@@ -361,6 +359,37 @@ and installs StyLua's config under `~/.config/stylua`.
   the deployed links land in `.home-manager-static` and are discarded at the
   next source change.
 - `scripts/update.sh` updates Rime only through the locked flake inputs.
+- **`rime/fcitx.nix`** installs Fcitx 5 with the Rime and GTK addons where
+  `hostFcitx` is false. On GNOME, its systemd unit starts the daemon and it sets
+  `QT_IM_MODULE=fcitx`, which Home Manager omits for the Wayland frontend. On
+  Plasma, KWin starts Fcitx itself as its Wayland input method, so the unit
+  stays off; a second daemon would fight KWin's. `schan` uses the host's Fcitx.
+  Both desktops share the Rime files from `rime/`.
+- **`gnome/`** manages stable GNOME preferences only when `desktop = "gnome"`.
+  DConf values remain writable during the session and return to the declared
+  baseline on a later Home Manager activation.
+- **`plasma/`** manages Plasma preferences for every Plasma profile through the
+  pinned plasma-manager module, with `schan`'s session as the reference.
+  Built-in touchpads, mice, and the Xwayland scale differ per machine, so they
+  live in `plasma/machines.nix`, keyed by username; a Plasma profile without an
+  entry there fails evaluation. External devices that move between machines, the
+  MX Vertical and the Magic Trackpad, are declared once in `plasma/default.nix`;
+  KWin applies an entry only to a connected device. Per-output scales stay in
+  `kwinoutputconfig.json`, which KWin rewrites on every display change. The
+  panel layout in `plasma/panels.nix` applies only where the profile sets
+  `managePlasmaPanels`. plasma-manager deletes and rebuilds
+  `plasma-org.kde.plasma.desktop-appletsrc` whenever that layout changes, so
+  panel edits made in the session are lost; turn it on only when Home Manager
+  should own the whole panel. Cursor and icon themes are declared here, and
+  Plasma copies them to GTK itself, so Home Manager's `gtk` module stays off.
+  Dolphin's folder views are written to
+  `~/.local/share/dolphin/view_properties/global/.directory` and
+  `~/Downloads/.directory`, as regular files Dolphin can update; activation
+  resets their declared keys. When a folder's view is changed in Dolphin, it
+  keeps that folder's own settings in the `user.kde.fm.viewproperties#1`
+  extended attribute and stops following the global view; remove the attribute
+  with `setfattr -x` to restore it. The wallpaper, display topology, generated
+  IDs, and session history stay unmanaged.
 - **`yt-dlp/`** uses the locked Nixpkgs bgutil-ytdlp-pot-provider package. Home
   Manager links its Python plugin for yt-dlp discovery and points script mode at
   the store-resident Node server. A focused check validates both profiles,
@@ -417,7 +446,11 @@ guidance detectable.
   aliases or changing a buffer's filename too. These guards prevent future state
   copies; they do not erase existing copies.
 - CoC loads in both editors and owns LSP, diagnostics, completion, navigation,
-  and format-on-save. vim-go retains non-LSP Go commands. Vim uses its bundled
+  and format-on-save. `vim/.vim/coc-settings.json` is the sorted language-server
+  and format-on-save matrix (keep object keys sorted while preserving semantic
+  precedence within lists such as `rootPatterns`); TypeScript is served by
+  `tsc`, the Go compiler of the nixpkgs `typescript` 7 package, which speaks LSP
+  directly. vim-go retains non-LSP Go commands. Vim uses its bundled
   EditorConfig support and Neovim uses native EditorConfig. Do not reintroduce
   ALE, Pathogen, vim-plug, editorconfig-vim, or plugin submodules. The `:S` Perl
   substitution command replaces only its addressed range, including when output
@@ -474,14 +507,14 @@ copy machine-local state into the world-readable Nix store. Use tracked Git
 sources for live checkouts; lock-file immutability does not provide file
 filtering.
 
-`nix flake check` is the only authority on whether a change is sound. This
-repository has three validation layers that fail independently: evaluating a
-profile, building the check derivations, and running the shell suites. Passing
-one implies nothing about the others, because each `<owner>/check.nix` imports
-module internals directly, so a changed function signature can evaluate both
-profiles and still break the checks; and the suites run against a read-only
-store path with an empty home under Nix, where a direct run has neither. Run the
-full check after changing any signature, argument list, or test fixture.
+Run `nix flake check` after changing any signature, argument list, or test
+fixture. This repository has three validation layers that fail independently:
+evaluating a profile, building the check derivations, and running the shell
+suites. Passing one implies nothing about the others, because each
+`<owner>/check.nix` imports module internals directly, so a changed function
+signature can evaluate both profiles and still break the checks; and the suites
+run against a read-only store path with an empty home under Nix, where a direct
+run has neither.
 
 Two scripts resist the obvious testing approach and should not be forced into
 it. `scripts/update.sh` defaults to its update mode, so removing any guard from
@@ -490,27 +523,11 @@ test it by weakening a guard. `scripts/apply-portable-series.sh` is transferred
 to the destination computer on its own and must not source anything from this
 repository.
 
-The flake checks cover treefmt formatting; Ruff formatting, lint, and bytecode
-compilation for Python; Bash syntax and ShellCheck for `scripts/*.sh` and
-`scripts/lib/*.sh`; one derivation per `scripts/test_*.sh` suite, discovered
-from the directory rather than listed; native syntax checks for the managed Fish
-and Zsh files; focused tests for the Codex profile materializer, agent-directory
-ownership migration, `.gitmodules` formatter, rclone event classification and
-decoding, guarded Rime host-file materialization, the Rime theme names against
-the Catppuccin package, Zed settings materialization, focused OpenCode
-package/LSP/schema/theme/telemetry checks, the oh-my-pi wrapper, overlay, agent,
-and theme checks, Git commit-message hook behavior and the repository-hook
-dispatcher, a silent Ex-mode load of each profile's Vim configuration, Kagi
-prompt character budgets, the aerc deployed/tracked configuration mirror, CoC
-language-server package resolution, the sdcv dictionary lookup, the CurSearch
-highlight link, and editor secret-state exclusions; Emacs `check-parens` and Org
-lint for tracked Org files plus a runtime load of the evaluated Emacs
-configuration, literal Org Roam protocol capture fields, and published Org
-bookmarklet behavior; GitHub Actions syntax, pinned action revisions, and
-Dependabot config parsing; a Neovim run of each profile's evaluated runtime
-covering an Org Tree-sitter parse, CodeCompanion, startup, and MatchTag; Rime
-Lua syntax and focused tests; profile-capability invariants; and gitleaks secret
-scanning. CI runs those checks and evaluates both Home Manager configurations on
+`checks/default.nix` combines the repository-wide checks in `checks/*.nix`
+(treefmt, Ruff, ShellCheck and `scripts/test_*.sh`, Fish and Zsh syntax, GitHub
+Actions and Dependabot, profile invariants, and gitleaks) with each module's
+focused `<owner>/check.nix` (run `nix flake show` for the current check names).
+CI runs `nix flake check` and evaluates both Home Manager configurations on
 pushes to `main` and on pull requests; the profile names are listed in `ci.yml`
 explicitly, so a new profile must be added there as well. Full builds of both
 configurations run weekly on a schedule and are opt-in through the
@@ -726,19 +743,18 @@ source.
   then make a documentation-only commit. Never mix documentation into the
   technical commit or technical changes into the documentation commit.
 - When asking the user to run and return commands from a host, session,
-  container, VM, Toolbox, or other environment the agent cannot access, collect
-  all presently knowable safe read-only checks for that context into one
-  wholesale, clipboard-ready block. Avoid drip-feeding commands that force
-  repeated context switches; return to that context only when prior output
-  genuinely determines the next check or a state-changing step requires separate
-  confirmation.
+  container, VM, Toolbox, or other environment the agent cannot access, put the
+  safe read-only checks you already know you need into one copy-pasteable block
+  instead of sending them one at a time. Return to that context only when prior
+  output genuinely determines the next check or a state-changing step requires
+  separate confirmation.
 - When asking the user to run a multi-step workflow, provide one contiguous,
-  copy-pasteable command block. Include all presently knowable dependent steps,
-  inspection, and validation instead of splitting the workflow across multiple
-  replies or code blocks. Make dependent steps fail closed so later mutations do
-  not run after an earlier failure. Do not use `exit` in commands intended for
-  an interactive shell; use a function with `return`, or another construct that
-  reports failure without terminating the user's session.
+  copy-pasteable command block with the dependent steps, inspection, and
+  validation you already know you need instead of splitting the workflow across
+  multiple replies or code blocks. Make dependent steps fail closed so later
+  mutations do not run after an earlier failure. Do not use `exit` in commands
+  intended for an interactive shell; use a function with `return`, or another
+  construct that reports failure without terminating the user's session.
 - In Zsh, lowercase `path` is a special array tied to scalar `PATH`; never use
   it as a scratch variable because assigning it changes command lookup. Use a
   descriptive name such as `candidate_path`. When discovery differs between
@@ -788,10 +804,11 @@ source.
   and a self-contained body that explains the problem or ownership constraint
   before the implementation. Commit messages are valid Markdown and ordinary
   prose never exceeds 80 characters; trailers, URLs, code, paths, and other
-  unbreakable text are exempt. Before committing through Claude Code, Codex, or
-  OpenCode, run `scripts/lint_commit_message.py <message-file>`. The managed
-  global `commit-msg` hook enforces this policy for every commit and preserves
-  any initial `Assisted-by:` trailer. See
+  unbreakable text are exempt. Before committing through oh-my-pi, Claude Code,
+  Codex, or OpenCode, run
+  `~/dotfiles/scripts/lint_commit_message.py <message-file>`. The managed global
+  `commit-msg` hook enforces this policy for every commit and preserves any
+  initial `Assisted-by:` trailer. See
   <https://www.kernel.org/doc/html/latest/process/submitting-patches.html>.
 - Keep documentation close to the problem being solved. Explain the relevant
   behavior, then the change or workaround. A short paragraph is often enough;
@@ -1015,53 +1032,3 @@ source.
 - tmux enables Ghostty's `extkeys` capability and CSI-u encoding so applications
   can request modified-key reporting. Keep reporting request-driven rather than
   forcing enhanced keys for every application.
-- **`rime/`** materializes writable Fcitx profile/config files with guarded
-  source snapshots, declares immutable theme directories through Home Manager,
-  then materializes locked schema inputs, the packaged Zhwiki dictionary, and
-  local overrides under `~/.local/share/fcitx5/rime/.home-manager-static`. This
-  separates managed static inputs from writable generated and learned state. A
-  source stamp refreshes the static snapshot, clears only generated `build/`
-  data, and reloads Rime; keep generated state out of Git.
-- **`rime/fcitx.nix`** installs Fcitx 5 with the Rime and GTK addons where
-  `hostFcitx` is false. On GNOME, its systemd unit starts the daemon and it sets
-  `QT_IM_MODULE=fcitx`, which Home Manager omits for the Wayland frontend. On
-  Plasma, KWin starts Fcitx itself as its Wayland input method, so the unit
-  stays off; a second daemon would fight KWin's. `schan` uses the host's Fcitx.
-  Both desktops share the Rime files from `rime/`.
-- **`gnome/`** manages stable GNOME preferences only when `desktop = "gnome"`.
-  DConf values remain writable during the session and return to the declared
-  baseline on a later Home Manager activation.
-- **`plasma/`** manages Plasma preferences for every Plasma profile through the
-  pinned plasma-manager module, with `schan`'s session as the reference.
-  Built-in touchpads, mice, and the Xwayland scale differ per machine, so they
-  live in `plasma/machines.nix`, keyed by username; a Plasma profile without an
-  entry there fails evaluation. External devices that move between machines, the
-  MX Vertical and the Magic Trackpad, are declared once in `plasma/default.nix`;
-  KWin applies an entry only to a connected device. Per-output scales stay in
-  `kwinoutputconfig.json`, which KWin rewrites on every display change. The
-  panel layout in `plasma/panels.nix` applies only where the profile sets
-  `managePlasmaPanels`. plasma-manager deletes and rebuilds
-  `plasma-org.kde.plasma.desktop-appletsrc` whenever that layout changes, so
-  panel edits made in the session are lost; turn it on only when Home Manager
-  should own the whole panel. Cursor and icon themes are declared here, and
-  Plasma copies them to GTK itself, so Home Manager's `gtk` module stays off.
-  Dolphin's folder views are written to
-  `~/.local/share/dolphin/view_properties/global/.directory` and
-  `~/Downloads/.directory`, as regular files Dolphin can update; activation
-  resets their declared keys. When a folder's view is changed in Dolphin, it
-  keeps that folder's own settings in the `user.kde.fm.viewproperties#1`
-  extended attribute and stops following the global view; remove the attribute
-  with `setfattr -x` to restore it. The wallpaper, display topology, generated
-  IDs, and session history stay unmanaged.
-- **Vim runtime artifacts** are declarative: Home Manager links Tree-sitter
-  parsers and queries under the XDG data directory through `xdg.dataFile`, and
-  TypeScript is served by `tsc`, the Go compiler of the nixpkgs `typescript` 7
-  package, which also speaks LSP. Home Manager provides every formatter and
-  language-server command. `vim/.vim/coc-settings.json` is the authoritative,
-  sorted language-server and format-on-save matrix. Keep object keys sorted
-  while preserving semantic precedence within lists such as `rootPatterns`. The
-  matrix covers C/C++, Rust, Go, Zig, Perl, Python, Lua, shell, Fish, Clojure,
-  Fennel, Nix, YAML, JavaScript/TypeScript, Kotlin, Haskell, Terraform,
-  Markdown, LaTeX, Typst, Vim script, and JSON, with project-gated ESLint and
-  Oxlint integrations. Do not run `:TSUpdate`, `:GoUpdateBinaries`,
-  `:GoInstallBinaries`, vim-plug, or mutable CoC extension updates.

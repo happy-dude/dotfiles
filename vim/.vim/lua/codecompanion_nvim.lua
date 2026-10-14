@@ -8,6 +8,8 @@
 -- Uses CodeCompanion's built-in `opencode` ACP adapter for chat. Inline and
 -- history background requests stay on the `anthropic` HTTP adapter.
 
+-- Scope to CodeCompanion buffers so heading overlays do not obscure ordinary
+-- Markdown files.
 require('render-markdown').setup({
   file_types = { 'codecompanion' },
 })
@@ -114,7 +116,8 @@ require('codecompanion').setup({
             return original_title
           end,
         },
-        ---On exiting and entering neovim, loads the last chat on opening chat
+        ---Restoring the last chat opens and immediately closes a temporary
+        ---buffer, which races with asynchronous ACP initialization.
         continue_last_chat = false,
         ---When chat is cleared with `gx` delete the chat from history
         delete_on_clearing_chat = false,

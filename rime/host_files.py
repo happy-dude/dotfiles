@@ -57,9 +57,16 @@ def deploy(source_dir: Path) -> None:
     config_dir = dotfiles_files.config_home() / "fcitx5"
     state_root = dotfiles_files.state_home() / "rime/host-config"
     # A linked directory would carry managed writes to wherever it points.
-    for directory in (config_dir, config_dir / "conf"):
+    for directory in (
+        config_dir,
+        config_dir / "conf",
+        state_root.parent,
+        state_root,
+    ):
         if directory.is_symlink():
             fail(f"Refusing to replace unmanaged Rime link: {directory}")
+        if directory.exists() and not directory.is_dir():
+            fail(f"Refusing non-directory Rime path: {directory}")
     # (source, target, snapshot, adopt). Fcitx writes notifications.conf
     # itself when a notification is hidden, so an existing copy is kept on the
     # first deploy instead of refused.

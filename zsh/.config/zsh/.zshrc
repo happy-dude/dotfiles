@@ -111,6 +111,7 @@ zle -N confirm-tmux-exit
 bindkey "^D" confirm-tmux-exit
 
 # Hardened C compiler wrapper for small standalone builds.
+# Keep in sync with c in fish/.config/fish/config.fish.
 function c() {
     local compiler
     local -a flags

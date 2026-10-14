@@ -1,7 +1,6 @@
 # shellcheck shell=bash
 # Sourced by the test suites; it has no shebang of its own.
 
-# Fail the suite with a message.
 fail() {
   printf 'FAIL: %s\n' "$*" >&2
   exit 1

@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-# Sourced by the portable scripts; it has no shebang of its own.
+# Sourced by the repository-resident scripts; it has no shebang of its own.
 # Locate the worktree checked out at a branch.
 #
 # Prints a usable worktree path and returns 0. Without one, returns 2 if a

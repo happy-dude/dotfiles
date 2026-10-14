@@ -8,8 +8,7 @@
   catppuccinThemeDir = "${pkgs.catppuccin-fcitx5}/share/fcitx5/themes";
   catppuccinThemeNames = import ./themes.nix {inherit lib;};
 in {
-  # themes.nix states the theme names so evaluation never reads the package;
-  # hold the statement against what the package actually ships.
+  # Check the directory names in themes.nix against the installed package.
   rime-theme-names = mkCheck {
     name = "rime-theme-names";
     tools = [
@@ -91,6 +90,17 @@ in {
       fi
       grep -q 'Refusing unmanaged Rime path' err
       grep -qx stamp-v3 state/rime/home-manager-source-stamp
+
+      rm -rf home/.local/share/fcitx5/rime
+      ln -s "$PWD/source" home/.local/share/fcitx5/rime
+      if HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
+        rime-state-manager deploy \
+          "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
+          subdir/schema.yaml 2>err; then
+        echo "accepted a symlinked Rime data directory" >&2
+        exit 1
+      fi
+      grep -q 'Refusing malformed Rime path' err
     '';
   };
   rime-host-files = mkCheck {

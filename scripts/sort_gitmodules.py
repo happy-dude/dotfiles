@@ -8,9 +8,11 @@ HEADER = re.compile(r'^\s*\[submodule\s+"([^"]+)"\]\s*$')
 
 
 def sort_one(path: Path) -> None:
+    if path.is_symlink():
+        raise SystemExit(f"Refusing non-regular .gitmodules path: {path}")
     if not path.exists():
         return
-    if path.is_symlink() or not path.is_file():
+    if not path.is_file():
         raise SystemExit(f"Refusing non-regular .gitmodules path: {path}")
 
     preamble: list[str] = []

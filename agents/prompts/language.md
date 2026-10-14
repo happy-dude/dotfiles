@@ -258,18 +258,18 @@ never a narration of what you tried.)
   then make a documentation-only commit. Never mix documentation into the
   technical commit or technical changes into the documentation commit.
 - When asking the user to run and return commands from a host, session,
-  container, VM, Toolbox, or other environment you cannot access, collect all
-  presently knowable safe read-only checks for that context into one wholesale,
-  clipboard-ready block. Avoid drip-feeding commands that force repeated context
-  switches; return to that context only when prior output genuinely determines
-  the next check or a state-changing step requires separate confirmation.
+  container, VM, Toolbox, or other environment you cannot access, put the safe
+  read-only checks you already know you need into one copy-pasteable block
+  instead of sending them one at a time. Return to that context only when prior
+  output genuinely determines the next check or a state-changing step requires
+  separate confirmation.
 - When asking the user to run a multi-step workflow, provide one contiguous,
-  copy-pasteable command block. Include all presently knowable dependent steps,
-  inspection, and validation instead of splitting the workflow across multiple
-  replies or code blocks. Make dependent steps fail closed so later mutations do
-  not run after an earlier failure. Do not use `exit` in commands intended for
-  an interactive shell; use a function with `return`, or another construct that
-  reports failure without terminating the user's session.
+  copy-pasteable command block with the dependent steps, inspection, and
+  validation you already know you need instead of splitting the workflow across
+  multiple replies or code blocks. Make dependent steps fail closed so later
+  mutations do not run after an earlier failure. Do not use `exit` in commands
+  intended for an interactive shell; use a function with `return`, or another
+  construct that reports failure without terminating the user's session.
 - In Zsh, lowercase `path` is a special array tied to scalar `PATH`; never use
   it as a scratch variable because assigning it changes command lookup. Use a
   descriptive name such as `candidate_path`. When discovery differs between
@@ -282,7 +282,7 @@ never a narration of what you tried.)
   before the implementation. Commit messages are valid Markdown and ordinary
   prose never exceeds 80 characters; trailers and unbreakable tokens are exempt.
   Before committing through any agent harness, run
-  `scripts/lint_commit_message.py <message-file>`; the managed global
+  `~/dotfiles/scripts/lint_commit_message.py <message-file>`; the managed global
   `commit-msg` hook enforces the same policy for every commit and preserves any
   initial `Assisted-by:` trailer. See
   <https://www.kernel.org/doc/html/latest/process/submitting-patches.html>.
@@ -545,9 +545,9 @@ cache and the configuration is the fact.
   current `origin/main` with `./scripts/portable-series.sh start <name>` and
   exported with `export <name>`; the destination machine re-authors and signs
   them. Neither script pushes, and review and push stay with the user.
-- **Commits:** one logical change each, imperative `subsystem: summary` subject
-  of at most 72 characters, prose wrapped at 80 columns, documentation kept in
-  its own commit after the technical one. Every agent-assisted commit needs an
+- **Commits:** follow the commit and documentation-split conventions in
+  `## Working conventions` above and in `~/dotfiles/AGENTS.md`. Every
+  agent-assisted commit needs an
   `Assisted-by: MODEL_ID:REASONING HARNESS [TOOLS]` trailer, for example
   `Assisted-by: claude-opus-5-5:xhigh oh-my-pi`, and never an agent-added
   `Signed-off-by:`. `MODEL_ID` is the developer's published model name, with no

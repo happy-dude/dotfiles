@@ -103,22 +103,6 @@ setting from directory locals or a mode hook is kept."
 (add-hook 'after-set-visited-file-name-hook #'dotfiles/harden-sensitive-buffer)
 (add-hook 'after-change-major-mode-hook #'dotfiles/harden-sensitive-buffer)
 
-;; Mimic vim rainbow parentheses settings:
-;; red, green, blue-green, red-orange, blue, orange, violet, yellow, red-violet
-;; Matching paren as azure
-(dolist (spec '((rainbow-delimiters-depth-1-face (:foreground "#FE2712"))
-                (rainbow-delimiters-depth-2-face (:foreground "#66B032"))
-                (rainbow-delimiters-depth-3-face (:foreground "#0392CE"))
-                (rainbow-delimiters-depth-4-face (:foreground "#FD5308"))
-                (rainbow-delimiters-depth-5-face (:foreground "#0247FE"))
-                (rainbow-delimiters-depth-6-face (:foreground "#FB9902"))
-                (rainbow-delimiters-depth-7-face (:foreground "#8601AF"))
-                (rainbow-delimiters-depth-8-face (:foreground "#FEFE33"))
-                (rainbow-delimiters-depth-9-face (:foreground "#A7194B"))
-                (rainbow-delimiters-unmatched-face (:background "#D0EA2B"))
-                (show-paren-match (:foreground "azure" :weight semi-bold))))
-  (face-spec-set (car spec) `((t ,(cadr spec)))))
-
 ;; Home Manager generates absolute, Nix-store-pinned LSP and Tree-sitter paths.
 ;; lsp-paths.el holds those paths; lsp-servers.el is the Emacs Lisp that uses
 ;; them, and it requires the paths to have been loaded first.
@@ -179,6 +163,29 @@ setting from directory locals or a mode hook is kept."
     (error "Unable to locate solarized-gruvbox-dark-theme"))
   (add-to-list 'custom-theme-load-path (file-name-directory theme-file)))
 (load-theme 'solarized-gruvbox-dark t)
+
+;; Mimic vim rainbow parentheses settings:
+;; red, green, blue-green, red-orange, blue, orange, violet, yellow, red-violet
+;; Matching paren as azure
+;; Attached to the loaded theme rather than face-override-spec or user so
+;; custom.el can still override these faces without custom-save-faces copying
+;; the defaults into custom.el.
+(let ((custom--inhibit-theme-enable nil))
+  (apply #'custom-theme-set-faces
+         'solarized-gruvbox-dark
+         (mapcar (lambda (spec)
+                   `(,(car spec) ((t ,(cadr spec)))))
+                 '((rainbow-delimiters-depth-1-face (:foreground "#FE2712"))
+                   (rainbow-delimiters-depth-2-face (:foreground "#66B032"))
+                   (rainbow-delimiters-depth-3-face (:foreground "#0392CE"))
+                   (rainbow-delimiters-depth-4-face (:foreground "#FD5308"))
+                   (rainbow-delimiters-depth-5-face (:foreground "#0247FE"))
+                   (rainbow-delimiters-depth-6-face (:foreground "#FB9902"))
+                   (rainbow-delimiters-depth-7-face (:foreground "#8601AF"))
+                   (rainbow-delimiters-depth-8-face (:foreground "#FEFE33"))
+                   (rainbow-delimiters-depth-9-face (:foreground "#A7194B"))
+                   (rainbow-delimiters-unmatched-face (:background "#D0EA2B"))
+                   (show-paren-match (:foreground "azure" :weight semi-bold))))))
 
 ; editorconfig settings
 ;; Preserve Emacs' form-aware indentation at the conventional Lisp width.
@@ -611,9 +618,8 @@ other node is left to Org Roam."
 ;; use undo-tree for evil-mode
 (require 'undo-tree)
 (evil-set-undo-system 'undo-tree)
-;; undo-tree
-;; History files hold buffer contents, so give them the same owner-only
-;; directory as backups and auto-saves.
+;; History files hold buffer contents, so keep their cache directory mode 0700
+;; like the backup and auto-save directories.
 (let ((dir (expand-file-name "emacs/undo-tree/"
                              (or (getenv "XDG_CACHE_HOME") "~/.cache"))))
   (make-directory dir t)

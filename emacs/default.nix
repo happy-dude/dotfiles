@@ -20,8 +20,7 @@ in {
     createOrgDirectories = lib.hm.dag.entryAfter ["writeBoundary"] ''
       $DRY_RUN_CMD ${pkgs.coreutils}/bin/mkdir -p \
         "$HOME/org/Archive" \
-        "$HOME/org/roam" \
-        "${config.xdg.cacheHome}/emacs/undo-tree"
+        "$HOME/org/roam"
     '';
 
     registerOrgProtocol = lib.hm.dag.entryAfter ["linkGeneration"] ''

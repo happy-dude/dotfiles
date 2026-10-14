@@ -140,7 +140,7 @@ in
           exit 1
         fi
 
-        # Policy that the file alone does not explain.
+        # Keep Oxlint off in this repo so its diagnostics do not overlap with ESLint.
         jq -e '.lsp.oxlint.disabled == true' project.json >/dev/null
       '';
     }

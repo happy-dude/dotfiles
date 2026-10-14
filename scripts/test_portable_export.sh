@@ -109,8 +109,8 @@ rm -f -- "$worktree/formatter-output"
 
 # A caller that tests export_series in a condition turns set -e off, so each
 # step must stop the export itself, before staging and after it. Two failed
-# exports run in one shell, so the second also proves the first restored the
-# caller's EXIT trap. A separate shell keeps the export's trap away from
+# exports run in one shell, so the second also proves the first left the
+# caller's EXIT trap intact. A separate shell keeps the test's trap away from
 # this suite's.
 export PORTABLE_TEST_CHECK_STATUS=23
 if (
@@ -134,6 +134,26 @@ grep -q 'non-portable author identity' "$TMPDIR_TEST/export.log" ||
 git -C "$worktree" commit --quiet --amend --no-edit \
   --author 'Portable Dotfiles <portable@localhost>'
 unset PORTABLE_TEST_CHECK_STATUS
+
+# Forbidden content on a non-trailer Assisted-by: line in the commit body must
+# stop export even when the changed files are clean.
+git -C "$worktree" commit --quiet --amend -F - <<'EOF'
+tests: test non-trailer attribution in body
+
+Assisted-by: private-model appears in the message body.
+
+This paragraph keeps the preceding line from being a trailer.
+EOF
+export PORTABLE_FORBIDDEN_PATTERN=private-model
+if run_portable export probe "$output"; then
+  fail 'export published a commit body with forbidden non-trailer Assisted-by text'
+fi
+grep -q 'forbidden content found in commit metadata' "$TMPDIR_TEST/export.log" ||
+  fail 'forbidden commit-metadata content was not reported'
+[[ $(sha256sum "$output"/*) == "$before" ]] ||
+  fail 'forbidden commit-metadata rejection replaced published artifacts'
+unset PORTABLE_FORBIDDEN_PATTERN
+git -C "$worktree" commit --quiet --amend -m 'tests: seed portable change'
 
 # Apply needs one message per commit, and git am refuses an empty patch.
 git -C "$repo" config format.coverLetter true

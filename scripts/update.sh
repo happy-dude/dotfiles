@@ -539,6 +539,10 @@ run_home_manager_switch() {
 
   section_end "done"
 
+  if [ "$MODE" = apply ]; then
+    commit_flake_lock "$PWD"
+  fi
+
   generation_after="$(current_home_manager_generation || true)"
   git_after="$(git rev-parse --verify HEAD 2>/dev/null || true)"
   print_generation_changelog \
@@ -953,7 +957,6 @@ main() {
   apply)
     run_validation || exit $?
     run_home_manager_switch || exit $?
-    commit_flake_lock "$PWD"
     finish_successfully
     exit 0
     ;;

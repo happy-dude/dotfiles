@@ -135,7 +135,7 @@ applied_count=$(git -C "$repo" rev-list --count "$expected_base..HEAD")
   die "unexpected applied commit count: $applied_count"
 (
   cd -- "$repo"
-  nix fmt .
+  nix fmt --no-update-lock-file .
   # Untracked formatter output is drift too, so compare the full status.
   format_status=$(git status --porcelain=v1 --untracked-files=all) ||
     die "unable to read the main worktree status after formatting"
@@ -144,8 +144,8 @@ applied_count=$(git -C "$repo" rev-list --count "$expected_base..HEAD")
     die "formatter changed the applied series"
   fi
   nix flake check --show-trace --no-update-lock-file
-  nix run .#home-manager -- build --flake ".#$(whoami)" --show-trace \
-    --no-out-link --no-update-lock-file
+  nix run --no-update-lock-file .#home-manager -- build --flake ".#$(whoami)" \
+    --show-trace --no-out-link --no-update-lock-file
 )
 
 git -C "$repo" switch main

@@ -1,11 +1,16 @@
 # cangjie5.custom.yaml
 
 patch:
+  # Run before simplifier: cangjie_display looks up Traditional characters in
+  # cangjie5, and setting a comment on a simplified ShadowCandidate is a no-op.
+  # Disable simplifier tips so the Lua comment (which already includes the
+  # Traditional character) is not replaced by 〔傳統漢字〕.
   engine/filters:
+    - lua_filter@cangjie_display
     - simplifier
     - uniquifier
     - single_char_filter
-    - lua_filter@cangjie_display
+  simplifier/tips: none
 
   # Optional: remove the existing comment_format if you want only the Lua output
   # translator/comment_format: []

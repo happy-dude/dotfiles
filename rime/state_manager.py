@@ -144,10 +144,11 @@ def deploy(
     if not stamp_source.is_file():
         fail(f"Rime stamp source is not a regular file: {stamp_source}")
     data_dir, static_dir, state_dir, stamp = state_paths()
-    if static_dir.is_symlink() or (
-        static_dir.exists() and not static_dir.is_dir()
-    ):
-        fail(f"Refusing malformed Rime static path: {static_dir}")
+    for directory in (data_dir.parent, data_dir, static_dir, state_dir):
+        if directory.is_symlink() or (
+            directory.exists() and not directory.is_dir()
+        ):
+            fail(f"Refusing malformed Rime path: {directory}")
     validate_regular(stamp, "source stamp")
 
     for relative in relatives:
