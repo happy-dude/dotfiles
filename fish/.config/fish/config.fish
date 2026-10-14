@@ -56,6 +56,7 @@ end
 source (status dirname)/tide.fish
 
 # Hardened C compiler wrapper for small standalone builds.
+# Keep in sync with c() in zsh/.config/zsh/.zshrc.
 function c
     set -l compiler
     set -l flags
