@@ -129,6 +129,61 @@ if scan_final_patch private-model "$content_path" "$temporary_directory" \
   exit 1
 fi
 
+cat >"$content_path" <<'EOF'
+From 1111111111111111111111111111111111111111 Mon Sep 17 00:00:00 2001
+Subject: [PATCH 1/2] tests: first commit
+
+Assisted-by: private-model:xhigh oh-my-pi
+---
+ example | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/example b/example
+--- a/example
++++ b/example
+@@ -0,0 +1 @@
++safe
+
+From 2222222222222222222222222222222222222222 Mon Sep 17 00:00:00 2001
+Subject: [PATCH 2/2] tests: second commit
+
+Assisted-by: private-model:xhigh oh-my-pi
+---
+ example | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/example b/example
+--- a/example
++++ b/example
+@@ -1 +1,2 @@
+ safe
++still safe
+EOF
+scan_final_patch private-model "$content_path" "$temporary_directory"
+
+cat >"$content_path" <<'EOF'
+From 1111111111111111111111111111111111111111 Mon Sep 17 00:00:00 2001
+Subject: [PATCH] tests: non-trailer attribution in body
+
+Assisted-by: private-model appears in the message body.
+
+This paragraph prevents the preceding line from being a trailer.
+---
+ example | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/example b/example
+--- a/example
++++ b/example
+@@ -0,0 +1 @@
++safe
+EOF
+if scan_final_patch private-model "$content_path" "$temporary_directory" \
+  2>/dev/null; then
+  printf 'ignored a non-trailer attribution line in final patch body\n' >&2
+  exit 1
+fi
+
 staging_directory="$temporary_directory/staging"
 output_directory="$temporary_directory/output"
 mkdir "$staging_directory" "$output_directory"

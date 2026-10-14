@@ -31,33 +31,6 @@ validate_name() {
     die "invalid series name: $1"
 }
 
-# Print the action of a `trap -p EXIT` line, or nothing when it is empty.
-exit_trap_action() {
-  [[ -n $1 ]] || return 0
-  eval "set -- ${1#trap }"
-  printf '%s' "$2"
-}
-
-# EXIT handler while an export is staging: remove the staging directory, then
-# run the caller's own EXIT action with the exit status the shell had. The
-# action runs in a list guarded by `|| :` so `set -e` cannot skip it, and
-# return_status sets `$?` for it in that same list.
-export_staging_directory=""
-export_caller_exit_action=""
-return_status() { return "$1"; }
-cleanup_export_staging() {
-  local status=$?
-
-  rm -rf -- "$export_staging_directory"
-  if [[ -n $export_caller_exit_action ]]; then
-    {
-      return_status "$status"
-      eval "$export_caller_exit_action"
-    } || :
-  fi
-  return "$status"
-}
-
 reject_merge_commits() {
   local worktree=$1
   local base=$2
@@ -65,8 +38,9 @@ reject_merge_commits() {
 
   merge_commits=$(
     git -C "$worktree" rev-list --min-parents=2 "$base..HEAD"
-  )
-  [[ -z $merge_commits ]] || die "portable history contains merge commits"
+  ) || return 1
+  [[ -z $merge_commits ]] ||
+    { die "portable history contains merge commits" || return 1; }
 }
 
 validate_forbidden_pattern() {
@@ -109,7 +83,7 @@ strip_attribution_trailers() {
   local message
   local stripped
 
-  message=$(cat)
+  message=$(cat) || return 1
   while :; do
     stripped=$(
       git interpret-trailers \
@@ -117,7 +91,7 @@ strip_attribution_trailers() {
         --if-missing doNothing \
         --trim-empty \
         --trailer 'Assisted-by:' <<<"$message"
-    )
+    ) || return 1
     [[ $stripped != "$message" ]] || break
     message=$stripped
   done
@@ -129,16 +103,21 @@ write_scan_inputs() {
   local base=$2
   local metadata_path=$3
   local content_path=$4
+  local commits
   local commit
+  local raw_message
+  local stripped_message
 
-  : >"$metadata_path"
+  : >"$metadata_path" || return 1
+  commits=$(git -C "$worktree" rev-list --reverse "$base..HEAD") || return 1
   while IFS= read -r commit; do
-    git -C "$worktree" show -s --format=%B "$commit" |
-      strip_attribution_trailers >>"$metadata_path"
-    printf '\n' >>"$metadata_path"
-  done < <(git -C "$worktree" rev-list --reverse "$base..HEAD")
+    [[ -n $commit ]] || continue
+    raw_message=$(git -C "$worktree" show -s --format=%B "$commit") || return 1
+    stripped_message=$(strip_attribution_trailers <<<"$raw_message") || return 1
+    printf '%s\n\n' "$stripped_message" >>"$metadata_path" || return 1
+  done <<<"$commits"
   git -C "$worktree" diff --binary --full-index --unified=0 \
-    "$base..HEAD" >"$content_path"
+    "$base..HEAD" >"$content_path" || return 1
 }
 
 scan_series() {
@@ -150,9 +129,12 @@ scan_series() {
   local content_path="$staging_directory/changed-content.diff"
 
   [[ -n $pattern ]] || return 0
-  write_scan_inputs "$worktree" "$base" "$metadata_path" "$content_path"
-  scan_forbidden_content "$pattern" "commit metadata" "$metadata_path"
-  scan_forbidden_content "$pattern" "changed content" "$content_path"
+  write_scan_inputs "$worktree" "$base" "$metadata_path" "$content_path" ||
+    return 1
+  scan_forbidden_content "$pattern" "commit metadata" "$metadata_path" ||
+    return 1
+  scan_forbidden_content "$pattern" "changed content" "$content_path" ||
+    return 1
 }
 
 scan_final_patch() {
@@ -162,8 +144,42 @@ scan_final_patch() {
   local scan_path="$staging_directory/final-patch.txt"
 
   [[ -n $pattern ]] || return 0
-  sed '/^Assisted-by:/d' "$patch_path" >"$scan_path"
-  scan_forbidden_content "$pattern" "final patch" "$scan_path"
+  local message_buffer=""
+  local in_message=true
+  local line
+
+  : >"$scan_path" || return 1
+  # Strip Assisted-by: trailers from each message header/body before `---` or
+  # `diff --git ` with strip_attribution_trailers, leaving body prose and diff
+  # lines intact across multi-commit patches.
+  while IFS= read -r line || [[ -n $line ]]; do
+    if [[ $line =~ ^From\ [0-9a-f]{40}\  ]]; then
+      if [[ $in_message == true && -n $message_buffer ]]; then
+        strip_attribution_trailers <<<"${message_buffer%$'\n'}" \
+          >>"$scan_path" || return 1
+        message_buffer=""
+      fi
+      in_message=true
+      printf '%s\n' "$line" >>"$scan_path" || return 1
+    elif [[ $in_message == true && ($line == "---" || $line == "diff --git "*) ]]; then
+      if [[ -n $message_buffer ]]; then
+        strip_attribution_trailers <<<"${message_buffer%$'\n'}" \
+          >>"$scan_path" || return 1
+        message_buffer=""
+      fi
+      in_message=false
+      printf '%s\n' "$line" >>"$scan_path" || return 1
+    elif [[ $in_message == true ]]; then
+      message_buffer+="$line"$'\n'
+    else
+      printf '%s\n' "$line" >>"$scan_path" || return 1
+    fi
+  done <"$patch_path"
+  if [[ $in_message == true && -n $message_buffer ]]; then
+    strip_attribution_trailers <<<"${message_buffer%$'\n'}" >>"$scan_path" ||
+      return 1
+  fi
+  scan_forbidden_content "$pattern" "final patch" "$scan_path" || return 1
 }
 
 create_bundle() {
@@ -174,21 +190,21 @@ create_bundle() {
   shift 4
   local artifact_name
 
-  mkdir "$staging_directory/$bundle_directory"
+  mkdir "$staging_directory/$bundle_directory" || return 1
   for artifact_name in "$@"; do
     if [[ ! -f $staging_directory/$artifact_name ]]; then
       die "staged artifact not found: $artifact_name"
       return 1
     fi
     cp -- "$staging_directory/$artifact_name" \
-      "$staging_directory/$bundle_directory/"
+      "$staging_directory/$bundle_directory/" || return 1
   done
   tar -C "$staging_directory" -czf "$staging_directory/$bundle_name" \
-    "$bundle_directory"
+    "$bundle_directory" || return 1
   (
-    cd -- "$staging_directory"
-    sha256sum "$bundle_name" >"$bundle_checksum_name"
-  )
+    cd -- "$staging_directory" || exit 1
+    sha256sum "$bundle_name" >"$bundle_checksum_name" || exit 1
+  ) || return 1
 }
 
 publish_artifacts() {
@@ -208,13 +224,14 @@ publish_artifacts() {
 
   rm -f -- \
     "$output_directory/$checksum_name" \
-    "$output_directory/$bundle_checksum_name"
+    "$output_directory/$bundle_checksum_name" || return 1
   for artifact_name in "$@"; do
-    mv -f -- "$staging_directory/$artifact_name" "$output_directory/"
+    mv -f -- "$staging_directory/$artifact_name" "$output_directory/" ||
+      return 1
   done
-  mv -f -- "$staging_directory/$checksum_name" "$output_directory/"
+  mv -f -- "$staging_directory/$checksum_name" "$output_directory/" || return 1
   mv -f -- \
-    "$staging_directory/$bundle_checksum_name" "$output_directory/"
+    "$staging_directory/$bundle_checksum_name" "$output_directory/" || return 1
 }
 
 apply_artifact_name() {
@@ -290,23 +307,26 @@ lint_commits() {
   local base=$2
   local message_directory=$3
   local index=0
+  local commits
   local commit
   local message
   local message_path
 
-  mkdir -p -- "$message_directory"
+  mkdir -p -- "$message_directory" || return 1
+  commits=$(git -C "$worktree" rev-list --reverse "$base..HEAD") || return 1
   while IFS= read -r commit; do
+    [[ -n $commit ]] || continue
     printf -v message_path '%s/%03d.md' "$message_directory" "$index"
     # Command substitution drops trailing newlines; the file ends in one.
-    message=$(git -C "$worktree" show -s --format=%B "$commit")
-    printf '%s\n' "$message" >"$message_path"
+    message=$(git -C "$worktree" show -s --format=%B "$commit") || return 1
+    printf '%s\n' "$message" >"$message_path" || return 1
     python3 "$worktree/scripts/lint_commit_message.py" "$message_path" ||
       return
     index=$((index + 1))
-  done < <(git -C "$worktree" rev-list --reverse "$base..HEAD")
+  done <<<"$commits"
 }
 
-export_series() {
+export_series() (
   local name=$1
   local output_directory=${2:-"$HOME/Downloads"}
   local branch="replay/$name"
@@ -326,7 +346,7 @@ export_series() {
   local bundle_name="dotfiles-$name.tar.gz"
   local bundle_checksum_name="$bundle_name.sha256"
   local apply_name
-  local caller_exit_trap
+  local authors
   local staging_directory
   local staged_patch_path
   local staged_manifest_path
@@ -334,7 +354,6 @@ export_series() {
   local bundle_directory="dotfiles-$name"
   local patch_sha256
   local forbidden_pattern=${PORTABLE_FORBIDDEN_PATTERN:-}
-  local status
 
   validate_name "$name" || return 1
   apply_name=$(apply_artifact_name "$name")
@@ -375,10 +394,9 @@ export_series() {
   ((changing_count == count)) ||
     { die "portable history contains an empty commit" || return 1; }
 
-  local authors
   authors=$(git -C "$worktree" log --format='%an <%ae>' "$base..HEAD") ||
     return 1
-  if grep -Ev '^Portable Dotfiles <portable@localhost>$' <<<"$authors"; then
+  if grep -Ev '^Portable Dotfiles <portable@localhost>$' <<<"$authors" >&2; then
     die "portable history contains a non-portable author identity"
     return 1
   fi
@@ -386,40 +404,13 @@ export_series() {
   validate_forbidden_pattern "$forbidden_pattern" || return 1
   staging_directory=$(mktemp -d "$output_directory/.dotfiles-$name.XXXXXX") ||
     return 1
-  # The caller may own an EXIT trap (test_setup does). Ours removes staging
-  # and then runs the caller's action; the caller's trap is restored whether
-  # the staged steps succeed or fail, so a later export never sees ours.
-  caller_exit_trap=$(trap -p EXIT)
-  export_caller_exit_action=$(exit_trap_action "$caller_exit_trap")
-  export_staging_directory=$staging_directory
-  trap cleanup_export_staging EXIT
-  if export_staged_series; then
-    status=0
-  else
-    status=$?
-  fi
-  rm -rf -- "$staging_directory"
-  if [[ -n $caller_exit_trap ]]; then
-    eval "$caller_exit_trap"
-  else
-    trap - EXIT
-  fi
-  ((status == 0)) || return "$status"
+  # Running export_series in a subshell lets this EXIT trap clean up the
+  # staging directory without replacing the caller's own EXIT trap.
+  trap 'rm -rf -- "$staging_directory"' EXIT
 
-  printf '%s\n' \
-    "Portable artifacts written to $output_directory" \
-    "$patch_name" "$manifest_name" "$checksum_name" "$apply_name" \
-    "$bundle_name" "$bundle_checksum_name" \
-    "Nothing was pushed. Transfer, review, and apply them on the destination computer."
-}
-
-# Validate, build, and publish the series from export_series's staging
-# directory. Uses export_series's locals; every step returns on failure.
-export_staged_series() {
   lint_commits "$worktree" "$base" "$staging_directory/messages" || return 1
   scan_series "$forbidden_pattern" "$worktree" "$base" "$staging_directory" ||
     return 1
-
   (
     cd -- "$worktree" || exit 1
     nix fmt . || exit 1
@@ -493,7 +484,13 @@ EOF
     "$manifest_name" \
     "$apply_name" \
     "$bundle_name" || return 1
-}
+
+  printf '%s\n' \
+    "Portable artifacts written to $output_directory" \
+    "$patch_name" "$manifest_name" "$checksum_name" "$apply_name" \
+    "$bundle_name" "$bundle_checksum_name" \
+    "Nothing was pushed. Transfer, review, and apply them on the destination computer."
+)
 
 clean_series() {
   local name=$1
