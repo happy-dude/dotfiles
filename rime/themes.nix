@@ -2,8 +2,8 @@
 #
 # Reading the package's theme directory at evaluation time is import from
 # derivation, which every IFD-free evaluation (`nix flake show`, editor
-# tooling) refuses. State the names and let the rime-theme-names check hold
-# them against the package at build time instead.
+# tooling) refuses. List the directory names here and let rime-theme-names
+# check them against the installed package at build time.
 {lib}: let
   flavors = ["frappe" "latte" "macchiato" "mocha"];
   accents = [

@@ -8,8 +8,7 @@
   catppuccinThemeDir = "${pkgs.catppuccin-fcitx5}/share/fcitx5/themes";
   catppuccinThemeNames = import ./themes.nix {inherit lib;};
 in {
-  # themes.nix states the theme names so evaluation never reads the package;
-  # hold the statement against what the package actually ships.
+  # Check the directory names in themes.nix against the installed package.
   rime-theme-names = mkCheck {
     name = "rime-theme-names";
     tools = [
