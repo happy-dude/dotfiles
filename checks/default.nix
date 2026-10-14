@@ -5,7 +5,7 @@
   self,
   treefmtChecks,
 }: let
-  codex = import ../agents/codex.nix {inherit pkgs;};
+  codex = import ../agents/codex.nix {inherit homes pkgs;};
 
   # Checks are addressed by name on the command line, so two sets contributing
   # the same name would silently discard one of them.

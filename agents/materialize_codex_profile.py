@@ -6,6 +6,9 @@ import tomlkit
 
 from dotfiles_files import write_text
 
+# Keep in sync with profileFiles in agents/default.nix: unexpected template
+# keys fail activation, and keys listed here but absent from a template are
+# removed from the target profile.
 MANAGED_KEYS = (
     "developer_instructions",
     "model_reasoning_effort",
@@ -55,6 +58,12 @@ def materialize(source: Path, target: Path) -> None:
         raise SystemExit(f"Refusing symlinked Codex profile: {target}")
     if target.exists() and not target.is_file():
         raise SystemExit(f"Refusing non-regular Codex profile: {target}")
+    if target.parent.is_symlink() or (
+        target.parent.exists() and not target.parent.is_dir()
+    ):
+        raise SystemExit(
+            f"Refusing malformed Codex profile directory: {target.parent}"
+        )
 
     description = "existing Codex profile"
     runtime_text = read_text(target, description) if target.exists() else None
