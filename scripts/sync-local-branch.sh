@@ -220,6 +220,16 @@ main() {
       printf '%s\n' "Nothing was rebased, pushed, or activated." >&2
       return 1
     fi
+    main_head=$(git -C "$main_worktree" rev-parse refs/heads/main)
+    if [[ $main_head != "$origin_main" ]]; then
+      printf '%s\n' \
+        "Local main is ahead of origin/main." \
+        "Inspect with:" >&2
+      printf '  git -C %q log --oneline --left-right main...origin/main\n' \
+        "$main_worktree" >&2
+      printf '%s\n' "Nothing was rebased, pushed, or activated." >&2
+      return 1
+    fi
     # Sync owns only the named branch, not other refs into its history.
     if ! git -C "$branch_worktree" -c rebase.updateRefs=false \
       rebase "$origin_main"; then
