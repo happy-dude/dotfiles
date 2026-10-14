@@ -19,10 +19,7 @@
 ;; until the core lookup handles nested mode-line constructs.
 (setcdr (assq 'lsp-mode minor-mode-alist) '(" LSP"))
 
-;; Nix owns the store paths for every language server and the Tree-sitter
-;; grammar bundle.  It writes them to lsp-paths.el, which must already be
-;; loaded when this file runs; init.el loads the two in order.  Everything
-;; below is ordinary Emacs Lisp so that it can be read and edited as such.
+;; emacs/lsp.nix generates lsp-paths.el; init.el loads it before this file.
 (unless (boundp 'dotfiles-lsp-server-commands)
   (error "lsp-paths.el must be loaded before lsp-servers.el"))
 
