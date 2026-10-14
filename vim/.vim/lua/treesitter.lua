@@ -18,19 +18,30 @@ api.nvim_create_autocmd('FileType', {
 
     -- Let every FileType consumer attach before the initial parser run.
     vim.schedule(function()
-      if not api.nvim_buf_is_valid(bufnr) then
+      if
+        not api.nvim_buf_is_valid(bufnr)
+        or not api.nvim_buf_is_loaded(bufnr)
+        or vim.bo[bufnr].filetype ~= filetype
+      then
         return
       end
 
       local lang = vim.treesitter.language.get_lang(filetype)
+      local active = vim.treesitter.highlighter.active[bufnr]
       -- VimTeX's math text objects and conceal read its own syntax groups,
       -- which Tree-sitter highlighting would switch off.
       if not lang or lang == 'latex' then
+        if active then
+          vim.treesitter.stop(bufnr)
+        end
         return
       end
 
-      if vim.treesitter.highlighter.active[bufnr] then
-        return
+      if active then
+        if active.tree:lang() == lang then
+          return
+        end
+        vim.treesitter.stop(bufnr)
       end
 
       -- Unsupported filetypes are expected to have no parser.
