@@ -45,7 +45,7 @@ function yeshist
     if set -q _nohist_previous_fish_history
         set -gx fish_history $_nohist_previous_fish_history
         set -e _nohist_previous_fish_history
-    else
+    else if set -q fish_history; and test -z "$fish_history"
         set -e fish_history
     end
     echo 'history on'
