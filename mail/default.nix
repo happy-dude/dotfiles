@@ -5,30 +5,11 @@
 }: {
   programs.mbsync = {
     enable = true;
-    extraConfig = ''
-      IMAPAccount lostsanctum
-      Host imap.migadu.com
-      User schan@lostsanctum.dev
-      PassCmd "pass show email/aerc/schan@lostsanctum.dev"
-      TLSType IMAPS
-      CertificateFile ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
-
-      IMAPStore lostsanctum-remote
-      Account lostsanctum
-
-      MaildirStore lostsanctum-local
-      Path ~/.mail/
-      Inbox ~/.mail/INBOX
-      SubFolders Verbatim
-
-      Channel lostsanctum
-      Far :lostsanctum-remote:
-      Near :lostsanctum-local:
-      Patterns *
-      Create Both
-      Expunge Both
-      SyncState *
-    '';
+    extraConfig =
+      builtins.replaceStrings
+      ["/etc/ssl/certs/ca-certificates.crt"]
+      ["${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"]
+      (builtins.readFile ./.mbsyncrc);
   };
 
   programs.notmuch = {
