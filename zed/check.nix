@@ -109,6 +109,11 @@ in {
         fi
         test -L work/dangling.json
         test ! -e work/missing.json
+        ln -s "$PWD/work" work/linked-dir
+        if materialize-zed-settings work/static.json work/linked-dir/settings.json; then
+          echo "accepted a symlinked Zed settings directory" >&2
+          exit 1
+        fi
       '';
     };
 }
