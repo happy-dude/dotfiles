@@ -193,6 +193,43 @@ in {
         exit 1
       fi
 
+      # Moving Assisted-by below the scissors line or leaving its value blank
+      # drops the trailer from the committed message and must be rejected.
+      cat >move-trailer-below-scissors <<'EOF'
+      #!${pkgs.bash}/bin/bash
+      cat >"$1" <<'MESSAGE'
+      git: move attribution below scissors
+
+      Keep attribution above the scissors line.
+
+      # ------------------------ >8 ------------------------
+      Assisted-by: claude-opus-5-5:xhigh oh-my-pi
+      MESSAGE
+      EOF
+      chmod 0755 move-trailer-below-scissors
+      cp invalid-agent.md below-scissors.md
+      if GIT_EDITOR="$PWD/move-trailer-below-scissors" script --quiet --return \
+        --command "commit-msg below-scissors.md </dev/null" /dev/null; then
+        echo "accepted an Assisted-by trailer moved below the scissors cut" >&2
+        exit 1
+      fi
+
+      cat >blank-trailer-editor <<'EOF'
+      #!${pkgs.bash}/bin/bash
+      cat >"$1" <<'MESSAGE'
+      git: blank out the attribution value
+
+      Assisted-by:
+      MESSAGE
+      EOF
+      chmod 0755 blank-trailer-editor
+      cp invalid-agent.md blank-trailer.md
+      if GIT_EDITOR="$PWD/blank-trailer-editor" script --quiet --return \
+        --command "commit-msg blank-trailer.md </dev/null" /dev/null; then
+        echo "accepted an Assisted-by trailer with an empty value" >&2
+        exit 1
+      fi
+
       cat >editor <<'EOF'
       #!${pkgs.bash}/bin/bash
       cat >"$1" <<'MESSAGE'

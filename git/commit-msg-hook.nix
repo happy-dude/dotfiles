@@ -23,19 +23,67 @@ in
       message_path=$1
       common_dir=$(git rev-parse --path-format=absolute --git-common-dir)
       local_hook="$common_dir/hooks/commit-msg"
+      # Git cuts only at its comment string, a space, and the marker on a
+      # line of their own. The last core.commentChar or core.commentString
+      # wins; "auto" can be any of Git's candidates; unset means '#'.
+      scissors_lines() {
+        local comment_string
+        local -a comment_strings
+        comment_string=$(
+          { git config --get-regexp '^core\.comment(char|string)$' || :; } |
+            awk 'END { sub(/^[^ ]* /, ""); print }'
+        )
+        case ''${comment_string,,} in
+        "") comment_strings=('#') ;;
+        auto) comment_strings=('#' ';' '@' '!' '$' '%' '^' '&' '|' ':') ;;
+        *) comment_strings=("$comment_string") ;;
+        esac
+        for comment_string in "''${comment_strings[@]}"; do
+          printf '%s\n' \
+            "$comment_string ------------------------ >8 ------------------------"
+        done
+      }
+
+      cut_at_scissors() {
+        local cleanup_mode
+        local -a lines
+        cleanup_mode=$(git config --get commit.cleanup || :)
+        if [[ ''${cleanup_mode,,} =~ ^(whitespace|verbatim)$ ]]; then
+          cat "$message_path"
+          return
+        fi
+        mapfile -t lines < <(scissors_lines)
+        if printf '%s\n' "''${lines[@]}" | grep -Fxqf - -- "$message_path"; then
+          printf '%s\n' "''${lines[@]}" |
+            awk 'NR == FNR { cut[$0]; next } $0 in cut { exit } { print }' \
+              - "$message_path"
+        else
+          cat "$message_path"
+        fi
+      }
+
+      has_assisted_by() {
+        if [[ $(git var GIT_EDITOR) == : ]]; then
+          grep -Eq '^Assisted-by:[[:space:]]*[^[:space:]]' "$message_path"
+        else
+          cut_at_scissors | grep -Eq '^Assisted-by:[[:space:]]*[^[:space:]]'
+        fi
+      }
+
       agent_assisted=false
-      if grep -q '^Assisted-by:' "$message_path"; then
+      if has_assisted_by; then
         agent_assisted=true
       fi
 
       lint_message() {
         local cleaned_message
+        local cleanup_mode
         local lint_status
         local normalized_message
         local raw_errors
+        local -a lines
 
-        if [[ $agent_assisted == true ]] &&
-          ! grep -q '^Assisted-by:' "$message_path"; then
+        if [[ $agent_assisted == true ]] && ! has_assisted_by; then
           printf '%s\n' \
             "agent-assisted messages must retain an Assisted-by trailer" >&2
           return 1
@@ -48,33 +96,20 @@ in
           return
         fi
 
+        cleanup_mode=$(git config --get commit.cleanup || :)
         cleaned_message=$(mktemp)
         normalized_message=$(mktemp)
         raw_errors=$(mktemp)
 
-        # Git cuts only at its comment string, a space, and the marker on a
-        # line of their own. The last core.commentChar or core.commentString
-        # wins; "auto" can be any of Git's candidates; unset means '#'.
-        comment_string=$(
-          { git config --get-regexp '^core\.comment(char|string)$' || :; } |
-            awk 'END { sub(/^[^ ]* /, ""); print }'
-        )
-        case ''${comment_string,,} in
-        "") comment_strings=('#') ;;
-        auto) comment_strings=('#' ';' '@' '!' '$' '%' '^' '&' '|' ':') ;;
-        *) comment_strings=("$comment_string") ;;
-        esac
-        scissors_lines=()
-        for comment_string in "''${comment_strings[@]}"; do
-          scissors_lines+=(
-            "$comment_string ------------------------ >8 ------------------------"
-          )
-        done
-        if printf '%s\n' "''${scissors_lines[@]}" |
+        mapfile -t lines < <(scissors_lines)
+        if printf '%s\n' "''${lines[@]}" |
           grep -Fxqf - -- "$message_path"; then
-          if ! printf '%s\n' "''${scissors_lines[@]}" |
-            awk 'NR == FNR { cut[$0]; next } $0 in cut { exit } { print }' \
-              - "$message_path" | git stripspace --strip-comments \
+          if [[ ''${cleanup_mode,,} =~ ^(whitespace|verbatim)$ ]]; then
+            if ! cut_at_scissors >"$cleaned_message"; then
+              rm -f -- "$cleaned_message" "$normalized_message" "$raw_errors"
+              return 1
+            fi
+          elif ! cut_at_scissors | git stripspace --strip-comments \
             >"$cleaned_message"; then
             rm -f -- "$cleaned_message" "$normalized_message" "$raw_errors"
             return 1
@@ -85,7 +120,8 @@ in
           return 0
         else
           lint_status=$?
-          if ! git stripspace <"$message_path" >"$normalized_message" ||
+          if [[ ''${cleanup_mode,,} =~ ^(whitespace|verbatim)$ ]] ||
+            ! git stripspace <"$message_path" >"$normalized_message" ||
             ! git stripspace --strip-comments \
               <"$message_path" >"$cleaned_message"; then
             cat "$raw_errors" >&2
