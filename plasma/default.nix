@@ -174,6 +174,7 @@ in {
           General = {
             AccentColor = "248,108,0";
             LastUsedCustomAccentColor = "248,108,0";
+            TerminalApplication = "ghostty --gtk-single-instance=true";
             TerminalService = "com.mitchellh.ghostty.desktop";
           };
           Icons.Theme = iconTheme;
