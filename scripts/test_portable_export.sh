@@ -51,21 +51,21 @@ fmt)
   ;;
 flake) exit "${PORTABLE_TEST_CHECK_STATUS:-0}" ;;
 eval)
-  printf 'first\nsecond\n'
+  printf '%s' "${PORTABLE_TEST_PROFILES:-$'first\nsecond\n'}"
   exit "${PORTABLE_TEST_EVAL_STATUS:-0}"
+  ;;
+build)
+  shift
+  [[ $* == '--no-link --show-trace --no-update-lock-file .#homeConfigurations."first".activationPackage .#homeConfigurations."second".activationPackage' ]] ||
+    exit 92
+  if [[ ${PORTABLE_TEST_BUILD_FAIL:-false} == true ]]; then
+    exit 23
+  fi
   ;;
 *) exit 91 ;;
 esac
 EOF
-printf '#!%s\n' "$(command -v bash)" >"$fake_bin/home-manager"
-cat >>"$fake_bin/home-manager" <<'EOF'
-set -euo pipefail
-[[ $1 == build && $2 == --flake ]] || exit 92
-if [[ $3 == '.#second' && ${PORTABLE_TEST_BUILD_FAIL:-false} == true ]]; then
-  exit 23
-fi
-EOF
-chmod 0755 "$fake_bin/nix" "$fake_bin/home-manager"
+chmod 0755 "$fake_bin/nix"
 export PATH="$fake_bin:$PATH"
 
 run_portable export probe "$output"
@@ -85,6 +85,16 @@ shopt -s nullglob
 staging=("$output"/.dotfiles-probe.*)
 ((${#staging[@]} == 0)) || fail 'failed export left a staging directory'
 unset PORTABLE_TEST_EVAL_STATUS
+
+export PORTABLE_TEST_PROFILES=$'\n'
+if run_portable export probe "$output"; then
+  fail 'export published artifacts when no Home Manager profiles were declared'
+fi
+grep -q 'no Home Manager profiles found' "$TMPDIR_TEST/export.log" ||
+  fail 'missing Home Manager profiles were not reported'
+[[ $(sha256sum "$output"/*) == "$before" ]] ||
+  fail 'empty profile list replaced published artifacts'
+unset PORTABLE_TEST_PROFILES
 
 # Building only the first profile would miss this failure.
 export PORTABLE_TEST_BUILD_FAIL=true

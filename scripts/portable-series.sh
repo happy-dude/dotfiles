@@ -339,6 +339,8 @@ export_series() (
   local count
   local changing_count
   local profiles
+  local profile
+  local -a profile_targets=()
   local format_status
   local patch_name="dotfiles-$name.patch"
   local manifest_name="dotfiles-$name.manifest"
@@ -426,15 +428,23 @@ export_series() (
     fi
     nix flake check --show-trace --no-update-lock-file || exit 1
     # Every profile the flake declares, so a new machine cannot escape the
-    # validation that gates the series.
+    # validation that gates the series. Building their activation packages in
+    # one nix build call evaluates the flake once and builds closures together.
     profiles=$(
       nix eval --no-update-lock-file --raw .#homeConfigurations \
         --apply 'homes: builtins.concatStringsSep "\n" (builtins.attrNames homes) + "\n"'
     ) || exit 1
+    profile_targets=()
     while IFS= read -r profile; do
-      home-manager build --flake ".#$profile" --show-trace \
-        --no-out-link --no-update-lock-file || exit 1
+      [[ -n $profile ]] || continue
+      profile_targets+=(".#homeConfigurations.\"$profile\".activationPackage")
     done <<<"$profiles"
+    if ((${#profile_targets[@]} == 0)); then
+      die "no Home Manager profiles found"
+      exit 1
+    fi
+    nix build --no-link --show-trace --no-update-lock-file \
+      "${profile_targets[@]}" || exit 1
   ) || return 1
 
   staged_patch_path="$staging_directory/$patch_name"
