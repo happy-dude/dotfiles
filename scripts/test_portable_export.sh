@@ -165,6 +165,34 @@ grep -q 'forbidden content found in commit metadata' "$TMPDIR_TEST/export.log" |
 unset PORTABLE_FORBIDDEN_PATTERN
 git -C "$worktree" commit --quiet --amend -m 'tests: seed portable change'
 
+# A machine-local forbidden-pattern file gates export without requiring
+# PORTABLE_FORBIDDEN_PATTERN in the environment, and combines with it when set.
+pattern_file="$XDG_CONFIG_HOME/dotfiles/portable-forbidden-pattern"
+mkdir -p "$(dirname -- "$pattern_file")"
+printf '# Machine-local policy\n(file)-(secret)-\\2\n' >"$pattern_file"
+printf 'file-secret-secret\n' >"$worktree/feature"
+git -C "$worktree" commit --quiet --amend -a -m 'tests: add file-gated content'
+if run_portable export probe "$output"; then
+  fail 'export published content matching portable-forbidden-pattern file'
+fi
+grep -q 'forbidden content found in changed content' "$TMPDIR_TEST/export.log" ||
+  fail 'pattern-file rejection was not reported'
+if grep -q 'file-secret-secret' "$TMPDIR_TEST/export.log"; then
+  fail 'pattern-file rejection echoed the forbidden content'
+fi
+printf 'env-only-secret\n' >"$worktree/feature"
+git -C "$worktree" commit --quiet --amend -a -m 'tests: add env-gated content'
+export PORTABLE_FORBIDDEN_PATTERN=env-only-secret
+if run_portable export probe "$output"; then
+  fail 'export with pattern file ignored PORTABLE_FORBIDDEN_PATTERN'
+fi
+unset PORTABLE_FORBIDDEN_PATTERN
+[[ $(sha256sum "$output"/*) == "$before" ]] ||
+  fail 'pattern-file rejection replaced published artifacts'
+rm -f -- "$pattern_file"
+printf 'portable\n' >"$worktree/feature"
+git -C "$worktree" commit --quiet --amend -a -m 'tests: seed portable change'
+
 # Apply needs one message per commit, and git am refuses an empty patch.
 git -C "$repo" config format.coverLetter true
 run_portable export probe "$output" ||

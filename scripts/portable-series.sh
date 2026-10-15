@@ -56,6 +56,58 @@ validate_forbidden_pattern() {
   ((status == 1)) || die "invalid portable forbidden-content pattern"
 }
 
+# Combine the optional machine-local pattern file and PORTABLE_FORBIDDEN_PATTERN
+# as newline-separated extended regular expressions so grep evaluates each line
+# independently without shifting back-reference numbering, and so a
+# per-invocation variable can tighten the machine policy without bypassing it.
+# Follow the XDG Base Directory specification by ignoring relative
+# XDG_CONFIG_HOME values.
+resolve_forbidden_pattern() {
+  local config_home="$HOME/.config"
+  local pattern_file
+  local file_pattern=""
+  local env_pattern=${PORTABLE_FORBIDDEN_PATTERN:-}
+  local line
+  local combined=""
+
+  if [[ ${XDG_CONFIG_HOME:-} == /* ]]; then
+    config_home=$XDG_CONFIG_HOME
+  fi
+  pattern_file="$config_home/dotfiles/portable-forbidden-pattern"
+  if [[ -e $pattern_file || -L $pattern_file ]]; then
+    if [[ ! -f $pattern_file || ! -r $pattern_file ]]; then
+      die "unreadable portable forbidden-content pattern file: $pattern_file"
+      return 1
+    fi
+    while IFS= read -r line || [[ -n $line ]]; do
+      line=${line%$'\r'}
+      [[ $line =~ ^[[:space:]]*(#|$) ]] && continue
+      validate_forbidden_pattern "$line" || return 1
+      if [[ -n $file_pattern ]]; then
+        file_pattern+=$'\n'"$line"
+      else
+        file_pattern=$line
+      fi
+    done <"$pattern_file"
+    if [[ -z $file_pattern ]]; then
+      die "empty portable forbidden-content pattern file: $pattern_file"
+      return 1
+    fi
+  fi
+  if [[ -n $env_pattern ]]; then
+    validate_forbidden_pattern "$env_pattern" || return 1
+  fi
+  if [[ -n $file_pattern && -n $env_pattern ]]; then
+    combined="$file_pattern"$'\n'"$env_pattern"
+  elif [[ -n $file_pattern ]]; then
+    combined=$file_pattern
+  else
+    combined=$env_pattern
+  fi
+  validate_forbidden_pattern "$combined" || return 1
+  printf '%s\n' "$combined"
+}
+
 scan_forbidden_content() {
   local pattern=$1
   local category=$2
@@ -355,7 +407,7 @@ export_series() (
   local staged_apply_path
   local bundle_directory="dotfiles-$name"
   local patch_sha256
-  local forbidden_pattern=${PORTABLE_FORBIDDEN_PATTERN:-}
+  local forbidden_pattern
 
   validate_name "$name" || return 1
   apply_name=$(apply_artifact_name "$name")
@@ -403,7 +455,7 @@ export_series() (
     return 1
   fi
 
-  validate_forbidden_pattern "$forbidden_pattern" || return 1
+  forbidden_pattern=$(resolve_forbidden_pattern) || return 1
   staging_directory=$(mktemp -d "$output_directory/.dotfiles-$name.XXXXXX") ||
     return 1
   # Running export_series in a subshell lets this EXIT trap clean up the

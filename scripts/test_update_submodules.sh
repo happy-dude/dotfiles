@@ -9,8 +9,6 @@ REPO_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 source "$REPO_DIR/scripts/lib/test-helpers.sh"
 test_setup
 
-export XDG_CONFIG_HOME="$TMPDIR_TEST/xdg"
-
 # shellcheck disable=SC1091 # Intentionally sources the repository script.
 source "$REPO_DIR/scripts/update.sh"
 
