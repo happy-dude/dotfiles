@@ -56,6 +56,58 @@ validate_forbidden_pattern() {
   ((status == 1)) || die "invalid portable forbidden-content pattern"
 }
 
+# Combine the optional machine-local pattern file and PORTABLE_FORBIDDEN_PATTERN
+# as newline-separated extended regular expressions so grep evaluates each line
+# independently without shifting back-reference numbering, and so a
+# per-invocation variable can tighten the machine policy without bypassing it.
+# Follow the XDG Base Directory specification by ignoring relative
+# XDG_CONFIG_HOME values.
+resolve_forbidden_pattern() {
+  local config_home="$HOME/.config"
+  local pattern_file
+  local file_pattern=""
+  local env_pattern=${PORTABLE_FORBIDDEN_PATTERN:-}
+  local line
+  local combined=""
+
+  if [[ ${XDG_CONFIG_HOME:-} == /* ]]; then
+    config_home=$XDG_CONFIG_HOME
+  fi
+  pattern_file="$config_home/dotfiles/portable-forbidden-pattern"
+  if [[ -e $pattern_file || -L $pattern_file ]]; then
+    if [[ ! -f $pattern_file || ! -r $pattern_file ]]; then
+      die "unreadable portable forbidden-content pattern file: $pattern_file"
+      return 1
+    fi
+    while IFS= read -r line || [[ -n $line ]]; do
+      line=${line%$'\r'}
+      [[ $line =~ ^[[:space:]]*(#|$) ]] && continue
+      validate_forbidden_pattern "$line" || return 1
+      if [[ -n $file_pattern ]]; then
+        file_pattern+=$'\n'"$line"
+      else
+        file_pattern=$line
+      fi
+    done <"$pattern_file"
+    if [[ -z $file_pattern ]]; then
+      die "empty portable forbidden-content pattern file: $pattern_file"
+      return 1
+    fi
+  fi
+  if [[ -n $env_pattern ]]; then
+    validate_forbidden_pattern "$env_pattern" || return 1
+  fi
+  if [[ -n $file_pattern && -n $env_pattern ]]; then
+    combined="$file_pattern"$'\n'"$env_pattern"
+  elif [[ -n $file_pattern ]]; then
+    combined=$file_pattern
+  else
+    combined=$env_pattern
+  fi
+  validate_forbidden_pattern "$combined" || return 1
+  printf '%s\n' "$combined"
+}
+
 scan_forbidden_content() {
   local pattern=$1
   local category=$2
@@ -297,6 +349,7 @@ start_series() {
   printf '%s\n' \
     "Portable worktree ready: $worktree" \
     "Branch: $branch" \
+    "After git cherry-pick, run git commit --amend --no-edit --reset-author." \
     "Nothing was pushed. Develop and commit only portable changes there."
 }
 
@@ -339,6 +392,8 @@ export_series() (
   local count
   local changing_count
   local profiles
+  local profile
+  local -a profile_targets=()
   local format_status
   local patch_name="dotfiles-$name.patch"
   local manifest_name="dotfiles-$name.manifest"
@@ -347,13 +402,16 @@ export_series() (
   local bundle_checksum_name="$bundle_name.sha256"
   local apply_name
   local authors
+  local short_commit
+  local author_identity
+  local -a non_portable_commits=()
   local staging_directory
   local staged_patch_path
   local staged_manifest_path
   local staged_apply_path
   local bundle_directory="dotfiles-$name"
   local patch_sha256
-  local forbidden_pattern=${PORTABLE_FORBIDDEN_PATTERN:-}
+  local forbidden_pattern
 
   validate_name "$name" || return 1
   apply_name=$(apply_artifact_name "$name")
@@ -394,14 +452,28 @@ export_series() (
   ((changing_count == count)) ||
     { die "portable history contains an empty commit" || return 1; }
 
-  authors=$(git -C "$worktree" log --format='%an <%ae>' "$base..HEAD") ||
-    return 1
-  if grep -Ev '^Portable Dotfiles <portable@localhost>$' <<<"$authors" >&2; then
+  authors=$(
+    git -C "$worktree" log --reverse --format=$'%h\t%an <%ae>' "$base..HEAD"
+  ) || return 1
+  non_portable_commits=()
+  while IFS=$'\t' read -r short_commit author_identity; do
+    [[ -n $short_commit ]] || continue
+    if [[ $author_identity != "Portable Dotfiles <portable@localhost>" ]]; then
+      non_portable_commits+=("$short_commit")
+    fi
+  done <<<"$authors"
+  if ((${#non_portable_commits[@]} > 0)); then
+    printf 'Non-portable author identity in commit(s): %s\n' \
+      "$(printf '%s\n' "${non_portable_commits[@]}" | paste -sd, -)" >&2
+    printf '%s\n' \
+      "Reset author metadata in the portable worktree with:" >&2
+    printf "  git -C %q -c commit.gpgsign=false rebase --exec 'git commit --amend --no-edit --author=\"Portable Dotfiles <portable@localhost>\"' origin/main\n" \
+      "$worktree" >&2
     die "portable history contains a non-portable author identity"
     return 1
   fi
 
-  validate_forbidden_pattern "$forbidden_pattern" || return 1
+  forbidden_pattern=$(resolve_forbidden_pattern) || return 1
   staging_directory=$(mktemp -d "$output_directory/.dotfiles-$name.XXXXXX") ||
     return 1
   # Running export_series in a subshell lets this EXIT trap clean up the
@@ -426,15 +498,23 @@ export_series() (
     fi
     nix flake check --show-trace --no-update-lock-file || exit 1
     # Every profile the flake declares, so a new machine cannot escape the
-    # validation that gates the series.
+    # validation that gates the series. Building their activation packages in
+    # one nix build call evaluates the flake once and builds closures together.
     profiles=$(
       nix eval --no-update-lock-file --raw .#homeConfigurations \
         --apply 'homes: builtins.concatStringsSep "\n" (builtins.attrNames homes) + "\n"'
     ) || exit 1
+    profile_targets=()
     while IFS= read -r profile; do
-      home-manager build --flake ".#$profile" --show-trace \
-        --no-out-link --no-update-lock-file || exit 1
+      [[ -n $profile ]] || continue
+      profile_targets+=(".#homeConfigurations.\"$profile\".activationPackage")
     done <<<"$profiles"
+    if ((${#profile_targets[@]} == 0)); then
+      die "no Home Manager profiles found"
+      exit 1
+    fi
+    nix build --no-link --show-trace --no-update-lock-file \
+      "${profile_targets[@]}" || exit 1
   ) || return 1
 
   staged_patch_path="$staging_directory/$patch_name"

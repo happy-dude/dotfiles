@@ -18,6 +18,7 @@ test_setup() {
   TMPDIR_TEST="$(mktemp -d)"
   export GIT_CONFIG_GLOBAL=/dev/null
   export GIT_CONFIG_SYSTEM=/dev/null
+  export XDG_CONFIG_HOME="$TMPDIR_TEST/xdg"
   trap cleanup_test_tmpdir EXIT
 }
 

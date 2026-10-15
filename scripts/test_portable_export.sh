@@ -34,9 +34,15 @@ run_portable() {
 }
 
 run_portable start probe "$worktree"
-printf 'portable\n' >"$worktree/feature"
-git -C "$worktree" add feature
-git -C "$worktree" commit --quiet -m 'tests: add a portable feature'
+grep -Fq 'After git cherry-pick, run git commit --amend --no-edit --reset-author.' \
+  "$TMPDIR_TEST/export.log" ||
+  fail 'start did not print cherry-pick author-reset guidance'
+printf 'portable\n' >"$repo/feature"
+commit_all "$repo" 'tests: add a portable feature'
+feature_commit=$(git -C "$repo" rev-parse HEAD)
+git -C "$repo" reset --quiet --hard HEAD~1
+git -C "$worktree" cherry-pick "$feature_commit" >/dev/null
+git -C "$worktree" commit --quiet --amend --no-edit --reset-author
 
 # Substitute only the Nix boundary; Git, linter, patching, and artifact
 # publication are real. Partial eval output must not hide a failed evaluation.
@@ -51,21 +57,21 @@ fmt)
   ;;
 flake) exit "${PORTABLE_TEST_CHECK_STATUS:-0}" ;;
 eval)
-  printf 'first\nsecond\n'
+  printf '%s' "${PORTABLE_TEST_PROFILES:-$'first\nsecond\n'}"
   exit "${PORTABLE_TEST_EVAL_STATUS:-0}"
+  ;;
+build)
+  shift
+  [[ $* == '--no-link --show-trace --no-update-lock-file .#homeConfigurations."first".activationPackage .#homeConfigurations."second".activationPackage' ]] ||
+    exit 92
+  if [[ ${PORTABLE_TEST_BUILD_FAIL:-false} == true ]]; then
+    exit 23
+  fi
   ;;
 *) exit 91 ;;
 esac
 EOF
-printf '#!%s\n' "$(command -v bash)" >"$fake_bin/home-manager"
-cat >>"$fake_bin/home-manager" <<'EOF'
-set -euo pipefail
-[[ $1 == build && $2 == --flake ]] || exit 92
-if [[ $3 == '.#second' && ${PORTABLE_TEST_BUILD_FAIL:-false} == true ]]; then
-  exit 23
-fi
-EOF
-chmod 0755 "$fake_bin/nix" "$fake_bin/home-manager"
+chmod 0755 "$fake_bin/nix"
 export PATH="$fake_bin:$PATH"
 
 run_portable export probe "$output"
@@ -85,6 +91,16 @@ shopt -s nullglob
 staging=("$output"/.dotfiles-probe.*)
 ((${#staging[@]} == 0)) || fail 'failed export left a staging directory'
 unset PORTABLE_TEST_EVAL_STATUS
+
+export PORTABLE_TEST_PROFILES=$'\n'
+if run_portable export probe "$output"; then
+  fail 'export published artifacts when no Home Manager profiles were declared'
+fi
+grep -q 'no Home Manager profiles found' "$TMPDIR_TEST/export.log" ||
+  fail 'missing Home Manager profiles were not reported'
+[[ $(sha256sum "$output"/*) == "$before" ]] ||
+  fail 'empty profile list replaced published artifacts'
+unset PORTABLE_TEST_PROFILES
 
 # Building only the first profile would miss this failure.
 export PORTABLE_TEST_BUILD_FAIL=true
@@ -129,10 +145,21 @@ fi
   fail 'a failed export in a condition replaced published artifacts'
 grep -q 'non-portable author identity' "$TMPDIR_TEST/export.log" ||
   fail 'the second export did not stop at the author check'
+if grep -q 'someone@example.invalid' "$TMPDIR_TEST/export.log"; then
+  fail 'author rejection echoed the non-portable author email'
+fi
+printf -v expected_reset \
+  "  git -C %q -c commit.gpgsign=false rebase --exec 'git commit --amend --no-edit --author=\"Portable Dotfiles <portable@localhost>\"' origin/main" \
+  "$worktree"
+grep -Fq "$expected_reset" "$TMPDIR_TEST/export.log" ||
+  fail 'author rejection did not print the reset-author recovery command'
 [[ $(<"$TMPDIR_TEST/caller-status") == 1 ]] ||
   fail 'repeated exports did not hand the caller EXIT trap its status'
-git -C "$worktree" commit --quiet --amend --no-edit \
-  --author 'Portable Dotfiles <portable@localhost>'
+git -C "$worktree" config --worktree user.email overridden@example.invalid
+git -C "$worktree" -c commit.gpgsign=false rebase --quiet \
+  --exec 'git commit --amend --no-edit --author="Portable Dotfiles <portable@localhost>"' \
+  origin/main
+git -C "$worktree" config --worktree user.email portable@localhost
 unset PORTABLE_TEST_CHECK_STATUS
 
 # Forbidden content on a non-trailer Assisted-by: line in the commit body must
@@ -154,6 +181,34 @@ grep -q 'forbidden content found in commit metadata' "$TMPDIR_TEST/export.log" |
   fail 'forbidden commit-metadata rejection replaced published artifacts'
 unset PORTABLE_FORBIDDEN_PATTERN
 git -C "$worktree" commit --quiet --amend -m 'tests: seed portable change'
+
+# A machine-local forbidden-pattern file gates export without requiring
+# PORTABLE_FORBIDDEN_PATTERN in the environment, and combines with it when set.
+pattern_file="$XDG_CONFIG_HOME/dotfiles/portable-forbidden-pattern"
+mkdir -p "$(dirname -- "$pattern_file")"
+printf '# Machine-local policy\n(file)-(secret)-\\2\n' >"$pattern_file"
+printf 'file-secret-secret\n' >"$worktree/feature"
+git -C "$worktree" commit --quiet --amend -a -m 'tests: add file-gated content'
+if run_portable export probe "$output"; then
+  fail 'export published content matching portable-forbidden-pattern file'
+fi
+grep -q 'forbidden content found in changed content' "$TMPDIR_TEST/export.log" ||
+  fail 'pattern-file rejection was not reported'
+if grep -q 'file-secret-secret' "$TMPDIR_TEST/export.log"; then
+  fail 'pattern-file rejection echoed the forbidden content'
+fi
+printf 'env-only-secret\n' >"$worktree/feature"
+git -C "$worktree" commit --quiet --amend -a -m 'tests: add env-gated content'
+export PORTABLE_FORBIDDEN_PATTERN=env-only-secret
+if run_portable export probe "$output"; then
+  fail 'export with pattern file ignored PORTABLE_FORBIDDEN_PATTERN'
+fi
+unset PORTABLE_FORBIDDEN_PATTERN
+[[ $(sha256sum "$output"/*) == "$before" ]] ||
+  fail 'pattern-file rejection replaced published artifacts'
+rm -f -- "$pattern_file"
+printf 'portable\n' >"$worktree/feature"
+git -C "$worktree" commit --quiet --amend -a -m 'tests: seed portable change'
 
 # Apply needs one message per commit, and git am refuses an empty patch.
 git -C "$repo" config format.coverLetter true

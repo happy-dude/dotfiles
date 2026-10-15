@@ -575,16 +575,20 @@ context out of portable history:
 ```
 
 `start` creates `replay/<name>` at current `origin/main` with a worktree-local
-placeholder identity. If the name already belongs to a branch or worktree,
-`start` refuses to reuse or delete it and prints the existing path plus safe
-continuation, export, attachment, or inspection guidance. `export` requires a
-clean unchanged base, lints every commit message, validates both Home Manager
-profiles, and writes a patch, manifest, checksum file, and series-qualified
-`apply-dotfiles-<name>.sh` helper to `~/Downloads` by default. It also writes a
-checksummed `dotfiles-<name>.tar.gz` containing those files for single-file
-transfer. Export builds every artifact in a temporary directory and publishes
-the checksum markers last, so an incomplete replacement cannot validate as
-current.
+placeholder identity and reminds callers to run
+`git commit --amend --no-edit --reset-author` after cherry-picking existing
+commits. If the name already belongs to a branch or worktree, `start` refuses to
+reuse or delete it and prints the existing path plus safe continuation, export,
+attachment, or inspection guidance. `export` requires a clean unchanged base,
+lints every commit message, builds all declared Home Manager activation packages
+in one `nix build` call, and writes a patch, manifest, checksum file, and
+series-qualified `apply-dotfiles-<name>.sh` helper to `~/Downloads` by default.
+If a commit carries a non-portable author identity, `export` names the commit
+hash and prints the `git rebase --exec` command to set the portable author
+identity without echoing the offending address. It also writes a checksummed
+`dotfiles-<name>.tar.gz` containing those files for single-file transfer. Export
+builds every artifact in a temporary directory and publishes the checksum
+markers last, so an incomplete replacement cannot validate as current.
 
 Both `start` and `export` refresh `origin/main` with an explicit refspec rather
 than relying on the remote's fetch mapping. Failure to enumerate the profiles or
@@ -594,14 +598,19 @@ build any declared profile prevents publication.
 ordinary patches do not prove that a merge's conflict-resolution content is
 upstream. It preserves that branch and worktree for explicit review.
 
-Callers may set `PORTABLE_FORBIDDEN_PATTERN` for machine-local content policy;
-the pattern itself does not enter portable configuration. Export scans commit
-metadata and zero-context changed content before expensive validation, then
-scans the generated patch before publication. It reports only the category and
-line numbers of matches so private text is not echoed. Recognized `Assisted-by:`
-commit trailers are omitted from metadata and patch matching because they record
-required session attribution. Attribution-shaped lines in tracked file content
-remain subject to the policy.
+Callers may set `PORTABLE_FORBIDDEN_PATTERN` or list one extended regular
+expression per line in
+`${XDG_CONFIG_HOME:-~/.config}/dotfiles/portable-forbidden-pattern` (a relative
+`XDG_CONFIG_HOME` is ignored in favor of `~/.config`, blank lines and `#`
+comment lines are skipped, and matching is case-insensitive); when both are
+present, `export` combines them, and an empty, invalid, or unreadable pattern
+file fails closed. The pattern itself does not enter portable configuration.
+Export scans commit metadata and zero-context changed content before expensive
+validation, then scans the generated patch before publication. It reports only
+the category and line numbers of matches so private text is not echoed.
+Recognized `Assisted-by:` commit trailers are omitted from metadata and patch
+matching because they record required session attribution. Attribution-shaped
+lines in tracked file content remain subject to the policy.
 
 On the destination computer, verify the checksum file and run the transferred
 `apply-dotfiles-<name>.sh <manifest> ~/dotfiles`. It requires clean `main` at
@@ -627,15 +636,17 @@ scripts/sync-local-branch.sh --validate <local-branch> <profile> [repository]
 Sync mode fetches `main` directly into the `origin/main` remote-tracking ref,
 fast-forwards local `main`, rebases the named local-only branch, and validates
 the selected profile. Before rebasing it reports local commits whose patches are
-already represented upstream and are therefore expected to disappear. Only the
-`main` and named local-branch worktrees must be clean; unrelated linked
-worktrees are intentionally ignored. A dirty target refusal identifies its path
-and occurs before fetch or mutation. The script rejects prunable registrations
-and branches with an upstream, and never pushes or activates. Formatting, flake
-checks, and the profile build are reported as separate phases without a fixed
-timeout. Automated sync rebases and the updater's rebasing pull disable Git's
-automatic updates to other local branch refs. Backup and topic refs retain their
-original commits even when `rebase.updateRefs` is enabled for manual rebases.
+already represented upstream and, when `origin/main` updated `flake.lock`,
+standalone `nix: update flake.lock` commits that touch only upstream-managed
+inputs and will therefore be omitted in favor of `origin/main`. Only the `main`
+and named local-branch worktrees must be clean; unrelated linked worktrees are
+intentionally ignored. A dirty target refusal identifies its path and occurs
+before fetch or mutation. The script rejects prunable registrations and branches
+with an upstream, and never pushes or activates. Formatting, flake checks, and
+the profile build are reported as separate phases without a fixed timeout.
+Automated sync rebases and the updater's rebasing pull disable Git's automatic
+updates to other local branch refs. Backup and topic refs retain their original
+commits even when `rebase.updateRefs` is enabled for manual rebases.
 
 Validate mode performs no fetch or rebase. It requires local `main` to equal the
 cached `origin/main` tip and the local-only branch to descend from that tip. Use

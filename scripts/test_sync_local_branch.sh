@@ -8,6 +8,11 @@ sync_script="$source_root/scripts/sync-local-branch.sh"
 # shellcheck source=lib/test-helpers.sh
 source "$source_root/scripts/lib/test-helpers.sh"
 test_setup
+lock_declaration='readonly LOCK_COMMIT_SUBJECT="nix: update flake.lock"'
+grep -Fqx "$lock_declaration" "$source_root/scripts/update.sh" ||
+  fail 'update.sh does not declare the expected LOCK_COMMIT_SUBJECT'
+grep -Fqx "$lock_declaration" "$sync_script" ||
+  fail 'sync-local-branch.sh does not declare the expected LOCK_COMMIT_SUBJECT'
 temporary_directory=$TMPDIR_TEST
 fake_bin="$temporary_directory/fake-bin"
 mkdir "$fake_bin"
@@ -144,6 +149,148 @@ test "$(git -C "$branch_worktree" rev-list --count origin/main..work)" = 1
 test "$(<"$branch_worktree/equivalent")" = same-change
 test "$(<"$branch_worktree/work-only")" = unique-change
 
+write_lock_json() {
+  local path=$1
+  local input_a_rev=$2
+  local local_rev=${3:-}
+
+  if [[ -n $local_rev ]]; then
+    cat >"$path" <<EOF
+{
+  "nodes": {
+    "input-a": {
+      "locked": {
+        "narHash": "sha256-a-$input_a_rev",
+        "rev": "$input_a_rev"
+      }
+    },
+    "input-b": {
+      "locked": {
+        "narHash": "sha256-b-1",
+        "rev": "1"
+      }
+    },
+    "root": {
+      "inputs": {
+        "input-a": "input-a",
+        "input-b": "input-b",
+        "local-input": "local-input"
+      }
+    },
+    "local-input": {
+      "locked": {
+        "narHash": "sha256-local-$local_rev",
+        "rev": "$local_rev"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
+EOF
+  else
+    cat >"$path" <<EOF
+{
+  "nodes": {
+    "input-a": {
+      "locked": {
+        "narHash": "sha256-a-$input_a_rev",
+        "rev": "$input_a_rev"
+      }
+    },
+    "input-b": {
+      "locked": {
+        "narHash": "sha256-b-1",
+        "rev": "1"
+      }
+    },
+    "root": {
+      "inputs": {
+        "input-a": "input-a",
+        "input-b": "input-b"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
+EOF
+  fi
+}
+
+create_fixture superseded-lock
+git -C "$branch_worktree" config rebase.autoSquash true
+write_lock_json "$seed/flake.lock" 1
+printf 'inputs=base\n' >"$seed/flake.nix"
+git -C "$seed" add flake.lock flake.nix
+git -C "$seed" commit --quiet -m 'tests: seed flake files'
+git -C "$seed" push --quiet origin main
+git -C "$main_worktree" pull --quiet --ff-only
+git -C "$branch_worktree" merge --quiet --ff-only main
+write_lock_json "$branch_worktree/flake.lock" 1 local-1
+printf 'inputs=base+local\n' >"$branch_worktree/flake.nix"
+git -C "$branch_worktree" add flake.lock flake.nix
+git -C "$branch_worktree" commit --quiet -m 'tests: add local flake input'
+write_lock_json "$branch_worktree/flake.lock" 2 local-1
+git -C "$branch_worktree" add flake.lock
+git -C "$branch_worktree" commit --quiet -m 'nix: update flake.lock'
+first_lock_commit=$(git -C "$branch_worktree" rev-parse HEAD)
+commit_work work-only kept-change
+write_lock_json "$branch_worktree/flake.lock" 3 local-1
+git -C "$branch_worktree" add flake.lock
+git -C "$branch_worktree" commit --quiet -m 'nix: update flake.lock'
+second_lock_commit=$(git -C "$branch_worktree" rev-parse HEAD)
+# A fixup commit must not be autosquashed by the interactive drop rebase, and a
+# standalone lock commit that updates a branch-local input must be preserved.
+printf 'fixup-content\n' >"$branch_worktree/fixup-target"
+git -C "$branch_worktree" add fixup-target
+git -C "$branch_worktree" commit --quiet -m 'fixup! tests: add local flake input'
+write_lock_json "$branch_worktree/flake.lock" 3 local-2
+git -C "$branch_worktree" add flake.lock
+git -C "$branch_worktree" commit --quiet -m 'nix: update flake.lock'
+local_bump_commit=$(git -C "$branch_worktree" rev-parse --short HEAD)
+write_lock_json "$seed/flake.lock" 9
+git -C "$seed" add flake.lock
+git -C "$seed" commit --quiet -m 'nix: update flake.lock'
+git -C "$seed" push --quiet origin main
+run_sync work test-profile "$main_worktree"
+grep -Fq \
+  'Local flake.lock updates superseded by origin/main; rebase will omit:' \
+  "$output"
+for lock_commit in "$first_lock_commit" "$second_lock_commit"; do
+  lock_summary=$(git -C "$branch_worktree" show -s \
+    --format='%h %s' "$lock_commit")
+  grep -Fq "  $lock_summary" "$output"
+done
+if grep -Fq "$local_bump_commit" "$output"; then
+  printf 'omitted a lock commit that bumped a branch-local input\n' >&2
+  exit 1
+fi
+test "$(git -C "$branch_worktree" rev-list --count origin/main..work)" = 4
+test "$(<"$branch_worktree/flake.nix")" = 'inputs=base+local'
+grep -Fq '"rev": "9"' "$branch_worktree/flake.lock"
+grep -Fq '"rev": "local-2"' "$branch_worktree/flake.lock"
+test "$(<"$branch_worktree/work-only")" = kept-change
+
+create_fixture retained-local-lock
+write_lock_json "$seed/flake.lock" 1
+git -C "$seed" add flake.lock
+git -C "$seed" commit --quiet -m 'tests: seed flake.lock'
+git -C "$seed" push --quiet origin main
+git -C "$main_worktree" pull --quiet --ff-only
+git -C "$branch_worktree" merge --quiet --ff-only main
+write_lock_json "$branch_worktree/flake.lock" 2
+git -C "$branch_worktree" add flake.lock
+git -C "$branch_worktree" commit --quiet -m 'nix: update flake.lock'
+advance_origin upstream-only upstream
+run_sync work test-profile "$main_worktree"
+if grep -Fq 'Local flake.lock updates superseded by origin/main' "$output"; then
+  printf 'omitted a local flake.lock update when origin/main did not touch flake.lock\n' >&2
+  exit 1
+fi
+grep -Fq '"rev": "2"' "$branch_worktree/flake.lock"
+test "$(git -C "$branch_worktree" log -1 --format=%s work)" = \
+  'nix: update flake.lock'
 create_fixture dirty-main
 advance_origin upstream-only upstream
 old_tracking=$(git -C "$main_worktree" rev-parse origin/main)

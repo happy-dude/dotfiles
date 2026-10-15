@@ -494,3 +494,67 @@ printf '%s\n' \
   strip_attribution_trailers >"$metadata_path"
 scan_forbidden_content model "commit metadata" "$metadata_path"
 grep -Fqx 'Body.' "$metadata_path"
+
+# resolve_forbidden_pattern combines the XDG pattern file with
+# PORTABLE_FORBIDDEN_PATTERN and fails closed on empty, invalid, or unreadable
+# pattern files while ignoring relative XDG_CONFIG_HOME values.
+pattern_file="$XDG_CONFIG_HOME/dotfiles/portable-forbidden-pattern"
+mkdir -p "$(dirname -- "$pattern_file")"
+cat >"$pattern_file" <<'EOF'
+# Machine-local terms that must stay out of portable history.
+
+(local)-(host)-\2
+alpha-only|beta-only
+EOF
+resolved_pattern=$(resolve_forbidden_pattern)
+for term in local-host-host beta-only; do
+  printf '%s\n' "$term" >"$patch_path"
+  if scan_forbidden_content "$resolved_pattern" "changed content" "$patch_path" \
+    2>/dev/null; then
+    printf 'ignored %s from portable-forbidden-pattern\n' "$term" >&2
+    exit 1
+  fi
+done
+printf '%s\n' safe-content >"$patch_path"
+scan_forbidden_content "$resolved_pattern" "changed content" "$patch_path"
+combined_pattern=$(
+  PORTABLE_FORBIDDEN_PATTERN='(extra)-(term)-\2' resolve_forbidden_pattern
+)
+for term in local-host-host alpha-only extra-term-term; do
+  printf '%s\n' "$term" >"$patch_path"
+  if scan_forbidden_content "$combined_pattern" "changed content" "$patch_path" \
+    2>/dev/null; then
+    printf 'combined pattern omitted %s\n' "$term" >&2
+    exit 1
+  fi
+done
+
+printf '# comments only\n\n' >"$pattern_file"
+if resolve_forbidden_pattern 2>/dev/null; then
+  printf 'accepted a comment-only forbidden-pattern file\n' >&2
+  exit 1
+fi
+printf '[\n' >"$pattern_file"
+if resolve_forbidden_pattern 2>/dev/null; then
+  printf 'accepted an invalid regex in portable-forbidden-pattern\n' >&2
+  exit 1
+fi
+rm -f -- "$pattern_file"
+ln -s "$temporary_directory/missing-target" "$pattern_file"
+if resolve_forbidden_pattern 2>/dev/null; then
+  printf 'accepted a broken symlink for portable-forbidden-pattern\n' >&2
+  exit 1
+fi
+rm -f -- "$pattern_file"
+HOME="$temporary_directory/relative-home"
+mkdir -p "$HOME/.config/dotfiles"
+printf 'home-fallback-term\n' >"$HOME/.config/dotfiles/portable-forbidden-pattern"
+relative_resolved=$(
+  XDG_CONFIG_HOME=relative-config resolve_forbidden_pattern
+)
+printf '%s\n' home-fallback-term >"$patch_path"
+if scan_forbidden_content "$relative_resolved" "changed content" "$patch_path" \
+  2>/dev/null; then
+  printf 'relative XDG_CONFIG_HOME bypassed ~/.config fallback\n' >&2
+  exit 1
+fi
