@@ -34,9 +34,15 @@ run_portable() {
 }
 
 run_portable start probe "$worktree"
-printf 'portable\n' >"$worktree/feature"
-git -C "$worktree" add feature
-git -C "$worktree" commit --quiet -m 'tests: add a portable feature'
+grep -Fq 'After git cherry-pick, run git commit --amend --no-edit --reset-author.' \
+  "$TMPDIR_TEST/export.log" ||
+  fail 'start did not print cherry-pick author-reset guidance'
+printf 'portable\n' >"$repo/feature"
+commit_all "$repo" 'tests: add a portable feature'
+feature_commit=$(git -C "$repo" rev-parse HEAD)
+git -C "$repo" reset --quiet --hard HEAD~1
+git -C "$worktree" cherry-pick "$feature_commit" >/dev/null
+git -C "$worktree" commit --quiet --amend --no-edit --reset-author
 
 # Substitute only the Nix boundary; Git, linter, patching, and artifact
 # publication are real. Partial eval output must not hide a failed evaluation.
@@ -139,10 +145,21 @@ fi
   fail 'a failed export in a condition replaced published artifacts'
 grep -q 'non-portable author identity' "$TMPDIR_TEST/export.log" ||
   fail 'the second export did not stop at the author check'
+if grep -q 'someone@example.invalid' "$TMPDIR_TEST/export.log"; then
+  fail 'author rejection echoed the non-portable author email'
+fi
+printf -v expected_reset \
+  "  git -C %q -c commit.gpgsign=false rebase --exec 'git commit --amend --no-edit --author=\"Portable Dotfiles <portable@localhost>\"' origin/main" \
+  "$worktree"
+grep -Fq "$expected_reset" "$TMPDIR_TEST/export.log" ||
+  fail 'author rejection did not print the reset-author recovery command'
 [[ $(<"$TMPDIR_TEST/caller-status") == 1 ]] ||
   fail 'repeated exports did not hand the caller EXIT trap its status'
-git -C "$worktree" commit --quiet --amend --no-edit \
-  --author 'Portable Dotfiles <portable@localhost>'
+git -C "$worktree" config --worktree user.email overridden@example.invalid
+git -C "$worktree" -c commit.gpgsign=false rebase --quiet \
+  --exec 'git commit --amend --no-edit --author="Portable Dotfiles <portable@localhost>"' \
+  origin/main
+git -C "$worktree" config --worktree user.email portable@localhost
 unset PORTABLE_TEST_CHECK_STATUS
 
 # Forbidden content on a non-trailer Assisted-by: line in the commit body must

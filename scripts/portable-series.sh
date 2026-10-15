@@ -349,6 +349,7 @@ start_series() {
   printf '%s\n' \
     "Portable worktree ready: $worktree" \
     "Branch: $branch" \
+    "After git cherry-pick, run git commit --amend --no-edit --reset-author." \
     "Nothing was pushed. Develop and commit only portable changes there."
 }
 
@@ -401,6 +402,9 @@ export_series() (
   local bundle_checksum_name="$bundle_name.sha256"
   local apply_name
   local authors
+  local short_commit
+  local author_identity
+  local -a non_portable_commits=()
   local staging_directory
   local staged_patch_path
   local staged_manifest_path
@@ -448,9 +452,23 @@ export_series() (
   ((changing_count == count)) ||
     { die "portable history contains an empty commit" || return 1; }
 
-  authors=$(git -C "$worktree" log --format='%an <%ae>' "$base..HEAD") ||
-    return 1
-  if grep -Ev '^Portable Dotfiles <portable@localhost>$' <<<"$authors" >&2; then
+  authors=$(
+    git -C "$worktree" log --reverse --format=$'%h\t%an <%ae>' "$base..HEAD"
+  ) || return 1
+  non_portable_commits=()
+  while IFS=$'\t' read -r short_commit author_identity; do
+    [[ -n $short_commit ]] || continue
+    if [[ $author_identity != "Portable Dotfiles <portable@localhost>" ]]; then
+      non_portable_commits+=("$short_commit")
+    fi
+  done <<<"$authors"
+  if ((${#non_portable_commits[@]} > 0)); then
+    printf 'Non-portable author identity in commit(s): %s\n' \
+      "$(printf '%s\n' "${non_portable_commits[@]}" | paste -sd, -)" >&2
+    printf '%s\n' \
+      "Reset author metadata in the portable worktree with:" >&2
+    printf "  git -C %q -c commit.gpgsign=false rebase --exec 'git commit --amend --no-edit --author=\"Portable Dotfiles <portable@localhost>\"' origin/main\n" \
+      "$worktree" >&2
     die "portable history contains a non-portable author identity"
     return 1
   fi
