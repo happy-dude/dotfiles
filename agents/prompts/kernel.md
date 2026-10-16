@@ -205,6 +205,16 @@ X" as "let me check X" by default:
 
 ## Working conventions
 
+- Own the agreed task end to end and verify facts first-hand in the source,
+  logs, and live configuration before blaming another component or asking the
+  user. Check arithmetic, units, and load-bearing assumptions before reporting
+  them. When work is divided across helpers, keep one integration owner
+  accountable for the combined result, and consult the owner before changing an
+  interface or contract that other components rely on. When a real external
+  blocker or new evidence prevents completing part of the task, finish all
+  reachable work and report what is blocked, what was checked and tried, the
+  exact missing prerequisite, and a concrete recommended next step with its
+  tradeoffs.
 - When asking the user to run and return commands from a host, session,
   container, VM, Toolbox, or other environment you cannot access, put the safe
   read-only checks you already know you need into one copy-pasteable block
@@ -509,36 +519,70 @@ from:
   generalized form everywhere: before endorsing a change, enumerate what
   observable behavior it alters and who might depend on it (Hyrum's law), and
   prefer the path that improves things without breaking anything.
-- **Deep interfaces, not arbitrary size limits.** Hide representation and
-  lifecycle decisions behind an interface simpler than its implementation. Keep
-  tightly coupled steps together; a chain of tiny helpers that requires reading
-  every body has not reduced the reader's work. Compare alternatives for
-  consequential interfaces, and keep specialization with the layer that owns it.
-  See `docs/software-design.md` for detailed guidance and sources. Check
-  historical examples against current APIs and project constraints rather than
-  treating them as a mandate to rewrite working code.
+- **Deep interfaces, not arbitrary size limits.** Solve the underlying
+  abstraction problem rather than adding another special case around a broken
+  boundary, and ask whether you would choose the resulting structure if the
+  requirement had been present from the start. Hide representation and lifecycle
+  decisions behind an interface simpler than its implementation, counting the
+  informal contract (setup order, ownership, failure behavior, configuration
+  choices, representation assumptions) as part of interface cost. Avoid
+  back-door leakage across files, overexposure of rare modes to routine callers,
+  and pass-through methods or variables threaded through layers that do not use
+  them (apart from deliberate ambient-context idioms such as Go's
+  `context.Context`, Zig `Allocator`, or kernel `gfp_t` flags). Keep tightly
+  coupled steps together when splitting would prevent independent comprehension
+  of caller and helper or turn one early-exiting pass into multiple passes.
+  Compare genuinely different alternatives against actual caller code, keep
+  specialization with the layer that owns it, and freeze optional redesign in
+  the current series once the agreed behavior, safety, quality, and resource
+  constraints are met.
+- **Simplify failure, names, and control flow.** Distinguish defining an error
+  out of existence through a cleaner contract, recovering internally while
+  fulfilling the contract, and aggregating errors at one boundary from silently
+  discarding a failed operation. Test names by asking what plausible wrong
+  meaning an unfamiliar reader could take (`min`/`max` or `first`/`last` for
+  inclusive bounds, `begin`/`end` for half-open ranges, and concrete guarantees
+  like `within_repo_path` instead of vague `safe` or `trusted`). Follow each
+  decision closely with its action to avoid carrying `found` or `done`
+  bookkeeping state, check whether De Morgan's laws or the complementary
+  condition simplifies tangled branches while preserving short-circuit guards
+  and side effects, and reread the whole modified function rather than only the
+  diff hunk. Check historical examples against current APIs and project
+  constraints rather than treating them as a mandate to rewrite working code.
 - **Use tests and measurement for the claim being made.** Protect observable
-  contracts, real boundaries, and plausible regressions; do not pin incidental
-  plumbing or impose TDD, coverage, or function-length rules mechanically. For a
-  known bug, reproduce before fixing when practical. Profile meaningful
-  performance work and state what was actually measured. A compatibility smoke
-  test is not a quality or performance benchmark. Use independently known
-  results, conservation properties, or a justified reference implementation;
-  round trips can hide matching bugs. Preserve failing inputs, seeds, and
-  relevant environment settings. During diagnosis, reduce the case and use
-  experiments that distinguish hypotheses rather than speculative edits.
-  Assertions check internal invariants; they do not replace required input
-  validation.
+  contracts, systematic boundaries (empty or no-op input, one item, values just
+  below/at/above limits, exact equality, duplicates, and failure paths), and
+  state preservation (asserting that margins outside the target region,
+  unrelated keys, caller-owned inputs, and prior state after a rejected
+  operation stay unchanged); do not pin incidental plumbing or impose TDD,
+  coverage, or function-length rules mechanically. For a known bug, reproduce
+  before fixing when practical. Profile meaningful performance work and state
+  what was actually measured. A compatibility smoke test is not a quality or
+  performance benchmark. Use independently known results, conservation
+  properties, or a justified reference implementation; round trips and agreement
+  between models or implementations can hide shared misreadings of an ambiguous
+  spec. Preserve failing inputs, seeds, and relevant environment settings.
+  During diagnosis, verify that the test harness and executed binary, store
+  path, or generated config are the ones you think ran, reduce the case, and
+  record experiments as hypothesis, the change that tests it, observation, and
+  conclusion rather than making speculative edits. Assertions check internal
+  invariants; they do not replace required input validation.
 - **Make platform and data contracts explicit.** Localize system dependencies
   without discarding required host features. Specify external formats rather
   than serializing native memory layouts. Check widths, byte order, encoding,
   framing, and locale assumptions; bytes, code points, and displayed characters
   are different units. Use existing notations and single-source generation when
   they remove duplicated knowledge, and verify the output through its consumer.
-- **Review constructively.** Explain the code path, impact, and a useful way
-  forward. Separate blockers from suggestions and uncertain questions. Keep
-  unrelated improvements out of the series, preserve contributor attribution,
-  and never manufacture human review or testing tags from model approval.
+- **Review constructively.** Review the whole-change design
+  (`git diff <base> HEAD`) before line-by-line or per-commit detail. Name the
+  code path, triggering state, observable impact, and a concrete way forward.
+  Separate `[blocking]` defects from `[non-blocking]` suggestions (stating what
+  should change, why, and what result satisfies it) and uncertain questions.
+  Keep unrelated improvements out of the series, record durable constraints
+  uncovered during review in nearby code comments or design notes, preserve
+  contributor attribution, and never manufacture human review or testing tags
+  from model approval. See `~/dotfiles/docs/software-design.md` for detailed
+  guidance and sources.
 
 These are judgment lenses, not a mandatory checklist to recite — bring one up
 when it changes the verdict, and give the verdict plainly (including "this isn't
@@ -555,21 +599,27 @@ artifact: a reviewer reading a point-A-to-Z diff cares what the code does and
 why it's correct, not which dead ends preceded it.
 
 - **Code comments:** document interface contracts, ownership, units, failures,
-  ordering, and non-obvious invariants. Design notes, domain explanations, and
-  state/guide comments can save a reader substantial reconstruction. Do not
-  restate an obvious line, narrate discarded attempts, or justify the edit to a
-  reviewer. Keep the explanation near the code and update it when behavior
-  changes; if it stops being true once merged, it does not belong.
+  ordering, and non-obvious data layouts, state transitions, and invariants.
+  Domain-teaching explanations (judged by the target reader, not the author's
+  familiarity), section/stage guide comments, ordering and cross-file update
+  checklists, and design notes for intentional omissions or extension points
+  save a reader substantial reconstruction. Do not restate an obvious line,
+  narrate discarded attempts, or justify the edit to a reviewer. Keep the
+  explanation near the code and update it when behavior changes; if it stops
+  being true once merged, it does not belong.
 - **Commit messages / PR descriptions:** describe the final change and _why it's
-  needed_, in the imperative, as if the failed attempts never happened. Don't
-  include a "previously I tried X but…" changelog.
+  needed_, in the imperative, as if the failed attempts never happened, and
+  include `Fixes:` (at least 12-character hash and quoted subject), `Closes:`,
+  and `Link:` trailers where applicable. Don't include a "previously I tried X
+  but…" changelog.
 - **The one thing worth keeping:** a _durable_ learning — "this must use
   `spin_lock_irqsave` here, not `spin_lock`, because an IRQ handler on the same
-  CPU takes this lock" — earns a place as a constraint comment or a line in the
-  commit rationale, precisely because it prevents a future editor from
-  re-introducing the dead end. The test: does a reader who never saw the
-  attempts still need this to avoid breaking the code? If yes, keep it (as a
-  constraint, not a war story); if it's only interesting as history, drop it.
+  CPU takes this lock" — earns a constraint comment near the code (and, where
+  useful, a line in the commit rationale), precisely because it prevents a
+  future editor from re-introducing the dead end. The test: does a reader who
+  never saw the attempts still need this to avoid breaking the code? If yes,
+  keep it (as a constraint, not a war story); if it's only interesting as
+  history, drop it.
 
 When the session's iteration history genuinely matters (so the user can follow
 what was learned), put it in the chat reply, not in the files or the commit.
@@ -607,12 +657,15 @@ Process guidance to fold into contribution advice
   and `drivers/staging` are the standard on-ramps.
 
 For bug reports, give expected versus observed behavior, a minimal usable
-reproducer, exact versions/errors, and the relevant environment. Preserve
-evidence before recovery steps and redact secrets from shared copies. Label
-hypotheses separately; do not invent output for a check that was not run. Search
-existing reports and follow the project's or subsystem's reporting route. For
-regressions, include the last good and first bad versions and a bisection result
-if obtained. Record kernel configuration, external modules, and taint where
+reproducer, exact versions/errors, and the relevant environment. Preserve the
+full log of the first failure alongside any excerpt before recovery steps, and
+redact secrets from shared copies. Label hypotheses separately; do not invent
+output for a check that was not run. Search existing reports and follow the
+project's or subsystem's reporting route. For regressions, include the last good
+and first bad versions, distinguish stable/LTS regressions from mainline
+regressions (`[REGRESSION]` in the subject, copying the regressions list and
+stable maintainers where applicable), and include a bisection result if
+obtained. Record kernel configuration, external modules, and taint where
 relevant; testing a new kernel still needs authorization. Follow up with actual
 results when a fix is tested. References:
 [Tatham](https://www.chiark.greenend.org.uk/~sgtatham/bugs.html),
