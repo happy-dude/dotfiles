@@ -41,18 +41,26 @@ Avoid making every implementation choice into a public option.
 
 ## Spend some time on the design
 
-Getting the current case to work is necessary, but it is not the whole job. Make
-small improvements that leave the affected area easier to work on next time. Do
+Getting the current case to work is necessary, but it is not the whole job. Ask
+whether a change solves the underlying abstraction problem or adds another
+special case around a broken boundary, and whether you would choose the
+resulting structure if the requirement had been present from the start. Make
+small improvements that leave the affected area easier to work on next time; do
 not use that as permission for unrelated cleanup or an unrequested rewrite.
 
-For a consequential interface, sketch more than one approach before committing
-to the first plausible one. Compare how a caller uses it, which state it owns,
-how it fails, and what a future change would touch. A small experiment can help
-when the important constraint is still uncertain.
+For a consequential interface, sketch genuinely different approaches rather than
+cosmetic variations on the first plausible one. Compare them against actual
+caller code: what a caller must know, which state the module owns, how it fails,
+and what a future change would touch. A small experiment can help when the
+important constraint is still uncertain.
 
 Think about the interface early, then revise it as working code and feedback
 expose better boundaries. Do not retain a wrong abstraction merely because it
 was planned, or defer necessary design indefinitely in the hope it will emerge.
+Once a design meets its agreed behavior, safety, quality, and resource
+constraints, stop adding optional design improvements to the current series;
+reopen the design for evidence of a defect or unmet requirement, not merely
+because another attractive alternative appeared.
 
 A prototype answers a question. Keep it separate from a finished implementation
 until it meets the real safety, error-handling, and verification requirements.
@@ -66,12 +74,17 @@ one sample does not establish a reusable interface's contract.
 A useful module does substantial work behind an interface that is simpler than
 its implementation. Callers should not need to read its internals to use it
 correctly. Module depth describes how much useful work an interface hides, not
-the size of a class or the complexity of its implementation.
+the size of a class or the complexity of its implementation. The cost of an
+interface includes its informal contract — setup order, ownership, failure
+behavior, configuration choices, and representation assumptions — not just the
+length of its function signatures.
 
 Group code around the information and decisions it owns, not just the order in
 which steps happen. Splitting parsing, validation, and execution into different
 files can be useful, but not if all three must independently know every detail
-of the same private representation.
+of the same private representation. Avoid back-door leakage, where two modules
+quietly depend on the same format or policy decision without an explicit
+interface between them.
 
 - Keep representation choices and resource lifetimes with their owner.
 - Do not expose internals merely because another layer could configure them.
@@ -82,6 +95,9 @@ of the same private representation.
 - If two parts must change together, make that dependency visible. A shared
   definition is preferable where practical; otherwise use a focused check and a
   nearby explanation of the coupling.
+- Before changing an interface or contract across module or ownership
+  boundaries, identify the affected consumers and consult the responsible owners
+  with a concrete proposal and its migration consequences.
 
 State whether returned data is borrowed or owned, what may mutate it, and which
 operations invalidate references. Prefer pairing acquisition and release within
@@ -107,8 +123,10 @@ schema is justified only when it removes more complexity than it introduces.
 
 An interface should express the operation the caller needs, not a tour of the
 implementation. Keep ordinary calls simple, with sensible defaults where the
-owner has enough information to choose them. Expose more detail when callers
-actually need the choice.
+owner has enough information to choose them. Avoid overexposure: routine callers
+should not have to learn rare modes or options just to use the common case.
+Before exporting a configuration parameter, ask whether the caller actually has
+better information to choose it than the module that owns the work.
 
 Aim for a somewhat general interface: enough to cover the real operations
 without encoding one caller's incidental details. That is different from
@@ -132,9 +150,14 @@ needs its invariants and reasoning, not a second copy of the public contract.
 ## Split code when the boundary helps
 
 Extract a function or module when it hides a coherent operation or decision.
-Keep closely related steps together when understanding either one requires the
-same state and invariants. Repeatedly jumping between tiny helpers to
-reconstruct one operation is a warning that the split may not be helping.
+Both sides should make sense independently: a reader should understand the
+caller without reading the helper's implementation, and the helper's contract
+without reading the specific caller. Keep closely related steps together when
+understanding either one requires the same state and invariants, or when
+splitting a single early-exiting pass into stages would force multiple
+traversals or extra state transitions just for appearance. Repeatedly jumping
+between tiny helpers to reconstruct one operation is a warning that the split
+may not be helping.
 
 There is no target line count. Check the actual caller and implementation rather
 than applying a slogan about small functions.
@@ -144,24 +167,33 @@ than applying a slogan about small functions.
   boundary adapter can still be justified; say what boundary it handles.
 - Prefer each layer to add a distinct abstraction instead of repeating the
   interface underneath it with different names.
-- Avoid threading a growing collection of unrelated parameters through every
-  call. A context object is useful only when it has a coherent owner and
-  purpose; it is not a reason to make shared mutable state global.
+- Watch for a growing list of unrelated parameters, or even a single
+  pass-through variable, threaded through layers that do not use it: apart from
+  deliberate ambient-context idioms such as Go's `context.Context`, Zig
+  allocators, or kernel `gfp_t` flags, it signals misplaced ownership or a
+  missing boundary. A context object is useful only when it has a coherent owner
+  and purpose, not as a reason to make shared mutable state global.
 - Remove duplicated knowledge, not every repeated line. A small amount of
   obvious repetition may be clearer than an abstraction with callbacks and
   branches for unrelated cases.
 
 ## Simplify failure without hiding it
 
-A better contract can remove unnecessary error cases. For example, an operation
-whose purpose is to ensure that a resource is absent may not need to fail when
-it is already absent. That depends on the caller's required behavior; it is not
-permission to change an established API silently.
+Distinguish three sound ways of handling an error condition from hiding it:
 
-Handle an error at the layer that has enough context to recover or report it
-usefully. Aggregate repetitive handling when the failures really share a policy.
-Do not catch everything, discard diagnostics, or return success for work that
-was not done.
+- Define it out of existence by choosing a contract where the case already
+  satisfies the operation — for example, an operation whose purpose is to ensure
+  that a resource is absent need not fail when it is already absent. That
+  depends on the caller's required behavior; it is not permission to change an
+  established API silently.
+- Mask it inside the module through genuine recovery (such as retrying a
+  transient failure or falling back to an equivalent source) while still
+  fulfilling the promised contract.
+- Aggregate related failures at one boundary that has enough context to share a
+  recovery or reporting policy, rather than repeating ad hoc checks at every
+  step.
+- Never confuse those three with silently catching everything, discarding
+  diagnostics, or returning success when the promised work did not happen.
 
 Library error reporting should preserve the caller's control over recovery,
 logging, and process lifetime rather than unexpectedly printing or exiting.
@@ -198,12 +230,16 @@ assumption, inspect its other uses without turning the fix into unrelated work.
 ## Use names that carry the right information
 
 Use the same name for the same concept and different names for different
-concepts. Prefer a precise domain term over vague names such as `data`, `value`,
-or `manager` when the distinction matters.
+concepts. Test a name by asking what plausible wrong meaning a reader could take
+from it. Prefer a precise domain term over vague names such as `data`, `value`,
+`manager`, `safe`, or `trusted` when the specific guarantee matters (for
+example, `html_escaped` or `within_repo_path`).
 
-A timeout needs units. A range needs clear endpoint semantics. A path may be
-absolute, relative to the repository, or relative to the user's home. Make those
-distinctions apparent in the interface and its documentation.
+A timeout needs units. A range needs clear endpoint semantics: use `min`/`max`
+or `first`/`last` for inclusive bounds and `begin`/`end` (or `start`/`stop`) for
+half-open ranges. A path may be absolute, relative to the repository, or
+relative to the user's home. Make those distinctions apparent in the interface
+and its documentation.
 
 Make boolean names clear about what true means; avoid double negatives where
 they obscure the condition. Names should also match the expected cost and side
@@ -226,19 +262,27 @@ Use a useful intermediate name to explain a dense expression, not merely to give
 every expression a variable. Keep variables near their use, reduce the number of
 values that are simultaneously relevant, and avoid reusing one name for
 unrelated states. Prefer values that do not change once established when that
-fits the operation.
+fits the operation. Follow each decision closely with its action: handle a
+result where it is discovered when that removes a `found` or `done` bookkeeping
+variable carried to later code without violating ordering or cleanup.
 
-Guard clauses can make a normal path easier to follow, but preserve cleanup and
-ordering requirements when changing nesting. Do not copy a blanket prohibition
-on `goto` into kernel C: a clear shared cleanup path can be the right
-convention. Likewise, a short conditional expression is not automatically less
-readable than an `if`; inspect the actual expressions and surrounding code.
+When boolean logic or case analysis grows tangled, check whether De Morgan's
+laws or the complementary condition (for example, how two ranges fail to
+overlap) expresses the rule more simply while preserving short-circuit guards,
+empty-input behavior, and side effects. Guard clauses can make a normal path
+easier to follow, but preserve cleanup and ordering requirements when changing
+nesting. Do not copy a blanket prohibition on `goto` into kernel C: a clear
+shared cleanup path can be the right convention. Likewise, a short conditional
+expression is not automatically less readable than an `if`; inspect the actual
+expressions and surrounding code.
 
 Keep related work together and order it so a reader can follow the state
-transitions. Extract a genuinely separate subproblem when the resulting
-interface helps, not simply because a few lines can be named. Reuse suitable
-existing libraries before writing another implementation, while accounting for
-the dependency and adaptation costs.
+transitions. After editing a branch, reread the whole function rather than just
+the diff hunk to see whether the surrounding control flow stayed clear. Extract
+a genuinely separate subproblem when the resulting interface helps, not simply
+because a few lines can be named. Reuse suitable existing libraries before
+writing another implementation, while accounting for the dependency and
+adaptation costs.
 
 ## Write comments that save the reader work
 
@@ -252,7 +296,9 @@ every useful explanation.
 Document the behavior needed to use a function or module without opening its
 implementation. Include relevant inputs, outputs, units, ownership, side
 effects, error behavior, and ordering or concurrency requirements. Do not repeat
-what the signature already says or expose irrelevant private machinery.
+what the signature already says or expose irrelevant private machinery. A short
+interface comment indicates a simple interface only when it states the complete
+contract rather than omitting awkward preconditions.
 
 Internal interfaces can need this too. Being on the same team does not mean that
 every reader remembers every caller's assumptions.
@@ -263,30 +309,42 @@ Explain why an apparently simpler alternative would be wrong, which invariant
 must remain true, or which protocol or platform rule the code relies on. A brief
 design note can also explain why the simple implementation is sufficient.
 
-Keep domain explanations when they genuinely help someone understand the code:
-state-machine transitions, parser position, stack layout, coordinate systems, or
-synchronization rules. Do not turn a familiar operation into a tutorial.
+Document non-obvious data layouts, valid states, and state-machine transitions,
+along with parser position, stack layout, coordinate systems, or synchronization
+rules when they genuinely help someone understand the code. Domain-teaching
+comments that explain a mathematical property, algorithm, or data structure are
+valuable even when the concept is not specific to the codebase: judge what is
+familiar by the intended reader, not by what the author already knows. Put
+cross-module design rationale at the single natural change point, or in one
+focused design note referenced from the affected files rather than maintaining
+duplicate explanations.
 
 ### Guide and checklist comments
 
-A comment describing what happens can still be useful when it summarizes a
-coherent stage or saves substantial mental bookkeeping. State annotations and
-short guide comments are not automatically redundant. The test is whether they
-make the surrounding code easier to follow.
+A comment describing what happens is useful when it summarizes a coherent stage,
+marks a section where future related statements belong, or saves substantial
+mental bookkeeping. State annotations and short guide comments are not
+automatically redundant; the test is whether they make the surrounding code
+easier to follow.
 
-When related changes cannot be centralized, identify the other place that must
-be updated and why. Prefer removing the hidden coupling when practical, but do
-not delete the warning before the coupling is gone.
+When related changes cannot be centralized, or when steps must happen in a
+specific order across calls or files, use a checklist comment that names the
+other place or required sequence and why. Prefer removing the hidden coupling
+when practical, but do not delete the warning before the coupling is gone.
 
-A comment that only restates an obvious assignment adds another thing to read
-and maintain. Remove that noise, not the explanation that prevents a future bug.
+A comment that only restates an obvious assignment or costs at least as much
+effort to read as the code it repeats adds another thing to maintain; remove
+that noise, not the contract, rationale, or invariant explanation that prevents
+a future bug.
 
 ### Keep comments current
 
-Write the interface description while designing the interface. If it takes a
-long explanation full of exceptions, check whether the design can be simpler.
-Writing the explanation is a useful design check, not a substitute for working
-code or tests.
+Write the interface description while designing the interface. Names and
+comments often look clear to the author who already has the implementation in
+mind; check what an unfamiliar reader still has to reconstruct. If the
+description takes a long explanation full of exceptions, check whether the
+design can be simpler. Writing the explanation is a useful design check, not a
+substitute for working code or tests.
 
 When code changes, update nearby comments and cross-module notes in the same
 logical change. Keep a durable constraint near the code that depends on it; Git
@@ -296,9 +354,10 @@ Use history for discarded implementations, not blocks of old executable code
 kept as backups. Intentionally disabled configuration examples and archived
 references are different: understand their purpose before deleting them.
 
-If work must remain deferred, describe the actual limitation and its conditions,
-with an issue reference where available. Do not fill code with vague `TODO`,
-`FIXME`, or "temporary" labels that give the next reader no useful direction.
+If work or a feature is intentionally omitted or deferred, record the reason,
+the actual limitation, and the natural extension point in a design note, with an
+issue reference where available, rather than leaving speculative executable
+branches or vague `TODO`, `FIXME`, or "temporary" labels.
 
 ## Write clear prose
 
@@ -351,14 +410,20 @@ implementation details a mock can assert.
 - Use a throwaway smoke test for exploratory changes when no durable regression
   needs protecting. Do not turn every successful experiment into permanent
   maintenance work.
-- Choose simple inputs that still expose the important boundary or failure. Name
-  the behavior being checked and make failures show the useful expected and
-  observed values. Test code should be understandable without a separate
-  exercise in decoding its fixtures or helper layers.
+- Choose simple inputs that systematically cover the boundaries: empty or no-op
+  input, a single item, values just below, at, and above a limit, exact
+  equality, and duplicates. Name the behavior being checked and make failures
+  show the useful expected and observed values. Test code should be
+  understandable without a separate exercise in decoding its fixtures or helper
+  layers.
+- Check preservation as well as mutation: verify that margins outside the target
+  region, unrelated keys, caller-owned inputs, and prior state after a rejected
+  operation remain unchanged.
 - Establish expected results independently: known cases, conservation
   properties, or a simple reference implementation. Round trips can hide
-  matching bugs in two components, and an old version's output is not
-  automatically correct.
+  matching bugs in two components, an old version's output is not automatically
+  correct, and independent implementations or models can still share the same
+  misreading of an ambiguous specification.
 - Exercise meaningful error paths with bounded fault injection or small test
   capacities where appropriate. Keep those controls isolated from production;
   never weaken a safety guard merely to make a test reach later code.
@@ -417,16 +482,20 @@ and focused logs. Logging should help reconstruct the important operation and
 its failures without leaking credentials or private content. Request IDs can
 help when work crosses processes; logging every branch is not a universal rule.
 
-Reason back from the first reliable evidence before changing code. Reduce the
-input or change range while preserving the failure, and choose experiments that
-distinguish specific hypotheses. Repeated offsets or size thresholds are clues,
-not diagnoses. For intermittent failures, compare environments and record the
-conditions and frequency instead of claiming a deterministic reproducer.
+Reason back from the first reliable evidence before changing code. When a result
+is surprising, check the harness and executed artifact too: verify which binary,
+store path, generated configuration, and environment actually ran, and whether
+the check can distinguish failure from success. Reduce the input or change range
+while preserving the failure, and choose experiments that distinguish specific
+hypotheses. Repeated offsets or size thresholds are clues, not diagnoses. For
+intermittent failures, compare environments and record the conditions and
+frequency instead of claiming a deterministic reproducer.
 
 Keep useful invariant checks or supported diagnostics when they justify their
 cost; remove temporary probes rather than leaving commented-out debugging code.
-Keep investigation notes separately from comments and commit rationale. Commit
-the resulting contract or constraint, not the sequence of unsuccessful attempts.
+Keep investigation notes — hypothesis, the change that tests it, observation,
+and conclusion — separately from comments and commit rationale. Commit the
+contract or constraint, not the sequence of unsuccessful attempts.
 
 Prefer simple concurrency and explicit ownership. Know which operation can run
 at the same time, how it is cancelled, and who waits for workers to finish.
@@ -495,6 +564,18 @@ or a particular UI architecture.
 - Dustin Boswell and Trevor Foucher,
   [The Art of Readable Code](https://www.oreilly.com/library/view/the-art-of/9781449318482/).
   Naming, comments, control flow, local state, and readable tests.
+- Adrienne Braganza,
+  [Looks Good to Me: Constructive Code Reviews](https://www.manning.com/books/looks-good-to-me)
+  (Manning, 2025). Review preparation, specific and actionable feedback,
+  blocking vs non-blocking scope, working agreements, and using automated and AI
+  checks without surrendering human judgment.
+- W. J. King, _The Unwritten Laws of Engineering_, American Society of
+  Mechanical Engineers, originally published in _Mechanical Engineering_,
+  May–July 1944, and the revised excerpts with James G. Skakoon in _Mechanical
+  Engineering_, October–December 2010
+  ([2010 excerpts](https://rotorlab.tamu.edu/me489/README/2010%20ASME%20Unwritten_Laws_of_Enginering.pdf)).
+  Task ownership, first-hand verification, cross-boundary consultation, and
+  clear engineering reports.
 - [The Grug Brained Developer](https://grugbrain.dev/)
 - [Jesse Warden: Criticisms of The Grug Brained Developer](https://jessewarden.com/2023/08/criticisms-of-the-grug-brained-developer.html)
 - [Salvatore Sanfilippo: Writing system software: code comments](https://antirez.com/news/124)

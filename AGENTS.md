@@ -407,9 +407,13 @@ changes. `language.md` also names the exact `home.nix` comment headings
 `Aspell spellcheck-backed word validation for Esperanto/Italian/Polish/Spanish`)
 and the static Rime source tree (`rime/.local/share/fcitx5/rime/`). Update both
 prompts when those headings, package names, or paths change; they are maintained
-documentation, not generated files. The canonical Markdown is the only source to
-update: Nix generates Codex agents and profile templates during evaluation, so
-there is no manual regeneration step or generated-file drift to commit.
+documentation, not generated files. `docs/software-design.md` is the detailed
+design, testing, and comment reference, while `AGENTS.md`,
+`agents/prompts/kernel.md`, and `agents/prompts/kagi-kernel.md` carry condensed
+operational projections that must stay aligned within the `kagi-prompt-budget`
+check. The canonical Markdown is the only source to update: Nix generates Codex
+agents and profile templates during evaluation, so there is no manual
+regeneration step or generated-file drift to commit.
 
 The package lists embedded in those prompts are caches, not sources of truth.
 Each prompt tells the agent to inspect `home.nix` before deciding whether a tool
@@ -832,8 +836,9 @@ source.
 - Give concrete paths, commands, and configuration examples. If a workaround
   depends on a nightly build, operating system, or package version, say which
   one. Separate what was checked from what still needs investigating. Use `ref:`
-  or `refs:` for the upstream issue, patch, or documentation that explains the
-  constraint.
+  or `refs:` in documentation and inline prose for the upstream issue, patch, or
+  documentation that explains the constraint (commit messages use standard
+  `Fixes:`, `Closes:`, and `Link:` trailers instead).
 - Write in the owner's voice: plain, friendly, and grounded in evidence.
   - Start with how the problem turned up or what changed upstream, then say what
     the change does in a sentence or two. "Encountered this while editing a
@@ -841,10 +846,12 @@ source.
     are typical openings.
   - Show the evidence instead of describing it: the exact commands and their
     output, version strings and commit hashes, permalinks to the relevant source
-    lines, and the arithmetic when a number is the point.
+    lines, compact before/after blocks or a state table when comparing behavior
+    across states, and the arithmetic when a number is the point.
   - Say how sure you are and why. Mark what was confirmed and how, what was
     ruled out, and what is still a guess; phrase a guess as a question or with
-    "perhaps".
+    "perhaps", and pair bounded confidence with the specific check needed rather
+    than a generic request to test.
   - Point to related issues, prior art, and upstream documentation, and quote
     the passage that matters rather than paraphrasing it.
   - In an issue or review thread, report a fix that did not work as plainly as
@@ -854,8 +861,8 @@ source.
     as [the software design notes](docs/software-design.md) require.
   - In issues and review threads, a short greeting, thanks to the people and
     discussions that helped, and an offer to test or send a patch belong to the
-    voice. Commit messages leave them out and follow the kernel conventions
-    above.
+    voice; keep greeting and section ceremony proportional to the submission.
+    Commit messages leave them out and follow the kernel conventions above.
   - Prefer everyday words and short sentences to formal connectives, and do not
     end by restating what was just said. The general rules for clear prose are
     in the design notes; this list covers only what makes the writing sound like
@@ -912,16 +919,20 @@ source.
   than claiming the reproducer always fails. Keep hypotheses and workarounds
   separate from observations; a patch does not replace the problem description.
 - Preserve useful evidence before resets, reinstalls, or other recovery steps.
-  Keep the relevant log and first failure intact, then make a redacted copy for
-  sharing. Credentials, private data, and memory dumps need particular care.
-  Never invent output or imply a suggested check was actually run.
+  Keep the full log of the first failure intact alongside any short excerpt,
+  then make a redacted copy for sharing. Credentials, private data, and memory
+  dumps need particular care. Never invent output or imply a suggested check was
+  actually run.
 - Search for an existing report and follow the project's reporting instructions.
   Use the appropriate vendor or upstream channel, with one report per distinct
   issue. For kernel reports, consult `MAINTAINERS`; do not assume every
   subsystem uses the same tracker. Record the kernel version/configuration,
   hardware, distro patches, external modules, and taint state where relevant.
 - For a regression, name the last known-good and first known-bad versions and
-  include a bisection result if one was obtained. Check a suitable current
+  include a bisection result if one was obtained. For a kernel regression,
+  distinguish regressions within a supported stable/LTS series from mainline
+  regressions, mark the subject with `[REGRESSION]`, and copy the regressions
+  list and stable maintainers where applicable. Check a suitable current
   upstream or supported stable release when safe and authorized; document any
   testing limitation instead of hiding it. This is not permission to replace the
   kernel, unload drivers, or weaken host policy without confirmation.
@@ -932,15 +943,32 @@ source.
   [How to Report Bugs Effectively](https://www.chiark.greenend.org.uk/~sgtatham/bugs.html)
   and
   [Reporting issues](https://docs.kernel.org/admin-guide/reporting-issues.html).
+- Own the agreed task end to end and verify facts first-hand in the source,
+  logs, and live configuration before blaming another component or asking the
+  user. Check arithmetic, units, and load-bearing assumptions in reports before
+  submitting them. When work is divided across sessions or helpers, keep one
+  accountable integration owner responsible for verifying the combined result.
+  Before changing an interface or contract that other modules or workflows rely
+  on, identify the affected consumers and consult the responsible owner with a
+  concrete proposal and migration plan, and record material scope or interface
+  agreements (what was agreed, who owns the action, and what completes it). When
+  a real external blocker or new evidence prevents completing part of the task,
+  finish all reachable work and report what is blocked, what was checked and
+  tried, the exact missing prerequisite, and a concrete recommended next step
+  with its tradeoffs.
 - Before requesting review, review the diff yourself. Keep the change focused,
-  explain its purpose and constraints, and state what was tested and what was
-  not. Let formatters, linters, and automated checks handle mechanical issues so
-  reviewers can spend their time on behavior, design, and maintainability.
+  supply the context that matches the change (symptom, root cause, and
+  regression risk for a bug fix; acceptance criteria, ownership, invariants, and
+  rejected alternatives for a feature or design change; affected consumers and
+  migration for a breaking change; dependency map and reading order for a larger
+  series), and state what was tested and what was not. Let formatters, linters,
+  and automated checks handle mechanical issues so reviewers can spend their
+  time on behavior, design, and maintainability.
 - Review the code, not the author. Make comments specific and explain the
   consequence, with a useful alternative where possible. Separate blocking
-  correctness, security, regression, and maintainability concerns from optional
-  suggestions or personal preferences. Ask when intent is unclear; do not turn a
-  question into a defect without checking it.
+  correctness, security, regression, and maintainability defects from
+  non-blocking suggestions or personal preferences. Ask when intent is unclear;
+  do not turn a question into a defect without checking it.
 - Keep the feedback loop manageable: address or explain each substantive
   finding, group duplicates, and move unrelated improvements out of the review.
   The author owns the revision and verification; reviewers own the evidence
@@ -950,9 +978,12 @@ source.
   public
   [working-agreement template](https://github.com/adriennetacke/lgtm-extras/blob/main/Templates/starter-team-working-agreement.md).
 - Before requesting a change, decide whether it belongs in this patch or a
-  follow-up. State what should change, why, and what result would satisfy it. If
-  an exchange is not resolving the question, clarify the missing decision and
-  record the outcome rather than adding more speculative comments.
+  follow-up, and mark whether it is blocking or non-blocking. State what should
+  change, why, and what result would satisfy it. If an exchange is not resolving
+  the question, separate factual questions from priority choices, verify the
+  fact or record the decision, and put durable constraints uncovered during
+  review or debugging into nearby code comments or design notes rather than
+  leaving them only in review threads or commit messages.
 - Agree on the reviewed revision and required checks. Do not keep moving the
   target with unrelated changes, count approvals as proof, or assume written
   policy is enforced by the tools. Recheck the affected behavior after
@@ -965,9 +996,12 @@ source.
   instead of making the reviewer reconstruct them.
 - Commit messages describe the problem, user-visible impact, and final change.
   Make the explanation understandable without opening a link or reading an
-  earlier revision. Back performance claims with measurements and their costs.
-  Keep v1-to-v2 notes in the cover letter or submission commentary, not in the
-  permanent rationale. Address review feedback and identify what changed.
+  earlier revision, and use `Fixes:` (at least 12-character hash and quoted
+  subject), `Closes:`, and `Link:` commit trailers where applicable (while
+  documentation and inline prose use `ref:` or `refs:`). Back performance claims
+  with measurements and their costs. Keep v1-to-v2 notes in the cover letter or
+  submission commentary, not in the permanent rationale. Address review feedback
+  and identify what changed.
 - Preserve real contributor attribution when adapting another person's patch,
   and identify substantive maintainer changes. Do not invent sign-offs, tests,
   or reviews; an agent never adds `Signed-off-by:`, because it certifies the
@@ -985,14 +1019,20 @@ source.
   [Submitting patches](https://docs.kernel.org/process/submitting-patches.html)
   and the
   [Kernel Maintainer Handbook](https://docs.kernel.org/maintainer/index.html).
-- Comments should explain a constraint, invariant, or non-obvious choice in the
-  code as it stands. Keep useful source references and version limits; remove
-  stale claims or trial-and-error narration. Do not rewrite an accurate comment
-  just to make it sound different.
+- Comments should explain an interface contract, constraint, invariant,
+  non-obvious choice, domain concept, stage/state transition, or required
+  ordering/cross-file checklist in the code as it stands. Keep useful source
+  references and version limits; remove trivial restatements, stale claims, or
+  trial-and-error narration. Do not rewrite an accurate comment just to make it
+  sound different.
 - Use [the software design notes](docs/software-design.md) when changing module
-  boundaries, interfaces, tests, or comments. Judge the tradeoff by what a
-  reader or caller must know, not by a line-count target or a preferred slogan.
-  Check examples against current APIs and project constraints before using them.
+  boundaries, interfaces, tests, or comments. Solve the underlying abstraction
+  problem rather than adding another special case around a broken boundary, and
+  judge the tradeoff by what a reader or caller must know (including the
+  informal contract), not by a line-count target or a preferred slogan. Check
+  that tests verify both the intended change and the state that must remain
+  unchanged, and check examples against current APIs and project constraints
+  before using them.
 - Prefer adding packages to `home.nix`'s `home.packages` list (or to a module's
   `default.nix`) over installing system-wide. Resolve binary collisions
   explicitly with `lib.hiPrio` / `lib.lowPrio` as already done for `gcc` /
