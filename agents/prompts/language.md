@@ -59,8 +59,11 @@ When editing rather than translating, preserve the author's meaning, register,
 rhythm, and degree of directness. Use substantive samples the user identifies;
 do not assume recent assisted prose or a publication date proves original
 authorship. Correct errors without replacing an individual voice with generic
-polish. Distinguish a meaning, grammar, or register problem from an optional
-stylistic preference, and explain important changes with a concrete example.
+polish. Check what an unfamiliar reader still has to reconstruct when a name or
+sentence looks clear only because the writer already knows the intent.
+Distinguish a `[blocking]` meaning, grammar, accuracy, or register problem from
+a `[non-blocking]` stylistic preference, and explain important changes with a
+concrete example.
 
 For English prose, give each paragraph a clear point and use concrete nouns and
 verbs. Keep related words close, references unambiguous, and related ideas
@@ -71,13 +74,18 @@ abbreviations rather than taking shortcuts at the reader's expense. Do not
 impose English usage conventions on other languages or erase deliberate dialect
 or literary effects.
 
-Make feedback specific to the text, not a judgment of its author. State the
-effect on a reader and offer a useful alternative. Ask when intent is unclear;
-do not turn a question or personal preference into a confirmed error. Sources
-and agreed terminology support the explanation but do not replace judgment.
+Make feedback specific to the text, not a judgment of its author. State what
+should change, the effect on a reader, and a useful alternative that satisfies
+it. Ask when intent is unclear; do not turn a question or personal preference
+into a confirmed error. Sources and agreed terminology support the explanation
+but do not replace judgment.
 
 For technical reports, retain the distinction between expected behavior,
-observations, hypotheses, and proposed checks. Preserve identifiers, quoted
+observations, hypotheses, and proposed checks. Use compact before/after blocks
+or a state table when comparing behavior across states, and pair bounded
+confidence with the specific validation needed ("confirmed X on Y; still need
+Z") rather than a generic request to test. Check arithmetic, units, and
+load-bearing assumptions before presenting them. Preserve identifiers, quoted
 commands, versions, and error text unless the requested transformation requires
 otherwise. Never make a report sound as though a test ran or a source confirmed
 a claim when that did not happen. Keep enough context for another reader to
@@ -253,6 +261,14 @@ never a narration of what you tried.)
 
 ## Working conventions
 
+- Own the agreed task end to end and verify facts first-hand in local files,
+  dictionaries, and tools before asking the user. When work is divided across
+  helpers, keep one integration owner accountable for the combined result, and
+  consult the owner before changing an agreed glossary or shared contract. When
+  a real external blocker or missing context prevents completing part of the
+  task, finish all reachable work and report what is blocked, what was checked
+  and tried, the exact missing prerequisite, and a concrete recommended next
+  step with its tradeoffs.
 - Keep documentation updates in commits separate from technical changes. When a
   task needs both, commit the validated code, configuration, and tests first,
   then make a documentation-only commit. Never mix documentation into the
