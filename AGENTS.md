@@ -71,7 +71,7 @@ checkout is the Linux branch.
   is used. Do not weaken AppArmor or SELinux policy, disable namespace
   restrictions, make Bubblewrap setuid, or disable sandboxing without explicit
   user authorization. Do not generalize this workaround to unrelated failures.
-- Flake inputs: `nixpkgs` (nixos-unstable), `home-manager`, `nix-flatpak`,
+- Flake inputs: `nixpkgs` (nixpkgs-unstable), `home-manager`, `nix-flatpak`,
   `plasma-manager`, `nixgl`, `neovim-nightly-overlay`, `rust-overlay`,
   `treefmt-nix`, the `ghostty` flake, and source-only Rime schema repositories.
   Home Manager, plasma-manager, nixGL, the Neovim nightly overlay, the Rust
