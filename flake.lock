@@ -116,11 +116,11 @@
         "zon2nix": "zon2nix"
       },
       "locked": {
-        "lastModified": 1792098740,
-        "narHash": "sha256-1oItTID8wgc/CawP+E3ZpXv9C/T/gpvy3JL84M9ezaw=",
+        "lastModified": 1792368086,
+        "narHash": "sha256-5dJrUz8vT1Rpy3bJhMbChtww2qBrXCcEQfRysUC2PU0=",
         "owner": "ghostty-org",
         "repo": "ghostty",
-        "rev": "b3dc3d794513c11633e7c3347935693957744e83",
+        "rev": "06d872fa663ba1edab65126ddbb2705c0d565468",
         "type": "github"
       },
       "original": {
@@ -179,11 +179,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792108969,
-        "narHash": "sha256-Z5Q1WMeqlUBHmpbIELsNWPKNejwYgG80bFaTpaj5gMU=",
+        "lastModified": 1792368179,
+        "narHash": "sha256-ZoWj95FA6/3Ow9iC0AsVMB/FZPY/HQTuwFa/BXo+m3I=",
         "owner": "nix-community",
         "repo": "neovim-nightly-overlay",
-        "rev": "ec30eb6e2032509b15c535c122f31da2021f3481",
+        "rev": "0a1889356065f01f88d69f30ddd40352d48de893",
         "type": "github"
       },
       "original": {
@@ -195,11 +195,11 @@
     "neovim-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1792084958,
-        "narHash": "sha256-+/GmLk7KvMVJ0jyvx46eWBjWJ5UwaLIybHJt95lQ1sU=",
+        "lastModified": 1792365976,
+        "narHash": "sha256-2HrFFjzt83piKGgJFtrYVBI5kBz2YQC0YOBzXf8bUO4=",
         "owner": "neovim",
         "repo": "neovim",
-        "rev": "380cccb11f1ffcd9ecf15a1b2ac8e2502df0eed1",
+        "rev": "c049b8f002fe7535c9f85dad912cf2a631d02460",
         "type": "github"
       },
       "original": {
@@ -512,11 +512,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792133817,
-        "narHash": "sha256-LivT78KkZ18adR5daoXj2nlIOxuLw6B96nvW4FOl4d0=",
+        "lastModified": 1792307278,
+        "narHash": "sha256-wJgFFtw/vlzsjWrQFmTn40TTkSkqHM4XXN0nh4q4uMk=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "ec07af44be2e0ce4e1a17e00a97d44232607c1ec",
+        "rev": "42076d1c6a0fb405ed04f9a674e4a8f69de62ba3",
         "type": "github"
       },
       "original": {
@@ -596,11 +596,11 @@
     "virtme_ng_src": {
       "flake": false,
       "locked": {
-        "lastModified": 1791878636,
-        "narHash": "sha256-GcsX51DC4W79HGD7DRLt1ZlubNul9zi/SJVnzUN40Ok=",
+        "lastModified": 1792249444,
+        "narHash": "sha256-bNFyQH6TrJa7t/zIvIAhAKIbeYgmXyGQbmy0ub/wxTk=",
         "owner": "arighi",
         "repo": "virtme-ng",
-        "rev": "a89f3d39428720e953843900edcdd0246c272856",
+        "rev": "55d4b984bf78554109947fba6b0735c60bc4e8fe",
         "type": "github"
       },
       "original": {
