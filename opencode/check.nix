@@ -16,7 +16,7 @@
       home: toString home.config.xdg.configFile.${path}.source
     );
   settings = sharedFile "opencode/opencode.json";
-  tui = sharedFile "opencode/tui.json";
+  cli = sharedFile "opencode/cli.json";
   theme = sharedFile "opencode/themes/gruvbox-material.json";
   mixTheme = sharedFile "opencode/themes/gruvbox-material-mix-dark-medium.json";
   agentNames = lib.attrNames (import ../agents/prompts.nix {inherit lib;});
@@ -66,6 +66,9 @@ in
         export XDG_DATA_HOME="$HOME/.local/share"
         export XDG_STATE_HOME="$HOME/.local/state"
         mkdir -p "$XDG_CONFIG_HOME/opencode"
+        # Disable the persistent background service so each CLI invocation in
+        # the check uses an isolated standalone server.
+        printf '%s\n' '{"disabled":true}' >"$XDG_CONFIG_HOME/opencode/service.json"
         for variable in \
           OTEL_EXPORTER_OTLP_ENDPOINT \
           OTEL_EXPORTER_OTLP_TRACES_ENDPOINT \
@@ -75,20 +78,18 @@ in
           OTEL_RESOURCE_ATTRIBUTES; do
           grep -Fx "unset $variable" "$(command -v opencode)"
         done
-        tui_schema=${opencode}/share/tui.json
-        [ -e "$tui_schema" ] || tui_schema=${opencode}/share/opencode/tui.json
         check-jsonschema \
-          --schemafile "$tui_schema" \
-          ${tui}
+          --schemafile ${opencode}/share/cli.json \
+          ${cli}
         check-jsonschema \
-          --schemafile ${pkgs.opencode.src}/packages/web/public/theme.json \
-          ${theme}
+          --schemafile ${opencode}/share/config.json \
+          ${settings} ${self}/opencode.json
         check-jsonschema \
-          --schemafile ${pkgs.opencode.src}/packages/web/public/theme.json \
-          ${mixTheme}
+          --schemafile ${opencode}/share/theme.json \
+          ${theme} ${mixTheme}
         jq -e '
-          .theme == "gruvbox-material-mix-dark-medium"
-        ' ${tui} >/dev/null
+          .theme.name == "gruvbox-material-mix-dark-medium"
+        ' ${cli} >/dev/null
         # The mix variant is the base theme with a brighter palette: same
         # role assignments, same palette names, and exactly these colors
         # redefined. Nix builds both from one attribute set; assert that
@@ -104,17 +105,23 @@ in
           "$XDG_CONFIG_HOME/opencode/opencode.json"
 
         opencode debug config >resolved.json
-        jq -e --argjson agents ${lib.escapeShellArg (builtins.toJSON agentNames)} '
-          .share == "disabled" and
-          .autoupdate == false and
-          .experimental.openTelemetry == false and
-          .permission.bash == "ask" and
-          .permission.external_directory == "ask" and
-          .permission.lsp == "allow" and
-          .lsp == false and
-          (.model == null) and
-          (.enabled_providers == null) and
-          (. as $root | all($agents[]; $root.agent[.].mode == "all"))
+        jq -e --arg path "$XDG_CONFIG_HOME/opencode/opencode.json" \
+          --argjson agents ${lib.escapeShellArg (builtins.toJSON agentNames)} '
+          (.[] | select(.type == "document" and .path == $path) | .info) as $info |
+          ([.[] | select(.type == "document")] | length) == 1 and
+          $info.share == "disabled" and
+          $info.update == "disable" and
+          $info.permissions == [
+            {action: "shell", resource: "*", effect: "ask"},
+            {action: "edit", resource: "*", effect: "allow"},
+            {action: "external_directory", resource: "*", effect: "ask"},
+            {action: "lsp", resource: "*", effect: "allow"}
+          ] and
+          $info.lsp == false and
+          ($info.model == null) and
+          ($info.policies == null) and
+          ($info.providers == null) and
+          all($agents[]; $info.agents[.].mode == "all")
         ' resolved.json >/dev/null
 
         mkdir project
@@ -123,12 +130,16 @@ in
           cd project
           opencode debug config >../project.json
         )
+        project_path=$(realpath project/opencode.json)
         # opencode.json is the source of truth for this project's language
         # servers. Assert that every executable it names is provided, rather
         # than restating the table and asserting the file equals itself.
         missing=$(
-          jq -r '
-            .lsp | to_entries[]
+          jq -r --arg path "$project_path" '
+            .[]
+            | select(.type == "document" and .path == $path)
+            | .info.lsp
+            | to_entries[]
             | select(.value.disabled != true)
             | .value.command[0]
           ' project.json | sort -u | while read -r executable; do
@@ -141,6 +152,8 @@ in
         fi
 
         # Keep Oxlint off in this repo so its diagnostics do not overlap with ESLint.
-        jq -e '.lsp.oxlint.disabled == true' project.json >/dev/null
+        jq -e --arg path "$project_path" '
+          (.[] | select(.type == "document" and .path == $path) | .info.lsp.oxlint.disabled) == true
+        ' project.json >/dev/null
       '';
     }

@@ -10,27 +10,42 @@
   opencode = import ./package.nix {inherit pkgs;};
   settings = {
     "$schema" = "https://opencode.ai/config.json";
-    autoupdate = false;
+    update = "disable";
     lsp = false;
     share = "disabled";
-    experimental.openTelemetry = false;
-    permission = {
-      bash = "ask";
-      edit = "allow";
-      external_directory = "ask";
-      lsp = "allow";
-    };
-    agent =
+    permissions = [
+      {
+        action = "shell";
+        resource = "*";
+        effect = "ask";
+      }
+      {
+        action = "edit";
+        resource = "*";
+        effect = "allow";
+      }
+      {
+        action = "external_directory";
+        resource = "*";
+        effect = "ask";
+      }
+      {
+        action = "lsp";
+        resource = "*";
+        effect = "allow";
+      }
+    ];
+    agents =
       lib.mapAttrs (_: prompt: {
         inherit (prompt) description;
         mode = "all";
-        prompt = prompt.body;
+        system = prompt.body;
       })
       prompts;
   };
-  tuiSettings = {
-    "$schema" = "https://opencode.ai/tui.json";
-    theme = "gruvbox-material-mix-dark-medium";
+  cliSettings = {
+    "$schema" = "https://opencode.ai/v2/cli.json";
+    theme.name = "gruvbox-material-mix-dark-medium";
   };
   gruvboxMaterialTheme = {
     "$schema" = "https://opencode.ai/theme.json";
@@ -102,8 +117,8 @@ in {
   };
   xdg.configFile."opencode/opencode.json".source =
     json.generate "opencode.json" settings;
-  xdg.configFile."opencode/tui.json".source =
-    json.generate "opencode-tui.json" tuiSettings;
+  xdg.configFile."opencode/cli.json".source =
+    json.generate "opencode-cli.json" cliSettings;
   xdg.configFile."opencode/themes/gruvbox-material.json".source =
     json.generate "opencode-gruvbox-material.json" gruvboxMaterialTheme;
   xdg.configFile."opencode/themes/gruvbox-material-mix-dark-medium.json".source =
