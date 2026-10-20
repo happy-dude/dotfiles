@@ -299,20 +299,19 @@ and installs StyLua's config under `~/.config/stylua`.
   ships.
 - **`opencode/`** installs the Nix package for both Linux profiles and owns the
   global provider-neutral configuration. It disables self-updates and session
-  sharing, disables AI SDK telemetry, strips inherited OTLP exporter variables
-  only from the OpenCode process, asks before shell commands and
-  external-directory access, and reuses the canonical agent prompts. OpenCode
-  permissions are approval gates rather than a security sandbox; use process
-  isolation for untrusted repositories. Global LSP feedback remains disabled.
-  The repository-root `opencode.json` enables LSP feedback only for this
-  checkout, invokes the Nix-managed server commands, and disables overlapping
-  Oxlint diagnostics. The LSP permission and
+  sharing, strips inherited OTLP exporter variables only from the OpenCode
+  process, asks before shell commands and external-directory access, and reuses
+  the canonical agent prompts. OpenCode permissions are approval gates rather
+  than a security sandbox; use process isolation for untrusted repositories.
+  Global LSP feedback remains disabled. The repository-root `opencode.json`
+  enables LSP feedback only for this checkout, invokes the Nix-managed server
+  commands, and disables overlapping Oxlint diagnostics. The LSP permission and
   `OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured, and the same
   guard and `OPENCODE_CONFIG` reach systemd user services such as the Emacs
   daemon through `systemd.user.sessionVariables`; the user manager reads that
   `environment.d` file when it starts, so a running daemon sees a changed value
   after `systemctl --user daemon-reexec` and a restart, or the next login. The
-  module also owns `tui.json`, retains the Gruvbox Material material dark-medium
+  module also owns `cli.json`, retains the Gruvbox Material material dark-medium
   theme, and selects the separately generated mix dark-medium variant by
   default. `OPENCODE_CONFIG` points to the optional mode-0600
   `~/.config/opencode/local.json` for private MCP definitions and other
