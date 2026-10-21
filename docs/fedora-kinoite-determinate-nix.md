@@ -680,12 +680,20 @@ tmux client, run Codex, type one line, press Shift+Enter, and type a second
 line. The unsent prompt must retain both lines. Existing clients may predate the
 feature negotiation and are not a valid test.
 
-The profile-provided desktop entry and user service start nixGL-wrapped Ghostty
-without forcing software rendering. Before launching Fish, its configured
-command removes graphics override variables so terminal children use their own
-host, Nix, or Flatpak graphics integration. The Mesa wrapper is the correct
-primary-GPU path for worldmind's integrated Intel graphics; Ghostty does not
-need PRIME offload or a Vulkan wrapper.
+The profile-provided desktop entry, D-Bus service, and systemd user unit start
+nixGL-wrapped Ghostty without forcing software rendering. `ghostty/default.nix`
+adapts these upstream files after nixGL wrapping rather than replacing them with
+custom definitions. It converts bare `ghostty` launch commands to the wrapper's
+absolute path, preserving upstream arguments and other metadata so activation
+does not depend on a profile `PATH`. Older absolute-path templates still use
+nixGL's existing rewriting. ref:
+<https://github.com/ghostty-org/ghostty/commit/aa57f1f41503139fd1cc388fb923de19977e7e91>.
+
+Before launching Fish, Ghostty's configured command removes graphics override
+variables so terminal children use their own host, Nix, or Flatpak graphics
+integration. The Mesa wrapper is the correct primary-GPU path for worldmind's
+integrated Intel graphics; Ghostty does not need PRIME offload or a Vulkan
+wrapper.
 
 ### Rime
 
