@@ -35,6 +35,7 @@ in
     (import ../aerc/check.nix {inherit homes lib pkgs self;})
     (import ../agents/check.nix {inherit pkgs;})
     (import ../emacs/check.nix {inherit homes lib pkgs self;})
+    (import ../ghostty/check.nix {inherit homes lib pkgs;})
     (import ../git/check.nix {inherit pkgs;})
     (import ../rclone/check.nix {inherit pkgs;})
     (import ../rime/check.nix {inherit lib pkgs;})
