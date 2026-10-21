@@ -3,6 +3,26 @@
   pkgs,
   ...
 }: let
+  ghosttyWrapped = (config.lib.nixGL.wrap pkgs.ghostty).overrideAttrs (old: {
+    # Ghostty's Zig 0.17 templates use bare commands, which activation cannot
+    # find without a Nix PATH. Normalize them after nixGL has wrapped the binary
+    # and rewritten any absolute paths from older Ghostty builds.
+    # ref: https://github.com/ghostty-org/ghostty/commit/aa57f1f41503139fd1cc388fb923de19977e7e91
+    buildCommand =
+      old.buildCommand
+      + ''
+        for resource in \
+          share/applications/com.mitchellh.ghostty.desktop \
+          share/dbus-1/services/com.mitchellh.ghostty.service \
+          share/systemd/user/app-com.mitchellh.ghostty.service
+        do
+          sed -E "s@^(Exec|TryExec|ExecStart)=ghostty( |$)@\\1=$out/bin/ghostty\\2@" \
+            "$out/$resource" > "$out/$resource.tmp"
+          mv "$out/$resource.tmp" "$out/$resource"
+        done
+      '';
+  });
+
   fishWithoutGraphicsOverrides = pkgs.writeShellScriptBin "fish" ''
     unset \
       GBM_BACKENDS_PATH \
@@ -16,7 +36,7 @@
 in {
   programs.ghostty = {
     enable = true;
-    package = config.lib.nixGL.wrap pkgs.ghostty;
+    package = ghosttyWrapped;
 
     enableFishIntegration = true;
     enableZshIntegration = true;
