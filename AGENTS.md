@@ -232,6 +232,16 @@ and installs StyLua's config under `~/.config/stylua`.
   email differ per box; template in `git/local.config.example`. Home Manager
   writes `~/.config/git/config`, which an unmanaged `~/.gitconfig` silently
   overrides (git reads it last).
+- **`fonts/`** sets the default font families and installs the font packages.
+  Its `cantonese-jyutping` rule puts canto.hk's Cantonese Fonts first for
+  Traditional Chinese and Cantonese text. Those fonts are a paid download and
+  live outside Git and the Nix store: install the monochrome Hei set (not the
+  color one) and the Heritage set into `~/.local/share/fonts/canto-hk` by hand.
+  Firefox's `font.name.*.zh-HK` and `zh-TW` prefs win over fontconfig, so set
+  them to `""` in `user.js`, which this repo doesn't manage; deleting the lines
+  leaves the old values in `prefs.js`.
+  `fc-match -f '%{family[0]}\n' 'sans-serif:lang=zh-hk'` should print
+  `VF Cantonese`.
 - **`xdg/`** owns generic-Linux XDG integration plus the nixGL-wrapped Solaar
   package and its `schan`-only autostart entry.
 
