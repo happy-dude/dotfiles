@@ -162,6 +162,7 @@ in {
         libgcc
         libtool
         lldb
+        ltrace
         luaPackages.fennel
         meson
         motion
