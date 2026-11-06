@@ -249,28 +249,29 @@ and installs StyLua's config under `~/.config/stylua`.
   is `${config.xdg.configHome}/zed/settings.json`, normally
   `~/.config/zed/settings.json`. Both use `zedSettingsActivation` and honor Home
   Manager's dry-run command.
-- **`agents/`** holds canonical `kernel` and `language` prompts. Nix reads their
-  Markdown bodies and frontmatter to generate corresponding Codex, OpenCode, and
-  oh-my-pi agents without checked-in generated artifacts, plus Codex profile
-  templates. `agents/codex.nix` owns the profile materializer, the guarded
-  agent-directory ownership migration, and their focused checks. Home Manager
-  stores the immutable templates under `~/.local/share/codex/generated-profiles`
-  and runs a Nix-built materializer on every activation to create missing
-  writable mode-0600 profiles and refresh their generator-owned keys; it leaves
-  a profile that is already current untouched. Generated profiles carry Codex's
-  official `config.toml` schema directive and preserve readable multiline
-  instructions. Runtime-owned project trust, TUI state, and other profile keys
-  survive that merge. The independently maintained Kagi Markdown prompts
-  (`agents/prompts/kagi-*.md`) carry a different, fixed instruction budget, so
-  they are kept verbatim in the repo — whitespace preserved and measured by the
-  `kagi-prompt-budget` check — rather than generated from the canonical agent
-  prompts or deployed as client agents. Kagi prompts target a chat interface
-  with optional web search and uploads but no shell, filesystem, or host access;
-  they delegate commands to the user and continue by interpreting returned
-  results. Claude and Codex session state, credentials, provider configuration,
-  and project trust remain machine-local and must never be committed. Activation
-  requires `~/.claude`, `~/.codex`, and `~/.omp` to be real directories and
-  restricts them to mode `0700` while leaving their contents writable.
+- **`agents/`** holds canonical `kernel`, `language`, and `nix-maintainer`
+  prompts. Nix reads their Markdown bodies and frontmatter to generate
+  corresponding Codex, OpenCode, and oh-my-pi agents without checked-in
+  generated artifacts, plus Codex profile templates. `agents/codex.nix` owns the
+  profile materializer, the guarded agent-directory ownership migration, and
+  their focused checks. Home Manager stores the immutable templates under
+  `~/.local/share/codex/generated-profiles` and runs a Nix-built materializer on
+  every activation to create missing writable mode-0600 profiles and refresh
+  their generator-owned keys; it leaves a profile that is already current
+  untouched. Generated profiles carry Codex's official `config.toml` schema
+  directive and preserve readable multiline instructions. Runtime-owned project
+  trust, TUI state, and other profile keys survive that merge. The independently
+  maintained Kagi Markdown prompts (`agents/prompts/kagi-*.md`) carry a
+  different, fixed instruction budget, so they are kept verbatim in the repo —
+  whitespace preserved and measured by the `kagi-prompt-budget` check — rather
+  than generated from the canonical agent prompts or deployed as client agents.
+  Kagi prompts target a chat interface with optional web search and uploads but
+  no shell, filesystem, or host access; they delegate commands to the user and
+  continue by interpreting returned results. Claude and Codex session state,
+  credentials, provider configuration, and project trust remain machine-local
+  and must never be committed. Activation requires `~/.claude`, `~/.codex`, and
+  `~/.omp` to be real directories and restricts them to mode `0700` while
+  leaving their contents writable.
 - **`omp/`** installs oh-my-pi (`omp`) for both Linux profiles on the same
   footing as OpenCode. omp rewrites its global `~/.omp/agent/config.yml` from
   `/settings` and `omp config set`, so Home Manager does not own that file; the
@@ -287,16 +288,16 @@ and installs StyLua's config under `~/.config/stylua`.
   the OTLP exporter variables omp would otherwise export through. Updates come
   from the locked Nixpkgs package. Language servers stay enabled because omp
   resolves them from `PATH` and never downloads one. The module generates the
-  `kernel` and `language` task agents under `~/.omp/agent/agents` from the
-  canonical prompts, because omp skips `~/.claude/agents` deliberately, and
-  installs both Gruvbox Material variants under `~/.omp/agent/themes`. `~/.omp`
-  is among the directories the Vim and Emacs secret-state guards exclude. omp's
-  `models.yml`, `mcp.json`, credential store, and sessions under `~/.omp/agent`
-  are machine-local and must never be committed. `omp/check.nix` runs the
-  wrapped omp in an empty home to confirm the overlay and exporter stripping,
-  reads the effective settings back, compares the generated agents with the
-  canonical prompt bodies, and validates both themes against the schema omp
-  ships.
+  `kernel`, `language`, and `nix-maintainer` task agents under
+  `~/.omp/agent/agents` from the canonical prompts, because omp skips
+  `~/.claude/agents` deliberately, and installs both Gruvbox Material variants
+  under `~/.omp/agent/themes`. `~/.omp` is among the directories the Vim and
+  Emacs secret-state guards exclude. omp's `models.yml`, `mcp.json`, credential
+  store, and sessions under `~/.omp/agent` are machine-local and must never be
+  committed. `omp/check.nix` runs the wrapped omp in an empty home to confirm
+  the overlay and exporter stripping, reads the effective settings back,
+  compares the generated agents with the canonical prompt bodies, and validates
+  both themes against the schema omp ships.
 - **`opencode/`** installs the Nix package for both Linux profiles and owns the
   global provider-neutral configuration. It disables self-updates and session
   sharing, strips inherited OTLP exporter variables only from the OpenCode
@@ -413,6 +414,12 @@ operational projections that must stay aligned within the `kagi-prompt-budget`
 check. The canonical Markdown is the only source to update: Nix generates Codex
 agents and profile templates during evaluation, so there is no manual
 regeneration step or generated-file drift to commit.
+
+`agents/prompts/nix-maintainer.md` is the Nix packaging and review agent for any
+repository, not this one in particular. It carries only Nix-specific guidance
+and points to `docs/software-design.md` and this file for design, prose, and
+commit trailers. Update it when the pinned nixpkgs renames an interface it
+names.
 
 The package lists embedded in those prompts are caches, not sources of truth.
 Each prompt tells the agent to inspect `home.nix` before deciding whether a tool
