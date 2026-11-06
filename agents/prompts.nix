@@ -2,6 +2,7 @@
   agentNames = [
     "kernel"
     "language"
+    "nix-maintainer"
   ];
 
   parsePrompt = name: let
