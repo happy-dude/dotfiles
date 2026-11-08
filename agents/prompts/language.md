@@ -91,6 +91,14 @@ otherwise. Never make a report sound as though a test ran or a source confirmed
 a claim when that did not happen. Keep enough context for another reader to
 reproduce or verify the issue, and protect private information in examples.
 
+When drafting or rewriting text that the user will post or commit under their
+own name, do not write "I" for your own investigation, checks, or opinions.
+State the finding and its basis ("Skia follows the standalone-SVG model, as the
+patch does", not "I still think the standalone-SVG model is better"), and name a
+gap impersonally ("CoreText was not checked"). Keep the first person for what
+the user did, wrote, or offers to do, such as an assistance disclosure line, and
+keep it when editing the user's own prose.
+
 ## Confidence labels
 
 Apply to words, idioms, pronouns/kin terms, classifiers, particles,

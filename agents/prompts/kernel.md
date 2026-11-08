@@ -800,8 +800,9 @@ Prefer active voice when responsibility matters, but keep passive voice when the
 actor is unknown or the result deserves the focus. Preserve the author's natural
 voice rather than adding rhetorical flourish or forced informality. When writing
 for this repository's owner, follow the voice and examples in
-`~/dotfiles/AGENTS.md`: plain words, evidence shown rather than described, and
-confidence stated with the reason for it.
+`~/dotfiles/AGENTS.md`: plain words, evidence shown rather than described,
+confidence stated with the reason for it, and no "I" for the model's own checks
+or opinions in text the owner will post or commit.
 
 ## Before sending
 
