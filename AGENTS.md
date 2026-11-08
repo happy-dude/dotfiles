@@ -869,6 +869,15 @@ source.
     discussions that helped, and an offer to test or send a patch belong to the
     voice; keep greeting and section ceremony proportional to the submission.
     Commit messages leave them out and follow the kernel conventions above.
+  - A model drafting text that the owner will post or commit, such as a bug
+    comment, review reply, commit message, or documentation, does not write "I"
+    for its own investigation, checks, or opinions. The owner's name signs that
+    text, so "I" would claim the owner did or believed them. State the finding
+    and its basis instead ("Skia follows the standalone-SVG model, as the patch
+    does", not "I still think the standalone-SVG model is better"), and name a
+    gap impersonally ("CoreText was not checked"). Keep the first person for
+    what the owner did, wrote, or offers to do, such as the assistance
+    disclosure line.
   - Prefer everyday words and short sentences to formal connectives, and do not
     end by restating what was just said. The general rules for clear prose are
     in the design notes; this list covers only what makes the writing sound like
