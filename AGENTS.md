@@ -25,16 +25,15 @@ checkout is the Linux branch.
 
 - `flake.nix` declares per-user Home Manager outputs through `mkHome`, applied
   to an explicit per-machine capability record (`username`, `desktop`,
-  `nixPackage`, and the `hasFlatpak` / `usesFlatpakZed` / `hasSolaar` /
-  `hasRustup` / `hostFcitx` / `managePlasmaPanels` facts):
-  `homeConfigurations."schan"` is the personal Fedora Kinoite (KDE Plasma)
-  profile at `/home/schan`, and `homeConfigurations."stachan"` is the work GNOME
-  profile at `/home/stachan`. Both are `x86_64-linux` Home Manager
-  configurations for generic Linux rather than NixOS. `schan` sets
-  `nixPackage = null` so Home Manager retains the host-provided Determinate Nix
-  installation; `stachan` uses the Nix package from the locked Nixpkgs input.
-  Each machine switches its own output (`.#schan` / `.#stachan`);
-  `scripts/update.sh` defaults to `.#$(whoami)`.
+  `nixPackage`, and the `hasFlatpak` / `hasSolaar` / `hasRustup` / `hostFcitx` /
+  `managePlasmaPanels` facts): `homeConfigurations."schan"` is the personal
+  Fedora Kinoite (KDE Plasma) profile at `/home/schan`, and
+  `homeConfigurations."stachan"` is the work GNOME profile at `/home/stachan`.
+  Both are `x86_64-linux` Home Manager configurations for generic Linux rather
+  than NixOS. `schan` sets `nixPackage = null` so Home Manager retains the
+  host-provided Determinate Nix installation; `stachan` uses the Nix package
+  from the locked Nixpkgs input. Each machine switches its own output (`.#schan`
+  / `.#stachan`); `scripts/update.sh` defaults to `.#$(whoami)`.
 - On Kinoite, Determinate Nix runs natively on the host. Its persistent store at
   `/var/home/nix` is mounted at `/nix` before the daemon starts, while the
   OSTree/composefs root remains read-only. The former `nix-toolbox-42` container
@@ -235,20 +234,24 @@ and installs StyLua's config under `~/.config/stylua`.
 - **`xdg/`** owns generic-Linux XDG integration plus the nixGL-wrapped Solaar
   package and its `schan`-only autostart entry.
 
-- **`zed/`** is a Home Manager module. `zed/.config/zed/settings.json` is the
-  canonical declarative source for managed keys; `zed/settings.nix` only adapts
-  commands that cross a host boundary. Do **not** add another settings
-  representation. Zed binaries remain externally managed. The custom OpenCode
-  ACP server runs the Nix-managed executable directly on `stachan`; on `schan`,
-  it uses the Flatpak-bundled `host-spawn` to reach that host executable. One
-  local materializer atomically merges declared keys into the writable settings
-  file on both profiles, preserving runtime-only keys and refusing malformed
-  files or symlinks. It writes strict JSON, so comments and trailing commas do
-  not survive. The Flatpak target is
-  `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`; the native target
-  is `${config.xdg.configHome}/zed/settings.json`, normally
-  `~/.config/zed/settings.json`. Both use `zedSettingsActivation` and honor Home
-  Manager's dry-run command.
+- **`zed/`** is a Home Manager module that installs `pkgs.zed-editor`
+  (`zeditor`) on both profiles, wrapped with `config.lib.nixGL.wrap` and a
+  Zed-local `nixVulkanIntel` launcher while keeping the global `nixGL` Vulkan
+  switch disabled so other wrapped applications stay unchanged. The package
+  build rewrites its desktop entries to invoke the wrapped store `zeditor` path
+  directly. `zed/.config/zed/settings.json` is the canonical declarative source
+  for managed keys; `zed/settings.nix` only adapts the configured terminal shell
+  (preserving its `fish` basename so Zed still recognizes the shell dialect) and
+  declared ACP servers (such as OpenCode) through `zed/host-command.nix`, which
+  strips the wrapper's GL and Vulkan variables from those child environments.
+  LSPs, hooks, extension binaries, and runtime-added ACP servers are not routed
+  through this cleanup. Do **not** add another settings representation. One
+  local materializer atomically merges declared keys into the native writable
+  settings file at `${config.xdg.configHome}/zed/settings.json` (normally
+  `~/.config/zed/settings.json`) on both profiles, preserving runtime-only keys
+  and refusing malformed files or symlinks. It writes strict JSON, so comments
+  and trailing commas do not survive. Activation runs through
+  `zedSettingsActivation` and honors Home Manager's dry-run command.
 - **`agents/`** holds canonical `kernel`, `language`, and `nix-maintainer`
   prompts. Nix reads their Markdown bodies and frontmatter to generate
   corresponding Codex, OpenCode, and oh-my-pi agents without checked-in
