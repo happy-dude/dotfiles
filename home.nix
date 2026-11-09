@@ -8,35 +8,20 @@
   lessFlags = import ./lib/less-flags.nix;
   languageServers = import ./lib/language-servers.nix {inherit lib pkgs;};
 
-  # pcre/pcre2 workarounds. nixpkgs removed C pcre and marked ocaml_pcre broken
-  # in NixOS/nixpkgs#578893. Each workaround below checks the locked input for
-  # the upstream fix, so a `nix flake update` that brings the fix turns the
-  # workaround off and leaves a Home Manager warning to remove it.
-  #
-  # nixGL's wrapper check runs `${pcre}/bin/pcregrep`. pcre2grep takes the same
-  # pattern and -o0, so hand nixGL.nix a pcre whose pcregrep is pcre2grep, until
-  # nixGL stops taking `pcre` (nix-community/nixGL#227). nixGL.nix's defaults
-  # (32-bit and Intel extensions on x86) match what its flake passes on
-  # x86_64-linux.
-  nixglNeedsPcreShim = (builtins.functionArgs (import "${inputs.nixgl}/nixGL.nix")) ? pcre;
-  nixgl =
-    if nixglNeedsPcreShim
-    then
-      pkgs.callPackage "${inputs.nixgl}/nixGL.nix" {
-        pcre = pkgs.writeShellScriptBin "pcregrep" ''
-          exec ${lib.getExe' pkgs.pcre2.bin "pcre2grep"} "$@"
-        '';
-      }
-    else inputs.nixgl.packages;
-
+  # nixpkgs removed C pcre and marked ocaml_pcre broken in NixOS/nixpkgs#578893.
   # Coccinelle 1.3.3 moved to pcre2 upstream (coccinelle/coccinelle@0af33438),
-  # so build that against ocamlPackages.pcre2 while nixpkgs' coccinelle still
-  # links ocaml_pcre (NixOS/nixpkgs#554724). Compare by name: evaluating the
-  # broken ocaml_pcre's outPath would throw.
+  # so build that against ocamlPackages.pcre2 while the locked nixpkgs'
+  # coccinelle still links ocaml_pcre. NixOS/nixpkgs#582934 makes the same
+  # change in nixpkgs; a `nix flake update` that brings it turns the override
+  # off and leaves a Home Manager warning to remove it.
+  #
+  # ocaml_pcre's pname is "pcre"; the pcre2 binding's is "pcre2". Match the
+  # pname instead of naming ocamlPackages.ocaml_pcre, which NixOS/nixpkgs#583709
+  # deletes, and never compare the packages themselves: that forces the broken
+  # ocaml_pcre's outPath, which throws.
   ocamlPackages = pkgs.ocaml-ng.ocamlPackages_4_14;
   coccinelleNeedsPcre2 =
-    lib.any (input: (input.name or null) == ocamlPackages.ocaml_pcre.name)
-    pkgs.coccinelle.buildInputs;
+    lib.any (input: (input.pname or null) == "pcre") pkgs.coccinelle.buildInputs;
   coccinelle =
     if coccinelleNeedsPcre2
     then
@@ -57,16 +42,11 @@
       })
     else pkgs.coccinelle;
 in {
-  warnings =
-    lib.optional (!nixglNeedsPcreShim) ''
-      nixGL no longer takes `pcre` (nix-community/nixGL#227 or equivalent landed);
-      remove the pcregrep shim in home.nix and set
-      targets.genericLinux.nixGL.packages = inputs.nixgl.packages.''
-    ++ lib.optional (!coccinelleNeedsPcre2) ''
-      nixpkgs' coccinelle ${pkgs.coccinelle.version} no longer links ocaml_pcre
-      (NixOS/nixpkgs#554724 or equivalent landed); remove the coccinelle pcre2
-      override in home.nix and list `coccinelle` with the other packages.'';
-  targets.genericLinux.nixGL.packages = nixgl;
+  warnings = lib.optional (!coccinelleNeedsPcre2) ''
+    nixpkgs' coccinelle ${pkgs.coccinelle.version} no longer links ocaml_pcre
+    (NixOS/nixpkgs#582934 or equivalent landed); remove the coccinelle pcre2
+    override in home.nix and list `coccinelle` with the other packages.'';
+  targets.genericLinux.nixGL.packages = inputs.nixgl.packages;
   targets.genericLinux.nixGL.defaultWrapper = "mesa";
   targets.genericLinux.nixGL.installScripts = ["mesa"];
 

@@ -18,7 +18,6 @@
       "com.sleepfiles.OSCAR"
       "com.transmissionbt.Transmission"
       "com.valvesoftware.Steam"
-      "dev.zed.Zed-Preview"
       "io.github.ungoogled_software.ungoogled_chromium"
       "org.audacityteam.Audacity"
       "org.kde.okular"

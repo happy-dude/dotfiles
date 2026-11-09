@@ -744,10 +744,41 @@ official RPM repository (`https://packages.mozilla.org/rpm/firefox`, package
 than a Home Manager or Flatpak resource. Stable Firefox on Flathub uses the
 different `org.mozilla.firefox` ID and is not a substitute for Nightly.
 
-Zed Preview is declared as `dev.zed.Zed-Preview`. Flatpak gives it an app-scoped
-XDG config home, so `zed/default.nix` merges the repository settings into the
-mutable file at `~/.var/app/dev.zed.Zed-Preview/config/zed/settings.json`. The
-host `~/.config/zed/settings.json` is not the active worldmind target.
+Zed's stable package (`pkgs.zed-editor`, `zeditor`) is managed natively by Home
+Manager on both profiles rather than through `services.flatpak.packages`. This
+replaces the Preview channel. `zed/default.nix` wraps `zed-editor` with Home
+Manager's `nixGL` wrapper plus a Zed-only `nixVulkanIntel` launcher while
+keeping global `nixGL` Vulkan disabled, and materializes the repository's
+declared keys into the native writable `~/.config/zed/settings.json`
+(`${config.xdg.configHome}/zed/settings.json`). `zed/settings.nix` routes the
+integrated terminal shell (preserving its `fish` basename) and declared ACP
+servers through `zed/host-command.nix` so Zed's GL and Vulkan wrapper variables
+are stripped from those child environments. This does not sanitize LSPs, hooks,
+extension binaries, or runtime-added ACP servers.
+
+Omitting `dev.zed.Zed-Preview` from `flatpak/default.nix` causes `nix-flatpak`
+to uninstall the previously managed user Flatpak at activation without
+`--delete-data`, leaving `~/.var/app/dev.zed.Zed-Preview` intact; system Flatpak
+refs and any unmanaged native or tarball installs are unaffected and are not
+removed or migrated automatically. Runtime-only settings and application state
+under `~/.var/app/dev.zed.Zed-Preview/{config/zed,data/zed}` are not copied
+automatically to `~/.config/zed` and `~/.local/share/zed`. Before migrating any
+state manually, close all running Zed instances, inspect and back up both the
+Flatpak directories (`~/.var/app/dev.zed.Zed-Preview/config/zed` and
+`~/.var/app/dev.zed.Zed-Preview/data/zed`) and any existing native directories
+(`~/.config/zed` and `~/.local/share/zed`), and copy or merge needed items
+selectively without overwriting existing native files. Merge settings before the
+authorized Home Manager activation so it reasserts native command keys,
+including replacing any copied `/app/bin/host-spawn` command. Stable and Preview
+may use different channel-specific state; copying the data directory does not
+guarantee that every history entry is reused.
+
+Check menu entries, Plasma pins, and MIME defaults after the switch. References
+to `dev.zed.Zed-Preview.desktop` still select Preview, and an unmanaged
+`~/.local/share/applications/dev.zed.Zed.desktop` can shadow the Nix-owned
+stable entry. Likewise, a manually installed `zed` command can still launch an
+old tarball; the Nix command is `zeditor`. Inspect those launchers before
+explicitly retiring an unmanaged installation; Home Manager does not remove it.
 
 If a duplicate system qView ref exists, migrate it as follows:
 

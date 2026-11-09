@@ -1,18 +1,23 @@
 {
   lib,
-  flatpak,
+  pkgs,
 }: let
   settings = builtins.fromJSON (builtins.readFile ./.config/zed/settings.json);
-  opencode = settings.agent_servers.OpenCode;
+  hostCommand = lib.getExe (import ./host-command.nix {inherit pkgs;});
+  shell = settings.terminal.shell.program;
+  # Zed identifies the shell dialect by the launcher's basename.
+  hostShell = pkgs.writeShellScriptBin (builtins.baseNameOf shell) ''
+    exec ${hostCommand} ${lib.escapeShellArg shell} "$@"
+  '';
 in
-  # The Flatpak sandbox cannot run host executables directly, so its bundled
-  # host-spawn runs the command settings.json declares, with the same args.
-  if flatpak
-  then
-    lib.recursiveUpdate settings {
-      agent_servers.OpenCode = {
-        command = "/app/bin/host-spawn";
-        args = [opencode.command] ++ opencode.args;
-      };
-    }
-  else settings
+  lib.recursiveUpdate settings {
+    terminal.shell.program = lib.getExe hostShell;
+    # Canonical ACP entries are custom commands with explicit command/args;
+    # recursiveUpdate preserves their remaining native settings.
+    agent_servers =
+      lib.mapAttrs (_: server: {
+        command = hostCommand;
+        args = [server.command] ++ server.args;
+      })
+      settings.agent_servers;
+  }

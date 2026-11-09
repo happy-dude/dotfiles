@@ -168,7 +168,6 @@
         nixPackage = null;
         hasRustup = true;
         hasFlatpak = true;
-        usesFlatpakZed = true;
         hasSolaar = true;
         hostFcitx = true;
         managePlasmaPanels = false;
@@ -179,7 +178,6 @@
         nixPackage = pkgs.nixVersions.latest;
         hasRustup = false;
         hasFlatpak = false;
-        usesFlatpakZed = false;
         hasSolaar = false;
         hostFcitx = false;
         managePlasmaPanels = false;

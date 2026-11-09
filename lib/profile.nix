@@ -52,14 +52,6 @@ in {
       '';
     };
 
-    usesFlatpakZed = mkOption {
-      type = types.bool;
-      description = ''
-        Zed runs as a Flatpak, so its settings live under the sandbox
-        configuration directory and host commands need host-spawn.
-      '';
-    };
-
     hasSolaar = mkOption {
       type = types.bool;
       description = "A Logitech receiver is attached and Solaar autostarts.";
@@ -84,7 +76,7 @@ in {
 
   config = {
     dotfiles.profile = {
-      inherit (profile) username desktop nixPackage hasRustup hasFlatpak usesFlatpakZed hasSolaar hostFcitx managePlasmaPanels;
+      inherit (profile) username desktop nixPackage hasRustup hasFlatpak hasSolaar hostFcitx managePlasmaPanels;
       hostProvidedNix = profile.nixPackage == null;
     };
 
