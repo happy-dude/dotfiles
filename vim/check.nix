@@ -6,6 +6,9 @@
 }: let
   mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
   languageServers = import ../lib/language-servers.nix {inherit lib pkgs;};
+  rainbowColours = pkgs.writeText "rainbow-delimiters.json" (
+    builtins.toJSON (import ../lib/rainbow-delimiters.nix)
+  );
   mkProfileCheck = username: home: let
     parserDirectory = home.config.xdg.dataFile."nvim/site/parser".source;
     queryDirectory = home.config.xdg.dataFile."nvim/site/queries".source;
@@ -47,6 +50,7 @@
             -l ${./tests/codecompanion.lua}
 
         # The colorscheme block only runs under a colour terminal.
+        DOTFILES_RAINBOW_PALETTE=${rainbowColours} \
         TERM=xterm-256color \
         HOME="$PWD/home" \
         XDG_CACHE_HOME="$PWD/home/cache" \
@@ -80,10 +84,13 @@
         mkdir -p home
         # Silent Ex mode never queries the terminal, so declare the colour
         # depth the colorscheme guard expects; :cquit fails the check when the
-        # expected scheme is not the one in effect.
+        # expected scheme is not the one in effect, and tests/rainbow.vim
+        # fails it when the rainbow plugin does not use the palette.
+        DOTFILES_RAINBOW_PALETTE=${rainbowColours} \
         HOME="$PWD/home" TERM=xterm-256color vim -es --cmd 'set t_Co=256' \
           -c 'redir! > messages.txt' -c 'silent messages' -c 'redir END' \
           -c 'if get(g:, "colors_name", "") !=# "gruvbox-material" | cquit | endif' \
+          -c 'source ${./tests/rainbow.vim}' \
           -c 'qa!' </dev/null
         test -f messages.txt
         if grep -E '^E[0-9]+' messages.txt; then

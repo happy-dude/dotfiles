@@ -1,9 +1,11 @@
-# Gruvbox Material palettes shared by the terminal agents' themes.
+# Gruvbox Material palettes shared by the terminal agents' themes and the
+# rainbow-delimiter check.
 #
 # The OpenCode and oh-my-pi themes name their colours from one palette so a
-# changed hue lands in both. `darkMedium` is the material dark-medium variant;
-# `mixDarkMedium` is the generated mix variant, which differs only in its
-# foreground and accent hues.
+# changed hue lands in both, and checks/rainbow-palette.nix scores
+# lib/rainbow-delimiters.nix against `mixDarkMedium`. `darkMedium` is the
+# material dark-medium variant; `mixDarkMedium` is the generated mix
+# variant, which differs only in its foreground and accent hues.
 let
   darkMedium = {
     bgDim = "#1b1b1b";

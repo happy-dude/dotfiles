@@ -29,6 +29,7 @@ in
     }
     (import ./profiles.nix {inherit homes lib pkgs;})
     (import ./python.nix {inherit pkgs self;})
+    (import ./rainbow-palette.nix {inherit pkgs;})
     (import ./secrets.nix {inherit pkgs self;})
     (import ./shell.nix {inherit lib pkgs self;})
     (import ./workflow.nix {inherit pkgs self;})

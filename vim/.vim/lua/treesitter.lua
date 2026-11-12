@@ -87,31 +87,23 @@ vim.keymap.set('n', 'gs', function()
 end, { desc = 'Smart rename (LSP)' })
 
 -- rainbow-delimiters settings
-local rainbow_palette = {
-  { name = 'RainbowDelimiterRed', fg = '#FE2712', ctermfg = 'Red' },
-  { name = 'RainbowDelimiterWhite', fg = '#d3d7cf', ctermfg = 'White' },
-  { name = 'RainbowDelimiterYellow', fg = '#FCE94F', ctermfg = 'Yellow' },
-  { name = 'RainbowDelimiterGreen', fg = '#66B032', ctermfg = 'Green' },
-  { name = 'RainbowDelimiterBlue', fg = '#0392CE', ctermfg = 'Blue' },
-  { name = 'RainbowDelimiterViolet', fg = '#75507b', ctermfg = 'DarkMagenta' },
-  { name = 'RainbowDelimiterDarkRed', fg = '#FD5308', ctermfg = 'DarkRed' },
-  { name = 'RainbowDelimiterSilver', fg = '#FFFFFF', ctermfg = 'White' },
-  { name = 'RainbowDelimiterOrange', fg = '#FB9902', ctermfg = 'DarkYellow' },
-  { name = 'RainbowDelimiterDarkBlue', fg = '#0247FE', ctermfg = 'DarkBlue' },
-  { name = 'RainbowDelimiterSeaGreen', fg = '#D0EA2B', ctermfg = 'LightGreen' },
-  { name = 'RainbowDelimiterMagenta', fg = '#A7194B', ctermfg = 'Magenta' },
-}
+-- The colours come from lib/rainbow-delimiters.nix, which vim/default.nix
+-- sets as g:dotfiles_rainbow_palette. The group names are numbered by depth
+-- rather than named after a colour, because a palette change would
+-- otherwise leave names such as RainbowDelimiterRed holding another colour.
+local rainbow_palette = vim.g.dotfiles_rainbow_palette or {}
 
 local rainbow_highlights = {}
-for index, highlight in ipairs(rainbow_palette) do
-  rainbow_highlights[index] = highlight.name
+for depth in ipairs(rainbow_palette) do
+  rainbow_highlights[depth] = 'RainbowDelimiterDepth' .. depth
 end
 
+-- Reapplied on every :colorscheme, which clears groups it does not define.
 local function apply_rainbow_highlights()
-  for _, highlight in ipairs(rainbow_palette) do
-    api.nvim_set_hl(0, highlight.name, {
-      fg = highlight.fg,
-      ctermfg = highlight.ctermfg,
+  for depth, colour in ipairs(rainbow_palette) do
+    api.nvim_set_hl(0, rainbow_highlights[depth], {
+      fg = colour.gui,
+      ctermfg = colour.cterm,
     })
   end
 end
