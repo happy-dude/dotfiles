@@ -247,11 +247,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1794158174,
-        "narHash": "sha256-FdIy8FR+/hjGqfL/JkSS5NdFsmSrtuc8Jy2vZHzRIvA=",
-        "rev": "f6bf1059f02576e0b913c7b49d5e4eb6dda9cc22",
+        "lastModified": 1794408178,
+        "narHash": "sha256-jnNhqdXGJs5qIvdzFwABBvhzuPHLK09CcWKtvYVxVOk=",
+        "rev": "9397dcb09c9598a33509fbc0cce699bd4e6c84d5",
         "type": "tarball",
-        "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1114617.f6bf1059f025/nixexprs.tar.zst"
+        "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1117836.9397dcb09c95/nixexprs.tar.zst"
       },
       "original": {
         "type": "tarball",
@@ -350,11 +350,11 @@
     "rime_essay": {
       "flake": false,
       "locked": {
-        "lastModified": 1790160623,
-        "narHash": "sha256-K98ezXSFQYxcEUZ2EzTZwdA+JljAgrsGax4Wth73F80=",
+        "lastModified": 1794480162,
+        "narHash": "sha256-JeXl1pc5y20XOG67i/y1LK+VJLGGvYBtdJ3ZxiI81AU=",
         "owner": "rime",
         "repo": "rime-essay",
-        "rev": "054920de4f54c9e5994276a96a4fc2a35cb51aa3",
+        "rev": "d95eeae056df429ecf993038c325a216f0b28c5b",
         "type": "github"
       },
       "original": {
@@ -512,11 +512,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794388042,
-        "narHash": "sha256-rsskkiDNmuZGK6Xk3JvWUxWENjuX4Jf0hOSFYujGC0s=",
+        "lastModified": 1794476126,
+        "narHash": "sha256-KBjfmgZIUqBpjsemRKp4GvrCf8DlNsldkmxphh4X9oo=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "0070500a3d72ade21323092e7bdd7125c5268482",
+        "rev": "d1e30fd696e1151603aa8adaa8f6b8c604fe3eb0",
         "type": "github"
       },
       "original": {
@@ -596,11 +596,11 @@
     "virtme_ng_src": {
       "flake": false,
       "locked": {
-        "lastModified": 1794310903,
-        "narHash": "sha256-B927CYEsgzCnkkZ0GIG/TiMZ+l2mRigadxXRAoACOlE=",
+        "lastModified": 1794480099,
+        "narHash": "sha256-47l+R+c99adKRPupfx52dAXE1jsUSHm47GR4UZbIqI8=",
         "owner": "arighi",
         "repo": "virtme-ng",
-        "rev": "f4f107e0abedf5cfb7f72b56ac27603b0443c046",
+        "rev": "e96010c91cff1ba5ec3f8546b5a9db9d3a38eb31",
         "type": "github"
       },
       "original": {

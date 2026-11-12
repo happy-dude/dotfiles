@@ -7,45 +7,7 @@
 }: let
   lessFlags = import ./lib/less-flags.nix;
   languageServers = import ./lib/language-servers.nix {inherit lib pkgs;};
-
-  # nixpkgs removed C pcre and marked ocaml_pcre broken in NixOS/nixpkgs#578893.
-  # Coccinelle 1.3.3 moved to pcre2 upstream (coccinelle/coccinelle@0af33438),
-  # so build that against ocamlPackages.pcre2 while the locked nixpkgs'
-  # coccinelle still links ocaml_pcre. NixOS/nixpkgs#582934 makes the same
-  # change in nixpkgs; a `nix flake update` that brings it turns the override
-  # off and leaves a Home Manager warning to remove it.
-  #
-  # ocaml_pcre's pname is "pcre"; the pcre2 binding's is "pcre2". Match the
-  # pname instead of naming ocamlPackages.ocaml_pcre, which NixOS/nixpkgs#583709
-  # deletes, and never compare the packages themselves: that forces the broken
-  # ocaml_pcre's outPath, which throws.
-  ocamlPackages = pkgs.ocaml-ng.ocamlPackages_4_14;
-  coccinelleNeedsPcre2 =
-    lib.any (input: (input.pname or null) == "pcre") pkgs.coccinelle.buildInputs;
-  coccinelle =
-    if coccinelleNeedsPcre2
-    then
-      pkgs.coccinelle.overrideAttrs (_: {
-        version = "1.3.3";
-        src = pkgs.fetchFromGitHub {
-          owner = "coccinelle";
-          repo = "coccinelle";
-          tag = "1.3.3";
-          hash = "sha256-HXrdgqtMRxEmBW+7KW/VCvpNr4bJG0gcdiVPtPX0qps=";
-        };
-        buildInputs = with ocamlPackages; [
-          pcre2
-          parmap
-          pyml
-          stdcompat
-        ];
-      })
-    else pkgs.coccinelle;
 in {
-  warnings = lib.optional (!coccinelleNeedsPcre2) ''
-    nixpkgs' coccinelle ${pkgs.coccinelle.version} no longer links ocaml_pcre
-    (NixOS/nixpkgs#582934 or equivalent landed); remove the coccinelle pcre2
-    override in home.nix and list `coccinelle` with the other packages.'';
   targets.genericLinux.nixGL.packages = inputs.nixgl.packages;
   targets.genericLinux.nixGL.defaultWrapper = "mesa";
   targets.genericLinux.nixGL.installScripts = ["mesa"];
@@ -96,6 +58,7 @@ in {
         ccache
         clojure
         cmake
+        coccinelle
         cpio
         cscope
         ctags
@@ -233,9 +196,7 @@ in {
       # clangd arrives here with clang-tools at low priority.
       ++ languageServers.packages
       # treefmt with this repository's treefmt.nix, the same as `nix fmt`.
-      ++ [inputs.self.formatter.${pkgs.stdenv.hostPlatform.system}]
-      # The pcre2 coccinelle from the let block above.
-      ++ [coccinelle];
+      ++ [inputs.self.formatter.${pkgs.stdenv.hostPlatform.system}];
 
     file = {
       ".clang-format".source = ./.clang-format;
