@@ -91,8 +91,12 @@
     }
   ];
   # Plugin scripts under after/ run once every package is on the runtimepath.
+  # The rainbow palette is set before the vimrc runs, because rainbow.vim
+  # reads it as soon as the vimrc sources that file. A JSON list of objects
+  # with string and number values is also a Vim expression.
   runtimeConfig = runtime: ''
     let g:dotfiles_vim_runtime = '${runtime}'
+    let g:dotfiles_rainbow_palette = ${builtins.toJSON (import ../lib/rainbow-delimiters.nix)}
     set runtimepath^=${runtime}
     set runtimepath+=${runtime}/after
     source ${runtime}/vimrc

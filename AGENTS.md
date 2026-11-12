@@ -139,9 +139,10 @@ checkout is the Linux branch.
   helpers use and the builder that packages them; `lib/mkCheck.nix` builds check
   derivations; `lib/less-flags.nix` holds the less options shared by the pager
   integrations; `lib/gruvbox-material.nix` holds the Gruvbox Material palettes
-  the OpenCode and oh-my-pi themes share; `lib/homes.nix` returns a value every
-  profile agrees on and otherwise names the profiles that disagree.
-  `scripts/lib/` holds the same for shell.
+  the OpenCode and oh-my-pi themes share; `lib/rainbow-delimiters.nix` is the
+  one list of rainbow-delimiter colours Neovim, Vim, and Emacs cycle through;
+  `lib/homes.nix` returns a value every profile agrees on and otherwise names
+  the profiles that disagree. `scripts/lib/` holds the same for shell.
 - `flatpak/` and `plasma/` are capability-conditional modules: `mkHome` imports
   the flatpak modules where `hasFlatpak` holds and the plasma modules where the
   desktop is Plasma, because their options come from external modules. Modules
@@ -487,6 +488,34 @@ guidance detectable.
   and visited-filename changes. Remote names remain lexical to avoid an extra
   network lookup. Previously written backup, auto-save, or undo files are not
   retroactively erased.
+- Rainbow-delimiter colours come only from `lib/rainbow-delimiters.nix`, one
+  entry per nesting depth and at most nine, because Emacs defines no face past
+  depth 9. `vim/default.nix` sets it as `g:dotfiles_rainbow_palette` before the
+  vimrc runs, because `rainbow.vim` reads the variable as soon as the vimrc
+  sources it. Vim's rainbow plugin re-reads `g:rainbow_conf` on every `Syntax`
+  and `ColorScheme` event, not just once. `rainbow.vim` sets the colours once at
+  the top level of `g:rainbow_conf` and declares an empty `'*'` entry, which
+  replaces the plugin's own per-filetype colours, such as Lisp's, so the global
+  colours reach every filetype. Sourced without the variable, it sets no
+  colours, and the colorscheme's or plugin's defaults apply. `treesitter.lua`
+  defines `RainbowDelimiterDepth1..N` from the same variable.
+  `emacs/default.nix` generates `rainbow-delimiters-palette.el`, and `init.el`
+  sets one face per colour plus `rainbow-delimiters-max-face-count`, so deeper
+  nesting cycles instead of falling back to the package defaults. The
+  `rainbow-palette` check runs known-answer tests for
+  `checks/rainbow_palette.py`, then scores the list against the mix dark-medium
+  colours in `lib/gruvbox-material.nix`, on the `#282828` background that
+  Ghostty's Gruvbox Dark theme draws behind the editors' transparent one. It
+  measures CIEDE2000 between neighbouring depths, between depths two apart, and
+  between any two colours; the first two again under simulated colour blindness;
+  an OKLab lightness step between neighbours; APCA contrast between Lc 45 and
+  the normal text; and distance from the function-name green. Its floors are
+  design choices, not an accessibility standard. The 16-colour `cterm` indices
+  are checked for range only, and no six colours from Ghostty's Gruvbox Dark
+  palette pass every floor. Emacs uses `solarized-gruvbox-dark`, whose text is
+  dimmer, so the same colours stand out more there; that pairing is not scored
+  either. The Neovim, Vim, and Emacs checks compare every depth's colour with
+  the Nix list.
 
 ### `other/` directory
 
@@ -538,14 +567,14 @@ repository.
 
 `checks/default.nix` combines the repository-wide checks in `checks/*.nix`
 (treefmt, Ruff, ShellCheck and `scripts/test_*.sh`, Fish and Zsh syntax, GitHub
-Actions and Dependabot, profile invariants, and gitleaks) with each module's
-focused `<owner>/check.nix` (run `nix flake show` for the current check names).
-CI runs `nix flake check` and evaluates both Home Manager configurations on
-pushes to `main` and on pull requests; the profile names are listed in `ci.yml`
-explicitly, so a new profile must be added there as well. Full builds of both
-configurations run weekly on a schedule and are opt-in through the
-`workflow_dispatch` `build_homes` input because builds are substantially more
-expensive than evaluation.
+Actions and Dependabot, profile invariants, the rainbow-delimiter palette, and
+gitleaks) with each module's focused `<owner>/check.nix` (run `nix flake show`
+for the current check names). CI runs `nix flake check` and evaluates both Home
+Manager configurations on pushes to `main` and on pull requests; the profile
+names are listed in `ci.yml` explicitly, so a new profile must be added there as
+well. Full builds of both configurations run weekly on a schedule and are opt-in
+through the `workflow_dispatch` `build_homes` input because builds are
+substantially more expensive than evaluation.
 
 ### Zed / agent config
 

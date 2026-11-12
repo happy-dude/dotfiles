@@ -1,22 +1,18 @@
 "rainbow parentheses settings
 
 let g:rainbow_active = 1
-" guifgs are RBG color wheel complements:
-" red, green, blue-green, red-orange, blue, orange, violet, yellow, red-violet, yellow-green
-" ctermfgs use indices from the terminal's first 16 palette entries
-" '0' black and '8' grey don't show up well on terminals, so 14/16 used
+" Colours come from lib/rainbow-delimiters.nix, which vim/default.nix sets as
+" g:dotfiles_rainbow_palette before the vimrc sources this file. ctermfgs are
+" indices into the terminal's 16-colour palette, for when 'termguicolors' is
+" off. Without the variable, as when the vimrc is sourced directly, no colours
+" are set here and the colorscheme's or the plugin's own apply.
+"
+" The plugin's defaults give some filetypes, such as lisp, colours of their
+" own. A '*' entry, even an empty one, replaces those defaults for every
+" filetype not named below, so the global colours reach all of them.
 let g:rainbow_conf = {
-      \   'guifgs'     : ['#FE2712', '#66B032', '#0392CE', '#FD5308', '#0247FE', '#FB9902', '#8601AF', '#FEFE33', '#A7194B', '#D0EA2B'],
-      \   'ctermfgs'   : ['1', '2', '3', '4', '5', '6', '7', '9', '10', '11' ,'12', '13', '14', '15'],
       \   'separately' : {
-      \       '*'   : {
-      \               'guifgs'     : ['#FE2712', '#66B032', '#0392CE', '#FD5308', '#0247FE', '#FB9902', '#8601AF', '#FEFE33', '#A7194B', '#D0EA2B'],
-      \               'ctermfgs'   : ['1', '2', '3', '4', '5', '6', '7', '9', '10', '11' ,'12', '13', '14', '15'],
-      \       },
-      \       'lisp': {
-      \               'guifgs'     : ['#FE2712', '#66B032', '#0392CE', '#FD5308', '#0247FE', '#FB9902', '#8601AF', '#FEFE33', '#A7194B', '#D0EA2B'],
-      \               'ctermfgs'   : ['1', '2', '3', '4', '5', '6', '7', '9', '10', '11' ,'12', '13', '14', '15'],
-      \       },
+      \       '*'    : {},
       \       'tex'  : {
       \           'parentheses': ['start=/(/ end=/)/', 'start=/\[/ end=/\]/'],
       \       },
@@ -37,4 +33,10 @@ let g:rainbow_conf = {
       \       },
       \       'css'  : 0
       \   }
-      \}
+      \ }
+if exists('g:dotfiles_rainbow_palette')
+  let g:rainbow_conf.guifgs =
+        \ map(copy(g:dotfiles_rainbow_palette), 'v:val.gui')
+  let g:rainbow_conf.ctermfgs =
+        \ map(copy(g:dotfiles_rainbow_palette), 'string(v:val.cterm)')
+endif

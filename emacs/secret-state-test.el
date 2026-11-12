@@ -1,8 +1,24 @@
 ;;; secret-state-test.el --- Exercise sensitive file state -*- lexical-binding: t; -*-
 
-(unless (equal (face-attribute 'rainbow-delimiters-depth-1-face :foreground nil t)
-               "#FE2712")
-  (error "Declarative rainbow face palette did not apply"))
+;; emacs/check.nix names lib/rainbow-delimiters.nix as JSON in
+;; DOTFILES_RAINBOW_PALETTE. Every depth must get its colour, and faces past
+;; the palette would keep the package defaults, so the cycle must stop at
+;; the palette's length.
+(let ((palette (with-temp-buffer
+                 (insert-file-contents (getenv "DOTFILES_RAINBOW_PALETTE"))
+                 (json-parse-buffer :object-type 'alist))))
+  (when (zerop (length palette))
+    (error "The rainbow palette is empty"))
+  (seq-do-indexed
+   (lambda (colour index)
+     (let ((face (intern (format "rainbow-delimiters-depth-%d-face" (1+ index))))
+           (expected (alist-get 'gui colour)))
+       (unless (equal (downcase (or (face-attribute face :foreground nil t) ""))
+                      (downcase expected))
+         (error "%s is not %s" face expected))))
+   palette)
+  (unless (equal rainbow-delimiters-max-face-count (length palette))
+    (error "rainbow-delimiters-max-face-count does not match the palette")))
 (custom-set-faces '(rainbow-delimiters-depth-1-face ((t (:foreground "#112233")))))
 (unless (equal (face-attribute 'rainbow-delimiters-depth-1-face :foreground nil t)
                "#112233")

@@ -164,28 +164,31 @@ setting from directory locals or a mode hook is kept."
   (add-to-list 'custom-theme-load-path (file-name-directory theme-file)))
 (load-theme 'solarized-gruvbox-dark t)
 
-;; Mimic vim rainbow parentheses settings:
-;; red, green, blue-green, red-orange, blue, orange, violet, yellow, red-violet
-;; Matching paren as azure
-;; Attached to the loaded theme rather than face-override-spec or user so
-;; custom.el can still override these faces without custom-save-faces copying
-;; the defaults into custom.el.
+;; rainbow-delimiters-palette.el, generated from lib/rainbow-delimiters.nix,
+;; defines `dotfiles-rainbow-delimiters-palette', one colour per depth.
+;; Faces beyond its length would keep the package's defaults, so the face
+;; count is cut to match and deeper nesting cycles back to depth 1.
+;; The faces are attached to the loaded theme rather than face-override-spec
+;; or user so custom.el can still override them without custom-save-faces
+;; copying the defaults into custom.el.
+(load (locate-user-emacs-file "rainbow-delimiters-palette.el") nil nil t)
+(setq rainbow-delimiters-max-face-count
+      (length dotfiles-rainbow-delimiters-palette))
 (let ((custom--inhibit-theme-enable nil))
   (apply #'custom-theme-set-faces
          'solarized-gruvbox-dark
          (mapcar (lambda (spec)
                    `(,(car spec) ((t ,(cadr spec)))))
-                 '((rainbow-delimiters-depth-1-face (:foreground "#FE2712"))
-                   (rainbow-delimiters-depth-2-face (:foreground "#66B032"))
-                   (rainbow-delimiters-depth-3-face (:foreground "#0392CE"))
-                   (rainbow-delimiters-depth-4-face (:foreground "#FD5308"))
-                   (rainbow-delimiters-depth-5-face (:foreground "#0247FE"))
-                   (rainbow-delimiters-depth-6-face (:foreground "#FB9902"))
-                   (rainbow-delimiters-depth-7-face (:foreground "#8601AF"))
-                   (rainbow-delimiters-depth-8-face (:foreground "#FEFE33"))
-                   (rainbow-delimiters-depth-9-face (:foreground "#A7194B"))
-                   (rainbow-delimiters-unmatched-face (:background "#D0EA2B"))
-                   (show-paren-match (:foreground "azure" :weight semi-bold))))))
+                 (append
+                  (seq-map-indexed
+                   (lambda (colour index)
+                     (list (intern (format "rainbow-delimiters-depth-%d-face"
+                                           (1+ index)))
+                           (list :foreground colour)))
+                   dotfiles-rainbow-delimiters-palette)
+                  '((rainbow-delimiters-unmatched-face (:background "#D0EA2B"))
+                    ;; Matching paren as azure.
+                    (show-paren-match (:foreground "azure" :weight semi-bold)))))))
 
 ; editorconfig settings
 ;; Preserve Emacs' form-aware indentation at the conventional Lisp width.

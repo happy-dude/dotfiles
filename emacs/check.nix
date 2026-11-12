@@ -15,6 +15,12 @@
   lspPaths = shared homes "the emacs lsp-paths configuration" (
     home: home.config.xdg.configFile."emacs/lsp-paths.el".source
   );
+  rainbowPalette = shared homes "the emacs rainbow-delimiters palette" (
+    home: home.config.xdg.configFile."emacs/rainbow-delimiters-palette.el".source
+  );
+  rainbowColours = pkgs.writeText "rainbow-delimiters.json" (
+    builtins.toJSON (import ../lib/rainbow-delimiters.nix)
+  );
   emacsPackage = shared homes "the emacs package" (
     home: home.config.programs.emacs.finalPackage
   );
@@ -75,6 +81,7 @@ in
         export DOTFILES_AGENT_SHELL_CONFIG=${agentShellConfig}
         export DOTFILES_LSP_CONFIG=${lspConfig}
         export DOTFILES_LSP_PATHS=${lspPaths}
+        export DOTFILES_RAINBOW_PALETTE=${rainbowColours}
         export OPENCODE_DISABLE_LSP_DOWNLOAD=${opencodeDisableLspDownload}
         mkdir -p "$XDG_CACHE_HOME" "$XDG_CONFIG_HOME" "$XDG_DATA_HOME"
 
@@ -83,6 +90,7 @@ in
         ln -s ${lspPaths} "$XDG_CONFIG_HOME/emacs/lsp-paths.el"
         ln -s ${lspConfig} "$XDG_CONFIG_HOME/emacs/lsp-servers.el"
         ln -s ${agentShellConfig} "$XDG_CONFIG_HOME/emacs/agent-shell.el"
+        ln -s ${rainbowPalette} "$XDG_CONFIG_HOME/emacs/rainbow-delimiters-palette.el"
 
         emacs --batch --quick --load ${runtimeTest}
         emacs --batch --quick --load ${initEl} \
