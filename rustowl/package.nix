@@ -25,7 +25,11 @@
 
     cargoLock.lockFile = "${src}/Cargo.lock";
     nativeBuildInputs = [pkgs.pkg-config];
-    buildInputs = [pkgs.openssl];
+    # RustOwl enables tikv-jemalloc-sys's override_allocator feature, which
+    # replaces the system malloc, so the crate expects unprefixed symbols.
+    # nixpkgs' cargoSetupHook links the crate to the jemalloc it finds in
+    # buildInputs, and fails the build when there is none.
+    buildInputs = [pkgs.openssl pkgs.rust-jemalloc-sys-unprefixed];
     doCheck = false;
 
     TOOLCHAIN_CHANNEL = toolchainChannel;
