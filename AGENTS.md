@@ -519,9 +519,12 @@ guidance detectable.
 
 ### `other/` directory
 
-`other/` collects non-stowable, non-Nix configs (iptables, slim, x11, xmonad,
-alacritty, feh, firefox, macOS, udev). These are case-by-case references, not
-part of any automated install path on this branch.
+`other/` collects non-stowable, non-Nix reference configs (iptables, slim, x11,
+xmonad, alacritty, feh, firefox, macOS, udev) that Home Manager does not deploy.
+The one helper-backed entry is `other/firefox/chrome/userChrome.css`, which
+targets the Nova address bar; `scripts/install-firefox-userchrome.sh` copies it
+into a chosen Firefox profile on request and backs up any different existing
+`userChrome.css`.
 
 ## Common commands
 
