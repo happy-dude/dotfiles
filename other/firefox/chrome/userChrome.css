@@ -3,17 +3,16 @@
  */
 @import url("css/leptonChrome.css");
 
-/* Targets Firefox Nightly 158.0a1 (20260916094607). The two-line layout
- * requires browser.nova.enabled = false; Nova retains its native row layout.
- */
-/* Companion about:config settings:
- * browser.urlbar.maxRichResults = 10
- * browser.urlbar.resultMenu.keyboardAccessible = true
+/* Targets the Nova address bar of Firefox Nightly 162.0a1 (20261113085116),
+ * where browser.nova.enabled is locked to true. The rules assume Nova's DOM;
+ * profiles with Nova off are not supported.
+ *
+ * Companion about:config setting:
  * browser.urlbar.scotchBonnet.disableOneOffs = true
  * Native one-off hiding also removes its keyboard-navigation targets.
- * Ten ordinary results were checked at 400–880px window heights. Extremely
- * short windows or tall rich cards can still exceed the visible scrollport;
- * CSS cannot provide the classic URL bar's missing selection auto-scroll.
+ *
+ * userChrome.css is a user-origin sheet, so its normal declarations lose to
+ * the browser's own author-origin rules; overrides need !important.
  */
 
 @-moz-document url("chrome://browser/content/browser.xhtml")
@@ -24,25 +23,12 @@
   }
 
   #urlbar {
-    /* The popover's containing area is the space below its input anchor. */
-    > .urlbarView:popover-open {
-      max-height: calc(
-        100% - var(--urlbarView-joint-background-outset-block, 0px)
-      );
-    }
-
-    > .urlbarView > .urlbarView-body-outer {
-      min-height: 0;
-      overflow-y: auto;
-      scrollbar-width: thin;
-    }
-
     .urlbarView-title {
       font-size: var(--mbarstyler-title-font-size) !important;
     }
 
-    .urlbarView-secondary,
     .urlbarView-url,
+    .urlbarView-explanation,
     .urlbarView-action {
       font-size: var(--mbarstyler-url-font-size) !important;
     }
@@ -51,8 +37,23 @@
       padding-block: 2px !important;
     }
 
+    /* border-image keeps the separator straight; a plain border would follow
+     * the row's rounded corners.
+     */
     .urlbarView-row:not(:last-of-type) {
-      border-bottom: 1px solid var(--urlbarview-separator-color) !important;
+      border-bottom: 1px solid !important;
+      border-image: linear-gradient(
+          var(--urlbarview-separator-color),
+          var(--urlbarview-separator-color)
+        )
+        1 !important;
+    }
+
+    /* The title has a zero flex basis, so a long tag list shrinks it to
+     * nothing; bound the tags so the title keeps most of the line.
+     */
+    .urlbarView-tags {
+      max-width: 30% !important;
     }
 
     /* Suppress category headings, not the result rows that carry them. */
@@ -64,134 +65,67 @@
       margin-block-start: 0 !important;
     }
 
-    @media not -moz-pref("browser.nova.enabled") {
-      /* Classic URL-bar selection does not scroll rows into view. With the
-     * companion result limit, short windows use compact single-line rows.
+    /* Nova already lays out a two-line row: the title on the first line, the
+     * URL and the hover-only "Bookmarked"/"Last visited" explanation beneath
+     * it. view-nova.css applies that grid only while the input is narrower
+     * than 650px (the results' [wrap] attribute); these rules repeat its
+     * declarations for every input width. Keep them in step with the
+     * `.urlbarView-results[wrap]` rules in view-nova.css.
+     *
+     * Nova does not scroll the keyboard-selected row into view in the address
+     * bar, so in shorter windows two-line rows push selected results out of
+     * sight. On Nightly 162 with ten results, every selected row stayed
+     * visible from 610px in normal density and 600px in compact density. Touch
+     * rows clip below about 740px with or without this sheet; the two-line
+     * rows keep one more row visible than Nova's own at 610px. Below 610px this
+     * sheet adds no grid, but Nova's own still applies to inputs narrower than
+     * 650px from 600px, without tab rows.
      */
-      @media (height < 640px) {
-        .urlbarView-row:not([rich-suggestion], [restyled-search])
-          > .urlbarView-row-inner {
-          flex-wrap: nowrap !important;
+    @media (height >= 610px) {
+      .urlbarView-row[has-url]:not([sponsored], [restyled-search])
+        > .urlbarView-row-inner
+        > .urlbarView-row-body
+        > .urlbarView-row-body-top {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) 0 !important;
+        grid-template-areas:
+          "title title"
+          "url   explanation" !important;
+
+        @container (width >= 450px) {
+          grid-template-columns: minmax(0, 1fr) minmax(0, max-content) !important;
         }
 
-        .urlbarView-row:not([rich-suggestion], [restyled-search])
-          > .urlbarView-row-inner
-          > .urlbarView-no-wrap {
-          flex-basis: auto !important;
-        }
+        > .urlbarView-row-body-top-no-wrap {
+          grid-area: title !important;
+          max-width: 100% !important;
+          /* The title has dir="auto", so stretching it across the row would
+           * push an LTR title to the left edge in an RTL locale.
+           */
+          justify-self: start !important;
 
-        .urlbarView-row[has-url]:not(
-            [rich-suggestion],
-            [restyled-search],
-            [sponsored]
-          ) {
-          .urlbarView-action,
-          .urlbarView-tags,
-          .urlbarView-title-separator {
+          > .urlbarView-title-separator {
             display: none !important;
           }
+        }
 
-          > .urlbarView-row-inner > .urlbarView-no-wrap {
-            max-width: calc(
-              70% - 2 * (var(--urlbarview-favicon-size) + (6px + 2px))
-            ) !important;
-            min-width: 0;
-            flex-shrink: 1 !important;
-          }
+        > .urlbarView-url {
+          grid-area: url !important;
+        }
 
-          > .urlbarView-row-inner > .urlbarView-url {
-            visibility: visible !important;
-            min-width: 0;
-            margin-top: 0 !important;
-            margin-inline: 0 !important;
-            margin-inline-start: 8px !important;
-          }
+        > .urlbarView-explanation {
+          grid-area: explanation !important;
         }
       }
 
-      @media (height >= 640px) {
-        /* Keep rich suggestions and restyled search results in their native layout. */
-        .urlbarView-row[has-url]:not([rich-suggestion], [restyled-search]) {
-          > .urlbarView-row-inner {
-            display: flex !important;
-            flex-wrap: wrap !important;
-          }
-
-          /* Keep Firefox's first-line grouping; the title pushes badges to the end. */
-          .urlbarView-no-wrap {
-            display: flex !important;
-            flex-basis: 100% !important;
-            max-width: 100% !important;
-            min-width: 0;
-          }
-
-          .urlbarView-title {
-            flex: 1 1 auto;
-            min-width: 0;
-          }
-
-          .urlbarView-tags {
-            order: 4;
-            max-width: 30%;
-            min-width: 0;
-          }
-
-          .urlbarView-title-separator {
-            display: none !important;
-          }
-
-          .urlbarView-action {
-            order: 1;
-            flex-shrink: 0;
-            margin-block: 0 !important;
-            padding-block: 0 !important;
-            margin-inline-start: 8px !important;
-          }
-
-          .urlbarView-userContext {
-            order: 2;
-          }
-
-          .urlbarView-tabGroup {
-            order: 3;
-          }
-
-          > .urlbarView-row-inner > .urlbarView-url {
-            flex-basis: calc(100% - var(--urlbarView-second-line-indent));
-            min-width: 0;
-            padding-inline-start: 0 !important;
-            margin-top: 0 !important;
-            margin-inline: 0 !important;
-            margin-inline-start: var(
-              --urlbarView-second-line-indent
-            ) !important;
-            visibility: visible !important;
-          }
-
-          /* Native hover swaps the device label for the URL; this layout shows both. */
-          &[type="remotetab"] .urlbarView-action {
-            visibility: visible !important;
-            width: auto !important;
-            padding-inline: 8px !important;
-
-            @media -moz-pref("browser.urlbar.scotchBonnet.enableOverride") {
-              border-inline: 1px solid var(--border-color-deemphasized) !important;
-            }
-          }
-        }
-
-        /* Follow the available result width, including space taken by toolbars. */
-        .urlbarView-results[wrap]
-          .urlbarView-row[has-url]:not(
-            [rich-suggestion],
-            [restyled-search],
-            [sponsored]
-          ) {
-          .urlbarView-action,
-          .urlbarView-tags {
-            display: none !important;
-          }
-        }
+      /* Tab rows hide the URL behind their switch-to-tab or device chiclet
+       * until hover. The second line has room for both, so show the URL
+       * beneath the chiclet.
+       */
+      .urlbarView-row[has-url]:is([type="switchtab"], [type="remotetab"])
+        .urlbarView-url,
+      .urlbarView-row[has-url][type="remotetab"] .urlbarView-action {
+        visibility: visible !important;
       }
     }
   }
