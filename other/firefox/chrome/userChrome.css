@@ -3,7 +3,7 @@
  */
 @import url("css/leptonChrome.css");
 
-/* Targets the Nova address bar of Firefox Nightly 162.0a1 (20261113085116),
+/* Targets the Nova address bar of Firefox Nightly >= 162,
  * where browser.nova.enabled is locked to true. The rules assume Nova's DOM;
  * profiles with Nova off are not supported.
  *
@@ -35,6 +35,23 @@
 
     .urlbarView-row-inner {
       padding-block: 2px !important;
+    }
+
+    /* Nova pads its tab and clipboard chiclets 4px above and below the text
+     * and cancels that with a negative margin, so they overhang the line by
+     * 5px on each side. With this sheet's 2px row padding and the URL line
+     * directly beneath the title, that overhang covers the separator above
+     * and the URL below. Keep the border and drop the block padding, as
+     * Nova's own tag pills do.
+     */
+    .urlbarView-row:is(
+        [type="switchtab"],
+        [type="remotetab"],
+        [type="clipboard"]
+      )
+      :is(.urlbarView-action, .urlbarView-switchToTab-accessory) {
+      padding-block: 0 !important;
+      margin-block: -1px !important;
     }
 
     /* border-image keeps the separator straight; a plain border would follow
