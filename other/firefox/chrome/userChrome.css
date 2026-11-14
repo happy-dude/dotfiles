@@ -66,11 +66,17 @@
         1 !important;
     }
 
-    /* The title has a zero flex basis, so a long tag list shrinks it to
-     * nothing; bound the tags so the title keeps most of the line.
+    /* Nova gives the title and the tags one flex line, and the title has a
+     * zero flex basis, so long tags squeeze it to nothing. A percentage cap
+     * does not help in the two-line layout: that line is only as wide as the
+     * title and tags need, so the cap shrinks with them. Keep the tags at
+     * their own width instead, up to 60% of the results list (Nova's
+     * `.urlbarView-results` inline-size container), so a long title keeps
+     * part of the line; tags beyond the cap fade out.
      */
     .urlbarView-tags {
-      max-width: 30% !important;
+      flex-shrink: 0 !important;
+      max-width: 60cqi !important;
     }
 
     /* Suppress category headings, not the result rows that carry them. */
