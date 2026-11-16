@@ -145,6 +145,10 @@
     entries = rimeDataEntries;
   };
 
+  changedStockLists = (import ./stock-schemas.nix {inherit lib;}).problems {
+    entries = rimeDataEntries;
+  };
+
   # The link farm declares every discovered source file as a Nix input.
   # Activation materializes it in the writable Rime directory so managed static
   # inputs can coexist with generated schemas, learned databases, and sync state.
@@ -214,7 +218,13 @@ in
     OpenCC configs named by the deployed Rime schemas do not resolve:
     ${lib.concatMapStringsSep "\n" (problem: "  " + problem) unresolvedOpenccConfigs}
     A simplifier without its config converts nothing. Add the source that
-    provides the config, or record in rime/opencc.nix why it is absent.''; {
+    provides the config, or record in rime/opencc.nix why it is absent.'';
+  assert lib.assertMsg (changedStockLists == []) ''
+    The locked stock Rime schemas no longer hold the lists that the tracked
+    patches were written against:
+    ${lib.concatMapStringsSep "\n" (problem: "  " + problem) changedStockLists}
+    Check the patches named in rime/stock-schemas.nix against the new lists,
+    then record the new lists there.''; {
     xdg.dataFile = themeFiles;
 
     # Both helpers refuse unmanaged or conflicting files, and their deploy

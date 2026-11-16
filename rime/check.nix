@@ -92,6 +92,77 @@
     )
     openccCases;
 
+  # Known answers for stockSchemas.problems.
+  stockSchemas = import ./stock-schemas.nix {inherit lib;};
+  stockSchemaEntries = [
+    {
+      relative = "sample.schema.yaml";
+      path = builtins.toFile "sample.schema.yaml" ''
+        # A comment, then the lists as the stock schemas write them.
+        schema:
+          schema_id: sample
+          dependencies:
+            - luna_pinyin  # 反查
+            - stroke
+
+        engine:
+          processors:
+            - ascii_composer
+            # A comment between two items.
+            - recognizer
+          filters: [ simplifier, uniquifier ]
+          translators:
+            - punct_translator
+              continued on a second line
+            - script_translator
+
+        filters:
+          - not/engine
+      '';
+    }
+  ];
+  stockSchemaCases = [
+    {
+      name = "block lists, comments, and a blank line";
+      expected."sample.schema.yaml" = {
+        "schema/dependencies" = ["luna_pinyin" "stroke"];
+        "engine/processors" = ["ascii_composer" "recognizer"];
+      };
+      problems = [];
+    }
+    {
+      name = "a changed list, lists this reader cannot follow, and a file that is gone";
+      expected = {
+        "sample.schema.yaml" = {
+          "engine/filters" = ["simplifier" "uniquifier"];
+          "engine/processors" = ["recognizer" "ascii_composer"];
+          "engine/segmentors" = ["abc_segmentor"];
+          "engine/translators" = ["punct_translator" "script_translator"];
+        };
+        "gone.schema.yaml"."engine/filters" = [];
+      };
+      problems = [
+        "gone.schema.yaml is not deployed"
+        "sample.schema.yaml: engine/filters is missing or not a block list; expected [simplifier, uniquifier]"
+        "sample.schema.yaml: engine/processors is [ascii_composer, recognizer]; expected [recognizer, ascii_composer]"
+        "sample.schema.yaml: engine/segmentors is missing or not a block list; expected [abc_segmentor]"
+        "sample.schema.yaml: engine/translators is [punct_translator]; expected [punct_translator, script_translator]"
+      ];
+    }
+  ];
+  stockSchemaFailures =
+    lib.concatMap (
+      case: let
+        actual = stockSchemas.problems {
+          inherit (case) expected;
+          entries = stockSchemaEntries;
+        };
+      in
+        lib.optional (actual != case.problems)
+        "${case.name}: expected ${builtins.toJSON case.problems}, got ${builtins.toJSON actual}"
+    )
+    stockSchemaCases;
+
   # Shell for the validation-mode tests. `listing` prints one line per path
   # that changes when the path is created, removed, replaced, or rewritten.
   # `refused_alike` expects `validate` and `deploy`, which each check defines
@@ -160,6 +231,20 @@ in {
         ''
       }
     '';
+  };
+
+  # stockSchemas.problems against known answers. The locked schemas
+  # themselves are held to rime/stock-schemas.nix when rime/default.nix is
+  # evaluated.
+  rime-stock-schemas = mkCheck {
+    name = "rime-stock-schemas";
+    script =
+      if stockSchemaFailures == []
+      then "echo 'stockSchemas.problems gives the known answers'"
+      else ''
+        ${lib.concatMapStringsSep "\n" (failure: "echo ${lib.escapeShellArg failure} >&2") stockSchemaFailures}
+        exit 1
+      '';
   };
 
   rime-state-manager = mkCheck {
