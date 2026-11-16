@@ -50,12 +50,32 @@ in {
       grep -qx learned home/.local/share/fcitx5/rime/user.yaml
       grep -qx schema-v2 home/.local/share/fcitx5/rime/subdir/schema.yaml
 
-      # A run killed mid-swap renames the live static tree aside without
-      # installing the replacement; the next deploy must restore it rather
-      # than leave Rime without its managed data.
+      # A run killed during the copy leaves its staging tree beside the live
+      # one, with the read-only modes of the store path it was copying. The
+      # next deploy removes it and replaces the live tree as usual.
       staticdir="home/.local/share/fcitx5/rime/.home-manager-static"
       test -d "$staticdir"
+      mkdir -p "$staticdir.killed1/subdir"
+      printf '%s\n' partial >"$staticdir.killed1/subdir/schema.yaml"
+      chmod 555 "$staticdir.killed1/subdir" "$staticdir.killed1"
+      printf '%s\n' stamp-v2b >stamp
+      printf '%s\n' schema-v2b >source/subdir/schema.yaml
+      HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
+        rime-state-manager deploy \
+          "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
+          subdir/schema.yaml
+      test ! -e "$staticdir.killed1"
+      test ! -e "$staticdir.home-manager-old"
+      grep -qx schema-v2b home/.local/share/fcitx5/rime/subdir/schema.yaml
+      grep -qx learned home/.local/share/fcitx5/rime/user.yaml
+
+      # A run killed mid-swap renames the live static tree aside without
+      # installing the replacement; the next deploy must restore it rather
+      # than leave Rime without its managed data. The staging tree that run
+      # had finished copying is left behind as well.
       mv "$staticdir" "$staticdir.home-manager-old"
+      mkdir -p "$staticdir.killed2/subdir"
+      chmod 555 "$staticdir.killed2/subdir" "$staticdir.killed2"
       printf '%s\n' stamp-v3 >stamp
       printf '%s\n' schema-v3 >source/subdir/schema.yaml
       HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
@@ -64,6 +84,7 @@ in {
           subdir/schema.yaml
       test -d "$staticdir"
       test ! -e "$staticdir.home-manager-old"
+      test ! -e "$staticdir.killed2"
       grep -qx schema-v3 home/.local/share/fcitx5/rime/subdir/schema.yaml
       grep -qx learned home/.local/share/fcitx5/rime/user.yaml
 

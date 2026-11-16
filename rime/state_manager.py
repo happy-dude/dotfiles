@@ -1,4 +1,5 @@
 import filecmp
+import glob
 import os
 import shutil
 import stat
@@ -90,8 +91,38 @@ def make_user_writable(root: Path) -> None:
             )
 
 
+def remove_staging(root: Path) -> None:
+    """Remove a staging tree, including one whose copy never finished.
+
+    copytree gives each directory its source's mode once that directory's
+    contents are copied. The source is a read-only store path, so an
+    interrupted copy leaves directories that cannot be emptied as they are.
+    """
+    for directory, _, _ in os.walk(root):
+        path = Path(directory)
+        path.chmod(stat.S_IMODE(path.stat().st_mode) | stat.S_IRWXU)
+    shutil.rmtree(root)
+
+
+def remove_stale_staging(static_dir: Path, backup: Path) -> None:
+    """Remove the staging trees that killed runs left beside static_dir.
+
+    A staging tree is named after static_dir with a random suffix. The
+    backup's name starts the same way, and recovery below still needs it, so
+    it is skipped.
+    """
+    pattern = glob.escape(static_dir.name) + ".*"
+    for sibling in static_dir.parent.glob(pattern):
+        if sibling == backup or sibling.is_symlink() or not sibling.is_dir():
+            continue
+        remove_staging(sibling)
+
+
 def refresh_static(static_source: Path, static_dir: Path) -> None:
     backup = static_dir.with_name(static_dir.name + ".home-manager-old")
+    # A run killed during the copy, or between the two renames below, leaves
+    # its staging tree behind; no later run would reuse or remove it.
+    remove_stale_staging(static_dir, backup)
     # Recover from a previous run that was killed mid-swap: the live tree was
     # moved aside but the replacement was never installed. Restore the backup
     # if the live tree is gone, otherwise discard a stale backup.
@@ -130,7 +161,7 @@ def refresh_static(static_source: Path, static_dir: Path) -> None:
                 shutil.rmtree(backup)
     finally:
         if temporary.exists():
-            shutil.rmtree(temporary)
+            remove_staging(temporary)
 
 
 def deploy(

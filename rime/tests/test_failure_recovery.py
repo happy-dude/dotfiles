@@ -1,5 +1,6 @@
 import errno
 import os
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -9,7 +10,106 @@ import host_files
 import state_manager
 
 
+def read_only_source(root: Path) -> Path:
+    """Build a source tree with the modes of a Nix store path."""
+    source = root / "source"
+    (source / "lua").mkdir(parents=True)
+    (source / "lua/filter.lua").write_bytes(b"new filter\n")
+    (source / "schema.yaml").write_bytes(b"new schema\n")
+    for directory, _, files in os.walk(source, topdown=False):
+        for name in files:
+            Path(directory, name).chmod(0o444)
+        Path(directory).chmod(0o555)
+    return source
+
+
+def make_writable(root: Path) -> None:
+    for directory, _, _ in os.walk(root):
+        Path(directory).chmod(0o755)
+
+
 class FailureRecoveryTests(unittest.TestCase):
+    def test_killed_copy_leaves_staging_that_the_next_run_removes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.addCleanup(make_writable, root)
+            source = read_only_source(root)
+            live = root / ".home-manager-static"
+            live.mkdir()
+            (live / "schema.yaml").write_bytes(b"old schema\n")
+            # What a kill leaves: copytree has given every finished
+            # directory its read-only source mode.
+            stale = root / ".home-manager-static.killed00"
+            shutil.copytree(source, stale)
+
+            state_manager.refresh_static(source, live)
+
+            self.assertEqual(
+                (live / "schema.yaml").read_bytes(), b"new schema\n"
+            )
+            self.assertEqual(set(root.iterdir()), {source, live})
+
+    def test_killed_swap_restores_backup_and_removes_staging(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.addCleanup(make_writable, root)
+            source = read_only_source(root)
+            live = root / ".home-manager-static"
+            backup = root / ".home-manager-static.home-manager-old"
+            backup.mkdir()
+            (backup / "schema.yaml").write_bytes(b"old schema\n")
+            stale = root / ".home-manager-static.killed00"
+            shutil.copytree(source, stale)
+            unrelated = root / ".home-manager-static-notes"
+            unrelated.write_bytes(b"kept\n")
+
+            state_manager.remove_stale_staging(live, backup)
+
+            self.assertFalse(stale.exists())
+            self.assertEqual(
+                (backup / "schema.yaml").read_bytes(), b"old schema\n"
+            )
+            self.assertEqual(unrelated.read_bytes(), b"kept\n")
+
+            state_manager.refresh_static(source, live)
+            self.assertEqual(
+                (live / "schema.yaml").read_bytes(), b"new schema\n"
+            )
+            self.assertEqual(set(root.iterdir()), {source, live, unrelated})
+
+    def test_failed_copy_removes_its_read_only_staging(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.addCleanup(make_writable, root)
+            source = read_only_source(root)
+            live = root / ".home-manager-static"
+            live.mkdir()
+            (live / "schema.yaml").write_bytes(b"old schema\n")
+            copytree = shutil.copytree
+
+            # copytree calls itself for each subdirectory, so the patch sees
+            # those calls too; only the outermost one fails.
+            def copy_then_fail(*arguments, **options):
+                copytree(*arguments, **options)
+                if os.fspath(arguments[0]) == os.fspath(source):
+                    raise OSError(errno.ENOSPC, "injected copy failure")
+
+            with (
+                patch.object(
+                    state_manager.shutil,
+                    "copytree",
+                    side_effect=copy_then_fail,
+                ),
+                self.assertRaises(OSError) as raised,
+            ):
+                state_manager.refresh_static(source, live)
+
+            self.assertEqual(raised.exception.errno, errno.ENOSPC)
+            self.assertEqual(
+                (live / "schema.yaml").read_bytes(), b"old schema\n"
+            )
+            self.assertEqual(set(root.iterdir()), {source, live})
+
     def test_failed_install_and_rollback_preserve_backup_for_retry(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
