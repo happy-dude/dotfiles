@@ -6,9 +6,12 @@ import tomlkit
 
 from dotfiles_files import write_text
 
-# Keep in sync with profileFiles in agents/default.nix: unexpected template
-# keys fail activation, and keys listed here but absent from a template are
-# removed from the target profile.
+# The keys profileFiles in agents/default.nix generates. A template key that
+# is not listed here fails activation, and a listed key that a template
+# leaves out is removed from that profile. The codex-profile-materializer
+# check fails unless the templates carry exactly these keys between them. A
+# key retired from both is no longer managed, so an existing profile keeps
+# its last value.
 MANAGED_KEYS = (
     "developer_instructions",
     "model_reasoning_effort",

@@ -26,8 +26,9 @@
         }
     )
     prompts;
-  # Keep the generated keys in sync with MANAGED_KEYS in
-  # agents/materialize_codex_profile.py.
+  # The materializer owns exactly the keys generated here: MANAGED_KEYS in
+  # agents/materialize_codex_profile.py lists them, and the
+  # codex-profile-materializer check fails when the two differ.
   profileFiles =
     lib.mapAttrs (
       name: prompt:

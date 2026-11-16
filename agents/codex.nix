@@ -259,7 +259,49 @@
         for template in ${lib.escapeShellArgs generatedProfiles}; do
           materialize-codex-profile "$template" work/real-profile.toml
         done
+
+        # MANAGED_KEYS must be exactly the keys the templates carry between
+        # them. A template key it lacks fails activation, as the loop above
+        # shows; a key it lists that no template sets would be deleted from
+        # every profile, whoever wrote it.
+        python3 - ${./materialize_codex_profile.py} ${lib.escapeShellArgs generatedProfiles} <<'PYTHON'
+        import ast
+        import sys
+        import tomllib
+        from pathlib import Path
+
+        source = ast.parse(Path(sys.argv[1]).read_text(encoding="utf-8"))
+        managed = {
+            key
+            for node in source.body
+            if isinstance(node, ast.Assign)
+            and [target.id for target in node.targets] == ["MANAGED_KEYS"]
+            for key in ast.literal_eval(node.value)
+        }
+        assert managed, "MANAGED_KEYS not found in the materializer"
+        generated = set()
+        for template in sys.argv[2:]:
+            generated |= tomllib.loads(Path(template).read_text(encoding="utf-8")).keys()
+        if managed != generated:
+            raise SystemExit(
+                "MANAGED_KEYS and the generated Codex profiles disagree: "
+                f"only in MANAGED_KEYS {sorted(managed - generated)}, "
+                f"only in the profiles {sorted(generated - managed)}"
+            )
+        PYTHON
       ''}
+
+      # A template the materializer does not fully own is refused, and the
+      # profile keeps its content.
+      cp work/profile.toml work/profile.kept
+      printf '%s\n' \
+        'developer_instructions = "instructions"' \
+        'model = "unmanaged"' \
+        >work/unmanaged.toml
+      refuses "a template with an unmanaged key" work/unmanaged.toml work/profile.toml
+      printf '%s\n' 'model_reasoning_effort = "medium"' >work/incomplete.toml
+      refuses "a template without instructions" work/incomplete.toml work/profile.toml
+      cmp work/profile.kept work/profile.toml
 
       ln -s "$PWD/work" work/linked-dir
       refuses "a symlinked parent directory" \
