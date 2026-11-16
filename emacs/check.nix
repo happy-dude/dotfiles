@@ -21,6 +21,12 @@
   rainbowColours = pkgs.writeText "rainbow-delimiters.json" (
     builtins.toJSON (import ../lib/rainbow-delimiters.nix)
   );
+  sensitivePaths = shared homes "the emacs sensitive-paths list" (
+    home: home.config.xdg.configFile."emacs/sensitive-paths.el".source
+  );
+  sensitivePathList = pkgs.writeText "sensitive-paths.json" (
+    builtins.toJSON (import ../lib/sensitive-paths.nix)
+  );
   emacsPackage = shared homes "the emacs package" (
     home: home.config.programs.emacs.finalPackage
   );
@@ -82,21 +88,32 @@ in
         export DOTFILES_LSP_CONFIG=${lspConfig}
         export DOTFILES_LSP_PATHS=${lspPaths}
         export DOTFILES_RAINBOW_PALETTE=${rainbowColours}
+        export DOTFILES_SENSITIVE_PATHS=${sensitivePathList}
         export OPENCODE_DISABLE_LSP_DOWNLOAD=${opencodeDisableLspDownload}
-        mkdir -p "$XDG_CACHE_HOME" "$XDG_CONFIG_HOME" "$XDG_DATA_HOME"
+        mkdir -p "$XDG_CACHE_HOME" "$XDG_DATA_HOME"
 
-        # init.el locates its companions through the user emacs directory.
-        mkdir -p "$XDG_CONFIG_HOME/emacs"
-        ln -s ${lspPaths} "$XDG_CONFIG_HOME/emacs/lsp-paths.el"
-        ln -s ${lspConfig} "$XDG_CONFIG_HOME/emacs/lsp-servers.el"
-        ln -s ${agentShellConfig} "$XDG_CONFIG_HOME/emacs/agent-shell.el"
-        ln -s ${rainbowPalette} "$XDG_CONFIG_HOME/emacs/rainbow-delimiters-palette.el"
+        # init.el locates its companions through the user emacs directory,
+        # which follows XDG_CONFIG_HOME.
+        link_companions() {
+          mkdir -p "$XDG_CONFIG_HOME/emacs"
+          ln -s ${lspPaths} "$XDG_CONFIG_HOME/emacs/lsp-paths.el"
+          ln -s ${lspConfig} "$XDG_CONFIG_HOME/emacs/lsp-servers.el"
+          ln -s ${agentShellConfig} "$XDG_CONFIG_HOME/emacs/agent-shell.el"
+          ln -s ${rainbowPalette} "$XDG_CONFIG_HOME/emacs/rainbow-delimiters-palette.el"
+          ln -s ${sensitivePaths} "$XDG_CONFIG_HOME/emacs/sensitive-paths.el"
+        }
+        link_companions
 
         emacs --batch --quick --load ${runtimeTest}
         emacs --batch --quick --load ${initEl} \
-          --load ${./secret-state-test.el}
-        emacs --batch --quick --load ${initEl} \
           --load ${./org-protocol-test.el}
+
+        # The secret-state test needs a config directory other than
+        # ~/.config: XDG config entries must be guarded in both places.
+        export XDG_CONFIG_HOME="$HOME/relocated-config"
+        link_companions
+        emacs --batch --quick --load ${initEl} \
+          --load ${./secret-state-test.el}
       '';
     };
   }

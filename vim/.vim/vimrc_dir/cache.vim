@@ -28,49 +28,63 @@ set writebackup
 set swapfile
 set undofile
 
+" The credential paths come from lib/sensitive-paths.nix. Home Manager sets
+" them as g:dotfiles_sensitive_paths before the vimrc runs: directory names
+" that are sensitive at any depth of a path ('anyDepthDirectories'), and file
+" and directory names relative to the home directory ('home') and to the XDG
+" config directory ('xdgConfig'). Without the variable no path below is
+" guarded, so report it instead of starting quietly.
+if !exists('g:dotfiles_sensitive_paths')
+  echoerr 'cache.vim: g:dotfiles_sensitive_paths is unset; credential files'
+        \ 'will get backup, swap, and undo files'
+endif
+
+" XDG config entries apply under ~/.config and, when $XDG_CONFIG_HOME is an
+" absolute path, under that directory as well: a tool that follows the
+" variable writes there, and one that ignores it writes to ~/.config.
+let s:roots = {'home': [expand('~')], 'xdgConfig': [expand('~/.config')]}
+if $XDG_CONFIG_HOME =~# '^/'
+  call add(s:roots.xdgConfig, $XDG_CONFIG_HOME)
+endif
+
 " A secret is sensitive under the name it was opened by and under the file it
 " resolves to, so keep both forms of every entry.
 function! s:both_forms(path) abort
-  let l:path = fnamemodify(expand(a:path), ':p')
-  return uniq([l:path, resolve(l:path)])
+  let l:path = simplify(fnamemodify(a:path, ':p'))
+  return [l:path, resolve(l:path)]
 endfunction
 
 let s:sensitive_files = []
-for s:path in [
-      \ '~/.authinfo',
-      \ '~/.authinfo.gpg',
-      \ '~/.claude.json',
-      \ '~/.config/fish/secrets.fish',
-      \ '~/.config/git/local.config',
-      \ '~/.config/nix/local.conf',
-      \ '~/.netrc',
-      \ ]
-  call extend(s:sensitive_files, s:both_forms(s:path))
-endfor
 let s:sensitive_dirs = []
-for s:path in [
-      \ '~/.aws',
-      \ '~/.claude',
-      \ '~/.codex',
-      \ '~/.omp',
-      \ '~/.config/gh',
-      \ '~/.config/op',
-      \ '~/.config/opencode',
-      \ '~/.config/rclone',
-      \ '~/.gnupg',
-      \ '~/.kube',
-      \ '~/.password-store',
-      \ '~/.ssh',
-      \ ]
-  call extend(s:sensitive_dirs,
-        \ map(s:both_forms(s:path), {_, dir -> substitute(dir, '/*$', '/', '')}))
+for [s:kind, s:kind_roots] in items(s:roots)
+  let s:entries = get(get(g:, 'dotfiles_sensitive_paths', {}), s:kind, {})
+  for s:root in s:kind_roots
+    for s:path in get(s:entries, 'files', [])
+      call extend(s:sensitive_files, s:both_forms(s:root . '/' . s:path))
+    endfor
+    for s:path in get(s:entries, 'directories', [])
+      call extend(s:sensitive_dirs,
+            \ map(s:both_forms(s:root . '/' . s:path),
+            \     {_, dir -> substitute(dir, '/*$', '/', '')}))
+    endfor
+  endfor
 endfor
+call uniq(sort(s:sensitive_files))
+call uniq(sort(s:sensitive_dirs))
+
+" A credential directory such as .ssh is sensitive wherever it is: in another
+" home, on a mounted backup, or copied into a project.
+let s:sensitive_anywhere = map(
+      \ copy(get(get(g:, 'dotfiles_sensitive_paths', {}), 'anyDepthDirectories', [])),
+      \ {_, name -> '/' . name . '/'})
 
 " 'backup' and 'writebackup' are global options, so a buffer cannot switch
 " them off for itself; 'backupskip' excludes these files per name instead.
 let &backupskip .= ',' . join(
       \ map(copy(s:sensitive_files), {_, path -> escape(path, ',\\')})
-      \ + map(copy(s:sensitive_dirs), {_, dir -> escape(dir, ',\\') . '*'}), ',')
+      \ + map(copy(s:sensitive_dirs), {_, dir -> escape(dir, ',\\') . '*'})
+      \ + map(copy(s:sensitive_anywhere), {_, dir -> '*' . escape(dir, ',\\') . '*'}),
+      \ ',')
 
 function! s:is_sensitive(path) abort
   if index(s:sensitive_files, a:path) >= 0
@@ -78,6 +92,11 @@ function! s:is_sensitive(path) abort
   endif
   for l:dir in s:sensitive_dirs
     if stridx(a:path, l:dir) == 0
+      return 1
+    endif
+  endfor
+  for l:dir in s:sensitive_anywhere
+    if stridx(a:path, l:dir) >= 0
       return 1
     endif
   endfor
@@ -110,4 +129,6 @@ augroup dotfiles_sensitive_file_state
   autocmd BufReadPre,BufNewFile,BufFilePost,BufWritePre * call <SID>disable_sensitive_file_state()
 augroup END
 
-unlet s:backup_dir s:dir s:path s:state_dir s:swap_dir s:undo_dir s:view_dir
+unlet s:backup_dir s:dir s:state_dir s:swap_dir s:undo_dir s:view_dir
+unlet s:entries s:kind s:kind_roots s:roots
+unlet! s:path s:root
