@@ -323,6 +323,16 @@ grep -Fq 'origin/main is not fetched' "$start_error"
 grep -Fxq "$expected_fetch" "$start_error"
 git branch -D replay/unfetched >/dev/null
 
+# The default worktree lives under the XDG state directory, and a relative
+# XDG_STATE_HOME is ignored in favor of ~/.local/state.
+test "$(
+  XDG_STATE_HOME="$temporary_directory/state" default_series_worktree named
+)" = "$temporary_directory/state/dotfiles/portable/named"
+test "$(
+  HOME="$temporary_directory/home" XDG_STATE_HOME=relative-state \
+    default_series_worktree named
+)" = "$temporary_directory/home/.local/state/dotfiles/portable/named"
+
 # Sourced callers test these functions in conditions, where set -e is inert,
 # so a rejected name must stop the function itself.
 if start_series 'BadName' "$temporary_directory/bad-name" \
@@ -429,6 +439,16 @@ test "$(git -C "$relative_worktree" config --worktree --get user.email)" = \
 git worktree remove "$relative_worktree"
 git branch -D replay/relative >/dev/null
 rm -rf -- "$repo/subdirectory"
+
+# Without a worktree argument the series lands in the state directory, whose
+# parents start creates.
+XDG_STATE_HOME="$temporary_directory/state" start_series stated >/dev/null
+stated_worktree="$temporary_directory/state/dotfiles/portable/stated"
+test "$(git -C "$stated_worktree" branch --show-current)" = replay/stated
+test "$(git -C "$stated_worktree" config --worktree --get user.name)" = \
+  'Portable Dotfiles'
+git worktree remove "$stated_worktree"
+git branch -D replay/stated >/dev/null
 printf '%s\n' represented >"$series_worktree/represented"
 git -C "$series_worktree" add represented
 git -C "$series_worktree" commit --quiet -m 'tests: add represented change'

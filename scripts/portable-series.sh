@@ -37,7 +37,8 @@ Usage:
   portable-series.sh export <name> [output-directory]
   portable-series.sh clean <name>
 
-start creates replay/<name> in an isolated worktree rooted at origin/main.
+start creates replay/<name> in an isolated worktree rooted at origin/main,
+by default ${XDG_STATE_HOME:-~/.local/state}/dotfiles/portable/<name>.
 export validates that branch and writes patch artifacts without pushing.
 clean removes the worktree and branch of a series whose commits are all
 represented in origin/main.
@@ -360,16 +361,31 @@ configure_portable_worktree() {
   done
 }
 
+# The state directory outlives a reboot and tmpfiles ageing, either of which
+# would remove a worktree under /tmp and leave its branch behind. Follow the
+# XDG Base Directory specification by ignoring a relative XDG_STATE_HOME.
+default_series_worktree() {
+  local name=$1
+  local state_home="$HOME/.local/state"
+
+  if [[ ${XDG_STATE_HOME:-} == /* ]]; then
+    state_home=$XDG_STATE_HOME
+  fi
+  printf '%s\n' "$state_home/dotfiles/portable/$name"
+}
+
 start_series() {
   local name=$1
-  local worktree=${2:-"/tmp/dotfiles-portable-$name"}
+  local worktree=${2:-}
   local branch="replay/$name"
   local branch_ref="refs/heads/$branch"
   local existing_worktree
   local lookup_status
 
   validate_name "$name" || return 1
-  if [[ $worktree != /* ]]; then
+  if [[ -z $worktree ]]; then
+    worktree=$(default_series_worktree "$name") || return 1
+  elif [[ $worktree != /* ]]; then
     # A relative path names a directory beside the caller, but git -C
     # "$repo_root" would resolve it against the repository root.
     worktree="$PWD/$worktree"
@@ -398,6 +414,7 @@ start_series() {
   # Each step returns on failure itself: set -e is inert when a caller tests
   # start_series in a condition.
   git -C "$repo_root" "${origin_main_fetch[@]}" || return 1
+  mkdir -p -- "$(dirname -- "$worktree")" || return 1
   git -C "$repo_root" worktree add -b "$branch" "$worktree" origin/main ||
     return 1
   configure_portable_worktree "$worktree" || return 1
