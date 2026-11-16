@@ -180,6 +180,32 @@ grep -q 'forbidden content found in commit metadata' "$TMPDIR_TEST/export.log" |
 [[ $(sha256sum "$output"/*) == "$before" ]] ||
   fail 'forbidden commit-metadata rejection replaced published artifacts'
 unset PORTABLE_FORBIDDEN_PATTERN
+
+# The linter prints a diff of a message it rejects. A message that is both
+# malformed Markdown and forbidden must be stopped by the scan, which reports
+# line numbers only, before the linter can echo it.
+git -C "$worktree" commit --quiet --amend -F - <<'EOF'
+tests: lint a message carrying forbidden text
+
+* private-model sits in a bullet that Prettier rewrites
+EOF
+if run_portable export probe "$output"; then
+  fail 'export published a commit message the linter rejects'
+fi
+grep -q 'differs from Prettier output' "$TMPDIR_TEST/export.log" ||
+  fail 'the malformed-message fixture was not rejected by the linter'
+export PORTABLE_FORBIDDEN_PATTERN=private-model
+if run_portable export probe "$output"; then
+  fail 'export published a malformed commit message with forbidden text'
+fi
+grep -q 'forbidden content found in commit metadata' "$TMPDIR_TEST/export.log" ||
+  fail 'forbidden text in a malformed commit message was not reported'
+if grep -q 'private-model' "$TMPDIR_TEST/export.log"; then
+  fail 'export echoed forbidden text from a malformed commit message'
+fi
+[[ $(sha256sum "$output"/*) == "$before" ]] ||
+  fail 'malformed forbidden commit message replaced published artifacts'
+unset PORTABLE_FORBIDDEN_PATTERN
 git -C "$worktree" commit --quiet --amend -m 'tests: seed portable change'
 
 # A machine-local forbidden-pattern file gates export without requiring

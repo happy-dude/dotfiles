@@ -480,9 +480,11 @@ export_series() (
   # staging directory without replacing the caller's own EXIT trap.
   trap 'rm -rf -- "$staging_directory"' EXIT
 
-  lint_commits "$worktree" "$base" "$staging_directory/messages" || return 1
+  # Scan before linting: the linter prints a diff of a message it rejects,
+  # which would echo forbidden text the scan reports by line number only.
   scan_series "$forbidden_pattern" "$worktree" "$base" "$staging_directory" ||
     return 1
+  lint_commits "$worktree" "$base" "$staging_directory/messages" || return 1
   (
     cd -- "$worktree" || exit 1
     nix fmt . || exit 1
