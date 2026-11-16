@@ -412,6 +412,23 @@ if grep -q 'Portable worktree ready' "$start_error"; then
 fi
 git worktree prune
 git branch -D replay/blocked >/dev/null 2>&1 || true
+
+# A relative worktree is relative to the caller's directory, not to the
+# repository root, for the existence check, the worktree, and its config.
+mkdir "$repo/subdirectory"
+(
+  cd -- "$repo/subdirectory"
+  start_series relative nested/series-relative
+) >"$start_error"
+relative_worktree="$repo/subdirectory/nested/series-relative"
+grep -Fxq "Portable worktree ready: $relative_worktree" "$start_error"
+test ! -e "$repo/nested"
+test "$(git -C "$relative_worktree" branch --show-current)" = replay/relative
+test "$(git -C "$relative_worktree" config --worktree --get user.email)" = \
+  portable@localhost
+git worktree remove "$relative_worktree"
+git branch -D replay/relative >/dev/null
+rm -rf -- "$repo/subdirectory"
 printf '%s\n' represented >"$series_worktree/represented"
 git -C "$series_worktree" add represented
 git -C "$series_worktree" commit --quiet -m 'tests: add represented change'

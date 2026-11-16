@@ -369,6 +369,11 @@ start_series() {
   local lookup_status
 
   validate_name "$name" || return 1
+  if [[ $worktree != /* ]]; then
+    # A relative path names a directory beside the caller, but git -C
+    # "$repo_root" would resolve it against the repository root.
+    worktree="$PWD/$worktree"
+  fi
   if git -C "$repo_root" show-ref --verify --quiet "$branch_ref"; then
     if existing_worktree=$(worktree_for_branch "$repo_root" "$branch_ref"); then
       print_existing_series_help "$name" "$existing_worktree"
