@@ -152,9 +152,11 @@
     lib.escapeShellArg entry.relative)
   rimeDataEntries;
 
-  # Fcitx rewrites notifications.conf when a notification is hidden, so it is
-  # materialized with the other host files. Fcitx stores the option as a list,
-  # one numbered key per entry; a flat `HiddenNotifications=` key is ignored.
+  # Fcitx rewrites notifications.conf when a notification is hidden, so
+  # activation merges this declaration into the file instead of replacing it:
+  # the declared IDs are added to whatever Fcitx recorded. Fcitx stores the
+  # option as a list, one numbered key per entry; a flat
+  # `HiddenNotifications=` key is ignored.
   # Copy only .config/fcitx5: `./.` would put all of rime/ in the store.
   fcitxConfig = pkgs.runCommand "fcitx5-config" {} ''
     cp -r ${./.config/fcitx5} "$out"

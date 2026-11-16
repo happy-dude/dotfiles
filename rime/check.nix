@@ -114,7 +114,8 @@ in {
       printf '%s\n' profile-v1 >"$source_root/profile"
       printf '%s\n' classic-v1 >"$source_root/conf/classicui.conf"
       printf '%s\n' rime-v1 >"$source_root/conf/rime.conf"
-      printf '%s\n' notifications-v1 >"$source_root/conf/notifications.conf"
+      printf '%s\n' '[HiddenNotifications]' 0=wayland-diagnose-gnome \
+        >"$source_root/conf/notifications.conf"
 
       HOME="$home" XDG_STATE_HOME="$state" \
         rime-host-files deploy "$source_root"
@@ -122,6 +123,13 @@ in {
       test ! -L "$home/.config/fcitx5/profile"
       test "$(stat -c %a "$home/.config/fcitx5/profile")" = 644
       test ! -e "$home/.local/share/fcitx5/themes"
+      # A missing notifications.conf is created from the declaration. It has
+      # no snapshot: Fcitx owns the file once it exists.
+      cmp "$source_root/conf/notifications.conf" \
+        "$home/.config/fcitx5/conf/notifications.conf"
+      test "$(stat -c %a "$home/.config/fcitx5/conf/notifications.conf")" = 644
+      test -f "$state/rime/host-config/profile"
+      test ! -e "$state/rime/host-config/notifications.conf"
 
       # Fcitx reads $XDG_CONFIG_HOME when it is set to an absolute path; the
       # base-directory specification says a relative value is ignored.
@@ -168,17 +176,65 @@ in {
       fi
       test ! -e "$PWD/linked-state"
 
-      # Fcitx rewrites notifications.conf when a notification is hidden. On
-      # the first deploy that copy is kept; the other host files still refuse
-      # an unmanaged regular file.
+      # Fcitx rewrites notifications.conf whenever a notification is hidden,
+      # so activation merges the declared entries into the file Fcitx wrote
+      # and keeps everything else in it. A snapshot of the file left in the
+      # state directory is removed.
       fresh_home="$PWD/fresh-home"
-      mkdir -p "$fresh_home/.config/fcitx5/conf"
-      printf '%s\n' hidden-by-fcitx \
-        >"$fresh_home/.config/fcitx5/conf/notifications.conf"
-      HOME="$fresh_home" XDG_STATE_HOME="$PWD/fresh-state" \
+      fresh_state="$PWD/fresh-state"
+      notifications="$fresh_home/.config/fcitx5/conf/notifications.conf"
+      mkdir -p "$fresh_home/.config/fcitx5/conf" \
+        "$fresh_state/rime/host-config"
+      printf '%s\n' Top=level '[HiddenNotifications]' 0=hidden-by-fcitx "" \
+        '[Other]' Key=value >"$notifications"
+      printf '%s\n' stale >"$fresh_state/rime/host-config/notifications.conf"
+      HOME="$fresh_home" XDG_STATE_HOME="$fresh_state" \
         rime-host-files deploy "$source_root"
-      grep -qx hidden-by-fcitx \
-        "$fresh_home/.config/fcitx5/conf/notifications.conf"
+      printf '%s\n' Top=level '[HiddenNotifications]' 0=hidden-by-fcitx \
+        1=wayland-diagnose-gnome "" '[Other]' Key=value >expected
+      diff expected "$notifications"
+      test ! -e "$fresh_state/rime/host-config/notifications.conf"
+
+      # A file that already holds the declared entries is not rewritten.
+      inode="$(stat -c %i "$notifications")"
+      HOME="$fresh_home" XDG_STATE_HOME="$fresh_state" \
+        rime-host-files deploy "$source_root"
+      test "$(stat -c %i "$notifications")" = "$inode"
+      diff expected "$notifications"
+
+      # A changed declaration adds its ID instead of refusing the file. The
+      # ID it replaced stays: it cannot be told apart from one hidden in
+      # Fcitx.
+      printf '%s\n' '[HiddenNotifications]' 0=wayland-diagnose-kde \
+        >"$source_root/conf/notifications.conf"
+      HOME="$fresh_home" XDG_STATE_HOME="$fresh_state" \
+        rime-host-files deploy "$source_root"
+      printf '%s\n' Top=level '[HiddenNotifications]' 0=hidden-by-fcitx \
+        1=wayland-diagnose-gnome 2=wayland-diagnose-kde "" '[Other]' \
+        Key=value >expected
+      diff expected "$notifications"
+
+      # An entry Fcitx adds later survives the next deploy untouched.
+      printf '%s\n' Top=level '[HiddenNotifications]' 0=hidden-by-fcitx \
+        1=wayland-diagnose-gnome 2=wayland-diagnose-kde 3=added-by-fcitx "" \
+        '[Other]' Key=value >"$notifications"
+      cp "$notifications" expected
+      inode="$(stat -c %i "$notifications")"
+      HOME="$fresh_home" XDG_STATE_HOME="$fresh_state" \
+        rime-host-files deploy "$source_root"
+      test "$(stat -c %i "$notifications")" = "$inode"
+      diff expected "$notifications"
+      test ! -e "$fresh_state/rime/host-config/notifications.conf"
+
+      # A file without the section gains it after the existing content.
+      printf '%s\n' '[Other]' Key=value >"$notifications"
+      HOME="$fresh_home" XDG_STATE_HOME="$fresh_state" \
+        rime-host-files deploy "$source_root"
+      printf '%s\n' '[Other]' Key=value "" '[HiddenNotifications]' \
+        0=wayland-diagnose-kde >expected
+      diff expected "$notifications"
+
+      # The other host files still refuse an unmanaged regular file.
       other_home="$PWD/other-home"
       mkdir -p "$other_home/.config/fcitx5"
       printf '%s\n' local-profile >"$other_home/.config/fcitx5/profile"
