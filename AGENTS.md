@@ -444,6 +444,13 @@ signature can evaluate both profiles and still break the checks; and the suites
 run against a read-only store path with an empty home under Nix, where a direct
 run has neither.
 
+`test_setup` in `scripts/lib/test-helpers.sh` confines a suite's Git commands to
+its temporary directory. It clears inherited Git location variables such as
+`GIT_DIR`, which `git rebase --exec` and hooks export and which outrank both the
+working directory and `-C`, and it fails the suite if the configuration of the
+repository it was started from changed. The `test-git-isolation` check covers
+each barrier.
+
 Two scripts resist the obvious testing approach and should not be forced into
 it. `scripts/update.sh` defaults to its update mode, so removing any guard from
 it leads to a path that acts on the checkout rather than one that refuses; never

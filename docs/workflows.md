@@ -46,21 +46,35 @@ context out of portable history:
 `start` creates `replay/<name>` at current `origin/main` with a worktree-local
 placeholder identity and reminds callers to run
 `git commit --amend --no-edit --reset-author` after cherry-picking existing
-commits. If the name already belongs to a branch or worktree, `start` refuses to
-reuse or delete it and prints the existing path plus safe continuation, export,
-attachment, or inspection guidance. `export` requires a clean unchanged base,
-lints every commit message, builds all declared Home Manager activation packages
-in one `nix build` call, and writes a patch, manifest, checksum file, and
-series-qualified `apply-dotfiles-<name>.sh` helper to `~/Downloads` by default.
-If a commit carries a non-portable author identity, `export` names the commit
-hash and prints the `git rebase --exec` command to set the portable author
-identity without echoing the offending address. It also writes a checksummed
-`dotfiles-<name>.tar.gz` containing those files for single-file transfer. Export
-builds every artifact in a temporary directory and publishes the checksum
-markers last, so an incomplete replacement cannot validate as current.
+commits. The worktree defaults to
+`${XDG_STATE_HOME:-~/.local/state}/dotfiles/portable/<name>`, which outlives a
+reboot; a relative `XDG_STATE_HOME` is ignored, and a relative path given to
+`start` is resolved from the caller's directory. If the name already belongs to
+a branch or worktree, `start` refuses to reuse or delete it and prints the
+existing path plus safe continuation, export, attachment, or inspection
+guidance. The attachment guidance includes the commands that restore the
+placeholder identity, because Git deletes a worktree's own configuration with
+the worktree.
 
-Both `start` and `export` refresh `origin/main` with an explicit refspec rather
-than relying on the remote's fetch mapping. Failure to enumerate the profiles or
+`export` requires a clean unchanged base, lints every commit message, builds all
+declared Home Manager activation packages in one `nix build` call, and writes a
+patch, manifest, checksum file, and series-qualified `apply-dotfiles-<name>.sh`
+helper to `~/Downloads` by default. It refuses a commit message whose body has a
+line that `git am` reads as the start of a patch (`---`, `--- <name>`, `diff -`,
+or `Index: `), because `git am` drops the rest of the message there, trailers
+included. The manifest, version 2, records the validated tree and a digest of
+the commit messages. If a commit carries a non-portable author identity,
+`export` names the commit hash and prints the `git rebase --exec` command to set
+the portable author identity without echoing the offending address. It also
+writes a checksummed `dotfiles-<name>.tar.gz` containing those files for
+single-file transfer. Export builds every artifact in a temporary directory and
+publishes the checksum markers last, so an incomplete replacement cannot
+validate as current.
+
+`start`, `export`, and the apply script refresh `origin/main` with the fully
+qualified refspec and `--no-prune`, so the fetch depends on neither the remote's
+fetch mapping nor the caller's `fetch.prune`. `clean` prints that command when
+`origin/main` is missing or may be stale. Failure to enumerate the profiles or
 build any declared profile prevents publication.
 
 `clean` refuses merge commits not reachable from `origin/main`: equivalent
@@ -74,25 +88,34 @@ expression per line in
 comment lines are skipped, and matching is case-insensitive); when both are
 present, `export` combines them, and an empty, invalid, or unreadable pattern
 file fails closed. The pattern itself does not enter portable configuration.
-Export scans commit metadata and zero-context changed content before expensive
-validation, then scans the generated patch before publication. It reports only
-the category and line numbers of matches so private text is not echoed.
-Recognized `Assisted-by:` commit trailers are omitted from metadata and patch
-matching because they record required session attribution. Attribution-shaped
-lines in tracked file content remain subject to the policy.
+Export scans commit metadata and zero-context changed content before it lints
+the messages and before expensive validation, then scans the generated patch
+before publication. It reports only the category and line numbers of matches so
+private text is not echoed; the scan runs first because the linter prints a diff
+of a message it rejects. Recognized `Assisted-by:` commit trailers are omitted
+from metadata and patch matching because they record required session
+attribution. Attribution-shaped lines in tracked file content remain subject to
+the policy.
 
 On the destination computer, verify the checksum file and run the transferred
-`apply-dotfiles-<name>.sh <manifest> ~/dotfiles`. It requires clean `main` at
-the recorded `origin/main`, re-authors and signs every commit with destination
-identity, validates that profile, and fast-forwards only local `main`. Neither
-script pushes. The archive workflow first verifies
-`dotfiles-<name>.tar.gz.sha256`, extracts its `dotfiles-<name>` directory, and
-runs the included apply script and manifest. State explicitly that nothing was
-pushed and leave review and push to the user. If application stops after
-creating its temporary branch, the failure output identifies that branch, the
-active branch, and any active `git am` operation to abort. If `origin/main`
-moved, update or rebase the isolated series; conflicts are unfinished Git state
-to resolve or abort, never a completed export.
+`apply-dotfiles-<name>.sh <manifest> ~/dotfiles`. It accepts only a version 2
+manifest and requires clean `main` at the recorded `origin/main`. It applies the
+patch with `git am --3way --keep-non-patch --whitespace=nowarn`, so the
+destination's `apply.whitespace` cannot rewrite content and a leading `[token]`
+stays in a subject, then re-authors and signs every commit with destination
+identity. Before validating, it compares the applied tree and commit messages
+with the ones the manifest records and stops if either differs. It then
+validates that profile and fast-forwards only local `main`. Neither script
+pushes. The archive workflow first verifies `dotfiles-<name>.tar.gz.sha256`,
+extracts its `dotfiles-<name>` directory, and runs the included apply script and
+manifest. State explicitly that nothing was pushed and leave review and push to
+the user. If application stops after creating its temporary branch, the failure
+output identifies that branch and the active branch, and prints in order the
+commands that discard the partial application: `git am --abort` when an
+operation is active, `git switch main`, and `git branch -D` for the temporary
+branch. The branch may be kept for inspection instead. If `origin/main` moved,
+update or rebase the isolated series; conflicts are unfinished Git state to
+resolve or abort, never a completed export.
 
 After a destination update is available remotely, synchronize another system
 with:
