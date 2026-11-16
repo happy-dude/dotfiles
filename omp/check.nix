@@ -6,6 +6,7 @@
   mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
   inherit (import ../lib/homes.nix {inherit lib;}) shared;
   settings = import ./settings.nix;
+  otlpEnvironment = import ../lib/otlp-environment.nix;
   omp = import ./package.nix {inherit pkgs settings;};
   schemaPath = import ./theme-schema-path.nix pkgs.omp.version;
   homeList = lib.attrValues homes;
@@ -43,13 +44,7 @@ in
         # load after it and win: makeWrapper's --prefix form writes the path
         # before the variable's previous value.
         grep -E "^PI_CONFIG_FILES='/nix/store/[^']*-omp-config[.]yml'[$]PI_CONFIG_FILES\$" "$wrapper"
-        for variable in \
-          OTEL_EXPORTER_OTLP_ENDPOINT \
-          OTEL_EXPORTER_OTLP_TRACES_ENDPOINT \
-          OTEL_EXPORTER_OTLP_LOGS_ENDPOINT \
-          OTEL_EXPORTER_OTLP_METRICS_ENDPOINT \
-          OTEL_EXPORTER_OTLP_HEADERS \
-          OTEL_RESOURCE_ATTRIBUTES; do
+        for variable in ${lib.escapeShellArgs otlpEnvironment}; do
           grep -F "unset $variable" "$wrapper"
         done
 

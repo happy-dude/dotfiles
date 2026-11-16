@@ -3,8 +3,10 @@
   pkgs,
   settings,
 }: let
+  inherit (pkgs) lib;
   yaml = pkgs.formats.yaml {};
   overlay = yaml.generate "omp-config.yml" settings;
+  otlpEnvironment = import ../lib/otlp-environment.nix;
 in
   pkgs.symlinkJoin {
     name = "omp-dotfiles-${pkgs.omp.version}";
@@ -16,11 +18,6 @@ in
     postBuild = ''
       wrapProgram "$out/bin/omp" \
         --prefix PI_CONFIG_FILES : ${overlay} \
-        --unset OTEL_EXPORTER_OTLP_ENDPOINT \
-        --unset OTEL_EXPORTER_OTLP_TRACES_ENDPOINT \
-        --unset OTEL_EXPORTER_OTLP_LOGS_ENDPOINT \
-        --unset OTEL_EXPORTER_OTLP_METRICS_ENDPOINT \
-        --unset OTEL_EXPORTER_OTLP_HEADERS \
-        --unset OTEL_RESOURCE_ATTRIBUTES
+        ${lib.concatMapStringsSep " " (name: "--unset ${name}") otlpEnvironment}
     '';
   }
