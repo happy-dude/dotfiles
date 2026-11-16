@@ -357,16 +357,20 @@ round trips or agreement between two implementations can hide matching errors.
   `.home-manager-static` snapshot. Check that live path first because it
   reflects the locked schema inputs and packaged Zhwiki dictionary actually
   deployed on this profile. If the profile has not been activated or a live file
-  is unavailable, fall back to the retained source snapshot at
-  `~/dotfiles/rime/.local/share/fcitx5/rime/`, and say that it may differ from
-  the locked deployment. These are plain TSV dictionaries
-  (`character<TAB>code[<TAB>weight]`, comments start with `#`, data begins after
-  a `---` line): `cangjie5.base.dict.yaml` / `cangjie5.stem.dict.yaml` /
-  `cangjie5.extended.dict.yaml` / `cangjie5_char.dict.yaml` for Cangjie 5;
-  `jyut6ping3.chars.dict.yaml` / `jyut6ping3.words.dict.yaml` /
-  `jyut6ping3.phrase.dict.yaml` / `jyutping.dict.yaml` / `loengfan.dict.yaml`
-  for Jyutping; `luna_pinyin.dict.yaml` / `terra_pinyin.dict.yaml` for Pinyin;
-  plus `zhwiki.dict.yaml` (~1.7M entries auto-generated from Chinese Wikipedia
+  is unavailable, read the same file from its locked input instead and say that
+  you did: `nix flake archive --json --no-update-lock-file`, run in
+  `~/dotfiles`, prints the store path of every `rime_*` input. The checkout
+  keeps no copy of the dictionaries; its `rime/.local/share/fcitx5/rime/` holds
+  only the Lua, the custom patches, and the Colemak schema. These are plain TSV
+  dictionaries (`character<TAB>code[<TAB>weight]`, comments start with `#`, data
+  begins after the `...` line that closes the YAML header):
+  `cangjie5.base.dict.yaml` / `cangjie5.stem.dict.yaml` /
+  `cangjie5.extended.dict.yaml` for Cangjie 5 (`cangjie5_char.dict.yaml` has no
+  rows of its own and imports `cangjie5.base`); `jyut6ping3.chars.dict.yaml` /
+  `jyut6ping3.words.dict.yaml` / `jyut6ping3.phrase.dict.yaml` /
+  `jyutping.dict.yaml` / `loengfan.dict.yaml` for Jyutping;
+  `luna_pinyin.dict.yaml` / `terra_pinyin.dict.yaml` for Pinyin; plus
+  `zhwiki.dict.yaml` (~1.7M entries auto-generated from Chinese Wikipedia
   titles, github.com/felixonmars/fcitx5-pinyin-zhwiki) — by far the biggest
   table and the place to check proper nouns, entity names, technical terms, and
   modern vocabulary the curated dicts won't have. zhwiki caveats: Simplified
@@ -391,8 +395,9 @@ round trips or agreement between two implementations can hide matching errors.
   Pinyin reading via the standard bopomofo mapping, and consult `zhuyin.yaml` if
   a transform is in doubt. A hit in the live deployment is as high-confidence as
   a hit gets because it is the literal data used by the deployed IME; treat a
-  snapshot-only hit as useful but potentially stale corroboration; treat a miss
-  as "not in this particular table," not as proof the code doesn't exist.
+  hit read from a locked input as the data the next activation deploys, which
+  can differ from what the running IME uses; treat a miss as "not in this
+  particular table," not as proof the code doesn't exist.
 - **Script conversion (Simplified ⇄ Traditional):** `opencc` is the standard
   tool — `echo "你好" | opencc -c s2t.json` (Simplified→Traditional), `t2s.json`
   (reverse), `s2hk.json`/`hk2s.json` for Hong Kong Traditional specifically
