@@ -213,11 +213,16 @@ def validate(source_dir: Path) -> Plan:
     # Fcitx owns notifications.conf and rewrites it at runtime, so it is
     # merged instead and has no snapshot.
     notifications = config_dir / "conf/notifications.conf"
+    notifications_source = source_dir / "conf/notifications.conf"
+    # rime/default.nix ships the whole tracked Fcitx tree as source_dir, and
+    # only the files named here reach the home directory.
+    declared = {source for source, _, _ in files} | {notifications_source}
+    for path in sorted(source_dir.rglob("*")):
+        if not path.is_dir() and path not in declared:
+            fail(f"Rime source file is not materialized: {path}")
     for source, target, snapshot in files:
         validate_materialize(source, target, snapshot)
-    merged = plan_hidden_notifications(
-        source_dir / "conf/notifications.conf", notifications
-    )
+    merged = plan_hidden_notifications(notifications_source, notifications)
     return Plan(files, notifications, merged)
 
 
