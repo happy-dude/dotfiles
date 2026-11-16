@@ -1,8 +1,10 @@
 {
   config,
+  lib,
   pkgs,
   ...
 }: let
+  nixglEnvironment = import ../lib/nixgl-environment.nix;
   ghosttyWrapped = (config.lib.nixGL.wrap pkgs.ghostty).overrideAttrs (old: {
     # Ghostty's Zig 0.17 templates use bare commands, which activation cannot
     # find without a Nix PATH. Normalize them after nixGL has wrapped the binary
@@ -23,14 +25,10 @@
       '';
   });
 
+  # The terminal runs under nixGLIntel; its shell and everything started from
+  # it are host programs. Inherited values are discarded, not restored.
   fishWithoutGraphicsOverrides = pkgs.writeShellScriptBin "fish" ''
-    unset \
-      GBM_BACKENDS_PATH \
-      LIBGL_ALWAYS_SOFTWARE \
-      LIBGL_DRIVERS_PATH \
-      LIBVA_DRIVERS_PATH \
-      __EGL_VENDOR_LIBRARY_FILENAMES \
-      LD_LIBRARY_PATH
+    unset ${lib.concatStringsSep " " nixglEnvironment.gl}
     exec ${pkgs.fish}/bin/fish --login "$@"
   '';
 in {

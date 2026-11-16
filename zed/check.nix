@@ -1,19 +1,64 @@
-{pkgs}: let
+{
+  homes,
+  lib,
+  pkgs,
+}: let
   mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
+  inherit (import ../lib/homes.nix {inherit lib;}) shared;
   zedSettingsMaterializer = import ./materializer.nix {inherit pkgs;};
-  hostSettings = import ./settings.nix {
-    inherit pkgs;
-    inherit (pkgs) lib;
-  };
+  hostSettings = import ./settings.nix {inherit lib pkgs;};
   settingsFile = (pkgs.formats.json {}).generate "zed-settings-check.json" hostSettings;
+  nixglEnvironment = import ../lib/nixgl-environment.nix;
+  nixglEnvironmentFile = pkgs.writeText "nixgl-environment.json" (
+    builtins.toJSON nixglEnvironment
+  );
+  # The wrapper scripts as the modules reach them: config.lib.nixGL.wrap runs
+  # nixGLIntel for the "mesa" wrapper, and zed/default.nix names
+  # nixVulkanIntel itself.
+  nixglWrapper = name:
+    shared homes "the ${name} wrapper" (
+      home:
+        lib.getExe
+        home.config.targets.genericLinux.nixGL.packages.${pkgs.stdenv.hostPlatform.system}.${name}
+    );
 in {
+  # lib/nixgl-environment.nix must name every variable the pinned wrappers
+  # export, or a nixGL update could add one that reaches host children. It may
+  # name more, so this is a subset test.
+  nixgl-environment = mkCheck {
+    name = "nixgl-environment-test";
+    script = ''
+      status=0
+      # check_wrapper SCRIPT NAME...: every variable SCRIPT exports is a NAME.
+      check_wrapper() {
+        local wrapper=$1 exported name
+        shift
+        exported=$(sed -nE 's/^[[:space:]]*export[[:space:]]+([A-Za-z_][A-Za-z0-9_]*)=.*/\1/p' "$wrapper")
+        # Fail on an export the pattern cannot read rather than skip it.
+        if [[ -z $exported || $(wc -l <<<"$exported") != "$(grep -cw export "$wrapper")" ]]; then
+          echo "Unable to read the exports of $wrapper" >&2
+          status=1
+          return
+        fi
+        for name in $exported; do
+          if [[ " $* " != *" $name "* ]]; then
+            echo "$wrapper exports $name, which lib/nixgl-environment.nix does not list" >&2
+            status=1
+          fi
+        done
+      }
+      check_wrapper ${nixglWrapper "nixGLIntel"} ${lib.escapeShellArgs nixglEnvironment.gl}
+      check_wrapper ${nixglWrapper "nixVulkanIntel"} ${lib.escapeShellArgs nixglEnvironment.vulkan}
+      [[ $status == 0 ]]
+    '';
+  };
   zed-host-environment = mkCheck {
     name = "zed-host-environment-test";
     tools = [pkgs.python3 pkgs.fish];
     script = ''
       export HOME="$TMPDIR/home"
       mkdir -p "$HOME"
-      python3 - ${settingsFile} <<'PYTHON'
+      python3 - ${settingsFile} ${nixglEnvironmentFile} <<'PYTHON'
       import json
       import os
       import subprocess
@@ -21,11 +66,11 @@ in {
       from pathlib import Path
 
       settings = json.loads(Path(sys.argv[1]).read_text())
-      graphics = [
-          "GBM_BACKENDS_PATH", "LIBGL_ALWAYS_SOFTWARE", "LIBGL_DRIVERS_PATH",
-          "LIBVA_DRIVERS_PATH", "__EGL_VENDOR_LIBRARY_FILENAMES", "LD_LIBRARY_PATH",
-          "VK_ICD_FILENAMES", "VK_LAYER_PATH",
-      ]
+      # Zed runs under both wrappers; nixgl-environment holds these lists to
+      # what the wrappers export.
+      environment = json.loads(Path(sys.argv[2]).read_text())
+      graphics = sorted({*environment["gl"], *environment["vulkan"]})
+      assert graphics, environment
       inherited = os.environ | dict.fromkeys(graphics, "/unusable-graphics-path")
       inherited["ZED_TEST_PRESERVED"] = "ordinary host environment"
       Path("probe.py").write_text(
