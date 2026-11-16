@@ -102,20 +102,35 @@ scripts/sync-local-branch.sh <local-branch> <profile> [repository]
 scripts/sync-local-branch.sh --validate <local-branch> <profile> [repository]
 ```
 
-Sync mode fetches `main` directly into the `origin/main` remote-tracking ref,
-fast-forwards local `main`, rebases the named local-only branch, and validates
-the selected profile. Before rebasing it reports local commits whose patches are
-already represented upstream and, when `origin/main` updated `flake.lock`,
-standalone `nix: update flake.lock` commits that touch only upstream-managed
-inputs and will therefore be omitted in favor of `origin/main`. Only the `main`
-and named local-branch worktrees must be clean; unrelated linked worktrees are
-intentionally ignored. A dirty target refusal identifies its path and occurs
-before fetch or mutation. The script rejects prunable registrations and branches
-with an upstream, and never pushes or activates. Formatting, flake checks, and
-the profile build are reported as separate phases without a fixed timeout.
-Automated sync rebases and the updater's rebasing pull disable Git's automatic
-updates to other local branch refs. Backup and topic refs retain their original
-commits even when `rebase.updateRefs` is enabled for manual rebases.
+Sync mode fetches `refs/heads/main` into the `origin/main` remote-tracking ref
+with `--no-prune`, fast-forwards local `main`, rebases the named local-only
+branch, and validates the selected profile. Under `fetch.prune`, Git 2.56.0
+deletes `origin/main` as stale when the source is the unqualified `main`, and
+then fails to update it.
+
+Before rebasing, sync reports local commits whose patches are already
+represented upstream and, when `origin/main` updated `flake.lock`, standalone
+`nix: update flake.lock` commits that change only upstream-managed entries and
+will therefore be omitted in favor of `origin/main`. An entry is
+upstream-managed when `origin/main`'s lock has the same kind of entry, a node or
+a `follows` reference, at the same input path from the root, such as
+`root -> home-manager -> nixpkgs`. Node names such as `nixpkgs_2` are positional
+labels and identify nothing. A commit that changes, adds, or removes any other
+entry is kept, and so is one whose locks cannot be read. Pins are not compared:
+for an upstream-managed input, `origin/main`'s pin wins even when it is the
+older one.
+
+Only the `main` and named local-branch worktrees must be clean; unrelated linked
+worktrees are intentionally ignored. A dirty target refusal identifies its path
+and occurs before fetch or mutation. The script rejects prunable registrations
+and branches with an upstream, and never pushes or activates. Formatting, flake
+checks, and the profile build are reported as separate phases without a fixed
+timeout. The formatter runs with `--no-update-lock-file`: `nix fmt` evaluates
+the flake, and Nix otherwise rewrites a `flake.lock` that disagrees with
+`flake.nix`. Automated sync rebases and the updater's rebasing pull disable
+Git's automatic updates to other local branch refs. Backup and topic refs retain
+their original commits even when `rebase.updateRefs` is enabled for manual
+rebases.
 
 Validate mode performs no fetch or rebase. It requires local `main` to equal the
 cached `origin/main` tip and the local-only branch to descend from that tip. Use
@@ -154,7 +169,9 @@ Home Manager build prevents activation.
 Rime updates happen through `nix flake update`. A subsequent Home Manager
 activation rebuilds generated schemas when the static Rime source stamp changes,
 so no manual deploy is required. Add `--skip-nix-flake` to leave flake inputs
-locked.
+locked; the formatter then runs with `--no-update-lock-file` as well, so a lock
+that disagrees with `flake.nix` fails the formatting step instead of being
+rewritten.
 
 Update-mode step order is: repository pull, which stops when Git cannot reapply
 the pull's autostash and leaves conflicts in the index; generic submodule
@@ -195,6 +212,11 @@ git submodule foreach --quiet 'git submodule update --init --recursive'
 nix fmt .                                            # includes .gitmodules ordering
 ./scripts/gitgc.sh [--aggressive] [dir]              # gc main repo and initialized submodules
 ```
+
+`main` tracks no `.gitmodules`. The submodule stages in `update.sh`, the
+`.gitmodules` sorting, and the submodule pass in `gitgc.sh` are kept on purpose:
+the scripts accept any repository directory, and each stage is skipped when no
+submodule is configured.
 
 The Nix-built treefmt formatter sorts `.gitmodules` atomically when the file is
 present. `gitgc.sh` prunes stale remote-tracking branches and runs Git's normal
