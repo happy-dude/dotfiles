@@ -291,6 +291,23 @@ if start_series existing-path "$existing_path" 2>"$start_error"; then
 fi
 grep -Fq "worktree path already exists: $existing_path" "$start_error"
 
+# No origin exists yet, so the fetch fails. A caller that tests start_series
+# in a condition turns set -e off, and the failed step has to stop it there.
+if start_series unfetched "$temporary_directory/unfetched" \
+  >"$start_error" 2>&1; then
+  printf 'start continued after its fetch failed\n' >&2
+  exit 1
+fi
+if grep -q 'Portable worktree ready' "$start_error"; then
+  printf 'start reported a worktree after its fetch failed\n' >&2
+  exit 1
+fi
+test ! -e "$temporary_directory/unfetched"
+if git show-ref --verify --quiet refs/heads/replay/unfetched; then
+  printf 'start created a branch after its fetch failed\n' >&2
+  exit 1
+fi
+
 # The hint for a missing origin/main is the fetch the scripts run themselves:
 # under fetch.prune, git fetch origin main:refs/remotes/origin/main would
 # delete the ref it was asked to create.
@@ -380,6 +397,21 @@ series_worktree="$temporary_directory/series-demo"
 start_series demo "$series_worktree" >/dev/null
 test "$(git rev-parse --verify refs/remotes/origin/main)" = "$(git rev-parse main)"
 test "$(git -C "$series_worktree" rev-parse HEAD)" = "$(git rev-parse main)"
+
+# A step after the fetch fails the same way: the parent of this worktree
+# path is a file, so the worktree cannot be created.
+printf '%s\n' blocker >"$temporary_directory/blocker"
+if start_series blocked "$temporary_directory/blocker/worktree" \
+  >"$start_error" 2>&1; then
+  printf 'start continued after its worktree could not be created\n' >&2
+  exit 1
+fi
+if grep -q 'Portable worktree ready' "$start_error"; then
+  printf 'start reported a worktree it could not create\n' >&2
+  exit 1
+fi
+git worktree prune
+git branch -D replay/blocked >/dev/null 2>&1 || true
 printf '%s\n' represented >"$series_worktree/represented"
 git -C "$series_worktree" add represented
 git -C "$series_worktree" commit --quiet -m 'tests: add represented change'

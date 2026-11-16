@@ -390,9 +390,12 @@ start_series() {
     return 1
   fi
 
-  git -C "$repo_root" "${origin_main_fetch[@]}"
-  git -C "$repo_root" worktree add -b "$branch" "$worktree" origin/main
-  configure_portable_worktree "$worktree"
+  # Each step returns on failure itself: set -e is inert when a caller tests
+  # start_series in a condition.
+  git -C "$repo_root" "${origin_main_fetch[@]}" || return 1
+  git -C "$repo_root" worktree add -b "$branch" "$worktree" origin/main ||
+    return 1
+  configure_portable_worktree "$worktree" || return 1
 
   printf '%s\n' \
     "Portable worktree ready: $worktree" \
