@@ -414,7 +414,8 @@ main() {
   require_clean_worktree "$main_worktree" main
 
   if [[ $mode == sync ]]; then
-    git -C "$repo" fetch origin \
+    # Under fetch.prune, an unqualified `main:` source would delete origin/main.
+    git -C "$repo" fetch --no-prune origin \
       refs/heads/main:refs/remotes/origin/main
     origin_main=$(git -C "$repo" rev-parse refs/remotes/origin/main)
     superseded_lock_commits=$(

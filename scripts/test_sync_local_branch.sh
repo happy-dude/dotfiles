@@ -133,6 +133,17 @@ grep -Fq \
   "$log"
 grep -Fq 'Nothing was pushed. The named branch remains local.' "$output"
 
+# git/default.nix sets fetch.prune, which must not cost sync the tracking ref
+# that every later step reads.
+create_fixture fetch-prune
+git -C "$main_worktree" config fetch.prune true
+advance_origin upstream-only upstream
+remote_head=$(git -C "$origin" rev-parse refs/heads/main)
+run_sync work test-profile "$main_worktree"
+test "$(git -C "$main_worktree" rev-parse refs/remotes/origin/main)" = \
+  "$remote_head"
+test "$(git -C "$main_worktree" rev-parse main)" = "$remote_head"
+
 create_fixture upstream-equivalent
 commit_work equivalent same-change
 equivalent_commit=$(git -C "$branch_worktree" rev-parse HEAD)
