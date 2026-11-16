@@ -417,6 +417,29 @@ reject_patch_break_lines() {
   fi
 }
 
+# Digest of the commit messages in <base>..HEAD: SHA-256 over each message as
+# its commit object stores it (the bytes after the header's blank line),
+# oldest commit first, each followed by one NUL byte. The manifest records it
+# and apply-portable-series.sh recomputes it with its own copy of this
+# function, which cannot be shared; keep the two identical.
+series_message_digest() {
+  local repository=$1
+  local base=$2
+  local commits
+  local commit
+  local digest
+
+  commits=$(git -C "$repository" rev-list --reverse "$base..HEAD") || return 1
+  digest=$(
+    while IFS= read -r commit; do
+      [[ -n $commit ]] || continue
+      git -C "$repository" cat-file commit "$commit" | sed '1,/^$/d' || exit 1
+      printf '\0'
+    done <<<"$commits" | sha256sum
+  ) || return 1
+  printf '%s\n' "${digest%% *}"
+}
+
 export_series() (
   local name=$1
   local output_directory=${2:-"$HOME/Downloads"}
@@ -449,6 +472,8 @@ export_series() (
   local staged_apply_path
   local bundle_directory="dotfiles-$name"
   local patch_sha256
+  local validated_tree
+  local message_digest
   local forbidden_pattern
 
   validate_name "$name" || return 1
@@ -569,14 +594,21 @@ export_series() (
     return 1
   patch_sha256=$(sha256sum "$staged_patch_path" | cut -d ' ' -f 1) ||
     return 1
+  # The tree and messages validated above. git am can land something else on
+  # the destination, where apply.whitespace rewrites content and mailinfo
+  # reinterprets a message, so apply compares its result with these.
+  validated_tree=$(git -C "$worktree" rev-parse 'HEAD^{tree}') || return 1
+  message_digest=$(series_message_digest "$worktree" "$base") || return 1
 
   cat >"$staged_manifest_path" <<EOF || return 1
-version=1
+version=2
 name=$name
 base=$base
 count=$count
 patch=$patch_name
 sha256=$patch_sha256
+tree=$validated_tree
+messages=$message_digest
 EOF
   cp -- "$worktree/scripts/apply-portable-series.sh" \
     "$staged_apply_path" || return 1

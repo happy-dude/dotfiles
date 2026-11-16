@@ -526,6 +526,24 @@ done
 git -C "$repo" commit -q --amend --allow-empty -m 'diff -u: a subject line'
 reject_patch_break_lines "$repo" "$base"
 
+# The message digest in the manifest is SHA-256 over each stored message,
+# oldest first, each followed by one NUL byte. The apply script carries its
+# own copy of the function, so pin the definition rather than the code.
+git -C "$repo" commit -q --allow-empty -F - <<'EOF'
+tests: a second message
+
+With a body.
+
+Assisted-by: example-model:high harness
+EOF
+expected_digest=$(
+  printf '%s\0' \
+    $'diff -u: a subject line\n' \
+    $'tests: a second message\n\nWith a body.\n\nAssisted-by: example-model:high harness\n' |
+    sha256sum | cut -d ' ' -f 1
+)
+test "$(series_message_digest "$repo" "$base")" = "$expected_digest"
+
 # Every attribution trailer is dropped before scanning, not just the last.
 printf '%s\n' \
   'tests: carry two attributions' '' 'Body.' '' \

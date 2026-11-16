@@ -2,8 +2,10 @@
 
 # The apply script is the only thing in this repository that rewrites main on
 # the destination computer, and it runs there from a transferred copy with no
-# tests beside it. Everything asserted here happens before the first mutation:
-# each case must refuse and leave main exactly where it was.
+# tests beside it. The first cases stop before the first mutation: each must
+# refuse and leave main exactly where it was. The round trip then exports a
+# real series and applies it, and the cases after it stop on the temporary
+# branch, where main must still not move.
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -69,13 +71,17 @@ write_manifest() {
   local checksum=$3
   shift 3
 
+  # The default tree and digest are well formed but name nothing: the cases
+  # using them refuse before either is compared.
   cat >"$directory/dotfiles-probe.manifest" <<EOF
-version=${1:-1}
+version=${1:-2}
 name=probe
 base=$base
 count=1
 patch=dotfiles-probe.patch
 sha256=$checksum
+tree=${2:-$(printf '%040d' 1)}
+messages=${3:-$(printf '%064d' 1)}
 EOF
 }
 
@@ -118,10 +124,28 @@ git -C "$repo" checkout -q -- . 2>/dev/null || true
 make_patch "$repo" "$artifacts"
 checksum=$(sha256sum "$artifacts/dotfiles-probe.patch" | cut -d ' ' -f 1)
 
-write_manifest "$artifacts" "$base" "$checksum" 2
+write_manifest "$artifacts" "$base" "$checksum" 3
 output=$(assert_refuses 'manifest version' "$repo" "$manifest")
 [[ $output == *"unsupported manifest version"* ]] ||
   fail "manifest version: unexpected message: $output"
+
+# A version 1 manifest records neither the tree nor the messages, so it is
+# refused with the remedy rather than applied unverified.
+write_manifest "$artifacts" "$base" "$checksum" 1
+output=$(assert_refuses 'manifest version 1' "$repo" "$manifest")
+[[ $output == *"manifest version 1 records no tree or message digest"* &&
+  $output == *"export the series again"* ]] ||
+  fail "manifest version 1: unexpected message: $output"
+
+write_manifest "$artifacts" "$base" "$checksum" 2 'not-a-tree'
+output=$(assert_refuses 'malformed tree' "$repo" "$manifest")
+[[ $output == *"invalid validated tree"* ]] ||
+  fail "malformed tree: unexpected message: $output"
+
+write_manifest "$artifacts" "$base" "$checksum" 2 '' 'not-a-digest'
+output=$(assert_refuses 'malformed message digest' "$repo" "$manifest")
+[[ $output == *"invalid commit message digest"* ]] ||
+  fail "malformed message digest: unexpected message: $output"
 
 write_manifest "$artifacts" 'not-a-commit' "$checksum"
 output=$(assert_refuses 'malformed base' "$repo" "$manifest")
@@ -226,4 +250,201 @@ status=$?
 set -e
 ((status == 2)) || fail "no arguments: expected exit 2, got $status"
 
-printf 'apply-portable-series guard rails: all cases refused as expected\n'
+# The apply script cannot source the export script, so each carries its own
+# series_message_digest. The round trip below shows that the two agree on one
+# series; this holds the two definitions to the same text.
+function_text() {
+  sed -n '/^series_message_digest() {$/,/^}$/p' "$1"
+}
+export_copy=$(function_text "$REPO_DIR/scripts/portable-series.sh")
+apply_copy=$(function_text "$APPLY_SCRIPT")
+[[ $export_copy == *'sha256sum'* && $export_copy == *$'\n}' ]] ||
+  fail 'series_message_digest was not found in portable-series.sh'
+[[ $export_copy == "$apply_copy" ]] ||
+  fail 'the two copies of series_message_digest differ'
+
+# Round trip: a real export applied to a destination whose Git configuration
+# would rewrite the series. Only the Nix boundary and the signing program are
+# substituted; Git, the linter, mailsplit, and git am are real.
+fake_bin="$TMPDIR_TEST/bin"
+nix_log="$TMPDIR_TEST/nix.log"
+mkdir -p "$fake_bin"
+printf '#!%s\n' "$(command -v bash)" >"$fake_bin/nix"
+cat >>"$fake_bin/nix" <<'EOF'
+set -euo pipefail
+printf '%s\n' "$1" >>"$PORTABLE_TEST_NIX_LOG"
+case $1 in
+fmt | flake | build | run) ;;
+eval) printf 'first\n' ;;
+*) exit 91 ;;
+esac
+EOF
+# git commit --gpg-sign runs gpg.program with --status-fd=2 and requires a
+# signature on stdout and a SIG_CREATED status line.
+printf '#!%s\n' "$(command -v bash)" >"$fake_bin/sign"
+cat >>"$fake_bin/sign" <<'EOF'
+cat >/dev/null
+printf '%s\n' '-----BEGIN PGP SIGNATURE-----' '' 'stub' \
+  '-----END PGP SIGNATURE-----'
+printf '%s\n' '[GNUPG:] BEGIN_SIGNING' '[GNUPG:] SIG_CREATED D 1 8 00 0 0' >&2
+EOF
+chmod 0755 "$fake_bin/nix" "$fake_bin/sign"
+export PATH="$fake_bin:$PATH"
+export PORTABLE_TEST_NIX_LOG="$nix_log"
+
+trip_origin="$TMPDIR_TEST/trip-origin.git"
+trip_seed="$TMPDIR_TEST/trip-seed"
+trip_source="$TMPDIR_TEST/trip-source"
+trip_series="$TMPDIR_TEST/trip-series"
+trip_output="$TMPDIR_TEST/trip-output"
+mkdir -p "$trip_seed/scripts" "$trip_output"
+cp -- "$REPO_DIR/scripts/portable-series.sh" "$APPLY_SCRIPT" \
+  "$REPO_DIR/scripts/lint_commit_message.py" "$trip_seed/scripts/"
+cp -R -- "$REPO_DIR/scripts/lib" "$trip_seed/scripts/"
+# The source tree may be a read-only Nix store path.
+chmod -R u+w "$trip_seed/scripts"
+printf 'first line\n' >"$trip_seed/notes"
+git init -q --bare --initial-branch=main "$trip_origin"
+git -C "$trip_seed" init -q --initial-branch=main
+commit_all "$trip_seed" 'tests: create the round-trip base'
+git -C "$trip_seed" remote add origin "$trip_origin"
+git -C "$trip_seed" push -q -u origin main
+trip_base=$(git -C "$trip_seed" rev-parse HEAD)
+git clone -q "$trip_origin" "$trip_source"
+(
+  cd -- "$trip_source"
+  bash scripts/portable-series.sh start trip "$trip_series"
+) >/dev/null 2>&1
+
+# What git am rewrites unless told otherwise: a trailing space that
+# apply.whitespace=fix strips, and a leading bracketed token in a subject.
+printf 'set showbreak=x\\ \nplain\n' >"$trip_series/trailing.vim"
+git -C "$trip_series" add trailing.vim
+git -C "$trip_series" commit -q -m 'vim: add a line ending in a space'
+printf 'second line\n' >>"$trip_series/notes"
+git -C "$trip_series" commit -q -a -F - <<'EOF'
+[x] scripts: keep a bracketed subject
+
+The body spans two paragraphs so that a truncated message is caught, and it
+carries text outside ASCII: naïve — 中文.
+
+The trailer below must reach the destination.
+
+Assisted-by: example-model:high harness
+EOF
+trip_tree=$(git -C "$trip_series" rev-parse 'HEAD^{tree}')
+(
+  cd -- "$trip_source"
+  bash scripts/portable-series.sh export trip "$trip_output"
+) >"$TMPDIR_TEST/trip-export.log" 2>&1 ||
+  fail "round trip: export failed: $(<"$TMPDIR_TEST/trip-export.log")"
+trip_manifest="$trip_output/dotfiles-trip.manifest"
+grep -Fxq 'version=2' "$trip_manifest" ||
+  fail 'round trip: export did not write a version 2 manifest'
+grep -Fxq "tree=$trip_tree" "$trip_manifest" ||
+  fail 'round trip: the manifest does not record the validated tree'
+
+# A destination clone of the same origin carrying the settings of the owner's
+# global Git configuration that changed what git am landed.
+make_trip_destination() {
+  local repo="$TMPDIR_TEST/$1"
+
+  git clone -q "$trip_origin" "$repo"
+  git -C "$repo" config user.name 'Destination User'
+  git -C "$repo" config user.email 'destination@example.invalid'
+  git -C "$repo" config user.signingkey 'DEADBEEF'
+  git -C "$repo" config gpg.program "$fake_bin/sign"
+  git -C "$repo" config apply.whitespace fix
+  printf '%s' "$repo"
+}
+
+# Run the transferred copy of the apply script, as the destination does.
+run_trip_apply() {
+  local manifest=$1
+  local repo=$2
+
+  : >"$nix_log"
+  set +e
+  trip_log=$(bash "$trip_output/apply-dotfiles-trip.sh" "$manifest" "$repo" 2>&1)
+  trip_status=$?
+  set -e
+}
+
+destination=$(make_trip_destination trip-destination)
+run_trip_apply "$trip_manifest" "$destination"
+((trip_status == 0)) || fail "round trip: apply failed: $trip_log"
+[[ $trip_log == *"Nothing was pushed."* ]] ||
+  fail "round trip: apply did not say that nothing was pushed: $trip_log"
+[[ $(git -C "$destination" branch --show-current) == main ]] ||
+  fail 'round trip: apply left the destination on another branch'
+[[ $(git -C "$destination" rev-list --count "$trip_base..main") == 2 &&
+$(git -C "$destination" rev-parse 'main~2') == "$trip_base" ]] ||
+  fail 'round trip: main did not advance by exactly the two exported commits'
+[[ $(git -C "$destination" rev-parse 'main^{tree}') == "$trip_tree" ]] ||
+  fail 'round trip: the applied tree differs from the exported tree'
+[[ $(sed -n 1p "$destination/trailing.vim") == 'set showbreak=x\ ' ]] ||
+  fail 'round trip: the significant trailing space was stripped'
+for revision in 'HEAD~1' HEAD; do
+  applied_message=$(git -C "$destination" log -1 --format=%B "$revision")
+  source_message=$(git -C "$trip_series" log -1 --format=%B "$revision")
+  [[ $applied_message == "$source_message" ]] ||
+    fail "round trip: the message of $revision differs from its source"
+  git -C "$destination" cat-file commit "$revision" | grep -q '^gpgsig ' ||
+    fail "round trip: $revision is not signed"
+done
+[[ $(git -C "$destination" log -1 --format=%s HEAD) == '[x] '* ]] ||
+  fail 'round trip: the bracketed subject token was stripped'
+identities=$(
+  git -C "$destination" log --format='%an <%ae> / %cn <%ce>' \
+    "$trip_base..main" | sort -u
+)
+[[ $identities == 'Destination User <destination@example.invalid> / Destination User <destination@example.invalid>' ]] ||
+  fail "round trip: commits lack the destination identity: $identities"
+[[ -z $(git -C "$destination" for-each-ref 'refs/heads/apply-*') ]] ||
+  fail 'round trip: apply left its temporary branch behind'
+[[ $(git -C "$destination" rev-parse refs/remotes/origin/main) == "$trip_base" &&
+$(git -C "$trip_origin" rev-parse main) == "$trip_base" ]] ||
+  fail 'round trip: origin/main was removed or the series was pushed'
+[[ $(paste -sd, - <"$nix_log") == fmt,flake,run ]] ||
+  fail "round trip: unexpected validation steps: $(paste -sd, - <"$nix_log")"
+
+# The remaining cases stop on the temporary branch, before validation and
+# before main moves.
+assert_stops_before_main() {
+  local description=$1
+  local repo=$2
+  local manifest=$3
+  local expected=$4
+  local temporary_branch
+
+  run_trip_apply "$manifest" "$repo"
+  ((trip_status != 0)) || fail "$description: expected a non-zero exit"
+  [[ $trip_log == *"$expected"* ]] ||
+    fail "$description: unexpected message: $trip_log"
+  [[ $(git -C "$repo" rev-parse main) == "$trip_base" ]] ||
+    fail "$description: main moved"
+  [[ ! -s $nix_log ]] ||
+    fail "$description: validation ran on a series export did not validate"
+  temporary_branch=$(sed -n 's/^Temporary branch: //p' <<<"$trip_log")
+  [[ $(git -C "$repo" branch --show-current) == "$temporary_branch" ]] ||
+    fail "$description: not stopped on the temporary branch"
+
+  git -C "$repo" switch -q main
+  git -C "$repo" branch -q -D "$temporary_branch"
+}
+
+# A manifest naming another tree, or other messages, than the series lands.
+destination=$(make_trip_destination trip-mismatch)
+altered="$TMPDIR_TEST/trip-altered"
+mkdir -p "$altered"
+cp -- "$trip_output/dotfiles-trip.patch" "$altered/"
+sed "s/^tree=.*/tree=$(git -C "$destination" rev-parse "$trip_base^{tree}")/" \
+  "$trip_manifest" >"$altered/dotfiles-trip.manifest"
+assert_stops_before_main 'wrong tree' "$destination" \
+  "$altered/dotfiles-trip.manifest" 'applied tree does not match'
+sed "s/^messages=.*/messages=$(printf '%064d' 1)/" \
+  "$trip_manifest" >"$altered/dotfiles-trip.manifest"
+assert_stops_before_main 'wrong message digest' "$destination" \
+  "$altered/dotfiles-trip.manifest" 'applied commit messages do not match'
+
+printf 'apply-portable-series: all cases passed\n'
