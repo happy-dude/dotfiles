@@ -124,7 +124,7 @@ test "$(git -C "$origin" rev-parse refs/heads/main)" = "$remote_head"
 test "$(git -C "$branch_worktree" rev-parse backup-first)" = "$first_backup"
 test "$(git -C "$branch_worktree" rev-parse backup-tip)" = "$tip_backup"
 test "$(git -C "$branch_worktree" config --bool rebase.updateRefs)" = true
-grep -Fq "nix|$branch_worktree|fmt ." "$log"
+grep -Fq "nix|$branch_worktree|fmt --no-update-lock-file ." "$log"
 grep -Fq \
   "nix|$branch_worktree|flake check --show-trace --no-update-lock-file" \
   "$log"
@@ -132,6 +132,17 @@ grep -Fq \
   "home-manager|$branch_worktree|build --flake .#test-profile --show-trace --no-out-link --no-update-lock-file" \
   "$log"
 grep -Fq 'Nothing was pushed. The named branch remains local.' "$output"
+
+# git/default.nix sets fetch.prune, which must not cost sync the tracking ref
+# that every later step reads.
+create_fixture fetch-prune
+git -C "$main_worktree" config fetch.prune true
+advance_origin upstream-only upstream
+remote_head=$(git -C "$origin" rev-parse refs/heads/main)
+run_sync work test-profile "$main_worktree"
+test "$(git -C "$main_worktree" rev-parse refs/remotes/origin/main)" = \
+  "$remote_head"
+test "$(git -C "$main_worktree" rev-parse main)" = "$remote_head"
 
 create_fixture upstream-equivalent
 commit_work equivalent same-change
@@ -291,6 +302,171 @@ fi
 grep -Fq '"rev": "2"' "$branch_worktree/flake.lock"
 test "$(git -C "$branch_worktree" log -1 --format=%s work)" = \
   'nix: update flake.lock'
+
+# The remaining lock cases call the classifier directly. Each is one lock
+# commit, given as the `nodes` object of three locks: the commit's parent, the
+# commit, and origin/main.
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=sync-local-branch.sh
+source "$sync_script"
+
+write_lock_nodes() {
+  printf '{\n  "nodes": %s,\n  "root": "root",\n  "version": 7\n}\n' "$2" >"$1"
+}
+
+# Print the nodes with one literal passage replaced. A passage that is absent
+# means the fixture is wrong, so it stops the suite.
+edit_nodes() {
+  local nodes=$1
+  local old=$2
+  local new=$3
+
+  [[ $nodes == *"$old"* ]] || fail "lock fixture lacks: $old"
+  printf '%s' "${nodes/"$old"/"$new"}"
+}
+
+classifier_cases=0
+classifier_failures=0
+
+expect_lock_commit() {
+  local expected=$1
+  local description=$2
+  local parent_nodes=$3
+  local child_nodes=$4
+  local upstream_nodes=$5
+  local repo
+  local actual=kept
+
+  classifier_cases=$((classifier_cases + 1))
+  repo="$temporary_directory/classifier-$classifier_cases"
+  git init --quiet --initial-branch=upstream "$repo"
+  git -C "$repo" config user.name "Sync Test"
+  git -C "$repo" config user.email sync@example.invalid
+  write_lock_nodes "$repo/flake.lock" "$upstream_nodes"
+  git -C "$repo" add flake.lock
+  git -C "$repo" commit --quiet -m 'tests: lock origin/main'
+  git -C "$repo" switch --quiet --orphan work
+  write_lock_nodes "$repo/flake.lock" "$parent_nodes"
+  git -C "$repo" add flake.lock
+  git -C "$repo" commit --quiet -m 'tests: lock the parent'
+  write_lock_nodes "$repo/flake.lock" "$child_nodes"
+  git -C "$repo" commit --quiet -m "$LOCK_COMMIT_SUBJECT" flake.lock
+  if is_superseded_lock_commit "$repo" upstream work; then
+    actual=dropped
+  fi
+  if [[ $actual != "$expected" ]]; then
+    printf 'lock commit was %s, expected %s: %s\n' \
+      "$actual" "$expected" "$description" >&2
+    classifier_failures=$((classifier_failures + 1))
+  fi
+}
+
+# origin/main locks `pkgs` and `tools`; `tools` has an input of its own. The
+# branch adds `local`, whose own input took the name `dep` and pushed the one
+# under `tools` to `dep_2`, and which also follows the root `pkgs`.
+main_nodes='{
+    "root": {"inputs": {"pkgs": "pkgs", "tools": "tools"}},
+    "pkgs": {"locked": {"rev": "pkgs-9"}},
+    "tools": {"inputs": {"dep": "dep"}, "locked": {"rev": "tools-9"}},
+    "dep": {"locked": {"rev": "tools-dep-9"}}
+  }'
+branch_nodes='{
+    "root": {"inputs": {"local": "local", "pkgs": "pkgs", "tools": "tools"}},
+    "local": {
+      "inputs": {"dep": "dep", "pkgs": ["pkgs"]},
+      "locked": {"rev": "local-1"},
+      "original": {"ref": "stable"}
+    },
+    "dep": {"locked": {"rev": "local-dep-1"}},
+    "pkgs": {"locked": {"rev": "pkgs-1"}},
+    "tools": {"inputs": {"dep": "dep_2"}, "locked": {"rev": "tools-1"}},
+    "dep_2": {"locked": {"rev": "tools-dep-1"}}
+  }'
+
+# Controls: the plain cases, where a node's name and its input path agree.
+child_nodes=$(edit_nodes "$branch_nodes" '"rev": "pkgs-1"' '"rev": "pkgs-2"')
+expect_lock_commit dropped 'a pin bump of an upstream-managed input' \
+  "$branch_nodes" "$child_nodes" "$main_nodes"
+child_nodes=$(edit_nodes "$branch_nodes" '"rev": "local-1"' '"rev": "local-2"')
+expect_lock_commit kept 'a pin bump of a branch-local input' \
+  "$branch_nodes" "$child_nodes" "$main_nodes"
+
+child_nodes=$(
+  edit_nodes "$branch_nodes" '"rev": "local-dep-1"' '"rev": "local-dep-2"'
+)
+expect_lock_commit kept \
+  'a branch-local node whose name origin/main gives to another node' \
+  "$branch_nodes" "$child_nodes" "$main_nodes"
+child_nodes=$(
+  edit_nodes "$branch_nodes" '"rev": "tools-dep-1"' '"rev": "tools-dep-2"'
+)
+expect_lock_commit dropped \
+  'an upstream-managed node under a name origin/main does not use' \
+  "$branch_nodes" "$child_nodes" "$main_nodes"
+
+child_nodes=$(edit_nodes "$branch_nodes" '"ref": "stable"' '"ref": "next"')
+expect_lock_commit kept 'a change to only the original of a branch-local node' \
+  "$branch_nodes" "$child_nodes" "$main_nodes"
+child_nodes=$(
+  edit_nodes "$branch_nodes" '"pkgs": ["pkgs"]' '"pkgs": ["tools", "dep"]'
+)
+expect_lock_commit kept 'a change to only the inputs of a branch-local node' \
+  "$branch_nodes" "$child_nodes" "$main_nodes"
+
+# Without its edge the node `dep` is unreachable; without the node as well, the
+# lock no longer has the branch-local input of `local`.
+detached_nodes=$(edit_nodes "$branch_nodes" '"dep": "dep", ' '')
+pruned_nodes=$(
+  edit_nodes "$detached_nodes" \
+    $'    "dep": {"locked": {"rev": "local-dep-1"}},\n' ''
+)
+expect_lock_commit kept \
+  'a removed branch-local node whose name origin/main uses' \
+  "$branch_nodes" "$pruned_nodes" "$main_nodes"
+expect_lock_commit kept \
+  'an added branch-local node whose name origin/main uses' \
+  "$pruned_nodes" "$branch_nodes" "$main_nodes"
+expect_lock_commit kept 'a removed node that no input path reaches' \
+  "$detached_nodes" "$pruned_nodes" "$main_nodes"
+
+# The branch makes the input of `tools` follow a root input of its own. That
+# input is not the node origin/main has at tools -> dep, whatever its name.
+follower_nodes='{
+    "root": {"inputs": {"dep": "dep", "pkgs": "pkgs", "tools": "tools"}},
+    "dep": {"locked": {"rev": "own-dep-1"}},
+    "pkgs": {"locked": {"rev": "pkgs-1"}},
+    "tools": {"inputs": {"dep": ["dep"]}, "locked": {"rev": "tools-1"}}
+  }'
+child_nodes=$(
+  edit_nodes "$follower_nodes" '"rev": "own-dep-1"' '"rev": "own-dep-2"'
+)
+expect_lock_commit kept \
+  'a branch-local input that an upstream-managed input follows' \
+  "$follower_nodes" "$child_nodes" "$main_nodes"
+
+# The reverse: origin/main has only a `follows` reference where the branch
+# locks a node, so no pin in origin/main supersedes the branch's.
+following_main_nodes=$(
+  edit_nodes "$main_nodes" '{"dep": "dep"}' '{"dep": ["pkgs", "dep"]}'
+)
+following_main_nodes=$(
+  edit_nodes "$following_main_nodes" \
+    '"pkgs": {"locked"' '"pkgs": {"inputs": {"dep": "dep"}, "locked"'
+)
+child_nodes=$(
+  edit_nodes "$main_nodes" '"rev": "tools-dep-9"' '"rev": "tools-dep-10"'
+)
+expect_lock_commit kept \
+  'a node at a path origin/main reaches only through follows' \
+  "$main_nodes" "$child_nodes" "$following_main_nodes"
+
+child_nodes=$(edit_nodes "$branch_nodes" '"dep": "dep_2"' '"dep": "missing"')
+expect_lock_commit kept 'an input that names a node the lock lacks' \
+  "$branch_nodes" "$child_nodes" "$main_nodes"
+
+((classifier_failures == 0)) ||
+  fail "misclassified $classifier_failures of $classifier_cases lock commits"
+
 create_fixture dirty-main
 advance_origin upstream-only upstream
 old_tracking=$(git -C "$main_worktree" rev-parse origin/main)

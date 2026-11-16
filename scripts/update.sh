@@ -557,6 +557,9 @@ run_home_manager_switch() {
 # Git / submodule helpers
 #--------------------------------------------------------------------------------------------------
 
+# The main branch tracks no .gitmodules, and the submodule stages are
+# retained deliberately: the script accepts any repository directory, and the
+# stages are skipped when no submodule is configured.
 has_configured_submodules() {
   [ -f .gitmodules ] &&
     git config -f .gitmodules --get-regexp '^submodule\..*\.path$' >/dev/null 2>&1
@@ -1070,7 +1073,16 @@ main() {
     section_result="done"
     if have nix; then
       status=0
-      nix fmt . || status=$?
+      # `nix fmt` evaluates the flake, and Nix writes flake.lock when the lock
+      # disagrees with flake.nix. Before the `nix flake update` below that is
+      # harmless, because that step rewrites the lock on purpose. With
+      # --skip-nix-flake the inputs are promised to stay locked, so the
+      # formatter must fail on such a lock instead of rewriting it.
+      if [ "$SKIP_NIX_FLAKE" -eq 1 ]; then
+        nix fmt --no-update-lock-file . || status=$?
+      else
+        nix fmt . || status=$?
+      fi
 
       if [ "$status" -ne 0 ]; then
         warn "nix fmt failed (exit code: $status)"

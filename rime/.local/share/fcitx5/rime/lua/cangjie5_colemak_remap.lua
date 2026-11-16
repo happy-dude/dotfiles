@@ -42,38 +42,74 @@ local colemak_to_qwerty = {
   m = 'm',
 }
 
+-- What a lua_processor returns: kAccepted, and kNoop to pass the key on.
+local ACCEPTED, NOOP = 1, 2
+
 local function init(env)
   -- Nothing to initialize
 end
 
+-- Colemak o is on the QWERTY semicolon key, which is no Cangjie letter: it
+-- separates codes while composing and types punctuation otherwise, and the
+-- speller and the punctuator decide which. So the key is not pushed as input
+-- like the letters; the engine gets a real semicolon to run through its
+-- processors, this one included, which is why func() looks at
+-- env.forwarding first.
+local function semicolon(env)
+  local engine = env.engine
+  env.forwarding = true
+  local ok, handled = pcall(function()
+    return engine:process_key(KeyEvent(';'))
+  end)
+  env.forwarding = false
+  if not ok then
+    -- This librime-lua cannot hand the engine a key. Pushing the character
+    -- still separates codes; with nothing being composed it leaves ； as a
+    -- candidate to confirm instead of typing it.
+    engine.context:push_input(';')
+  elseif not handled then
+    -- No processor took it: ASCII punctuation is on. Stock Cangjie leaves
+    -- the key to the application, which here would get the o that was
+    -- pressed, so type the semicolon for it.
+    engine:commit_text(';')
+  end
+  return ACCEPTED
+end
+
 local function func(key_event, env)
+  if env.forwarding then
+    return NOOP
+  end
+
   local engine = env.engine
   local context = engine.context
   local key = key_event.keycode
 
   -- Only process when not in ASCII mode
   if context:get_option('ascii_mode') then
-    return 2 -- kNoop
+    return NOOP
   end
 
   -- Leave releases and Alt/Ctrl/Super shortcuts to later processors.
   if key_event:release() or key_event:alt() or key_event:ctrl() or key_event:super() then
-    return 2 -- kNoop
+    return NOOP
   end
 
   -- Key events also include non-byte special keys such as Return and arrows.
   -- Avoid converting those with string.char before checking the range.
   if (key < string.byte('a') or key > string.byte('z')) and key ~= string.byte(';') then
-    return 2 -- kNoop
+    return NOOP
   end
 
   local remapped = colemak_to_qwerty[string.char(key)]
-  if remapped then
+  if remapped == ';' then
+    return semicolon(env)
+  elseif remapped then
     context:push_input(remapped)
-    return 1 -- kAccepted
+    return ACCEPTED
   end
 
-  return 2 -- kNoop
+  return NOOP
 end
 
 return { init = init, func = func }

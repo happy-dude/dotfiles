@@ -19,6 +19,9 @@ services.
 - **🟨 SAVE AS A BASH SCRIPT, THEN RUN ON THE KINOITE HOST** means save the
   complete fenced block as the named file and execute it with `bash`. Do not
   paste the surrounding prose into the shell.
+- **🟨 SAVE AS A SYSTEMD UNIT, THEN INSTALL ON THE KINOITE HOST** means save the
+  complete fenced block as the named unit file. Do not paste it into a shell;
+  the Fish block after it installs and enables the unit.
 
 Commands that stage an OSTree deployment, write `/etc`, enable system units,
 install Nix, switch Home Manager, reboot, or remove rollback state are

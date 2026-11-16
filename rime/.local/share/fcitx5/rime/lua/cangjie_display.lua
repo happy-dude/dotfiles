@@ -1,5 +1,7 @@
 -- cangjie_display.lua
--- Displays Cangjie codes: | NLDW 陳 弓中田木 | AGGU 曉 日土土山 |
+-- Displays Cangjie codes: | NLDW 陳 弓中木田 | AGGU 曉 日土土山 |
+
+local readings = require('readings')
 
 -- Cangjie letter → radical
 --  Q  W  E  R  T  Y  U  I  O  P
@@ -58,21 +60,6 @@ local function code_to_radicals(code)
   return nil
 end
 
-local function get_cangjie(env, char)
-  if env.cangjie then
-    local ok, code = pcall(function()
-      return env.cangjie:lookup(char)
-    end)
-    if ok and code and code ~= '' then
-      local first = code:match('^([^\t ]+)')
-      if first then
-        return first
-      end
-    end
-  end
-  return nil
-end
-
 local function filter(input, env)
   for cand in input:iter() do
     local text = cand.text
@@ -80,9 +67,10 @@ local function filter(input, env)
     if text and text ~= '' then
       local parts = {}
 
-      for p, c in utf8.codes(text) do
-        local char = utf8.char(c)
-        local code = get_cangjie(env, char)
+      for _, char in ipairs(readings.chars(text)) do
+        -- A character's codes are alternative spellings of the same shape,
+        -- not readings to choose between; the first one is shown.
+        local code = readings.codes(env.cangjie, char)[1]
 
         if code then
           local upper_code = code:upper()

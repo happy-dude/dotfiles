@@ -92,11 +92,13 @@
   ];
   # Plugin scripts under after/ run once every package is on the runtimepath.
   # The rainbow palette is set before the vimrc runs, because rainbow.vim
-  # reads it as soon as the vimrc sources that file. A JSON list of objects
-  # with string and number values is also a Vim expression.
+  # reads it as soon as the vimrc sources that file, and so are the credential
+  # paths cache.vim excludes from backup, swap, and undo files. JSON lists and
+  # objects with string and number values are also Vim expressions.
   runtimeConfig = runtime: ''
     let g:dotfiles_vim_runtime = '${runtime}'
     let g:dotfiles_rainbow_palette = ${builtins.toJSON (import ../lib/rainbow-delimiters.nix)}
+    let g:dotfiles_sensitive_paths = ${builtins.toJSON (import ../lib/sensitive-paths.nix)}
     set runtimepath^=${runtime}
     set runtimepath+=${runtime}/after
     source ${runtime}/vimrc

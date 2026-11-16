@@ -42,5 +42,5 @@ in
     (import ../rime/check.nix {inherit lib pkgs;})
     (import ../vim/check.nix {inherit homes lib pkgs self;})
     (import ../yt-dlp/check.nix {inherit homes lib pkgs;})
-    (import ../zed/check.nix {inherit pkgs;})
+    (import ../zed/check.nix {inherit homes lib pkgs;})
   ]

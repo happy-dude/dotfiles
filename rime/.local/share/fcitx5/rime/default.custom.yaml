@@ -17,7 +17,7 @@ __patch:
       schema_list/+/+:
         - schema: luna_pinyin_simp
 # }
-# Rx: custom:add:schema=cangjie5 {
+# Rx: custom:add:schema=cangjie5_colemak {
   - patch/+:
       schema_list/+/+:
         - schema: cangjie5_colemak

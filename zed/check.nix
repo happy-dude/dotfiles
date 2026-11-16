@@ -1,19 +1,72 @@
-{pkgs}: let
+{
+  homes,
+  lib,
+  pkgs,
+}: let
   mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
+  inherit (import ../lib/homes.nix {inherit lib;}) shared;
   zedSettingsMaterializer = import ./materializer.nix {inherit pkgs;};
-  hostSettings = import ./settings.nix {
-    inherit pkgs;
-    inherit (pkgs) lib;
-  };
+  hostSettings = import ./settings.nix {inherit lib pkgs;};
   settingsFile = (pkgs.formats.json {}).generate "zed-settings-check.json" hostSettings;
+  nixglEnvironment = import ../lib/nixgl-environment.nix;
+  nixglEnvironmentFile = pkgs.writeText "nixgl-environment.json" (
+    builtins.toJSON nixglEnvironment
+  );
+  # The wrapper scripts as the modules reach them: config.lib.nixGL.wrap runs
+  # nixGLIntel for the "mesa" wrapper, and zed/default.nix names
+  # nixVulkanIntel itself.
+  nixglWrapper = name:
+    shared homes "the ${name} wrapper" (
+      home:
+        lib.getExe
+        home.config.targets.genericLinux.nixGL.packages.${pkgs.stdenv.hostPlatform.system}.${name}
+    );
+  # The read-only settings check has to run once link targets are known to be
+  # safe and before anything is written.
+  settingsCheckPrecedesWrites = lib.all (
+    home: let
+      entry = home.config.home.activation.checkZedSettings;
+    in
+      lib.elem "checkLinkTargets" entry.after && lib.elem "writeBoundary" entry.before
+  ) (lib.attrValues homes);
 in {
+  # lib/nixgl-environment.nix must name every variable the pinned wrappers
+  # export, or a nixGL update could add one that reaches host children. It may
+  # name more, so this is a subset test.
+  nixgl-environment = mkCheck {
+    name = "nixgl-environment-test";
+    script = ''
+      status=0
+      # check_wrapper SCRIPT NAME...: every variable SCRIPT exports is a NAME.
+      check_wrapper() {
+        local wrapper=$1 exported name
+        shift
+        exported=$(sed -nE 's/^[[:space:]]*export[[:space:]]+([A-Za-z_][A-Za-z0-9_]*)=.*/\1/p' "$wrapper")
+        # Fail on an export the pattern cannot read rather than skip it.
+        if [[ -z $exported || $(wc -l <<<"$exported") != "$(grep -cw export "$wrapper")" ]]; then
+          echo "Unable to read the exports of $wrapper" >&2
+          status=1
+          return
+        fi
+        for name in $exported; do
+          if [[ " $* " != *" $name "* ]]; then
+            echo "$wrapper exports $name, which lib/nixgl-environment.nix does not list" >&2
+            status=1
+          fi
+        done
+      }
+      check_wrapper ${nixglWrapper "nixGLIntel"} ${lib.escapeShellArgs nixglEnvironment.gl}
+      check_wrapper ${nixglWrapper "nixVulkanIntel"} ${lib.escapeShellArgs nixglEnvironment.vulkan}
+      [[ $status == 0 ]]
+    '';
+  };
   zed-host-environment = mkCheck {
     name = "zed-host-environment-test";
     tools = [pkgs.python3 pkgs.fish];
     script = ''
       export HOME="$TMPDIR/home"
       mkdir -p "$HOME"
-      python3 - ${settingsFile} <<'PYTHON'
+      python3 - ${settingsFile} ${nixglEnvironmentFile} <<'PYTHON'
       import json
       import os
       import subprocess
@@ -21,11 +74,11 @@ in {
       from pathlib import Path
 
       settings = json.loads(Path(sys.argv[1]).read_text())
-      graphics = [
-          "GBM_BACKENDS_PATH", "LIBGL_ALWAYS_SOFTWARE", "LIBGL_DRIVERS_PATH",
-          "LIBVA_DRIVERS_PATH", "__EGL_VENDOR_LIBRARY_FILENAMES", "LD_LIBRARY_PATH",
-          "VK_ICD_FILENAMES", "VK_LAYER_PATH",
-      ]
+      # Zed runs under both wrappers; nixgl-environment holds these lists to
+      # what the wrappers export.
+      environment = json.loads(Path(sys.argv[2]).read_text())
+      graphics = sorted({*environment["gl"], *environment["vulkan"]})
+      assert graphics, environment
       inherited = os.environ | dict.fromkeys(graphics, "/unusable-graphics-path")
       inherited["ZED_TEST_PRESERVED"] = "ordinary host environment"
       Path("probe.py").write_text(
@@ -64,6 +117,10 @@ in {
       zedSettingsMaterializer
     ];
     script = ''
+      ${lib.optionalString (!settingsCheckPrecedesWrites) ''
+        echo "checkZedSettings must run after checkLinkTargets and before writeBoundary" >&2
+        exit 1
+      ''}
       mkdir work
       printf '%s\n' \
         '{' \
@@ -78,6 +135,29 @@ in {
         '  runtime_only: "preserved",' \
         '}' \
         >work/settings.json
+
+      # The check mode, which activation runs before any link is switched,
+      # accepts what a real run accepts and writes nothing: a file that needs
+      # rewriting keeps its bytes, and a missing one is not created.
+      cp work/settings.json work/settings.before
+      identity=$(stat -c '%i %y' work/settings.json)
+      materialize-zed-settings --check work/static.json work/settings.json
+      cmp work/settings.before work/settings.json
+      [[ $identity == "$(stat -c '%i %y' work/settings.json)" ]]
+      materialize-zed-settings --check work/static.json work/absent/settings.json
+      test ! -e work/absent
+
+      # refuses DESCRIPTION TARGET: the check mode and a real run both
+      # reject TARGET.
+      refuses() {
+        local mode
+        for mode in --check ""; do
+          if materialize-zed-settings $mode work/static.json "$2"; then
+            echo "accepted $1''${mode:+ in check mode}" >&2
+            exit 1
+          fi
+        done
+      }
 
       materialize-zed-settings work/static.json work/settings.json
       python3 - work/settings.json <<'PYTHON'
@@ -110,43 +190,28 @@ in {
       # A runtime file that is not a JSON object must be refused rather
       # than silently replaced by the declared keys.
       printf '[]\n' >work/array.json
-      if materialize-zed-settings work/static.json work/array.json; then
-        echo "replaced a non-object runtime settings file" >&2
-        exit 1
-      fi
+      refuses "a non-object runtime settings file" work/array.json
       test "$(cat work/array.json)" = '[]'
 
       # Failed parsing must not discard runtime-only settings.
       printf '{runtime_only: "unfinished"\n' >work/invalid.json
       cp work/invalid.json work/invalid.before
-      if materialize-zed-settings work/static.json work/invalid.json; then
-        echo "replaced malformed runtime settings" >&2
-        exit 1
-      fi
+      refuses "malformed runtime settings" work/invalid.json
       cmp work/invalid.before work/invalid.json
 
       # Neither a valid nor a dangling link grants ownership of its target.
       cp work/settings.json work/external.json
       cp work/external.json work/external.before
       ln -s "$PWD/work/external.json" work/linked.json
-      if materialize-zed-settings work/static.json work/linked.json; then
-        echo "accepted symlinked runtime settings" >&2
-        exit 1
-      fi
+      refuses "symlinked runtime settings" work/linked.json
       test -L work/linked.json
       cmp work/external.before work/external.json
       ln -s "$PWD/work/missing.json" work/dangling.json
-      if materialize-zed-settings work/static.json work/dangling.json; then
-        echo "accepted dangling runtime settings link" >&2
-        exit 1
-      fi
+      refuses "a dangling runtime settings link" work/dangling.json
       test -L work/dangling.json
       test ! -e work/missing.json
       ln -s "$PWD/work" work/linked-dir
-      if materialize-zed-settings work/static.json work/linked-dir/settings.json; then
-        echo "accepted a symlinked Zed settings directory" >&2
-        exit 1
-      fi
+      refuses "a symlinked Zed settings directory" work/linked-dir/settings.json
     '';
   };
 }

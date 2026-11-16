@@ -1,4 +1,5 @@
 import filecmp
+import glob
 import os
 import shutil
 import stat
@@ -90,8 +91,38 @@ def make_user_writable(root: Path) -> None:
             )
 
 
+def remove_staging(root: Path) -> None:
+    """Remove a staging tree, including one whose copy never finished.
+
+    copytree gives each directory its source's mode once that directory's
+    contents are copied. The source is a read-only store path, so an
+    interrupted copy leaves directories that cannot be emptied as they are.
+    """
+    for directory, _, _ in os.walk(root):
+        path = Path(directory)
+        path.chmod(stat.S_IMODE(path.stat().st_mode) | stat.S_IRWXU)
+    shutil.rmtree(root)
+
+
+def remove_stale_staging(static_dir: Path, backup: Path) -> None:
+    """Remove the staging trees that killed runs left beside static_dir.
+
+    A staging tree is named after static_dir with a random suffix. The
+    backup's name starts the same way, and recovery below still needs it, so
+    it is skipped.
+    """
+    pattern = glob.escape(static_dir.name) + ".*"
+    for sibling in static_dir.parent.glob(pattern):
+        if sibling == backup or sibling.is_symlink() or not sibling.is_dir():
+            continue
+        remove_staging(sibling)
+
+
 def refresh_static(static_source: Path, static_dir: Path) -> None:
     backup = static_dir.with_name(static_dir.name + ".home-manager-old")
+    # A run killed during the copy, or between the two renames below, leaves
+    # its staging tree behind; no later run would reuse or remove it.
+    remove_stale_staging(static_dir, backup)
     # Recover from a previous run that was killed mid-swap: the live tree was
     # moved aside but the replacement was never installed. Restore the backup
     # if the live tree is gone, otherwise discard a stale backup.
@@ -130,15 +161,19 @@ def refresh_static(static_source: Path, static_dir: Path) -> None:
                 shutil.rmtree(backup)
     finally:
         if temporary.exists():
-            shutil.rmtree(temporary)
+            remove_staging(temporary)
 
 
-def deploy(
+def validate(
     static_source: Path,
     stamp_source: Path,
-    busctl: str,
     relatives: list[str],
 ) -> None:
+    """Raise every refusal deploy() can raise, without writing anything.
+
+    Activation runs this before Home Manager's write boundary, so a refusal
+    stops it while the previous generation is still intact.
+    """
     if not static_source.is_dir():
         fail(f"Rime static source is not a directory: {static_source}")
     if not stamp_source.is_file():
@@ -152,10 +187,22 @@ def deploy(
     validate_regular(stamp, "source stamp")
 
     for relative in relatives:
+        source = static_source / relative
+        if not source.exists():
+            fail(f"Rime static source does not exist: {source}")
         validate_schema_target(
             data_dir / relative, static_dir / relative, static_dir, data_dir
         )
 
+
+def deploy(
+    static_source: Path,
+    stamp_source: Path,
+    busctl: str,
+    relatives: list[str],
+) -> None:
+    validate(static_source, stamp_source, relatives)
+    data_dir, static_dir, state_dir, stamp = state_paths()
     changed = (
         not static_dir.is_dir()
         or not stamp.exists()
@@ -219,8 +266,12 @@ def main(arguments: list[str]) -> None:
             arguments[4:],
         )
         return
+    if len(arguments) >= 4 and arguments[0] == "validate":
+        validate(Path(arguments[1]), Path(arguments[2]), arguments[3:])
+        return
     raise SystemExit(
-        "usage: rime-state-manager deploy STATIC STAMP BUSCTL RELATIVE..."
+        "usage: rime-state-manager deploy STATIC STAMP BUSCTL RELATIVE...\n"
+        "       rime-state-manager validate STATIC STAMP RELATIVE..."
     )
 
 

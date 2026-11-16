@@ -6,6 +6,7 @@
   ...
 }: let
   rimeHostFiles = import ./host-files.nix {inherit pkgs;};
+  rimeReadingTables = import ./reading-tables.nix {inherit pkgs;};
   rimeStateManager = import ./state-manager.nix {inherit pkgs;};
   localRimeDataDir = ./.local/share/fcitx5/rime;
   localFcitxThemesDir = ./.local/share/fcitx5/themes;
@@ -26,19 +27,25 @@
     ]
   );
 
-  # Locked schema revisions take precedence over the retained local snapshot.
-  schemaSources = [
-    inputs.rime_bopomofo
-    inputs.rime_cangjie
-    inputs.rime_cantonese
-    inputs.rime_essay
-    inputs.rime_jyutping
-    inputs.rime_luna_pinyin
-    inputs.rime_prelude
-    inputs.rime_stroke
-    inputs.rime_terra_pinyin
-    inputs.rime_loengfan
+  # Every deployed Rime data file has exactly one source: a locked schema
+  # input, pkgs.rime-zhwiki, readingTables below, or the tracked tree under
+  # localRimeDataDir. The tracked tree holds only what no input provides (the
+  # Lua, the custom patches, and the Colemak schema); it is not a fallback
+  # copy of the inputs, and a path with two sources fails evaluation below
+  # instead of one source silently winning.
+  schemaSourceNames = [
+    "rime_bopomofo"
+    "rime_cangjie"
+    "rime_cantonese"
+    "rime_essay"
+    "rime_jyutping"
+    "rime_luna_pinyin"
+    "rime_prelude"
+    "rime_stroke"
+    "rime_terra_pinyin"
+    "rime_loengfan"
   ];
+  schemaSources = map (name: inputs.${name}) schemaSourceNames;
 
   # OpenCC configs live under opencc/; other JSON (editor and language-server
   # settings) is not Rime data.
@@ -52,6 +59,8 @@
       "recipe.yaml"
     ]);
 
+  # Hidden entries are repository metadata and build inputs (.github, .ci,
+  # .build), never Rime data, so the walk skips them at every depth.
   filesRecursively = dir: let
     entries = builtins.readDir dir;
   in
@@ -59,7 +68,9 @@
       name: let
         path = dir + ("/" + name);
       in
-        if entries.${name} == "directory"
+        if lib.hasPrefix "." name
+        then []
+        else if entries.${name} == "directory"
         then filesRecursively path
         else lib.optional (isRimeDataFile dir name) path
     ) (builtins.attrNames entries);
@@ -67,44 +78,76 @@
   relativeTo = source: path:
     builtins.unsafeDiscardStringContext (lib.removePrefix ((toString source) + "/") (toString path));
 
-  sourceEntries = source:
+  # `origin` names the source in the failure messages below.
+  sourceEntries = origin: source:
     map (path: {
-      inherit path;
+      inherit origin path;
       relative = relativeTo source path;
     }) (filesRecursively source);
 
-  externalRimeDataEntries = lib.concatMap sourceEntries schemaSources;
-  externalRimeDataPaths = map (entry: entry.relative) externalRimeDataEntries;
+  localRimeDataOrigin = "rime/.local/share/fcitx5/rime";
+  localRimeDataEntries = sourceEntries localRimeDataOrigin localRimeDataDir;
 
-  localRimeDataEntries =
-    map
-    (path: {
-      inherit path;
-      relative = relativeTo localRimeDataDir path;
-    })
-    (
-      lib.filter (
-        path: let
-          relative = relativeTo localRimeDataDir path;
-        in
-          relative != "zhwiki.dict.yaml" && !(builtins.elem relative externalRimeDataPaths)
-      ) (filesRecursively localRimeDataDir)
-    );
+  # The readings lua/readings.lua cannot get from a reverse dictionary,
+  # built from the locked dictionaries so they advance with the lock.
+  # rime/reading_tables.py says what goes in. The floor leaves out phrases
+  # that both essay files count fewer than 500 times: with the dictionaries
+  # locked in November 2026 the module is about 320 KB with it and 1.1 MB
+  # without, and Rime parses it whenever an annotating schema starts.
+  readingTables = pkgs.runCommand "rime-reading-tables.lua" {nativeBuildInputs = [rimeReadingTables];} ''
+    rime-reading-tables \
+      --pinyin ${inputs.rime_terra_pinyin}/terra_pinyin.dict.yaml \
+      --toneless-pinyin ${inputs.rime_luna_pinyin}/luna_pinyin.dict.yaml \
+      --jyutping ${inputs.rime_cantonese}/jyut6ping3.chars.dict.yaml \
+      --jyutping ${inputs.rime_cantonese}/jyut6ping3.words.dict.yaml \
+      --frequency ${inputs.rime_essay}/essay.txt \
+      --frequency ${inputs.rime_cantonese}/essay-cantonese.txt \
+      --min-frequency 500 \
+      --output "$out"
+  '';
 
-  rimeDataEntries =
-    localRimeDataEntries
-    ++ externalRimeDataEntries
+  providedRimeDataEntries =
+    lib.concatMap (name: sourceEntries name inputs.${name}) schemaSourceNames
     ++ [
       {
+        origin = "rime/reading_tables.py";
+        relative = "lua/reading_tables.lua";
+        path = toString readingTables;
+      }
+      # No schema imports this dictionary; it stays installed on purpose.
+      {
+        origin = "pkgs.rime-zhwiki";
         relative = "zhwiki.dict.yaml";
         path = (toString pkgs.rime-zhwiki) + "/share/rime-data/zhwiki.dict.yaml";
       }
     ];
 
-  rimeDataTargetNames = map (entry: "fcitx5/rime/" + entry.relative) rimeDataEntries;
-  duplicateRimeDataTargetNames = lib.filter (
-    target: builtins.length (lib.filter (name: name == target) rimeDataTargetNames) > 1
-  ) (lib.unique rimeDataTargetNames);
+  rimeDataEntries = localRimeDataEntries ++ providedRimeDataEntries;
+
+  # One line per deployed path that has more than one source, naming each.
+  multiplySourced = entries:
+    lib.mapAttrsToList (
+      relative: sources: "  ${relative}: ${lib.concatMapStringsSep ", " (entry: entry.origin) sources}"
+    ) (
+      lib.filterAttrs (_: sources: builtins.length sources > 1) (
+        lib.groupBy (entry: entry.relative) entries
+      )
+    );
+
+  localRimeDataPaths = map (entry: entry.relative) localRimeDataEntries;
+  shadowedLocalRimeData = multiplySourced (
+    localRimeDataEntries
+    ++ lib.filter (entry: builtins.elem entry.relative localRimeDataPaths) providedRimeDataEntries
+  );
+  duplicateProvidedRimeData = multiplySourced providedRimeDataEntries;
+
+  unresolvedOpenccConfigs = (import ./opencc.nix {inherit lib;}).problems {
+    entries = rimeDataEntries;
+  };
+
+  changedStockLists = (import ./stock-schemas.nix {inherit lib;}).problems {
+    entries = rimeDataEntries;
+  };
 
   # The link farm declares every discovered source file as a Nix input.
   # Activation materializes it in the writable Rime directory so managed static
@@ -141,9 +184,11 @@
     lib.escapeShellArg entry.relative)
   rimeDataEntries;
 
-  # Fcitx rewrites notifications.conf when a notification is hidden, so it is
-  # materialized with the other host files. Fcitx stores the option as a list,
-  # one numbered key per entry; a flat `HiddenNotifications=` key is ignored.
+  # Fcitx rewrites notifications.conf when a notification is hidden, so
+  # activation merges this declaration into the file instead of replacing it:
+  # the declared IDs are added to whatever Fcitx recorded. Fcitx stores the
+  # option as a list, one numbered key per entry; a flat
+  # `HiddenNotifications=` key is ignored.
   # Copy only .config/fcitx5: `./.` would put all of rime/ in the store.
   fcitxConfig = pkgs.runCommand "fcitx5-config" {} ''
     cp -r ${./.config/fcitx5} "$out"
@@ -158,8 +203,44 @@
     EOF
   '';
 in
-  assert duplicateRimeDataTargetNames == []; {
+  assert lib.assertMsg (shadowedLocalRimeData == []) ''
+    Tracked Rime data files that a locked input or package also provides:
+    ${lib.concatStringsSep "\n" shadowedLocalRimeData}
+    Only one source can be deployed. Remove the tracked copy with `git rm`; a
+    local change to a file an input provides belongs in a `.custom.yaml` patch
+    or in a file of another name.'';
+  assert lib.assertMsg (duplicateProvidedRimeData == []) ''
+    Rime data files that more than one locked input or package provides:
+    ${lib.concatStringsSep "\n" duplicateProvidedRimeData}
+    Only one source can be deployed; drop one of them from schemaSourceNames
+    in rime/default.nix.'';
+  assert lib.assertMsg (unresolvedOpenccConfigs == []) ''
+    OpenCC configs named by the deployed Rime schemas do not resolve:
+    ${lib.concatMapStringsSep "\n" (problem: "  " + problem) unresolvedOpenccConfigs}
+    A simplifier without its config converts nothing. Add the source that
+    provides the config, or record in rime/opencc.nix why it is absent.'';
+  assert lib.assertMsg (changedStockLists == []) ''
+    The locked stock Rime schemas no longer hold the lists that the tracked
+    patches were written against:
+    ${lib.concatMapStringsSep "\n" (problem: "  " + problem) changedStockLists}
+    Check the patches named in rime/stock-schemas.nix against the new lists,
+    then record the new lists there.''; {
     xdg.dataFile = themeFiles;
+
+    # Both helpers refuse unmanaged or conflicting files, and their deploy
+    # entries run after linkGeneration, where a refusal leaves the new
+    # generation's links in place and the remaining entries unrun. Raise the
+    # same refusals here, before anything is written, so a refusal leaves the
+    # previous generation intact. Validation only reads, so it also runs in a
+    # dry run.
+    home.activation.rimeValidate = lib.hm.dag.entryBetween ["writeBoundary"] ["checkLinkTargets"] ''
+      ${lib.getExe rimeHostFiles} validate \
+        ${lib.escapeShellArg fcitxConfig}
+      ${lib.getExe rimeStateManager} validate \
+        ${lib.escapeShellArg rimeStaticData} \
+        ${lib.escapeShellArg rimeDataStamp} \
+        ${rimeRelativeArguments}
+    '';
 
     home.activation.rimeHostFiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
       $DRY_RUN_CMD ${lib.getExe rimeHostFiles} deploy \

@@ -1,0 +1,70 @@
+# Rows copied from rime-luna-pinyin's luna_pinyin.dict.yaml for the tests; not deployed.
+---
+name: luna_pinyin
+version: "fixture"
+sort: by_weight
+...
+
+了	le	98.90%
+了	liao	1.10%
+什	she	0%
+什	shen	84.20%
+什	shi	15.80%
+仲	zhong
+嗯	en
+嗯	eng
+大	da	99.85%
+大	dai	0.15%
+大	tai	0%
+家	gu	0.01%
+家	jia	99.99%
+市	shi
+快	kuai
+成	cheng
+撂	liao
+撂	lve
+新	xin
+校	jiao	25%
+校	xiao	100%
+樂	lao	0%
+樂	le	95%
+樂	yao	0%
+樂	yue	5%
+爲	wei
+班	ban
+生	sheng
+老	lao
+行	hang	8.22%
+行	xing	91.78%
+要	yao
+路	lu
+輩	bei
+重	chong	41.55%
+重	zhong	58.45%
+銀	yin
+長	chang	60.26%
+長	zhang	39.74%
+難	nan	100%
+難	nuo	0%
+音	yin
+麼	ma	0.04%
+麼	me	99.93%
+麼	mo	1%
+什麼	she me
+什麼	shen me
+家長	jia zhang
+市長	shi zhang
+快樂	kuai le
+成長	cheng zhang
+校長	xiao zhang
+班長	ban zhang
+生長	sheng zhang
+行爲	xing wei
+行路	xing lu
+行路難	xing lu nan
+重新	chong xin
+重要	zhong yao
+銀行	yin hang
+長老	zhang lao
+長輩	zhang bei
+音樂	yin yue

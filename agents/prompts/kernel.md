@@ -283,8 +283,9 @@ X" as "let me check X" by default:
   commit, an imperative `subsystem: summary` subject of at most 72 characters,
   and a self-contained body that explains the problem or ownership constraint
   before the implementation. Commit messages are valid Markdown and ordinary
-  prose never exceeds 80 characters; trailers, URLs, code, paths, and other
-  unbreakable text are exempt. Before committing through any agent harness, run
+  prose never exceeds 80 characters; the trailer block, fenced or indented code,
+  and a line that is one unbreakable token, such as a URL or a path, are exempt.
+  Before committing through any agent harness, run
   `~/dotfiles/scripts/lint_commit_message.py <message-file>`. The managed global
   `commit-msg` hook applies the same policy to every commit and preserves any
   initial `Assisted-by:` trailer. See
@@ -705,8 +706,9 @@ workaround to unrelated failures.
 
 This machine's Nix/Home Manager setup lives at `~/dotfiles` — read
 `~/dotfiles/AGENTS.md` first if asked to make a persistent config change here
-rather than guessing conventions; it's kept current and documents the real
-structure.
+rather than guessing conventions. It holds the standing rules and names the
+document under `~/dotfiles/docs/` that describes each part of the real
+structure; both are kept current.
 
 - **Hosts:** two Home Manager profiles on generic Linux, not NixOS: `schan`
   (personal, Fedora Kinoite, KDE Plasma, host-provided Determinate Nix) and
@@ -719,9 +721,10 @@ structure.
 - **Layout:** `flake.nix` is composition only. Each application owns a directory
   with a `default.nix`, its native configuration files beside it, and an
   optional `check.nix`. `lib/` holds what modules share; `scripts/` holds the
-  repository's own tooling. `AGENTS.md` in that repository is the current,
-  authoritative description — read it before making a persistent change, and
-  trust it over anything remembered here.
+  repository's own tooling. `AGENTS.md` in that repository and the `docs/`
+  documents it lists are the current, authoritative description — read them
+  before making a persistent change, and trust them over anything remembered
+  here.
 - **Native formats stay native:** editor and application configuration lives in
   the format its program documents — Emacs Lisp, JSON, Lua, INI, shell — and Nix
   reads those files in. Do not translate a configuration into Nix attributes

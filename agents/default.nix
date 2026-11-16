@@ -26,8 +26,9 @@
         }
     )
     prompts;
-  # Keep the generated keys in sync with MANAGED_KEYS in
-  # agents/materialize_codex_profile.py.
+  # The materializer owns exactly the keys generated here: MANAGED_KEYS in
+  # agents/materialize_codex_profile.py lists them, and the
+  # codex-profile-materializer check fails when the two differ.
   profileFiles =
     lib.mapAttrs (
       name: prompt:
@@ -42,9 +43,11 @@
     )
     prompts;
 
-  materializeProfile = name: profile: ''
-    ${lib.getExe codex.profileMaterializer} \
-      ${profile} \
+  # The materializer command for one profile; `--check` makes its refusals
+  # without writing.
+  materializeProfile = options: name: ''
+    ${lib.escapeShellArgs ([(lib.getExe codex.profileMaterializer)] ++ options)} \
+      ${profileFiles.${name}} \
       "$HOME/.codex/${name}.config.toml"
   '';
   legacyClaudeDirectories = "${repo}/claude/.claude/agents:${repo}/agents/prompts";
@@ -105,8 +108,16 @@ in {
   # retries a refresh that failed. A current profile is left untouched.
   home.activation.ensureCodexProfiles = lib.hm.dag.entryAfter ["linkGeneration"] (
     lib.concatMapStrings (name: ''
-      $DRY_RUN_CMD ${materializeProfile name profileFiles.${name}}
+      $DRY_RUN_CMD ${materializeProfile [] name}
     '')
     agentNames
+  );
+
+  # The materializer refuses a profile it cannot merge. By the time it runs,
+  # linkGeneration has switched the links, so a refusal there would leave the
+  # new generation half applied. Make the same refusals here, where nothing
+  # has been written yet; this entry only reads, so a dry run makes them too.
+  home.activation.checkCodexProfiles = lib.hm.dag.entryBetween ["writeBoundary"] ["checkLinkTargets"] (
+    lib.concatMapStrings (materializeProfile ["--check"]) agentNames
   );
 }

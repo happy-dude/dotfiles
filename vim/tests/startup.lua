@@ -30,6 +30,38 @@ assert_rainbow_colours('after startup')
 vim.cmd.colorscheme(vim.g.colors_name)
 assert_rainbow_colours('after :colorscheme')
 
+-- cache.vim must exclude the credential paths in lib/sensitive-paths.nix,
+-- which the check names in DOTFILES_SENSITIVE_PATHS. The preamble hands it
+-- that list before the vimrc runs, so compare the variable with the file,
+-- then look for every entry in 'backupskip', which cache.vim fills while
+-- the vimrc is sourced. tests/secret-state.vim covers what it does with
+-- the list.
+local sensitive_file =
+  assert(os.getenv('DOTFILES_SENSITIVE_PATHS'), 'DOTFILES_SENSITIVE_PATHS is unset')
+local sensitive = vim.json.decode(table.concat(vim.fn.readfile(sensitive_file), '\n'))
+assert(
+  vim.deep_equal(vim.g.dotfiles_sensitive_paths, sensitive),
+  'the preamble does not carry the sensitive path list'
+)
+local skipped = {}
+for _, pattern in ipairs(vim.opt.backupskip:get()) do
+  skipped[pattern] = true
+end
+assert(#sensitive.anyDepthDirectories > 0, 'there are no any-depth directories')
+for _, name in ipairs(sensitive.anyDepthDirectories) do
+  assert(skipped['*/' .. name .. '/*'], name .. ' is not in backupskip')
+end
+for kind, root in pairs({ home = vim.fn.expand('~'), xdgConfig = vim.fn.expand('~/.config') }) do
+  assert(#sensitive[kind].files > 0, kind .. ' has no files')
+  assert(#sensitive[kind].directories > 0, kind .. ' has no directories')
+  for _, name in ipairs(sensitive[kind].files) do
+    assert(skipped[root .. '/' .. name], name .. ' is not in backupskip')
+  end
+  for _, name in ipairs(sensitive[kind].directories) do
+    assert(skipped[root .. '/' .. name .. '/*'], name .. ' is not in backupskip')
+  end
+end
+
 -- Two rapid FileType changes before scheduled callbacks run must leave the
 -- buffer highlighted for its final filetype rather than the earlier one.
 local buf = vim.api.nvim_create_buf(false, true)

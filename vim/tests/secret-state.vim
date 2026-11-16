@@ -2,6 +2,11 @@ set nomore
 " The default patterns cover the temporary directory this test runs in;
 " only the entries cache.vim adds are under test.
 set backupskip=
+" DOTFILES_SENSITIVE_PATHS names lib/sensitive-paths.nix as JSON. It stands in
+" for the Home Manager preamble here, and is the list of paths to probe; the
+" startup checks compare the real preamble with the same file.
+let s:paths = json_decode(join(readfile($DOTFILES_SENSITIVE_PATHS), "\n"))
+let g:dotfiles_sensitive_paths = deepcopy(s:paths)
 execute 'source ' . fnameescape($DOTFILES_CACHE_VIM)
 
 " Vim skips the backup when any 'backupskip' pattern matches the buffer
@@ -16,38 +21,91 @@ function! s:BackupSkipped(path) abort
   return 0
 endfunction
 
+function! s:AssertState(path, kept) abort
+  call mkdir(fnamemodify(a:path, ':h'), 'p')
+  execute 'edit! ' . fnameescape(a:path)
+  call assert_equal(!a:kept, s:BackupSkipped(a:path), a:path . ' backup')
+  call assert_equal(a:kept, &l:swapfile, a:path . ' swap file')
+  call assert_equal(a:kept, &l:undofile, a:path . ' undo file')
+endfunction
+
 execute 'edit ' . fnameescape($HOME . '/ordinary.txt')
 call assert_true(&l:backup)
 call assert_true(&l:writebackup)
 call assert_true(&l:swapfile)
 call assert_true(&l:undofile)
 
-execute 'edit ' . fnameescape($HOME . '/.config/rclone/rclone.conf')
-call assert_true(s:BackupSkipped($HOME . '/.config/rclone/rclone.conf'))
-call assert_false(&l:swapfile)
-call assert_false(&l:undofile)
+" Every entry is guarded wherever it can live: home entries under the home
+" directory, XDG config entries under ~/.config and under the relocated
+" XDG_CONFIG_HOME the check exports.
+let s:config = $XDG_CONFIG_HOME
+call assert_match('^/', s:config, 'XDG_CONFIG_HOME is not absolute')
+call assert_notequal($HOME . '/.config', s:config,
+      \ 'the check did not relocate XDG_CONFIG_HOME')
+for [s:kind, s:roots] in [
+      \ ['home', [$HOME]],
+      \ ['xdgConfig', [$HOME . '/.config', s:config]],
+      \ ]
+  call assert_notequal([], s:paths[s:kind].files, s:kind . ' files')
+  call assert_notequal([], s:paths[s:kind].directories, s:kind . ' directories')
+  for s:root in s:roots
+    for s:name in s:paths[s:kind].files
+      call s:AssertState(s:root . '/' . s:name, 0)
+      " A file entry is one file, not a name prefix.
+      call s:AssertState(s:root . '/' . s:name . '.sample', 1)
+    endfor
+    for s:name in s:paths[s:kind].directories
+      call s:AssertState(s:root . '/' . s:name . '/credential.txt', 0)
+      call s:AssertState(s:root . '/' . s:name . '/nested/credential.txt', 0)
+      " A directory entry ends at a path separator.
+      call s:AssertState(s:root . '/' . s:name . '-notes/ordinary.txt', 1)
+    endfor
+  endfor
+endfor
 
-execute 'edit ' . fnameescape($HOME . '/.config/nix/local.conf')
-call assert_true(s:BackupSkipped($HOME . '/.config/nix/local.conf'))
-call assert_false(&l:swapfile)
-call assert_false(&l:undofile)
+" A credential directory is guarded at any depth: in the home directory,
+" in a tree outside it such as another home or a mounted backup, and inside
+" a project. A name that merely starts the same way is not.
+let s:elsewhere = fnamemodify($HOME, ':h') . '/elsewhere'
+call assert_notequal([], s:paths.anyDepthDirectories, 'any-depth directories')
+for s:name in s:paths.anyDepthDirectories
+  for s:root in [$HOME, s:elsewhere, $HOME . '/project', s:elsewhere . '/deep/tree']
+    call s:AssertState(s:root . '/' . s:name . '/credential.txt', 0)
+    call s:AssertState(s:root . '/' . s:name . '/nested/credential.txt', 0)
+    call s:AssertState(s:root . '/' . s:name . '-notes/ordinary.txt', 1)
+  endfor
+endfor
 
-execute 'edit ' . fnameescape($HOME . '/.config/opencode/local.json')
-call assert_true(s:BackupSkipped($HOME . '/.config/opencode/local.json'))
-call assert_false(&l:swapfile)
-call assert_false(&l:undofile)
+" Vim itself must leave no copy there: writing a file under a credential
+" directory outside the home directory gains no backup and no undo file.
+let s:backup_dir = substitute(&backupdir, '/*$', '', '')
+for s:path in [s:elsewhere . '/.ssh/id_ed25519', $HOME . '/project/.aws/credentials']
+  execute 'edit! ' . fnameescape(s:path)
+  call assert_false(&l:swapfile, s:path . ' swap file')
+  call setline(1, 'token')
+  write
+  call assert_true(empty(glob(s:backup_dir . '/*' . fnamemodify(s:path, ':t') . '~', 0, 1)),
+        \ s:path . ' backup')
+  call assert_false(filereadable(undofile(s:path)), s:path . ' undo file')
+endfor
 
-execute 'edit ' . fnameescape($HOME . '/.omp/agent/agent.db')
-call assert_true(s:BackupSkipped($HOME . '/.omp/agent/agent.db'))
-call assert_false(&l:swapfile)
-call assert_false(&l:undofile)
+" The other entries are anchored: a directory of the same name elsewhere,
+" such as a project's own .claude or .config, keeps its state.
+for s:name in s:paths.home.directories
+  call s:AssertState($HOME . '/project/' . s:name . '/ordinary.txt', 1)
+endfor
+for s:name in s:paths.xdgConfig.directories
+  call s:AssertState($HOME . '/project/.config/' . s:name . '/ordinary.txt', 1)
+endfor
+
+" The scenarios below use one directory entry under the relocated root.
+let s:rclone = s:config . '/rclone'
 
 " A symlink to a secret gets no backup under either name. Neovim may reuse
 " the secret's own buffer for the alias, so assert the outcome, not the
 " pattern.
-let s:backup_dir = substitute(&backupdir, '/*$', '', '')
-call writefile(['token'], $HOME . '/.config/rclone/rclone.conf')
-call system(['ln', '-sf', $HOME . '/.config/rclone/rclone.conf', $HOME . '/alias.conf'])
+call writefile(['token'], s:rclone . '/rclone.conf')
+call system(['ln', '-sf', s:rclone . '/rclone.conf', $HOME . '/alias.conf'])
 execute 'edit! ' . fnameescape($HOME . '/alias.conf')
 call assert_false(&l:swapfile)
 call assert_false(&l:undofile)
@@ -60,8 +118,8 @@ call assert_true(empty(glob(s:backup_dir . '/*rclone.conf~', 0, 1)))
 " sensitive directory.
 call mkdir($HOME . '/private', 'p')
 call writefile(['token'], $HOME . '/private/token')
-call system(['ln', '-sf', $HOME . '/private/token', $HOME . '/.config/rclone/linked.conf'])
-execute 'edit! ' . fnameescape($HOME . '/.config/rclone/linked.conf')
+call system(['ln', '-sf', $HOME . '/private/token', s:rclone . '/linked.conf'])
+execute 'edit! ' . fnameescape(s:rclone . '/linked.conf')
 call assert_false(&l:swapfile)
 call assert_false(&l:undofile)
 call setline(1, 'v2')
@@ -81,7 +139,8 @@ execute 'edit! ' . fnameescape($HOME . '/ordinary.txt')
 call setline(1, 'v2')
 write
 call assert_false(empty(glob(s:backup_dir . '/*ordinary.txt~', 0, 1)))
-execute 'edit! ' . fnameescape($HOME . '/.config/rclone/rclone.conf')
+call assert_true(filereadable(undofile($HOME . '/ordinary.txt')))
+execute 'edit! ' . fnameescape(s:rclone . '/rclone.conf')
 call setline(1, 'v2')
 write
 call assert_true(empty(glob(s:backup_dir . '/*rclone.conf~', 0, 1)))
@@ -91,7 +150,7 @@ call assert_true(empty(glob(s:backup_dir . '/*rclone.conf~', 0, 1)))
 execute 'edit ' . fnameescape($HOME . '/ordinary.txt')
 call assert_true(&l:swapfile)
 call assert_true(&l:undofile)
-execute 'saveas! ' . fnameescape($HOME . '/.config/rclone/renamed.txt')
+execute 'saveas! ' . fnameescape(s:rclone . '/renamed.txt')
 call assert_false(&l:swapfile)
 call assert_false(&l:undofile)
 call assert_false(filereadable(undofile(expand('%:p'))))
@@ -100,7 +159,7 @@ call assert_false(filereadable(undofile(expand('%:p'))))
 " Both editors run in the same HOME, so the second one overwrites the file.
 enew!
 call setline(1, 'token')
-execute 'write! ' . fnameescape($HOME . '/.config/rclone/written.conf')
+execute 'write! ' . fnameescape(s:rclone . '/written.conf')
 call assert_false(&l:swapfile)
 call assert_false(&l:undofile)
 call assert_false(filereadable(undofile(expand('%:p'))))
@@ -112,10 +171,31 @@ execute 'edit! ' . fnameescape($HOME . '/ordinary.txt')
 call assert_true(&l:swapfile)
 call assert_true(&l:undofile)
 call setline(1, 'secret-copy')
-execute 'write! ' . fnameescape($HOME . '/.config/rclone/from-ordinary.conf')
+execute 'write! ' . fnameescape(s:rclone . '/from-ordinary.conf')
 call assert_false(&l:swapfile)
 call assert_false(&l:undofile)
-call assert_false(filereadable(undofile($HOME . '/.config/rclone/from-ordinary.conf')))
+call assert_false(filereadable(undofile(s:rclone . '/from-ordinary.conf')))
+
+" A relative XDG_CONFIG_HOME names no config directory, so it adds no entry:
+" a file below it keeps its state, and ~/.config is still guarded.
+let $XDG_CONFIG_HOME = 'relative-config'
+set backupskip=
+execute 'source ' . fnameescape($DOTFILES_CACHE_VIM)
+for s:name in s:paths.xdgConfig.directories
+  call s:AssertState(getcwd() . '/relative-config/' . s:name . '/ordinary.txt', 1)
+  call s:AssertState($HOME . '/.config/' . s:name . '/second.txt', 0)
+  call s:AssertState(s:config . '/' . s:name . '/unguarded.txt', 1)
+endfor
+
+" Sourced without the Home Manager preamble, cache.vim has no paths to guard
+" and must say so.
+unlet g:dotfiles_sensitive_paths
+try
+  execute 'source ' . fnameescape($DOTFILES_CACHE_VIM)
+  call add(v:errors, 'cache.vim loaded quietly without its path list')
+catch /g:dotfiles_sensitive_paths is unset/
+endtry
+
 if !empty(v:errors)
   for error in v:errors
     echomsg error

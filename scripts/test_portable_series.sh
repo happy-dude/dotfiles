@@ -245,6 +245,18 @@ grep -Fq \
 printf -v expected_attach '  git -C %q worktree add <path> %q' \
   "$repo" replay/unattached
 grep -Fq "$expected_attach" "$start_error"
+# The placeholder identity went with the removed worktree's own config, so
+# the guidance has to restore it as well.
+printf -v expected_extension '  git -C %q config extensions.worktreeConfig true' \
+  "$repo"
+grep -Fxq "$expected_extension" "$start_error"
+for expected_config in \
+  'user.name Portable\ Dotfiles' \
+  'user.email portable@localhost' \
+  'commit.gpgsign false' \
+  'tag.gpgsign false'; do
+  grep -Fxq "  git -C <path> config --worktree $expected_config" "$start_error"
+done
 git branch -D replay/unattached >/dev/null
 
 prunable_worktree="$temporary_directory/prunable-worktree"
@@ -278,6 +290,48 @@ if start_series existing-path "$existing_path" 2>"$start_error"; then
   exit 1
 fi
 grep -Fq "worktree path already exists: $existing_path" "$start_error"
+
+# No origin exists yet, so the fetch fails. A caller that tests start_series
+# in a condition turns set -e off, and the failed step has to stop it there.
+if start_series unfetched "$temporary_directory/unfetched" \
+  >"$start_error" 2>&1; then
+  printf 'start continued after its fetch failed\n' >&2
+  exit 1
+fi
+if grep -q 'Portable worktree ready' "$start_error"; then
+  printf 'start reported a worktree after its fetch failed\n' >&2
+  exit 1
+fi
+test ! -e "$temporary_directory/unfetched"
+if git show-ref --verify --quiet refs/heads/replay/unfetched; then
+  printf 'start created a branch after its fetch failed\n' >&2
+  exit 1
+fi
+
+# The hint for a missing origin/main is the fetch the scripts run themselves:
+# under fetch.prune, git fetch origin main:refs/remotes/origin/main would
+# delete the ref it was asked to create.
+printf -v expected_fetch \
+  '  git -C %q fetch --no-prune origin refs/heads/main:refs/remotes/origin/main' \
+  "$repo"
+git branch replay/unfetched
+if clean_series unfetched 2>"$start_error"; then
+  printf 'cleaned a series without origin/main\n' >&2
+  exit 1
+fi
+grep -Fq 'origin/main is not fetched' "$start_error"
+grep -Fxq "$expected_fetch" "$start_error"
+git branch -D replay/unfetched >/dev/null
+
+# The default worktree lives under the XDG state directory, and a relative
+# XDG_STATE_HOME is ignored in favor of ~/.local/state.
+test "$(
+  XDG_STATE_HOME="$temporary_directory/state" default_series_worktree named
+)" = "$temporary_directory/state/dotfiles/portable/named"
+test "$(
+  HOME="$temporary_directory/home" XDG_STATE_HOME=relative-state \
+    default_series_worktree named
+)" = "$temporary_directory/home/.local/state/dotfiles/portable/named"
 
 # Sourced callers test these functions in conditions, where set -e is inert,
 # so a rejected name must stop the function itself.
@@ -340,6 +394,10 @@ git fetch --quiet origin refs/heads/main:refs/remotes/origin/main
 git config --unset-all remote.origin.fetch
 git config --add remote.origin.fetch \
   '+refs/heads/unrelated:refs/remotes/origin/unrelated'
+# git/default.nix sets fetch.prune; the refresh of origin/main must neither
+# delete the ref nor leave it stale.
+git config fetch.prune true
+git config fetch.pruneTags true
 printf '%s\n' advanced >upstream-only
 git add upstream-only
 git commit --quiet -m 'tests: advance the portable base'
@@ -347,7 +405,50 @@ git push --quiet origin main
 
 series_worktree="$temporary_directory/series-demo"
 start_series demo "$series_worktree" >/dev/null
+test "$(git rev-parse --verify refs/remotes/origin/main)" = "$(git rev-parse main)"
 test "$(git -C "$series_worktree" rev-parse HEAD)" = "$(git rev-parse main)"
+
+# A step after the fetch fails the same way: the parent of this worktree
+# path is a file, so the worktree cannot be created.
+printf '%s\n' blocker >"$temporary_directory/blocker"
+if start_series blocked "$temporary_directory/blocker/worktree" \
+  >"$start_error" 2>&1; then
+  printf 'start continued after its worktree could not be created\n' >&2
+  exit 1
+fi
+if grep -q 'Portable worktree ready' "$start_error"; then
+  printf 'start reported a worktree it could not create\n' >&2
+  exit 1
+fi
+git worktree prune
+git branch -D replay/blocked >/dev/null 2>&1 || true
+
+# A relative worktree is relative to the caller's directory, not to the
+# repository root, for the existence check, the worktree, and its config.
+mkdir "$repo/subdirectory"
+(
+  cd -- "$repo/subdirectory"
+  start_series relative nested/series-relative
+) >"$start_error"
+relative_worktree="$repo/subdirectory/nested/series-relative"
+grep -Fxq "Portable worktree ready: $relative_worktree" "$start_error"
+test ! -e "$repo/nested"
+test "$(git -C "$relative_worktree" branch --show-current)" = replay/relative
+test "$(git -C "$relative_worktree" config --worktree --get user.email)" = \
+  portable@localhost
+git worktree remove "$relative_worktree"
+git branch -D replay/relative >/dev/null
+rm -rf -- "$repo/subdirectory"
+
+# Without a worktree argument the series lands in the state directory, whose
+# parents start creates.
+XDG_STATE_HOME="$temporary_directory/state" start_series stated >/dev/null
+stated_worktree="$temporary_directory/state/dotfiles/portable/stated"
+test "$(git -C "$stated_worktree" branch --show-current)" = replay/stated
+test "$(git -C "$stated_worktree" config --worktree --get user.name)" = \
+  'Portable Dotfiles'
+git worktree remove "$stated_worktree"
+git branch -D replay/stated >/dev/null
 printf '%s\n' represented >"$series_worktree/represented"
 git -C "$series_worktree" add represented
 git -C "$series_worktree" commit --quiet -m 'tests: add represented change'
@@ -382,10 +483,11 @@ staging=("$output_directory"/.dotfiles-demo.*)
   exit 1
 }
 
-if clean_series demo 2>/dev/null; then
+if clean_series demo 2>"$start_error"; then
   printf 'cleaned a series with unrepresented commits\n' >&2
   exit 1
 fi
+grep -Fxq "$expected_fetch" "$start_error"
 test -d "$series_worktree"
 
 # The same patch lands upstream (re-authored, as the apply script does).
@@ -485,6 +587,64 @@ case $lint_output in
   exit 1
   ;;
 esac
+
+# git am ends a message at the first body line it reads as the start of a
+# patch. Each such line is refused by commit and line number, without being
+# echoed; the near misses are ordinary text to git am and stay accepted.
+git -C "$repo" switch -qc patch-breaks "$base"
+git -C "$repo" commit -q --allow-empty --cleanup=verbatim -F - <<'EOF'
+tests: body lines git am leaves alone
+
+----
+ ---
+---text
+---  two spaces
+diff of two files
+ diff -u indented
+Index:unspaced
+index: lower case
+EOF
+reject_patch_break_lines "$repo" "$base"
+line_number=3
+for break_line in '---' '---  ' '--- a/hidden-name' 'diff -u hidden-name b' \
+  'diff --git a/hidden-name b/hidden-name' 'Index: hidden-name'; do
+  git -C "$repo" commit -q --amend --allow-empty --cleanup=verbatim \
+    -m "tests: a body line git am reads as a patch
+
+$break_line"
+  if reject_patch_break_lines "$repo" "$base" 2>"$start_error"; then
+    printf 'accepted a message body line that ends the message: %s\n' \
+      "$break_line" >&2
+    exit 1
+  fi
+  grep -Fq "commit $(git -C "$repo" rev-parse --short HEAD): message line $line_number " \
+    "$start_error"
+  if grep -q 'hidden-name' "$start_error"; then
+    printf 'echoed the refused message line: %s\n' "$break_line" >&2
+    exit 1
+  fi
+done
+# The subject travels in a mail header, where none of this applies.
+git -C "$repo" commit -q --amend --allow-empty -m 'diff -u: a subject line'
+reject_patch_break_lines "$repo" "$base"
+
+# The message digest in the manifest is SHA-256 over each stored message,
+# oldest first, each followed by one NUL byte. The apply script carries its
+# own copy of the function, so pin the definition rather than the code.
+git -C "$repo" commit -q --allow-empty -F - <<'EOF'
+tests: a second message
+
+With a body.
+
+Assisted-by: example-model:high harness
+EOF
+expected_digest=$(
+  printf '%s\0' \
+    $'diff -u: a subject line\n' \
+    $'tests: a second message\n\nWith a body.\n\nAssisted-by: example-model:high harness\n' |
+    sha256sum | cut -d ' ' -f 1
+)
+test "$(series_message_digest "$repo" "$base")" = "$expected_digest"
 
 # Every attribution trailer is dropped before scanning, not just the last.
 printf '%s\n' \

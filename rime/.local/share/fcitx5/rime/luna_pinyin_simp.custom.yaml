@@ -1,15 +1,13 @@
 patch:
-  schema/dependencies:
+  # The dictionaries lua/tonal_pinyin.lua looks readings up in, added to
+  # whatever the stock schema depends on.
+  schema/dependencies/+:
     - terra_pinyin
     - luna_pinyin
     - jyut6ping3
-    - stroke
 
-  # The Lua filter goes before the simplifiers: a simplified candidate is a
-  # ShadowCandidate, and setting its comment from Lua is a no-op.
-  engine/filters:
-    - lua_filter@tonal_pinyin_filter
-    - simplifier@zh_hans          # ← TAG WITH @zh_hans
-    - simplifier@zh_hant_hk       # ← optional, for HK variant toggle
-    - simplifier@zh_hant_tw       # ← optional, for TW variant toggle
-    - uniquifier
+  # The Lua filter goes in front of the stock filters, which start with the
+  # simplifiers: a simplified candidate is a ShadowCandidate, and setting its
+  # comment from Lua is a no-op. Position 0 is in front of whatever the stock
+  # list holds, so rime/stock-schemas.nix has no list to hold for this patch.
+  engine/filters/@before 0: lua_filter@tonal_pinyin_filter

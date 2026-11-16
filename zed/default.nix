@@ -57,4 +57,15 @@ in {
       ${lib.escapeShellArg staticSettings} \
       ${lib.escapeShellArg settingsPath}
   '';
+
+  # The materializer refuses a settings file it cannot merge. By the time it
+  # runs, linkGeneration has switched the links, so a refusal there would
+  # leave the new generation half applied. Make the same refusals here, where
+  # nothing has been written yet; this entry only reads, so a dry run makes
+  # them too.
+  home.activation.checkZedSettings = lib.hm.dag.entryBetween ["writeBoundary"] ["checkLinkTargets"] ''
+    ${zedSettingsMaterializer}/bin/materialize-zed-settings --check \
+      ${lib.escapeShellArg staticSettings} \
+      ${lib.escapeShellArg settingsPath}
+  '';
 }

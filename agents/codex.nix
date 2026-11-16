@@ -22,6 +22,14 @@
           )
       );
   configSchemaUrl = "https://developers.openai.com/codex/config-schema.json";
+  # The read-only profile check has to run once link targets are known to be
+  # safe and before anything is written.
+  profileCheckPrecedesWrites = lib.all (
+    home: let
+      entry = home.config.home.activation.checkCodexProfiles;
+    in
+      lib.elem "checkLinkTargets" entry.after && lib.elem "writeBoundary" entry.before
+  ) (lib.attrValues homes);
 
   agentDirectoryMigration = mkPythonScript {
     name = "migrate-codex-agent-directory";
@@ -127,6 +135,10 @@
       pkgs.python3
     ];
     script = ''
+      ${lib.optionalString (!profileCheckPrecedesWrites) ''
+        echo "checkCodexProfiles must run after checkLinkTargets and before writeBoundary" >&2
+        exit 1
+      ''}
       mkdir work
       printf '%s\n' \
         '#:schema ${configSchemaUrl}' \
@@ -150,6 +162,29 @@
         '[tui.model_availability_nux]' \
         'model = 2' \
         >work/profile.toml
+
+      # The check mode, which activation runs before any link is switched,
+      # accepts what a real run accepts and writes nothing: a profile that
+      # needs refreshing keeps its bytes, and a missing one is not created.
+      cp work/profile.toml work/profile.before
+      identity=$(stat -c '%i %y' work/profile.toml)
+      materialize-codex-profile --check work/generated.toml work/profile.toml
+      cmp work/profile.before work/profile.toml
+      [[ $identity == "$(stat -c '%i %y' work/profile.toml)" ]]
+      materialize-codex-profile --check work/generated.toml work/absent/profile.toml
+      test ! -e work/absent
+
+      # refuses DESCRIPTION TEMPLATE TARGET: the check mode and a real run
+      # both reject the pair.
+      refuses() {
+        local mode
+        for mode in --check ""; do
+          if materialize-codex-profile $mode "$2" "$3"; then
+            echo "Materializer accepted $1''${mode:+ in check mode}" >&2
+            exit 1
+          fi
+        done
+      }
 
       materialize-codex-profile work/generated.toml work/profile.toml
       python3 - work/profile.toml <<'PYTHON'
@@ -224,13 +259,70 @@
         for template in ${lib.escapeShellArgs generatedProfiles}; do
           materialize-codex-profile "$template" work/real-profile.toml
         done
+
+        # MANAGED_KEYS must be exactly the keys the templates carry between
+        # them. A template key it lacks fails activation, as the loop above
+        # shows; a key it lists that no template sets would be deleted from
+        # every profile, whoever wrote it.
+        python3 - ${./materialize_codex_profile.py} ${lib.escapeShellArgs generatedProfiles} <<'PYTHON'
+        import ast
+        import sys
+        import tomllib
+        from pathlib import Path
+
+        source = ast.parse(Path(sys.argv[1]).read_text(encoding="utf-8"))
+        managed = {
+            key
+            for node in source.body
+            if isinstance(node, ast.Assign)
+            and [target.id for target in node.targets] == ["MANAGED_KEYS"]
+            for key in ast.literal_eval(node.value)
+        }
+        assert managed, "MANAGED_KEYS not found in the materializer"
+        generated = set()
+        for template in sys.argv[2:]:
+            generated |= tomllib.loads(Path(template).read_text(encoding="utf-8")).keys()
+        if managed != generated:
+            raise SystemExit(
+                "MANAGED_KEYS and the generated Codex profiles disagree: "
+                f"only in MANAGED_KEYS {sorted(managed - generated)}, "
+                f"only in the profiles {sorted(generated - managed)}"
+            )
+        PYTHON
       ''}
 
+      # A template the materializer does not fully own is refused, and the
+      # profile keeps its content.
+      cp work/profile.toml work/profile.kept
+      printf '%s\n' \
+        'developer_instructions = "instructions"' \
+        'model = "unmanaged"' \
+        >work/unmanaged.toml
+      refuses "a template with an unmanaged key" work/unmanaged.toml work/profile.toml
+      printf '%s\n' 'model_reasoning_effort = "medium"' >work/incomplete.toml
+      refuses "a template without instructions" work/incomplete.toml work/profile.toml
+      cmp work/profile.kept work/profile.toml
+
       ln -s "$PWD/work" work/linked-dir
-      if materialize-codex-profile work/generated.toml work/linked-dir/profile.toml; then
-        echo "Materializer accepted a symlinked parent directory" >&2
-        exit 1
-      fi
+      refuses "a symlinked parent directory" \
+        work/generated.toml work/linked-dir/profile.toml
+
+      # Neither a valid nor a dangling link grants ownership of its target.
+      cp work/profile.toml work/external.toml
+      ln -s "$PWD/work/external.toml" work/linked.toml
+      refuses "a symlinked profile" work/generated.toml work/linked.toml
+      test -L work/linked.toml
+      cmp work/profile.toml work/external.toml
+      ln -s "$PWD/work/missing.toml" work/dangling.toml
+      refuses "a dangling profile link" work/generated.toml work/dangling.toml
+      test -L work/dangling.toml
+      test ! -e work/missing.toml
+
+      # Failed parsing must not discard runtime-owned keys.
+      printf 'service_tier = "unfinished\n' >work/invalid.toml
+      cp work/invalid.toml work/invalid.before
+      refuses "an unparsable profile" work/generated.toml work/invalid.toml
+      cmp work/invalid.before work/invalid.toml
     '';
   };
 in {

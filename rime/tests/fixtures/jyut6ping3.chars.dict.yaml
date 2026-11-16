@@ -1,0 +1,70 @@
+# Rows copied from rime-cantonese's jyut6ping3.chars.dict.yaml for the tests; not deployed.
+---
+name: jyut6ping3.chars
+version: "fixture"
+sort: by_weight
+...
+
+班	baan1
+輩	bei3	0%
+輩	bui3
+成	cing4	0%
+長	coeng4	5%
+重	cung4	5%
+重	cung5	5%
+大	daai6
+快	faai3
+家	gaa1
+校	gaau3	3%
+家	gu1	3%
+行	haang4	5%
+校	haau6
+行	hang4	5%
+行	hang6	5%
+行	hong2	3%
+行	hong4	5%
+行	hong6	0%
+音	jam1
+要	jiu1	3%
+要	jiu2	3%
+要	jiu3
+了	laa1	0%
+了	liu1	3%
+撂	liu1
+了	liu4	3%
+了	liu5
+撂	loek6	3%
+樂	lok3	0%
+樂	lok6
+老	lou5
+路	lou6
+麼	maa1	0%
+麼	mo1
+麼	mo5	0%
+難	naan4
+難	naan6	5%
+嗯	ng2	3%
+嗯	ng4	3%
+嗯	ng5	3%
+嗯	ng6
+樂	ngaau6	3%
+銀	ngan4
+樂	ngok6	5%
+難	no4	3%
+生	saang1	5%
+什	sam6	3%
+新	san1
+生	sang1	5%
+什	sap6	5%
+成	seng4	3%
+市	si5
+成	sing4
+大	taai3	0%
+爲	wai4
+爲	wai6	5%
+什	zaap6	5%
+家	ze1	0%
+長	zoeng2	5%
+長	zoeng6	0%
+仲	zung6
+重	zung6	5%

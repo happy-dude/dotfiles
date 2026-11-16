@@ -12,6 +12,24 @@ IFS=$'\n\t'
 repo_root=$(git rev-parse --show-toplevel)
 readonly repo_root
 
+# Refresh origin/main whatever the caller's fetch.prune is: under that setting
+# the short refspec main:refs/remotes/origin/main deletes origin/main, so keep
+# the source fully qualified and pruning off.
+readonly -a origin_main_fetch=(
+  fetch --no-prune origin refs/heads/main:refs/remotes/origin/main
+)
+
+# The placeholder identity of a portable worktree, as key and value pairs. It
+# lives in the worktree's own configuration, which git worktree remove and
+# git worktree prune delete, so a branch attached to a new worktree needs it
+# set again.
+readonly -a portable_worktree_config=(
+  user.name "Portable Dotfiles"
+  user.email "portable@localhost"
+  commit.gpgsign false
+  tag.gpgsign false
+)
+
 usage() {
   cat <<'EOF'
 Usage:
@@ -19,7 +37,8 @@ Usage:
   portable-series.sh export <name> [output-directory]
   portable-series.sh clean <name>
 
-start creates replay/<name> in an isolated worktree rooted at origin/main.
+start creates replay/<name> in an isolated worktree rooted at origin/main,
+by default ${XDG_STATE_HOME:-~/.local/state}/dotfiles/portable/<name>.
 export validates that branch and writes patch artifacts without pushing.
 clean removes the worktree and branch of a series whose commits are all
 represented in origin/main.
@@ -306,15 +325,71 @@ print_worktree_inspection_help() {
   printf '  git -C %q worktree list --porcelain\n' "$repo_root" >&2
 }
 
+print_origin_main_fetch_command() {
+  printf '  git -C %q' "$repo_root" >&2
+  printf ' %q' "${origin_main_fetch[@]}" >&2
+  printf '\n' >&2
+}
+
+# Attaching the branch alone would leave the new worktree committing under
+# the caller's own identity, which export then refuses.
+print_attach_help() {
+  local branch=$1
+  local index
+
+  printf '%s\n' \
+    "Attach the existing branch to a reviewed path and restore the" \
+    "placeholder identity with:" >&2
+  printf '  git -C %q worktree add <path> %q\n' "$repo_root" "$branch" >&2
+  printf '  git -C %q config extensions.worktreeConfig true\n' "$repo_root" >&2
+  for ((index = 0; index < ${#portable_worktree_config[@]}; index += 2)); do
+    printf '  git -C <path> config --worktree %q %q\n' \
+      "${portable_worktree_config[index]}" \
+      "${portable_worktree_config[index + 1]}" >&2
+  done
+}
+
+configure_portable_worktree() {
+  local worktree=$1
+  local index
+
+  git -C "$repo_root" config extensions.worktreeConfig true || return 1
+  for ((index = 0; index < ${#portable_worktree_config[@]}; index += 2)); do
+    git -C "$worktree" config --worktree \
+      "${portable_worktree_config[index]}" \
+      "${portable_worktree_config[index + 1]}" || return 1
+  done
+}
+
+# The state directory outlives a reboot and tmpfiles ageing, either of which
+# would remove a worktree under /tmp and leave its branch behind. Follow the
+# XDG Base Directory specification by ignoring a relative XDG_STATE_HOME.
+default_series_worktree() {
+  local name=$1
+  local state_home="$HOME/.local/state"
+
+  if [[ ${XDG_STATE_HOME:-} == /* ]]; then
+    state_home=$XDG_STATE_HOME
+  fi
+  printf '%s\n' "$state_home/dotfiles/portable/$name"
+}
+
 start_series() {
   local name=$1
-  local worktree=${2:-"/tmp/dotfiles-portable-$name"}
+  local worktree=${2:-}
   local branch="replay/$name"
   local branch_ref="refs/heads/$branch"
   local existing_worktree
   local lookup_status
 
   validate_name "$name" || return 1
+  if [[ -z $worktree ]]; then
+    worktree=$(default_series_worktree "$name") || return 1
+  elif [[ $worktree != /* ]]; then
+    # A relative path names a directory beside the caller, but git -C
+    # "$repo_root" would resolve it against the repository root.
+    worktree="$PWD/$worktree"
+  fi
   if git -C "$repo_root" show-ref --verify --quiet "$branch_ref"; then
     if existing_worktree=$(worktree_for_branch "$repo_root" "$branch_ref"); then
       print_existing_series_help "$name" "$existing_worktree"
@@ -325,9 +400,7 @@ start_series() {
         print_worktree_inspection_help
         die "branch already exists with prunable worktree registration: $branch"
       else
-        printf '%s\n' "Attach the existing branch to a reviewed path with:" >&2
-        printf '  git -C %q worktree add <path> %q\n' \
-          "$repo_root" "$branch" >&2
+        print_attach_help "$branch"
         die "branch already exists without a worktree: $branch"
       fi
     fi
@@ -338,13 +411,13 @@ start_series() {
     return 1
   fi
 
-  git -C "$repo_root" fetch origin refs/heads/main:refs/remotes/origin/main
-  git -C "$repo_root" worktree add -b "$branch" "$worktree" origin/main
-  git -C "$repo_root" config extensions.worktreeConfig true
-  git -C "$worktree" config --worktree user.name "Portable Dotfiles"
-  git -C "$worktree" config --worktree user.email "portable@localhost"
-  git -C "$worktree" config --worktree commit.gpgsign false
-  git -C "$worktree" config --worktree tag.gpgsign false
+  # Each step returns on failure itself: set -e is inert when a caller tests
+  # start_series in a condition.
+  git -C "$repo_root" "${origin_main_fetch[@]}" || return 1
+  mkdir -p -- "$(dirname -- "$worktree")" || return 1
+  git -C "$repo_root" worktree add -b "$branch" "$worktree" origin/main ||
+    return 1
+  configure_portable_worktree "$worktree" || return 1
 
   printf '%s\n' \
     "Portable worktree ready: $worktree" \
@@ -379,6 +452,67 @@ lint_commits() {
   done <<<"$commits"
 }
 
+# Refuse a commit message git am cannot carry. git mailinfo ends the message
+# at the first body line it reads as the start of a patch (a line of only
+# "---", "--- <name>", "diff -", or "Index: ") and drops the rest, trailers
+# included. The subject travels in a mail header, so line 1 is exempt. Only
+# the commit and line number are reported: this runs before the linter, and
+# the line itself is not needed to find it.
+reject_patch_break_lines() {
+  local worktree=$1
+  local base=$2
+  local patch_break='^(diff -|Index: |--- [^[:space:]]|---[[:space:]]*$)'
+  local commits
+  local commit
+  local message
+  local line
+  local line_number
+  local found=false
+
+  commits=$(git -C "$worktree" rev-list --reverse "$base..HEAD") || return 1
+  while IFS= read -r commit; do
+    [[ -n $commit ]] || continue
+    message=$(git -C "$worktree" show -s --format=%B "$commit") || return 1
+    line_number=0
+    while IFS= read -r line; do
+      line_number=$((line_number + 1))
+      if ((line_number > 1)) && [[ $line =~ $patch_break ]]; then
+        printf 'error: commit %s: message line %d would end the message under git am\n' \
+          "$(git -C "$worktree" rev-parse --short "$commit")" \
+          "$line_number" >&2
+        found=true
+      fi
+    done <<<"$message"
+  done <<<"$commits"
+  if [[ $found == true ]]; then
+    die "portable history contains a commit message git am would truncate"
+    return 1
+  fi
+}
+
+# Digest of the commit messages in <base>..HEAD: SHA-256 over each message as
+# its commit object stores it (the bytes after the header's blank line),
+# oldest commit first, each followed by one NUL byte. The manifest records it
+# and apply-portable-series.sh recomputes it with its own copy of this
+# function, which cannot be shared; keep the two identical.
+series_message_digest() {
+  local repository=$1
+  local base=$2
+  local commits
+  local commit
+  local digest
+
+  commits=$(git -C "$repository" rev-list --reverse "$base..HEAD") || return 1
+  digest=$(
+    while IFS= read -r commit; do
+      [[ -n $commit ]] || continue
+      git -C "$repository" cat-file commit "$commit" | sed '1,/^$/d' || exit 1
+      printf '\0'
+    done <<<"$commits" | sha256sum
+  ) || return 1
+  printf '%s\n' "${digest%% *}"
+}
+
 export_series() (
   local name=$1
   local output_directory=${2:-"$HOME/Downloads"}
@@ -411,6 +545,8 @@ export_series() (
   local staged_apply_path
   local bundle_directory="dotfiles-$name"
   local patch_sha256
+  local validated_tree
+  local message_digest
   local forbidden_pattern
 
   validate_name "$name" || return 1
@@ -436,8 +572,7 @@ export_series() (
   [[ -z $worktree_status ]] ||
     { die "portable worktree is not clean" || return 1; }
 
-  git -C "$repo_root" fetch origin refs/heads/main:refs/remotes/origin/main ||
-    return 1
+  git -C "$repo_root" "${origin_main_fetch[@]}" || return 1
   base=$(git -C "$repo_root" rev-parse origin/main) || return 1
   merge_base=$(git -C "$worktree" merge-base HEAD origin/main) || return 1
   [[ $merge_base == "$base" ]] ||
@@ -480,9 +615,12 @@ export_series() (
   # staging directory without replacing the caller's own EXIT trap.
   trap 'rm -rf -- "$staging_directory"' EXIT
 
-  lint_commits "$worktree" "$base" "$staging_directory/messages" || return 1
+  # Scan before linting: the linter prints a diff of a message it rejects,
+  # which would echo forbidden text the scan reports by line number only.
   scan_series "$forbidden_pattern" "$worktree" "$base" "$staging_directory" ||
     return 1
+  reject_patch_break_lines "$worktree" "$base" || return 1
+  lint_commits "$worktree" "$base" "$staging_directory/messages" || return 1
   (
     cd -- "$worktree" || exit 1
     nix fmt . || exit 1
@@ -528,14 +666,21 @@ export_series() (
     return 1
   patch_sha256=$(sha256sum "$staged_patch_path" | cut -d ' ' -f 1) ||
     return 1
+  # The tree and messages validated above. git am can land something else on
+  # the destination, where apply.whitespace rewrites content and mailinfo
+  # reinterprets a message, so apply compares its result with these.
+  validated_tree=$(git -C "$worktree" rev-parse 'HEAD^{tree}') || return 1
+  message_digest=$(series_message_digest "$worktree" "$base") || return 1
 
   cat >"$staged_manifest_path" <<EOF || return 1
-version=1
+version=2
 name=$name
 base=$base
 count=$count
 patch=$patch_name
 sha256=$patch_sha256
+tree=$validated_tree
+messages=$message_digest
 EOF
   cp -- "$worktree/scripts/apply-portable-series.sh" \
     "$staged_apply_path" || return 1
@@ -586,7 +731,9 @@ clean_series() {
     return 1
   }
   git -C "$repo_root" show-ref --verify --quiet refs/remotes/origin/main || {
-    die "origin/main is not fetched; run git fetch origin main first"
+    printf '%s\n' "Fetch origin/main with:" >&2
+    print_origin_main_fetch_command
+    die "origin/main is not fetched"
     return 1
   }
 
@@ -612,7 +759,9 @@ clean_series() {
     return 1
   }
   if grep -q '^+' <<<"$unrepresented"; then
-    die "$branch has commits not represented in origin/main; export and apply them, or git fetch origin main first"
+    printf '%s\n' "If origin/main is stale, refresh it with:" >&2
+    print_origin_main_fetch_command
+    die "$branch has commits not represented in origin/main; export and apply them, or refresh origin/main first"
     return 1
   fi
 

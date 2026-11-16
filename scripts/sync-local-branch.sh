@@ -22,9 +22,11 @@ format_worktree() {
   local worktree=$1
   local status
 
+  # Without the flag, a lock that disagrees with flake.nix is rewritten here
+  # and reported below as a formatting change.
   (
     cd -- "$worktree" || exit 1
-    nix fmt .
+    nix fmt --no-update-lock-file .
   ) || return
   status=$(git -C "$worktree" status --porcelain=v1 --untracked-files=all) ||
     return
@@ -90,14 +92,22 @@ is_superseded_lock_commit() {
     git -C "$repo" diff-tree --no-commit-id --name-only -r "$commit"
   ) || return 1
   [[ $paths == "flake.lock" ]] || return 1
-  # Keep any lock commit that adds or removes an input or changes the pinned
-  # revision of a branch-local input absent from origin/main's flake.lock.
+  # A lock commit is dropped only when everything it changes is
+  # upstream-managed: origin/main's flake.lock has the same kind of entry, a
+  # node or a `follows` reference, at the same input path from the root (for
+  # example root -> home-manager -> nixpkgs). Node names such as `nixpkgs_2`
+  # are positional labels that differ between locks, so they identify nothing.
+  # A commit that changes, adds, or removes any other entry, in any field, is
+  # kept, and so is one that cannot be read. Pins are not compared: for an
+  # upstream-managed input origin/main's pin wins even when it is the older.
   python3 - "$repo" "$upstream" "$commit" <<'PY'
 import json
 import subprocess
 import sys
 
 repo, upstream, commit = sys.argv[1:4]
+
+InputPath = tuple[str, ...]
 
 
 def read_lock(rev: str) -> dict:
@@ -111,40 +121,70 @@ def read_lock(rev: str) -> dict:
     return data
 
 
-try:
+def flatten(lock: dict) -> tuple[dict[InputPath, tuple], dict[str, object]]:
+    """Return the lock's entries by input path and its unreachable nodes.
+
+    A string-valued input names the node at that path, which is walked in
+    turn. A list-valued input is a `follows` reference, itself an input path
+    from the root; it is recorded as an entry and never looked up as a name.
+    """
+    nodes = lock["nodes"]
+    entries: dict[InputPath, tuple] = {}
+    reached: set[str] = set()
+
+    def walk(label: str, path: InputPath, ancestors: frozenset[str]) -> None:
+        if label in ancestors:
+            raise ValueError("input cycle")
+        node = nodes[label]
+        reached.add(label)
+        entries[path] = (
+            "node",
+            {key: value for key, value in node.items() if key != "inputs"},
+        )
+        for name, target in node.get("inputs", {}).items():
+            if isinstance(target, str):
+                walk(target, (*path, name), ancestors | {label})
+            elif isinstance(target, list):
+                entries[(*path, name)] = ("follows", target)
+            else:
+                raise ValueError("invalid input reference")
+
+    walk(lock["root"], (), frozenset())
+    unreachable = {
+        label: node for label, node in nodes.items() if label not in reached
+    }
+    return entries, unreachable
+
+
+def is_superseded() -> bool:
     parent = read_lock(f"{commit}^")
     child = read_lock(commit)
-    upstream_lock = read_lock(upstream)
+    if {key: value for key, value in parent.items() if key != "nodes"} != {
+        key: value for key, value in child.items() if key != "nodes"
+    }:
+        return False
+    before, unreachable_before = flatten(parent)
+    after, unreachable_after = flatten(child)
+    managed, _ = flatten(read_lock(upstream))
+    # No input path identifies an unreachable node, so none is upstream-managed.
+    if unreachable_before != unreachable_after:
+        return False
+    for path in before.keys() | after.keys():
+        old = before.get(path)
+        new = after.get(path)
+        if old == new:
+            continue
+        kind = managed[path][0] if path in managed else None
+        if any(entry is not None and entry[0] != kind for entry in (old, new)):
+            return False
+    return True
+
+
+try:
+    superseded = is_superseded()
 except Exception:
-    sys.exit(1)
-
-if {k: v for k, v in parent.items() if k != "nodes"} != {
-    k: v for k, v in child.items() if k != "nodes"
-}:
-    sys.exit(1)
-
-p_nodes = parent["nodes"]
-c_nodes = child["nodes"]
-u_nodes = upstream_lock["nodes"]
-if p_nodes.get("root") != c_nodes.get("root"):
-    sys.exit(1)
-
-for name in set(p_nodes) | set(c_nodes):
-    if p_nodes.get(name) == c_nodes.get(name):
-        continue
-    if name in u_nodes:
-        continue
-    if name not in p_nodes or name not in c_nodes:
-        sys.exit(1)
-    p_locked = p_nodes[name].get("locked")
-    c_locked = c_nodes[name].get("locked")
-    if not isinstance(p_locked, dict) or not isinstance(c_locked, dict):
-        sys.exit(1)
-    if (
-        p_locked.get("rev") != c_locked.get("rev")
-        or p_locked.get("narHash") != c_locked.get("narHash")
-    ):
-        sys.exit(1)
+    superseded = False
+sys.exit(0 if superseded else 1)
 PY
 }
 
@@ -374,7 +414,8 @@ main() {
   require_clean_worktree "$main_worktree" main
 
   if [[ $mode == sync ]]; then
-    git -C "$repo" fetch origin \
+    # Under fetch.prune, an unqualified `main:` source would delete origin/main.
+    git -C "$repo" fetch --no-prune origin \
       refs/heads/main:refs/remotes/origin/main
     origin_main=$(git -C "$repo" rev-parse refs/remotes/origin/main)
     superseded_lock_commits=$(

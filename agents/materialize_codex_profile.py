@@ -6,9 +6,12 @@ import tomlkit
 
 from dotfiles_files import write_text
 
-# Keep in sync with profileFiles in agents/default.nix: unexpected template
-# keys fail activation, and keys listed here but absent from a template are
-# removed from the target profile.
+# The keys profileFiles in agents/default.nix generates. A template key that
+# is not listed here fails activation, and a listed key that a template
+# leaves out is removed from that profile. The codex-profile-materializer
+# check fails unless the templates carry exactly these keys between them. A
+# key retired from both is no longer managed, so an existing profile keeps
+# its last value.
 MANAGED_KEYS = (
     "developer_instructions",
     "model_reasoning_effort",
@@ -32,7 +35,14 @@ def parse_document(text: str, path: Path, description: str):
         raise SystemExit(message) from error
 
 
-def materialize(source: Path, target: Path) -> None:
+def materialize(source: Path, target: Path, *, check_only: bool) -> None:
+    """Merge the generated keys into target, or refuse and leave it alone.
+
+    With check_only, make every refusal a real run would make and write
+    nothing. Activation calls this before Home Manager switches any link, so
+    a profile it cannot merge stops the switch while the previous generation
+    is still in place.
+    """
     if not source.is_file():
         message = f"Generated Codex profile is not a regular file: {source}"
         raise SystemExit(message)
@@ -85,6 +95,8 @@ def materialize(source: Path, target: Path) -> None:
             merged[key] = runtime.item(key).unwrap()
 
     rendered = directive + tomlkit.dumps(merged)
+    if check_only:
+        return
     # Activation runs this on every switch.
     if (
         rendered == runtime_text
@@ -95,9 +107,13 @@ def materialize(source: Path, target: Path) -> None:
 
 
 def main(arguments: list[str]) -> None:
-    if len(arguments) != 2:
-        raise SystemExit("usage: materialize-codex-profile SOURCE TARGET")
-    materialize(Path(arguments[0]), Path(arguments[1]))
+    check_only = arguments[:1] == ["--check"]
+    paths = arguments[1:] if check_only else arguments
+    if len(paths) != 2:
+        raise SystemExit(
+            "usage: materialize-codex-profile [--check] SOURCE TARGET"
+        )
+    materialize(Path(paths[0]), Path(paths[1]), check_only=check_only)
 
 
 if __name__ == "__main__":

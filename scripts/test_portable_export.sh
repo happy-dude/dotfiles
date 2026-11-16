@@ -49,6 +49,9 @@ git -C "$worktree" commit --quiet --amend --no-edit --reset-author
 printf '#!%s\n' "$(command -v bash)" >"$fake_bin/nix"
 cat >>"$fake_bin/nix" <<'EOF'
 set -euo pipefail
+if [[ ${PORTABLE_TEST_NIX_LOG:-} ]]; then
+  printf '%s\n' "$1" >>"$PORTABLE_TEST_NIX_LOG"
+fi
 case $1 in
 fmt)
   if [[ ${PORTABLE_TEST_FMT_CREATES:-} ]]; then
@@ -180,6 +183,58 @@ grep -q 'forbidden content found in commit metadata' "$TMPDIR_TEST/export.log" |
 [[ $(sha256sum "$output"/*) == "$before" ]] ||
   fail 'forbidden commit-metadata rejection replaced published artifacts'
 unset PORTABLE_FORBIDDEN_PATTERN
+
+# The linter prints a diff of a message it rejects. A message that is both
+# malformed Markdown and forbidden must be stopped by the scan, which reports
+# line numbers only, before the linter can echo it.
+git -C "$worktree" commit --quiet --amend -F - <<'EOF'
+tests: lint a message carrying forbidden text
+
+* private-model sits in a bullet that Prettier rewrites
+EOF
+if run_portable export probe "$output"; then
+  fail 'export published a commit message the linter rejects'
+fi
+grep -q 'differs from Prettier output' "$TMPDIR_TEST/export.log" ||
+  fail 'the malformed-message fixture was not rejected by the linter'
+export PORTABLE_FORBIDDEN_PATTERN=private-model
+if run_portable export probe "$output"; then
+  fail 'export published a malformed commit message with forbidden text'
+fi
+grep -q 'forbidden content found in commit metadata' "$TMPDIR_TEST/export.log" ||
+  fail 'forbidden text in a malformed commit message was not reported'
+if grep -q 'private-model' "$TMPDIR_TEST/export.log"; then
+  fail 'export echoed forbidden text from a malformed commit message'
+fi
+[[ $(sha256sum "$output"/*) == "$before" ]] ||
+  fail 'malformed forbidden commit message replaced published artifacts'
+unset PORTABLE_FORBIDDEN_PATTERN
+
+# git am would drop everything from the bare --- line on, the trailer
+# included. Export refuses the message before the expensive validation and
+# names the commit and line without echoing the line.
+git -C "$worktree" commit --quiet --amend --cleanup=verbatim -F - <<'EOF'
+tests: carry a thematic break in the body
+
+First paragraph.
+
+---
+
+Assisted-by: example-model:high harness
+EOF
+export PORTABLE_TEST_NIX_LOG="$TMPDIR_TEST/nix.log"
+: >"$PORTABLE_TEST_NIX_LOG"
+if run_portable export probe "$output"; then
+  fail 'export published a commit message git am would truncate'
+fi
+grep -Fq "commit $(git -C "$worktree" rev-parse --short HEAD): message line 5 " \
+  "$TMPDIR_TEST/export.log" ||
+  fail 'the truncating message line was not named by commit and line'
+[[ ! -s $PORTABLE_TEST_NIX_LOG ]] ||
+  fail 'export ran the Nix validation before refusing a truncating message'
+[[ $(sha256sum "$output"/*) == "$before" ]] ||
+  fail 'truncating commit message replaced published artifacts'
+unset PORTABLE_TEST_NIX_LOG
 git -C "$worktree" commit --quiet --amend -m 'tests: seed portable change'
 
 # A machine-local forbidden-pattern file gates export without requiring
@@ -228,10 +283,14 @@ grep -q 'empty commit' "$TMPDIR_TEST/export.log" ||
   fail 'empty-commit rejection replaced published artifacts'
 git -C "$worktree" reset --quiet --hard HEAD~1
 
-# A narrow fetch mapping must not leave export validating against a stale base.
+# A narrow fetch mapping must not leave export validating against a stale
+# base, and fetch.prune, which git/default.nix sets, must not make the refresh
+# delete origin/main.
 git -C "$repo" config --unset-all remote.origin.fetch
 git -C "$repo" config --add remote.origin.fetch \
   '+refs/heads/unrelated:refs/remotes/origin/unrelated'
+git -C "$repo" config fetch.prune true
+git -C "$repo" config fetch.pruneTags true
 printf 'new upstream\n' >"$seed/upstream"
 commit_all "$seed" 'tests: advance upstream after starting a series'
 git -C "$seed" push --quiet origin main

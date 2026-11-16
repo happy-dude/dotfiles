@@ -9,6 +9,9 @@
   rainbowColours = pkgs.writeText "rainbow-delimiters.json" (
     builtins.toJSON (import ../lib/rainbow-delimiters.nix)
   );
+  sensitivePaths = pkgs.writeText "sensitive-paths.json" (
+    builtins.toJSON (import ../lib/sensitive-paths.nix)
+  );
   mkProfileCheck = username: home: let
     parserDirectory = home.config.xdg.dataFile."nvim/site/parser".source;
     queryDirectory = home.config.xdg.dataFile."nvim/site/queries".source;
@@ -51,6 +54,7 @@
 
         # The colorscheme block only runs under a colour terminal.
         DOTFILES_RAINBOW_PALETTE=${rainbowColours} \
+        DOTFILES_SENSITIVE_PATHS=${sensitivePaths} \
         TERM=xterm-256color \
         HOME="$PWD/home" \
         XDG_CACHE_HOME="$PWD/home/cache" \
@@ -84,13 +88,17 @@
         mkdir -p home
         # Silent Ex mode never queries the terminal, so declare the colour
         # depth the colorscheme guard expects; :cquit fails the check when the
-        # expected scheme is not the one in effect, and tests/rainbow.vim
-        # fails it when the rainbow plugin does not use the palette.
+        # expected scheme is not the one in effect, tests/rainbow.vim fails
+        # it when the rainbow plugin does not use the palette, and
+        # tests/sensitive-paths.vim when the credential paths did not reach
+        # cache.vim.
         DOTFILES_RAINBOW_PALETTE=${rainbowColours} \
+        DOTFILES_SENSITIVE_PATHS=${sensitivePaths} \
         HOME="$PWD/home" TERM=xterm-256color vim -es --cmd 'set t_Co=256' \
           -c 'redir! > messages.txt' -c 'silent messages' -c 'redir END' \
           -c 'if get(g:, "colors_name", "") !=# "gruvbox-material" | cquit | endif' \
           -c 'source ${./tests/rainbow.vim}' \
+          -c 'source ${./tests/sensitive-paths.vim}' \
           -c 'qa!' </dev/null
         test -f messages.txt
         if grep -E '^E[0-9]+' messages.txt; then
@@ -165,9 +173,12 @@ in {
     ];
     script = ''
       export HOME="$PWD/home"
+      # A config directory other than ~/.config: XDG config entries must be
+      # guarded in both places.
+      export XDG_CONFIG_HOME="$HOME/relocated-config"
       export DOTFILES_CACHE_VIM=${./.vim/vimrc_dir/cache.vim}
-      mkdir -p "$HOME/.config/rclone" "$HOME/.config/nix" "$HOME/.config/opencode" \
-        "$HOME/.omp/agent"
+      export DOTFILES_SENSITIVE_PATHS=${sensitivePaths}
+      mkdir -p "$HOME"
       vim -Nu NONE -i NONE -es -S ${./tests/secret-state.vim}
       nvim --headless -u NONE -i NONE -S ${./tests/secret-state.vim}
     '';

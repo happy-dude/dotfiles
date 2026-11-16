@@ -1,15 +1,28 @@
 {
   config,
+  lib,
   pkgs,
   ...
-}: {
+}: let
+  # The tracked .mbsyncrc names the Debian path of the host CA bundle. Every
+  # profile verifies against the Nix bundle instead, so the result does not
+  # depend on where a host keeps its own.
+  hostCaBundle = "/etc/ssl/certs/ca-certificates.crt";
+  mbsyncrc = builtins.readFile ./.mbsyncrc;
+in {
   programs.mbsync = {
     enable = true;
+    # replaceStrings returns its input unchanged when the path is absent,
+    # which would deploy whatever CertificateFile .mbsyncrc names by then.
     extraConfig =
-      builtins.replaceStrings
-      ["/etc/ssl/certs/ca-certificates.crt"]
-      ["${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"]
-      (builtins.readFile ./.mbsyncrc);
+      lib.throwIfNot (lib.hasInfix hostCaBundle mbsyncrc)
+      "mail/.mbsyncrc no longer names ${hostCaBundle}; update hostCaBundle in mail/default.nix to the CertificateFile path it should replace"
+      (
+        builtins.replaceStrings
+        [hostCaBundle]
+        ["${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"]
+        mbsyncrc
+      );
   };
 
   programs.notmuch = {

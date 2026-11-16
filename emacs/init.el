@@ -39,39 +39,91 @@
       )
 
 ;; Backups, auto-saves, and persisted undo history can expose plaintext
-;; credentials. Exclude the known credential paths below from those copies.
-(defvar dotfiles/sensitive-file-regexp
-  (mapconcat
-   #'identity
-   '("/\\.aws/"
-     "/\\.claude/"
-     "/\\.claude\\.json\\'"
-     "/\\.codex/"
-     "/\\.omp/"
-     "/\\.gnupg/"
-     "/\\.kube/"
-     "/\\.password-store/"
-     "/\\.ssh/"
-     "/\\.config/gh/"
-     "/\\.config/op/"
-     "/\\.config/rclone/"
-     "/\\.config/git/local\\.config\\'"
-     "/\\.config/fish/secrets\\.fish\\'"
-     "/\\.config/nix/local\\.conf\\'"
-     "/\\.config/opencode/"
-     "/\\.authinfo\\(?:\\.gpg\\)?\\'"
-     "/\\.netrc\\'")
-   "\\|")
-  "Paths whose contents must never be copied into Emacs state.")
+;; credentials, so the known credential paths get none of those copies.
+;; sensitive-paths.el, generated from lib/sensitive-paths.nix, defines
+;; `dotfiles-sensitive-paths': directory names that are sensitive at any depth
+;; of a path (`any-depth-directories'), and file and directory names relative
+;; to the home directory (`home') and to the XDG config directory
+;; (`xdg-config').
+(load (locate-user-emacs-file "sensitive-paths.el") nil nil t)
+
+(defun dotfiles/xdg-config-roots ()
+  "Return the directories that XDG config entries are looked up under.
+That is ~/.config and, when XDG_CONFIG_HOME is an absolute path, that
+directory as well: a tool that follows the variable writes there, and
+one that ignores it writes to ~/.config."
+  (let ((config-home (getenv "XDG_CONFIG_HOME")))
+    (delete-dups
+     (mapcar #'directory-file-name
+             (cons (expand-file-name "~/.config")
+                   (and config-home
+                        (string-prefix-p "/" config-home)
+                        (list (expand-file-name config-home))))))))
+
+(defun dotfiles/sensitive-local-names (type)
+  "Return the local names of the TYPE entries, `files' or `directories'.
+A secret is sensitive under the name it was opened by and under the file
+it resolves to, so each entry is listed as written and as its truename."
+  (let (names)
+    (pcase-dolist (`(,kind . ,roots)
+                   `((home ,(expand-file-name "~"))
+                     (xdg-config . ,(dotfiles/xdg-config-roots))))
+      (dolist (root roots)
+        (dolist (entry (alist-get type (alist-get kind dotfiles-sensitive-paths)))
+          (let ((name (expand-file-name entry root)))
+            (push name names)
+            (push (file-truename name) names)))))
+    (delete-dups names)))
+
+(defvar dotfiles/sensitive-files (dotfiles/sensitive-local-names 'files)
+  "Local files whose contents must never be copied into Emacs state.")
+
+(defvar dotfiles/sensitive-directories
+  (mapcar #'file-name-as-directory
+          (dotfiles/sensitive-local-names 'directories))
+  "Local directories whose files must never be copied into Emacs state.")
+
+(defun dotfiles/sensitive-regexp (patterns)
+  "Return a regexp matching any of PATTERNS, or nothing when there are none."
+  (if patterns (string-join patterns "\\|") regexp-unmatchable))
+
+;; A credential directory such as .ssh is sensitive wherever it is: in
+;; another home, on a mounted backup, or copied into a project.
+(defvar dotfiles/sensitive-anywhere-regexp
+  (dotfiles/sensitive-regexp
+   (mapcar (lambda (directory) (regexp-quote (concat "/" directory "/")))
+           (alist-get 'any-depth-directories dotfiles-sensitive-paths)))
+  "Matches a name with a credential directory at any depth.")
+
+;; A remote home or config directory is unknown without a connection, so a
+;; remote name is sensitive when any entry appears anywhere in it.
+(defvar dotfiles/sensitive-remote-regexp
+  (let ((patterns (list dotfiles/sensitive-anywhere-regexp)))
+    (pcase-dolist (`(,kind . ,prefix) '((home . "/") (xdg-config . "/.config/")))
+      (let ((entries (alist-get kind dotfiles-sensitive-paths)))
+        (dolist (file (alist-get 'files entries))
+          (push (concat (regexp-quote (concat prefix file)) "\\'") patterns))
+        (dolist (directory (alist-get 'directories entries))
+          (push (regexp-quote (concat prefix directory "/")) patterns))))
+    (dotfiles/sensitive-regexp patterns))
+  "Matches a remote name that holds a credential path.")
+
+(defun dotfiles/sensitive-local-name-p (name)
+  "Return non-nil when the absolute local NAME is a credential path."
+  (or (string-match-p dotfiles/sensitive-anywhere-regexp name)
+      (member name dotfiles/sensitive-files)
+      (seq-some (lambda (directory) (string-prefix-p directory name))
+                dotfiles/sensitive-directories)))
 
 (defun dotfiles/sensitive-file-p (name)
   "Return non-nil when NAME or its local target is a known secret path.
 Remote names are matched as written, without extra network access."
   (and name
-       (or (string-match-p dotfiles/sensitive-file-regexp name)
-           (and (not (file-remote-p name))
-                (string-match-p dotfiles/sensitive-file-regexp
-                                (file-truename name))))))
+       (if (file-remote-p name)
+           (string-match-p dotfiles/sensitive-remote-regexp name)
+         (let ((name (expand-file-name name)))
+           (or (dotfiles/sensitive-local-name-p name)
+               (dotfiles/sensitive-local-name-p (file-truename name)))))))
 
 ;; Suppress numbered/backup copies of secrets.
 (setq backup-enable-predicate
@@ -355,8 +407,24 @@ even when the daemon has no graphical frame to copy a display from."
 (require 'org-roam)
 (require 'org-roam-protocol)
 
+(defun dotfiles/org-roam-protocol-check-ref (info)
+  "Signal a `user-error' unless the ref in INFO is one line of text.
+Org Roam writes the ref into the note's ROAM_REFS property as it
+arrives.  A line break there ends the property line, and Org reads the
+rest of the ref as part of the note: an :END: line closes the drawer and
+a line starting with \"* \" becomes a heading.  Org Roam decodes the
+ref once more than org-protocol already has, so a page whose own URL
+holds \"%0A\" yields a line break too; check what that decoding gives."
+  (when-let* ((ref (plist-get info :ref))
+              ((string-match-p "[[:cntrl:]\177]" (org-link-decode ref))))
+    (user-error
+     "Refusing the org-protocol capture: its ref contains a line break or other control character")))
+
 (defun dotfiles-org-roam-protocol-frame (function info)
-  "Run an Org Roam protocol handler in a dedicated capture frame."
+  "Run an Org Roam protocol handler in a dedicated capture frame.
+Refuse a ref that is not one line of text first, before Org Roam or the
+frame sees it."
+  (dotfiles/org-roam-protocol-check-ref info)
   (set-frame-parameter nil 'name "capture")
   (delete-other-windows)
   (let ((display-buffer-overriding-action '(display-buffer-same-window)))
@@ -415,22 +483,34 @@ even when the daemon has no graphical frame to copy a display from."
          :unnarrowed t)))
 
 (defun dotfiles/org-roam-insert-ref-fields ()
-  "Insert the browser's title and selection into the new capture verbatim.
+  "Insert the browser's title and selection into the new capture as text.
 They come from the page, so they must not pass through Org Roam's ${} or
-Org's % template expansion. Org Roam adds ROAM_REFS itself."
+Org's % template expansion, and Org must not read structure from them.
+The title stays on its #+TITLE line: line breaks become spaces.  The
+selection goes into the template's example block, escaped the way
+`org-edit-special' escapes a block's contents: a line that starts with
+\"*\" or \"#+\" gets a leading comma, so it stays block text and cannot
+end the block or begin a heading or another block.  The commas show in
+the note; Org drops them on export and in \\[org-edit-special].
+Org Roam adds ROAM_REFS itself."
   (when (org-roam-capture--get :new-file)
     (save-excursion
       (save-restriction
         (widen)
         (goto-char (point-min))
         (re-search-forward "^#\\+TITLE:")
-        (insert " " (org-roam-node-title org-roam-capture--node)))))
+        (insert " " (string-trim
+                     (replace-regexp-in-string
+                      "[\n\r]+" " "
+                      (or (org-roam-node-title org-roam-capture--node) "")))))))
   (save-excursion
-    (re-search-backward "^#\\+end_quote$")
-    (insert (or (plist-get org-roam-capture--info :body) "") "\n")))
+    (re-search-backward "^#\\+end_example$")
+    (insert (org-escape-code-in-string
+             (or (plist-get org-roam-capture--info :body) ""))
+            "\n")))
 
 (setq org-roam-capture-ref-templates
-      `(("r" "ref" plain "#+begin_quote\n#+end_quote\n\n%?"
+      `(("r" "ref" plain "#+begin_example\n#+end_example\n\n%?"
          :target (file+head+olp "%<%Y%m%d>-${slug}.org"
                                 ,(dotfiles/org-roam-note-head "") ("Notes"))
          :hook dotfiles/org-roam-insert-ref-fields

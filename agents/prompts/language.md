@@ -304,8 +304,9 @@ never a narration of what you tried.)
   commit, an imperative `subsystem: summary` subject of at most 72 characters,
   and a self-contained body that explains the problem or ownership constraint
   before the implementation. Commit messages are valid Markdown and ordinary
-  prose never exceeds 80 characters; trailers and unbreakable tokens are exempt.
-  Before committing through any agent harness, run
+  prose never exceeds 80 characters; the trailer block, fenced or indented code,
+  and a line that is one unbreakable token are exempt. Before committing through
+  any agent harness, run
   `~/dotfiles/scripts/lint_commit_message.py <message-file>`; the managed global
   `commit-msg` hook enforces the same policy for every commit and preserves any
   initial `Assisted-by:` trailer. See
@@ -356,16 +357,20 @@ round trips or agreement between two implementations can hide matching errors.
   `.home-manager-static` snapshot. Check that live path first because it
   reflects the locked schema inputs and packaged Zhwiki dictionary actually
   deployed on this profile. If the profile has not been activated or a live file
-  is unavailable, fall back to the retained source snapshot at
-  `~/dotfiles/rime/.local/share/fcitx5/rime/`, and say that it may differ from
-  the locked deployment. These are plain TSV dictionaries
-  (`character<TAB>code[<TAB>weight]`, comments start with `#`, data begins after
-  a `---` line): `cangjie5.base.dict.yaml` / `cangjie5.stem.dict.yaml` /
-  `cangjie5.extended.dict.yaml` / `cangjie5_char.dict.yaml` for Cangjie 5;
-  `jyut6ping3.chars.dict.yaml` / `jyut6ping3.words.dict.yaml` /
-  `jyut6ping3.phrase.dict.yaml` / `jyutping.dict.yaml` / `loengfan.dict.yaml`
-  for Jyutping; `luna_pinyin.dict.yaml` / `terra_pinyin.dict.yaml` for Pinyin;
-  plus `zhwiki.dict.yaml` (~1.7M entries auto-generated from Chinese Wikipedia
+  is unavailable, read the same file from its locked input instead and say that
+  you did: `nix flake archive --json --no-update-lock-file`, run in
+  `~/dotfiles`, prints the store path of every `rime_*` input. The checkout
+  keeps no copy of the dictionaries; its `rime/.local/share/fcitx5/rime/` holds
+  only the Lua, the custom patches, and the Colemak schema. These are plain TSV
+  dictionaries (`character<TAB>code[<TAB>weight]`, comments start with `#`, data
+  begins after the `...` line that closes the YAML header):
+  `cangjie5.base.dict.yaml` / `cangjie5.stem.dict.yaml` /
+  `cangjie5.extended.dict.yaml` for Cangjie 5 (`cangjie5_char.dict.yaml` has no
+  rows of its own and imports `cangjie5.base`); `jyut6ping3.chars.dict.yaml` /
+  `jyut6ping3.words.dict.yaml` / `jyut6ping3.phrase.dict.yaml` /
+  `jyutping.dict.yaml` / `loengfan.dict.yaml` for Jyutping;
+  `luna_pinyin.dict.yaml` / `terra_pinyin.dict.yaml` for Pinyin; plus
+  `zhwiki.dict.yaml` (~1.7M entries auto-generated from Chinese Wikipedia
   titles, github.com/felixonmars/fcitx5-pinyin-zhwiki) — by far the biggest
   table and the place to check proper nouns, entity names, technical terms, and
   modern vocabulary the curated dicts won't have. zhwiki caveats: Simplified
@@ -390,8 +395,9 @@ round trips or agreement between two implementations can hide matching errors.
   Pinyin reading via the standard bopomofo mapping, and consult `zhuyin.yaml` if
   a transform is in doubt. A hit in the live deployment is as high-confidence as
   a hit gets because it is the literal data used by the deployed IME; treat a
-  snapshot-only hit as useful but potentially stale corroboration; treat a miss
-  as "not in this particular table," not as proof the code doesn't exist.
+  hit read from a locked input as the data the next activation deploys, which
+  can differ from what the running IME uses; treat a miss as "not in this
+  particular table," not as proof the code doesn't exist.
 - **Script conversion (Simplified ⇄ Traditional):** `opencc` is the standard
   tool — `echo "你好" | opencc -c s2t.json` (Simplified→Traditional), `t2s.json`
   (reverse), `s2hk.json`/`hk2s.json` for Hong Kong Traditional specifically
@@ -536,9 +542,9 @@ the comments
 The Python libraries (`jieba`, `pypinyin`) are in that file's
 `python3.withPackages` entry, and `~/dotfiles/dictionaries/` builds the `sdcv`
 databases. Together they are the authoritative package list for this machine,
-and `~/dotfiles/AGENTS.md` describes the repository they belong to. Read them
-rather than trusting any list reproduced in this prompt: the list here is a
-cache and the configuration is the fact.
+and `~/dotfiles/AGENTS.md`, with the `docs/` documents it lists, describes the
+repository they belong to. Read them rather than trusting any list reproduced in
+this prompt: the list here is a cache and the configuration is the fact.
 
 - **Hosts:** two Home Manager profiles on generic Linux, not NixOS: `schan`
   (personal, Fedora Kinoite, KDE Plasma) and `stachan` (work, managed Ubuntu,
@@ -549,8 +555,9 @@ cache and the configuration is the fact.
   say what the tool would settle and what you can conclude without it, rather
   than silently dropping the check or implying you ran it.
 - **To add a tool or dictionary:** propose the change, and on agreement edit
-  `home.nix`, run `nix fmt .`, then
-  `nix flake check --show-trace --no-update-lock-file`, then
+  `home.nix` for a tool or `dictionaries/package.nix` for an `sdcv` dictionary,
+  run `nix fmt .`, then `nix flake check --show-trace --no-update-lock-file`,
+  then
   `home-manager build --flake .#$(whoami) --no-out-link --no-update-lock-file`.
   Only after that, and only with explicit confirmation, `home-manager switch`,
   which mutates the live profile. Python libraries go through the existing
