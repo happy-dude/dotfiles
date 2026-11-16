@@ -13,19 +13,27 @@
     "Habits (Define)" "Notes")
   "The headings of a new note, which are all a capture may leave in it.")
 
-(defun dotfiles-test/protocol-capture (title body ref)
-  "Capture REF with TITLE and BODY through org-protocol and finalize it."
+(defun dotfiles-test/protocol-open (title body ref)
+  "Hand org-protocol a roam-ref URL for REF with TITLE and BODY."
   (org-protocol-check-filename-for-protocol
    (concat "org-protocol://roam-ref?template=r"
            "&ref=" (url-hexify-string ref)
            "&title=" (url-hexify-string title)
            "&body=" (url-hexify-string body))
-   nil nil)
+   nil nil))
+
+(defun dotfiles-test/capture-buffer ()
+  "Return the buffer of a capture in progress, or nil."
+  (cl-find-if (lambda (buffer)
+                (buffer-local-value 'org-capture-mode buffer))
+              (buffer-list)))
+
+(defun dotfiles-test/protocol-capture (title body ref)
+  "Capture REF with TITLE and BODY through org-protocol and finalize it."
+  (dotfiles-test/protocol-open title body ref)
   ;; The protocol advice names this batch frame "capture"; keep it.
   (cl-letf (((symbol-function 'delete-frame) #'ignore))
-    (with-current-buffer (cl-find-if (lambda (buffer)
-                                       (buffer-local-value 'org-capture-mode buffer))
-                                     (buffer-list))
+    (with-current-buffer (dotfiles-test/capture-buffer)
       (org-capture-finalize)))
   (save-some-buffers t)
   (org-roam-db-sync))
@@ -113,6 +121,42 @@
             (unless (member ref (split-string-and-unquote
                                  (org-entry-get (point-min) "ROAM_REFS")))
               (error "Protocol %s changed the ref" case-name))))))))
+
+;; Org Roam writes the ref onto the ROAM_REFS line as it arrives, so a ref
+;; with a line break could close the property drawer and add headings.  It
+;; is refused before Org Roam sees it: no capture starts and no note is
+;; written.  So is any other control character.
+(let ((notes (directory-files org-roam-directory nil "\\.org\\'")))
+  (dolist (ref (list "https://example.com/a\n* Injected via ref\n:END:\n* Another"
+                     ;; What the bookmarklet sends for a page whose own URL
+                     ;; holds an encoded line break: Org Roam decodes it.
+                     "https://example.com/g%0A:END:%0A* Injected"
+                     "https://example.com/b\r:END:"
+                     "https://example.com/c\td"
+                     "https://example.com/e\0"
+                     "https://example.com/f\177"))
+    (condition-case nil
+        (progn
+          (dotfiles-test/protocol-open "Refused" "selection" ref)
+          (error "Protocol accepted a ref with a control character: %S" ref))
+      (user-error nil))
+    (when (dotfiles-test/capture-buffer)
+      (error "A refused ref left a capture in progress: %S" ref))
+    (unless (equal notes (directory-files org-roam-directory nil "\\.org\\'"))
+      (error "A refused ref wrote a note: %S" ref))))
+
+;; A ref that is one line still captures, encoded query string included.
+;; ROAM_REFS holds it as Org Roam decodes it.
+(let ((ref "https://example.com/search?q=two%20words&next=%2Fa&n=1#frag"))
+  (dotfiles-test/protocol-capture "Query" "selection" ref)
+  (with-temp-buffer
+    (insert (dotfiles-test/note-text "Query"))
+    (org-mode)
+    (unless (member (org-link-decode ref)
+                    (split-string-and-unquote
+                     (org-entry-get (point-min) "ROAM_REFS")))
+      (error "A ref with a query string was not kept: %s"
+             (org-entry-get (point-min) "ROAM_REFS")))))
 
 ;; A second capture of the same ref goes into the existing note, after the
 ;; first quote under its Notes heading.

@@ -407,8 +407,24 @@ even when the daemon has no graphical frame to copy a display from."
 (require 'org-roam)
 (require 'org-roam-protocol)
 
+(defun dotfiles/org-roam-protocol-check-ref (info)
+  "Signal a `user-error' unless the ref in INFO is one line of text.
+Org Roam writes the ref into the note's ROAM_REFS property as it
+arrives.  A line break there ends the property line, and Org reads the
+rest of the ref as part of the note: an :END: line closes the drawer and
+a line starting with \"* \" becomes a heading.  Org Roam decodes the
+ref once more than org-protocol already has, so a page whose own URL
+holds \"%0A\" yields a line break too; check what that decoding gives."
+  (when-let* ((ref (plist-get info :ref))
+              ((string-match-p "[[:cntrl:]\177]" (org-link-decode ref))))
+    (user-error
+     "Refusing the org-protocol capture: its ref contains a line break or other control character")))
+
 (defun dotfiles-org-roam-protocol-frame (function info)
-  "Run an Org Roam protocol handler in a dedicated capture frame."
+  "Run an Org Roam protocol handler in a dedicated capture frame.
+Refuse a ref that is not one line of text first, before Org Roam or the
+frame sees it."
+  (dotfiles/org-roam-protocol-check-ref info)
   (set-frame-parameter nil 'name "capture")
   (delete-other-windows)
   (let ((display-buffer-overriding-action '(display-buffer-same-window)))
