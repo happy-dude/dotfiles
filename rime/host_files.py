@@ -1,4 +1,5 @@
 import re
+import shlex
 import sys
 from pathlib import Path
 
@@ -28,9 +29,20 @@ def validate_materialize(source: Path, target: Path, snapshot: Path) -> None:
         target_changed = not same_content(target, snapshot)
         target_matches_source = same_content(target, source)
         if source_changed and target_changed and not target_matches_source:
+            # The two commands rely on materialize(): a snapshot equal to the
+            # source leaves the target alone, and a missing target is written
+            # from the source.
             fail(
                 "Rime host file changed both declaratively and at runtime: "
-                f"{target}"
+                f"{target}\n"
+                f"The declaration deployed last is recorded in {snapshot}.\n"
+                "To keep the runtime file, record the new declaration as "
+                "deployed:\n"
+                f"  cp {shlex.quote(str(source))} "
+                f"{shlex.quote(str(snapshot))}\n"
+                "To take the new declaration, remove the runtime file:\n"
+                f"  rm {shlex.quote(str(target))}\n"
+                "Then activate again."
             )
 
 

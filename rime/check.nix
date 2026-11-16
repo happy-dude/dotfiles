@@ -161,10 +161,36 @@ in {
 
       printf '%s\n' profile-v2 >"$source_root/profile"
       if HOME="$home" XDG_STATE_HOME="$state" \
-        rime-host-files deploy "$source_root"; then
+        rime-host-files deploy "$source_root" 2>err; then
         echo "accepted conflicting Rime host-file updates" >&2
         exit 1
       fi
+      grep -q 'changed both declaratively and at runtime' err
+      grep -qx "The declaration deployed last is recorded in $state/rime/host-config/profile." err
+
+      # The refusal prints one command for each way out. Recording the new
+      # declaration keeps the runtime file.
+      keep="$(grep -x '  cp .*' err)"
+      test "$keep" = "  cp $source_root/profile $state/rime/host-config/profile"
+      eval "$keep"
+      HOME="$home" XDG_STATE_HOME="$state" \
+        rime-host-files deploy "$source_root"
+      grep -qx runtime-edit "$home/.config/fcitx5/profile"
+
+      # Removing the runtime file takes the declaration.
+      printf '%s\n' profile-v3 >"$source_root/profile"
+      if HOME="$home" XDG_STATE_HOME="$state" \
+        rime-host-files deploy "$source_root" 2>err; then
+        echo "accepted conflicting Rime host-file updates" >&2
+        exit 1
+      fi
+      take="$(grep -x '  rm .*' err)"
+      test "$take" = "  rm $home/.config/fcitx5/profile"
+      eval "$take"
+      HOME="$home" XDG_STATE_HOME="$state" \
+        rime-host-files deploy "$source_root"
+      grep -qx profile-v3 "$home/.config/fcitx5/profile"
+      grep -qx profile-v3 "$state/rime/host-config/profile"
 
       linked_home="$PWD/linked-home"
       mkdir -p "$linked_home/.config"
