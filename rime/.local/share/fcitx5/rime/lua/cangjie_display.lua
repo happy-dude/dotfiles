@@ -1,5 +1,5 @@
 -- cangjie_display.lua
--- Displays Cangjie codes: | NLDW 陳 弓中田木 | AGGU 曉 日土土山 |
+-- Displays Cangjie codes: | NLDW 陳 弓中木田 | AGGU 曉 日土土山 |
 
 -- Cangjie letter → radical
 --  Q  W  E  R  T  Y  U  I  O  P
