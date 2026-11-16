@@ -11,6 +11,29 @@ local cases = {
   { 'liu2', 'liú' },
   { 'nv3', 'nǚ' },
   { 'ma5', 'ma' },
+  { 'ma', 'ma' },
+  -- The mark goes on a or e, on the o of ou, and otherwise on the last vowel.
+  { 'guo2', 'guó' },
+  { 'lve4', 'lüè' },
+  { 'nve4', 'nüè' },
+  { 'kuai4', 'kuài' },
+  { 'xiong2', 'xióng' },
+  { 'dou4', 'dòu' },
+  { 'yue1', 'yuē' },
+  -- ê is spelled eh.
+  { 'eh1', 'ê̄' },
+  { 'eh2', 'ế' },
+  { 'eh5', 'ê' },
+  -- A syllabic nasal has no vowel and carries the mark itself.
+  { 'ng2', 'ńg' },
+  { 'm2', 'ḿ' },
+  { 'n4', 'ǹ' },
+  { 'hng5', 'hng' },
+  { 'hm1', 'hm̄' },
+  -- Nothing to mark: the tone is kept as a digit, not dropped.
+  { 'r2', 'r2' },
+  { 'r5', 'r' },
+  { 'zhong4 yao4', 'zhòng yào' },
 }
 
 for _, case in ipairs(cases) do
