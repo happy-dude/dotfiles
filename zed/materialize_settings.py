@@ -53,7 +53,14 @@ def merge(dynamic: JsonValue, static: JsonValue) -> JsonValue:
     return static
 
 
-def materialize(static_path: Path, target: Path) -> None:
+def materialize(static_path: Path, target: Path, *, check_only: bool) -> None:
+    """Merge the managed settings into target, or refuse and leave it alone.
+
+    With check_only, make every refusal a real run would make and write
+    nothing. Activation calls this before Home Manager switches any link, so
+    a settings file it cannot merge stops the switch while the previous
+    generation is still in place.
+    """
     if target.is_symlink():
         fail(f"Refusing symlinked Zed settings: {target}")
     if target.exists() and not target.is_file():
@@ -81,6 +88,8 @@ def materialize(static_path: Path, target: Path) -> None:
         fail(f"Refusing Zed settings that are not a JSON object: {target}")
     merged = merge(dynamic, static)
     rendered = json.dumps(merged, ensure_ascii=False, indent=2) + "\n"
+    if check_only:
+        return
     # Activation runs this on every switch.
     if (
         rendered == current
@@ -91,11 +100,13 @@ def materialize(static_path: Path, target: Path) -> None:
 
 
 def main(arguments: list[str]) -> None:
-    if len(arguments) != 2:
+    check_only = arguments[:1] == ["--check"]
+    paths = arguments[1:] if check_only else arguments
+    if len(paths) != 2:
         raise SystemExit(
-            "usage: materialize-zed-settings STATIC_SETTINGS TARGET"
+            "usage: materialize-zed-settings [--check] STATIC_SETTINGS TARGET"
         )
-    materialize(Path(arguments[0]), Path(arguments[1]))
+    materialize(Path(paths[0]), Path(paths[1]), check_only=check_only)
 
 
 if __name__ == "__main__":

@@ -21,6 +21,14 @@
         lib.getExe
         home.config.targets.genericLinux.nixGL.packages.${pkgs.stdenv.hostPlatform.system}.${name}
     );
+  # The read-only settings check has to run once link targets are known to be
+  # safe and before anything is written.
+  settingsCheckPrecedesWrites = lib.all (
+    home: let
+      entry = home.config.home.activation.checkZedSettings;
+    in
+      lib.elem "checkLinkTargets" entry.after && lib.elem "writeBoundary" entry.before
+  ) (lib.attrValues homes);
 in {
   # lib/nixgl-environment.nix must name every variable the pinned wrappers
   # export, or a nixGL update could add one that reaches host children. It may
@@ -109,6 +117,10 @@ in {
       zedSettingsMaterializer
     ];
     script = ''
+      ${lib.optionalString (!settingsCheckPrecedesWrites) ''
+        echo "checkZedSettings must run after checkLinkTargets and before writeBoundary" >&2
+        exit 1
+      ''}
       mkdir work
       printf '%s\n' \
         '{' \
@@ -123,6 +135,29 @@ in {
         '  runtime_only: "preserved",' \
         '}' \
         >work/settings.json
+
+      # The check mode, which activation runs before any link is switched,
+      # accepts what a real run accepts and writes nothing: a file that needs
+      # rewriting keeps its bytes, and a missing one is not created.
+      cp work/settings.json work/settings.before
+      identity=$(stat -c '%i %y' work/settings.json)
+      materialize-zed-settings --check work/static.json work/settings.json
+      cmp work/settings.before work/settings.json
+      [[ $identity == "$(stat -c '%i %y' work/settings.json)" ]]
+      materialize-zed-settings --check work/static.json work/absent/settings.json
+      test ! -e work/absent
+
+      # refuses DESCRIPTION TARGET: the check mode and a real run both
+      # reject TARGET.
+      refuses() {
+        local mode
+        for mode in --check ""; do
+          if materialize-zed-settings $mode work/static.json "$2"; then
+            echo "accepted $1''${mode:+ in check mode}" >&2
+            exit 1
+          fi
+        done
+      }
 
       materialize-zed-settings work/static.json work/settings.json
       python3 - work/settings.json <<'PYTHON'
@@ -155,43 +190,28 @@ in {
       # A runtime file that is not a JSON object must be refused rather
       # than silently replaced by the declared keys.
       printf '[]\n' >work/array.json
-      if materialize-zed-settings work/static.json work/array.json; then
-        echo "replaced a non-object runtime settings file" >&2
-        exit 1
-      fi
+      refuses "a non-object runtime settings file" work/array.json
       test "$(cat work/array.json)" = '[]'
 
       # Failed parsing must not discard runtime-only settings.
       printf '{runtime_only: "unfinished"\n' >work/invalid.json
       cp work/invalid.json work/invalid.before
-      if materialize-zed-settings work/static.json work/invalid.json; then
-        echo "replaced malformed runtime settings" >&2
-        exit 1
-      fi
+      refuses "malformed runtime settings" work/invalid.json
       cmp work/invalid.before work/invalid.json
 
       # Neither a valid nor a dangling link grants ownership of its target.
       cp work/settings.json work/external.json
       cp work/external.json work/external.before
       ln -s "$PWD/work/external.json" work/linked.json
-      if materialize-zed-settings work/static.json work/linked.json; then
-        echo "accepted symlinked runtime settings" >&2
-        exit 1
-      fi
+      refuses "symlinked runtime settings" work/linked.json
       test -L work/linked.json
       cmp work/external.before work/external.json
       ln -s "$PWD/work/missing.json" work/dangling.json
-      if materialize-zed-settings work/static.json work/dangling.json; then
-        echo "accepted dangling runtime settings link" >&2
-        exit 1
-      fi
+      refuses "a dangling runtime settings link" work/dangling.json
       test -L work/dangling.json
       test ! -e work/missing.json
       ln -s "$PWD/work" work/linked-dir
-      if materialize-zed-settings work/static.json work/linked-dir/settings.json; then
-        echo "accepted a symlinked Zed settings directory" >&2
-        exit 1
-      fi
+      refuses "a symlinked Zed settings directory" work/linked-dir/settings.json
     '';
   };
 }
