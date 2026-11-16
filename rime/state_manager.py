@@ -164,12 +164,16 @@ def refresh_static(static_source: Path, static_dir: Path) -> None:
             remove_staging(temporary)
 
 
-def deploy(
+def validate(
     static_source: Path,
     stamp_source: Path,
-    busctl: str,
     relatives: list[str],
 ) -> None:
+    """Raise every refusal deploy() can raise, without writing anything.
+
+    Activation runs this before Home Manager's write boundary, so a refusal
+    stops it while the previous generation is still intact.
+    """
     if not static_source.is_dir():
         fail(f"Rime static source is not a directory: {static_source}")
     if not stamp_source.is_file():
@@ -183,10 +187,22 @@ def deploy(
     validate_regular(stamp, "source stamp")
 
     for relative in relatives:
+        source = static_source / relative
+        if not source.exists():
+            fail(f"Rime static source does not exist: {source}")
         validate_schema_target(
             data_dir / relative, static_dir / relative, static_dir, data_dir
         )
 
+
+def deploy(
+    static_source: Path,
+    stamp_source: Path,
+    busctl: str,
+    relatives: list[str],
+) -> None:
+    validate(static_source, stamp_source, relatives)
+    data_dir, static_dir, state_dir, stamp = state_paths()
     changed = (
         not static_dir.is_dir()
         or not stamp.exists()
@@ -250,8 +266,12 @@ def main(arguments: list[str]) -> None:
             arguments[4:],
         )
         return
+    if len(arguments) >= 4 and arguments[0] == "validate":
+        validate(Path(arguments[1]), Path(arguments[2]), arguments[3:])
+        return
     raise SystemExit(
-        "usage: rime-state-manager deploy STATIC STAMP BUSCTL RELATIVE..."
+        "usage: rime-state-manager deploy STATIC STAMP BUSCTL RELATIVE...\n"
+        "       rime-state-manager validate STATIC STAMP RELATIVE..."
     )
 
 

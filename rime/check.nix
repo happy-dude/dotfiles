@@ -7,6 +7,34 @@
   rimeStateManager = import ./state-manager.nix {inherit pkgs;};
   catppuccinThemeDir = "${pkgs.catppuccin-fcitx5}/share/fcitx5/themes";
   catppuccinThemeNames = import ./themes.nix {inherit lib;};
+
+  # Shell for the validation-mode tests. `listing` prints one line per path
+  # that changes when the path is created, removed, replaced, or rewritten.
+  # `refused_alike` expects `validate` and `deploy`, which each check defines
+  # for its helper, to refuse with the same message and to leave the paths
+  # named in `watched` as they were.
+  validationShell = ''
+    listing() {
+      { find "$@" -printf '%p %y %m %i %s %T@ %l\n' 2>/dev/null || true; } |
+        sort
+    }
+    refused_alike() {
+      listing "''${watched[@]}" >before
+      if validate "$@" 2>validate-err; then
+        echo "validation accepted what it must refuse: $*" >&2
+        exit 1
+      fi
+      listing "''${watched[@]}" >after
+      diff before after
+      if deploy "$@" 2>err; then
+        echo "deployment accepted what it must refuse: $*" >&2
+        exit 1
+      fi
+      listing "''${watched[@]}" >after
+      diff before after
+      diff validate-err err
+    }
+  '';
 in {
   # Check the directory names in themes.nix against the installed package.
   rime-theme-names = mkCheck {
@@ -28,9 +56,25 @@ in {
     name = "rime-state-manager-test";
     tools = [rimeStateManager];
     script = ''
+      ${validationShell}
+      # Activation validates before Home Manager switches links and deploys
+      # after, so a refusal has to come from validation and write nothing.
+      validate() {
+        HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
+          rime-state-manager validate "$PWD/source" "$PWD/stamp" "$@"
+      }
+      deploy() {
+        HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
+          rime-state-manager deploy \
+            "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true "$@"
+      }
+      watched=(home state)
+
       mkdir -p home source/subdir state
       printf '%s\n' stamp-v1 >stamp
       printf '%s\n' schema-v1 >source/subdir/schema.yaml
+      validate subdir/schema.yaml
+      test -z "$(find home state -mindepth 1)"
       HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
         rime-state-manager deploy \
           "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
@@ -42,6 +86,11 @@ in {
       printf '%s\n' learned >home/.local/share/fcitx5/rime/user.yaml
       printf '%s\n' stamp-v2 >stamp
       printf '%s\n' schema-v2 >source/subdir/schema.yaml
+      # Validation passes with a refresh pending and leaves it pending.
+      listing home state >before
+      validate subdir/schema.yaml
+      listing home state >after
+      diff before after
       HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
         rime-state-manager deploy \
           "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
@@ -88,39 +137,30 @@ in {
       grep -qx schema-v3 home/.local/share/fcitx5/rime/subdir/schema.yaml
       grep -qx learned home/.local/share/fcitx5/rime/user.yaml
 
+      # A file the static source lacks is refused before the refresh, not
+      # after it.
+      printf '%s\n' stamp-v4 >stamp
+      refused_alike subdir/schema.yaml subdir/missing.yaml
+      grep -q 'Rime static source does not exist' err
+
+      # An unmanaged regular file where a managed link belongs.
       rm home/.local/share/fcitx5/rime/subdir/schema.yaml
       printf '%s\n' unmanaged \
         >home/.local/share/fcitx5/rime/subdir/schema.yaml
-      if HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
-        rime-state-manager deploy \
-          "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
-          subdir/schema.yaml; then
-        echo "accepted an unmanaged Rime schema target" >&2
-        exit 1
-      fi
+      refused_alike subdir/schema.yaml
+      grep -q 'Refusing to replace unmanaged Rime path' err
 
+      # An unmanaged file where a managed directory belongs.
       rm -r home/.local/share/fcitx5/rime/subdir
       printf '%s\n' unmanaged >home/.local/share/fcitx5/rime/subdir
-      printf '%s\n' stamp-v4 >stamp
-      if HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
-        rime-state-manager deploy \
-          "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
-          subdir/schema.yaml 2>err; then
-        echo "accepted an unmanaged Rime parent path" >&2
-        exit 1
-      fi
+      refused_alike subdir/schema.yaml
       grep -q 'Refusing unmanaged Rime path' err
       grep -qx stamp-v3 state/rime/home-manager-source-stamp
 
+      # A symlinked data directory.
       rm -rf home/.local/share/fcitx5/rime
       ln -s "$PWD/source" home/.local/share/fcitx5/rime
-      if HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
-        rime-state-manager deploy \
-          "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
-          subdir/schema.yaml 2>err; then
-        echo "accepted a symlinked Rime data directory" >&2
-        exit 1
-      fi
+      refused_alike subdir/schema.yaml
       grep -q 'Refusing malformed Rime path' err
     '';
   };
@@ -138,6 +178,20 @@ in {
       printf '%s\n' '[HiddenNotifications]' 0=wayland-diagnose-gnome \
         >"$source_root/conf/notifications.conf"
 
+      ${validationShell}
+      # Activation validates before Home Manager switches links and deploys
+      # after, so a refusal has to come from validation and write nothing.
+      # Both take the home and state directories to act on.
+      validate() {
+        HOME="$1" XDG_STATE_HOME="$2" rime-host-files validate "$source_root"
+      }
+      deploy() {
+        HOME="$1" XDG_STATE_HOME="$2" rime-host-files deploy "$source_root"
+      }
+
+      validate "$home" "$state"
+      test ! -e "$home"
+      test ! -e "$state"
       HOME="$home" XDG_STATE_HOME="$state" \
         rime-host-files deploy "$source_root"
       test -f "$home/.config/fcitx5/profile"
@@ -181,11 +235,8 @@ in {
       grep -qx classic-v2 "$home/.config/fcitx5/conf/classicui.conf"
 
       printf '%s\n' profile-v2 >"$source_root/profile"
-      if HOME="$home" XDG_STATE_HOME="$state" \
-        rime-host-files deploy "$source_root" 2>err; then
-        echo "accepted conflicting Rime host-file updates" >&2
-        exit 1
-      fi
+      watched=("$home" "$state")
+      refused_alike "$home" "$state"
       grep -q 'changed both declaratively and at runtime' err
       grep -qx "The declaration deployed last is recorded in $state/rime/host-config/profile." err
 
@@ -200,11 +251,7 @@ in {
 
       # Removing the runtime file takes the declaration.
       printf '%s\n' profile-v3 >"$source_root/profile"
-      if HOME="$home" XDG_STATE_HOME="$state" \
-        rime-host-files deploy "$source_root" 2>err; then
-        echo "accepted conflicting Rime host-file updates" >&2
-        exit 1
-      fi
+      refused_alike "$home" "$state"
       take="$(grep -x '  rm .*' err)"
       test "$take" = "  rm $home/.config/fcitx5/profile"
       eval "$take"
@@ -216,11 +263,9 @@ in {
       linked_home="$PWD/linked-home"
       mkdir -p "$linked_home/.config"
       ln -s "$source_root" "$linked_home/.config/fcitx5"
-      if HOME="$linked_home" XDG_STATE_HOME="$PWD/linked-state" \
-        rime-host-files deploy "$source_root"; then
-        echo "deployed through a linked Fcitx config directory" >&2
-        exit 1
-      fi
+      watched=("$linked_home" "$PWD/linked-state" "$source_root")
+      refused_alike "$linked_home" "$PWD/linked-state"
+      grep -q 'Refusing to replace unmanaged Rime link' err
       test ! -e "$PWD/linked-state"
 
       # Fcitx rewrites notifications.conf whenever a notification is hidden,
@@ -235,6 +280,11 @@ in {
       printf '%s\n' Top=level '[HiddenNotifications]' 0=hidden-by-fcitx "" \
         '[Other]' Key=value >"$notifications"
       printf '%s\n' stale >"$fresh_state/rime/host-config/notifications.conf"
+      # Validation passes with all of that pending and leaves it pending.
+      listing "$fresh_home" "$fresh_state" >before
+      validate "$fresh_home" "$fresh_state"
+      listing "$fresh_home" "$fresh_state" >after
+      diff before after
       HOME="$fresh_home" XDG_STATE_HOME="$fresh_state" \
         rime-host-files deploy "$source_root"
       printf '%s\n' Top=level '[HiddenNotifications]' 0=hidden-by-fcitx \
@@ -285,11 +335,9 @@ in {
       other_home="$PWD/other-home"
       mkdir -p "$other_home/.config/fcitx5"
       printf '%s\n' local-profile >"$other_home/.config/fcitx5/profile"
-      if HOME="$other_home" XDG_STATE_HOME="$PWD/other-state" \
-        rime-host-files deploy "$source_root"; then
-        echo "adopted an unmanaged Fcitx profile" >&2
-        exit 1
-      fi
+      watched=("$other_home" "$PWD/other-state")
+      refused_alike "$other_home" "$PWD/other-state"
+      grep -q 'Refusing unmanaged Rime host file' err
     '';
   };
   rime-failure-recovery = mkCheck {

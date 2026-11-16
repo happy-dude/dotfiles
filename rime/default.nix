@@ -184,6 +184,21 @@ in
     in rime/default.nix.''; {
     xdg.dataFile = themeFiles;
 
+    # Both helpers refuse unmanaged or conflicting files, and their deploy
+    # entries run after linkGeneration, where a refusal leaves the new
+    # generation's links in place and the remaining entries unrun. Raise the
+    # same refusals here, before anything is written, so a refusal leaves the
+    # previous generation intact. Validation only reads, so it also runs in a
+    # dry run.
+    home.activation.rimeValidate = lib.hm.dag.entryBetween ["writeBoundary"] ["checkLinkTargets"] ''
+      ${lib.getExe rimeHostFiles} validate \
+        ${lib.escapeShellArg fcitxConfig}
+      ${lib.getExe rimeStateManager} validate \
+        ${lib.escapeShellArg rimeStaticData} \
+        ${lib.escapeShellArg rimeDataStamp} \
+        ${rimeRelativeArguments}
+    '';
+
     home.activation.rimeHostFiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
       $DRY_RUN_CMD ${lib.getExe rimeHostFiles} deploy \
         ${lib.escapeShellArg fcitxConfig}

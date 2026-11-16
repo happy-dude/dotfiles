@@ -2,6 +2,7 @@ import re
 import shlex
 import sys
 from pathlib import Path
+from typing import NamedTuple
 
 import dotfiles_files
 from dotfiles_files import copy_file, fail, same_content, write_text
@@ -163,7 +164,22 @@ def plan_hidden_notifications(source: Path, target: Path) -> str | None:
     return None if merged == runtime else merged
 
 
-def deploy(source_dir: Path) -> None:
+class Plan(NamedTuple):
+    """What deploy() writes once every refusal has been ruled out."""
+
+    files: tuple[tuple[Path, Path, Path], ...]
+    """(source, target, snapshot), replaced behind the snapshot guard."""
+    notifications: Path
+    merged: str | None
+    """The text notifications should receive, or None when it is current."""
+
+
+def validate(source_dir: Path) -> Plan:
+    """Raise every refusal deploy() can raise, without writing anything.
+
+    Activation runs this before Home Manager's write boundary, so a refusal
+    stops it while the previous generation is still intact.
+    """
     config_dir = dotfiles_files.config_home() / "fcitx5"
     state_root = dotfiles_files.state_home() / "rime/host-config"
     # A linked directory would carry managed writes to wherever it points.
@@ -177,7 +193,6 @@ def deploy(source_dir: Path) -> None:
             fail(f"Refusing to replace unmanaged Rime link: {directory}")
         if directory.exists() and not directory.is_dir():
             fail(f"Refusing non-directory Rime path: {directory}")
-    # (source, target, snapshot): replaced as a whole behind a snapshot guard.
     files = (
         (
             source_dir / "profile",
@@ -203,14 +218,20 @@ def deploy(source_dir: Path) -> None:
     merged = plan_hidden_notifications(
         source_dir / "conf/notifications.conf", notifications
     )
+    return Plan(files, notifications, merged)
 
-    for source, target, snapshot in files:
+
+def deploy(source_dir: Path) -> None:
+    plan = validate(source_dir)
+    for source, target, snapshot in plan.files:
         materialize(source, target, snapshot)
-    if merged is not None:
-        write_text(notifications, merged, 0o644)
+    if plan.merged is not None:
+        write_text(plan.notifications, plan.merged, 0o644)
     # notifications.conf has no snapshot. Remove one left in the state
     # directory, which nothing reads.
-    obsolete = state_root / "notifications.conf"
+    obsolete = dotfiles_files.state_home() / (
+        "rime/host-config/notifications.conf"
+    )
     if obsolete.is_symlink() or obsolete.is_file():
         obsolete.unlink()
 
@@ -219,7 +240,12 @@ def main(arguments: list[str]) -> None:
     if len(arguments) == 2 and arguments[0] == "deploy":
         deploy(Path(arguments[1]))
         return
-    raise SystemExit("usage: rime-host-files deploy FCITX_CONFIG_DIR")
+    if len(arguments) == 2 and arguments[0] == "validate":
+        validate(Path(arguments[1]))
+        return
+    raise SystemExit(
+        "usage: rime-host-files (deploy | validate) FCITX_CONFIG_DIR"
+    )
 
 
 if __name__ == "__main__":
