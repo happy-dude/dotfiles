@@ -49,6 +49,9 @@ git -C "$worktree" commit --quiet --amend --no-edit --reset-author
 printf '#!%s\n' "$(command -v bash)" >"$fake_bin/nix"
 cat >>"$fake_bin/nix" <<'EOF'
 set -euo pipefail
+if [[ ${PORTABLE_TEST_NIX_LOG:-} ]]; then
+  printf '%s\n' "$1" >>"$PORTABLE_TEST_NIX_LOG"
+fi
 case $1 in
 fmt)
   if [[ ${PORTABLE_TEST_FMT_CREATES:-} ]]; then
@@ -206,6 +209,32 @@ fi
 [[ $(sha256sum "$output"/*) == "$before" ]] ||
   fail 'malformed forbidden commit message replaced published artifacts'
 unset PORTABLE_FORBIDDEN_PATTERN
+
+# git am would drop everything from the bare --- line on, the trailer
+# included. Export refuses the message before the expensive validation and
+# names the commit and line without echoing the line.
+git -C "$worktree" commit --quiet --amend --cleanup=verbatim -F - <<'EOF'
+tests: carry a thematic break in the body
+
+First paragraph.
+
+---
+
+Assisted-by: example-model:high harness
+EOF
+export PORTABLE_TEST_NIX_LOG="$TMPDIR_TEST/nix.log"
+: >"$PORTABLE_TEST_NIX_LOG"
+if run_portable export probe "$output"; then
+  fail 'export published a commit message git am would truncate'
+fi
+grep -Fq "commit $(git -C "$worktree" rev-parse --short HEAD): message line 5 " \
+  "$TMPDIR_TEST/export.log" ||
+  fail 'the truncating message line was not named by commit and line'
+[[ ! -s $PORTABLE_TEST_NIX_LOG ]] ||
+  fail 'export ran the Nix validation before refusing a truncating message'
+[[ $(sha256sum "$output"/*) == "$before" ]] ||
+  fail 'truncating commit message replaced published artifacts'
+unset PORTABLE_TEST_NIX_LOG
 git -C "$worktree" commit --quiet --amend -m 'tests: seed portable change'
 
 # A machine-local forbidden-pattern file gates export without requiring

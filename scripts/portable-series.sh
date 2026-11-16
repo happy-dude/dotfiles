@@ -379,6 +379,44 @@ lint_commits() {
   done <<<"$commits"
 }
 
+# Refuse a commit message git am cannot carry. git mailinfo ends the message
+# at the first body line it reads as the start of a patch (a line of only
+# "---", "--- <name>", "diff -", or "Index: ") and drops the rest, trailers
+# included. The subject travels in a mail header, so line 1 is exempt. Only
+# the commit and line number are reported: this runs before the linter, and
+# the line itself is not needed to find it.
+reject_patch_break_lines() {
+  local worktree=$1
+  local base=$2
+  local patch_break='^(diff -|Index: |--- [^[:space:]]|---[[:space:]]*$)'
+  local commits
+  local commit
+  local message
+  local line
+  local line_number
+  local found=false
+
+  commits=$(git -C "$worktree" rev-list --reverse "$base..HEAD") || return 1
+  while IFS= read -r commit; do
+    [[ -n $commit ]] || continue
+    message=$(git -C "$worktree" show -s --format=%B "$commit") || return 1
+    line_number=0
+    while IFS= read -r line; do
+      line_number=$((line_number + 1))
+      if ((line_number > 1)) && [[ $line =~ $patch_break ]]; then
+        printf 'error: commit %s: message line %d would end the message under git am\n' \
+          "$(git -C "$worktree" rev-parse --short "$commit")" \
+          "$line_number" >&2
+        found=true
+      fi
+    done <<<"$message"
+  done <<<"$commits"
+  if [[ $found == true ]]; then
+    die "portable history contains a commit message git am would truncate"
+    return 1
+  fi
+}
+
 export_series() (
   local name=$1
   local output_directory=${2:-"$HOME/Downloads"}
@@ -484,6 +522,7 @@ export_series() (
   # which would echo forbidden text the scan reports by line number only.
   scan_series "$forbidden_pattern" "$worktree" "$base" "$staging_directory" ||
     return 1
+  reject_patch_break_lines "$worktree" "$base" || return 1
   lint_commits "$worktree" "$base" "$staging_directory/messages" || return 1
   (
     cd -- "$worktree" || exit 1

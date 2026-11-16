@@ -486,6 +486,46 @@ case $lint_output in
   ;;
 esac
 
+# git am ends a message at the first body line it reads as the start of a
+# patch. Each such line is refused by commit and line number, without being
+# echoed; the near misses are ordinary text to git am and stay accepted.
+git -C "$repo" switch -qc patch-breaks "$base"
+git -C "$repo" commit -q --allow-empty --cleanup=verbatim -F - <<'EOF'
+tests: body lines git am leaves alone
+
+----
+ ---
+---text
+---  two spaces
+diff of two files
+ diff -u indented
+Index:unspaced
+index: lower case
+EOF
+reject_patch_break_lines "$repo" "$base"
+line_number=3
+for break_line in '---' '---  ' '--- a/hidden-name' 'diff -u hidden-name b' \
+  'diff --git a/hidden-name b/hidden-name' 'Index: hidden-name'; do
+  git -C "$repo" commit -q --amend --allow-empty --cleanup=verbatim \
+    -m "tests: a body line git am reads as a patch
+
+$break_line"
+  if reject_patch_break_lines "$repo" "$base" 2>"$start_error"; then
+    printf 'accepted a message body line that ends the message: %s\n' \
+      "$break_line" >&2
+    exit 1
+  fi
+  grep -Fq "commit $(git -C "$repo" rev-parse --short HEAD): message line $line_number " \
+    "$start_error"
+  if grep -q 'hidden-name' "$start_error"; then
+    printf 'echoed the refused message line: %s\n' "$break_line" >&2
+    exit 1
+  fi
+done
+# The subject travels in a mail header, where none of this applies.
+git -C "$repo" commit -q --amend --allow-empty -m 'diff -u: a subject line'
+reject_patch_break_lines "$repo" "$base"
+
 # Every attribution trailer is dropped before scanning, not just the last.
 printf '%s\n' \
   'tests: carry two attributions' '' 'Body.' '' \
