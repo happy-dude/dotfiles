@@ -408,14 +408,17 @@ $(git -C "$trip_origin" rev-parse main) == "$trip_base" ]] ||
 [[ $(paste -sd, - <"$nix_log") == fmt,flake,run ]] ||
   fail "round trip: unexpected validation steps: $(paste -sd, - <"$nix_log")"
 
-# The remaining cases stop on the temporary branch, before validation and
-# before main moves.
+# The remaining cases stop on the temporary branch: before validation, before
+# main moves, and with the commands that discard what was applied.
 assert_stops_before_main() {
   local description=$1
   local repo=$2
   local manifest=$3
   local expected=$4
   local temporary_branch
+  local remaining
+  local line
+  local -a recovery=()
 
   run_trip_apply "$manifest" "$repo"
   ((trip_status != 0)) || fail "$description: expected a non-zero exit"
@@ -429,8 +432,37 @@ assert_stops_before_main() {
   [[ $(git -C "$repo" branch --show-current) == "$temporary_branch" ]] ||
     fail "$description: not stopped on the temporary branch"
 
-  git -C "$repo" switch -q main
-  git -C "$repo" branch -q -D "$temporary_branch"
+  # git switch refuses while git am is in progress and branch -D refuses the
+  # checked-out branch, so the order is part of the contract.
+  if [[ -d $repo/.git/rebase-apply ]]; then
+    printf -v line '  git -C %q am --abort' "$repo"
+    recovery+=("$line")
+  elif [[ $trip_log == *"am --abort"* ]]; then
+    fail "$description: offered am --abort with no git am in progress"
+  fi
+  printf -v line '  git -C %q switch main' "$repo"
+  recovery+=("$line")
+  printf -v line '  git -C %q branch -D %q' "$repo" "$temporary_branch"
+  recovery+=("$line" 'Or keep the temporary branch')
+  remaining=$trip_log
+  for line in "${recovery[@]}"; do
+    [[ $remaining == *"$line"* ]] ||
+      fail "$description: recovery output lacks, or misorders: $line"
+    remaining=${remaining#*"$line"}
+  done
+
+  # Run the commands exactly as printed.
+  while IFS= read -r line; do
+    [[ $line == '  git -C '* ]] || continue
+    eval "$line" >/dev/null 2>&1 ||
+      fail "$description: printed recovery command failed: $line"
+  done <<<"$trip_log"
+  [[ $(git -C "$repo" branch --show-current) == main &&
+  $(git -C "$repo" rev-parse main) == "$trip_base" &&
+  ! -d $repo/.git/rebase-apply &&
+  -z $(git -C "$repo" status --porcelain=v1 --untracked-files=all) &&
+  -z $(git -C "$repo" for-each-ref 'refs/heads/apply-*') ]] ||
+    fail "$description: the printed commands did not restore a clean main"
 }
 
 # A manifest naming another tree, or other messages, than the series lands.
@@ -446,5 +478,17 @@ sed "s/^messages=.*/messages=$(printf '%064d' 1)/" \
   "$trip_manifest" >"$altered/dotfiles-trip.manifest"
 assert_stops_before_main 'wrong message digest' "$destination" \
   "$altered/dotfiles-trip.manifest" 'applied commit messages do not match'
+
+# A patch that stops git am partway leaves it in progress on the temporary
+# branch, after the first commit was applied.
+sed 's/^ first line$/ another line/' "$trip_output/dotfiles-trip.patch" \
+  >"$altered/dotfiles-trip.patch"
+sed "s/^sha256=.*/sha256=$(
+  sha256sum "$altered/dotfiles-trip.patch" | cut -d ' ' -f 1
+)/" "$trip_manifest" >"$altered/dotfiles-trip.manifest"
+assert_stops_before_main 'conflicting patch' "$destination" \
+  "$altered/dotfiles-trip.manifest" 'Application stopped before main'
+[[ $trip_log == *"am --abort"* ]] ||
+  fail 'conflicting patch: git am was not left in progress'
 
 printf 'apply-portable-series: all cases passed\n'

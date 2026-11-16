@@ -146,11 +146,17 @@ cleanup() {
   printf '%s\n' \
     "Application stopped before main was updated." \
     "Temporary branch: $temporary_branch" \
-    "Active branch: ${active_branch:-unknown}" >&2
+    "Active branch: ${active_branch:-unknown}" \
+    "Discard the partial application with:" >&2
+  # In this order: switch refuses while git am is in progress, and branch -D
+  # refuses the checked-out branch.
   if [[ -n $am_directory && -d $am_directory ]]; then
-    printf 'A git am operation is active; abort it with: git -C %q am --abort\n' \
-      "$repo" >&2
+    printf '  git -C %q am --abort\n' "$repo" >&2
   fi
+  printf '  git -C %q switch main\n' "$repo" >&2
+  printf '  git -C %q branch -D %q\n' "$repo" "$temporary_branch" >&2
+  printf '%s\n' \
+    "Or keep the temporary branch and inspect what was applied." >&2
 }
 trap cleanup EXIT
 
