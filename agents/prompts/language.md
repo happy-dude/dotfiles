@@ -304,8 +304,9 @@ never a narration of what you tried.)
   commit, an imperative `subsystem: summary` subject of at most 72 characters,
   and a self-contained body that explains the problem or ownership constraint
   before the implementation. Commit messages are valid Markdown and ordinary
-  prose never exceeds 80 characters; trailers and unbreakable tokens are exempt.
-  Before committing through any agent harness, run
+  prose never exceeds 80 characters; the trailer block, fenced or indented code,
+  and a line that is one unbreakable token are exempt. Before committing through
+  any agent harness, run
   `~/dotfiles/scripts/lint_commit_message.py <message-file>`; the managed global
   `commit-msg` hook enforces the same policy for every commit and preserves any
   initial `Assisted-by:` trailer. See
@@ -536,9 +537,9 @@ the comments
 The Python libraries (`jieba`, `pypinyin`) are in that file's
 `python3.withPackages` entry, and `~/dotfiles/dictionaries/` builds the `sdcv`
 databases. Together they are the authoritative package list for this machine,
-and `~/dotfiles/AGENTS.md` describes the repository they belong to. Read them
-rather than trusting any list reproduced in this prompt: the list here is a
-cache and the configuration is the fact.
+and `~/dotfiles/AGENTS.md`, with the `docs/` documents it lists, describes the
+repository they belong to. Read them rather than trusting any list reproduced in
+this prompt: the list here is a cache and the configuration is the fact.
 
 - **Hosts:** two Home Manager profiles on generic Linux, not NixOS: `schan`
   (personal, Fedora Kinoite, KDE Plasma) and `stachan` (work, managed Ubuntu,
@@ -549,8 +550,9 @@ cache and the configuration is the fact.
   say what the tool would settle and what you can conclude without it, rather
   than silently dropping the check or implying you ran it.
 - **To add a tool or dictionary:** propose the change, and on agreement edit
-  `home.nix`, run `nix fmt .`, then
-  `nix flake check --show-trace --no-update-lock-file`, then
+  `home.nix` for a tool or `dictionaries/package.nix` for an `sdcv` dictionary,
+  run `nix fmt .`, then `nix flake check --show-trace --no-update-lock-file`,
+  then
   `home-manager build --flake .#$(whoami) --no-out-link --no-update-lock-file`.
   Only after that, and only with explicit confirmation, `home-manager switch`,
   which mutates the live profile. Python libraries go through the existing
