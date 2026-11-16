@@ -383,7 +383,7 @@ the document that covers it:
   `config.lib.nixGL.wrap pkgs.<app>` — see `mesa-demos`, `solaar`, and
   `programs.ghostty.package`. Keep wrapper graphics variables inside the wrapped
   process; a wrapped application that starts a general-purpose shell must remove
-  them from the shell environment.
+  them from the shell environment. `lib/nixgl-environment.nix` names them.
 - The wrapped Ghostty package publishes its upstream desktop entry and user
   service through the native Home Manager profile. Do not add a duplicate
   desktop entry, force software rendering, or reintroduce the retired

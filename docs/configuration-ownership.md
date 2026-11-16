@@ -80,15 +80,19 @@ and installs StyLua's config under `~/.config/stylua`.
   for managed keys; `zed/settings.nix` only adapts the configured terminal shell
   (preserving its `fish` basename so Zed still recognizes the shell dialect) and
   declared ACP servers (such as OpenCode) through `zed/host-command.nix`, which
-  strips the wrapper's GL and Vulkan variables from those child environments.
-  LSPs, hooks, extension binaries, and runtime-added ACP servers are not routed
-  through this cleanup. Do **not** add another settings representation. One
-  local materializer atomically merges declared keys into the native writable
-  settings file at `${config.xdg.configHome}/zed/settings.json` (normally
+  strips the wrapper's GL and Vulkan variables, named in
+  `lib/nixgl-environment.nix`, from those child environments. LSPs, hooks,
+  extension binaries, and runtime-added ACP servers are not routed through this
+  cleanup. Do **not** add another settings representation. One local
+  materializer atomically merges declared keys into the native writable settings
+  file at `${config.xdg.configHome}/zed/settings.json` (normally
   `~/.config/zed/settings.json`) on both profiles, preserving runtime-only keys
   and refusing malformed files or symlinks. It writes strict JSON, so comments
   and trailing commas do not survive. Activation runs through
   `zedSettingsActivation` and honors Home Manager's dry-run command.
+  `checkZedSettings` runs the same materializer with `--check` before Home
+  Manager switches any link, so a settings file that cannot be merged stops the
+  switch while the previous generation is intact.
 - **`agents/`** holds canonical `kernel`, `language`, and `nix-maintainer`
   prompts. Nix reads their Markdown bodies and frontmatter to generate
   corresponding Codex, OpenCode, and oh-my-pi agents without checked-in
@@ -98,20 +102,23 @@ and installs StyLua's config under `~/.config/stylua`.
   `~/.local/share/codex/generated-profiles` and runs a Nix-built materializer on
   every activation to create missing writable mode-0600 profiles and refresh
   their generator-owned keys; it leaves a profile that is already current
-  untouched. Generated profiles carry Codex's official `config.toml` schema
-  directive and preserve readable multiline instructions. Runtime-owned project
-  trust, TUI state, and other profile keys survive that merge. The independently
-  maintained Kagi Markdown prompts (`agents/prompts/kagi-*.md`) carry a
-  different, fixed instruction budget, so they are kept verbatim in the repo —
-  whitespace preserved and measured by the `kagi-prompt-budget` check — rather
-  than generated from the canonical agent prompts or deployed as client agents.
-  Kagi prompts target a chat interface with optional web search and uploads but
-  no shell, filesystem, or host access; they delegate commands to the user and
-  continue by interpreting returned results. Claude and Codex session state,
-  credentials, provider configuration, and project trust remain machine-local
-  and must never be committed. Activation requires `~/.claude`, `~/.codex`, and
-  `~/.omp` to be real directories and restricts them to mode `0700` while
-  leaving their contents writable.
+  untouched. `checkCodexProfiles` makes the materializer's refusals before Home
+  Manager switches any link, and the `codex-profile-materializer` check holds
+  its `MANAGED_KEYS` against the keys the templates carry. Generated profiles
+  carry Codex's official `config.toml` schema directive and preserve readable
+  multiline instructions. Runtime-owned project trust, TUI state, and other
+  profile keys survive that merge. The independently maintained Kagi Markdown
+  prompts (`agents/prompts/kagi-*.md`) carry a different, fixed instruction
+  budget, so they are kept verbatim in the repo — whitespace preserved and
+  measured by the `kagi-prompt-budget` check — rather than generated from the
+  canonical agent prompts or deployed as client agents. Kagi prompts target a
+  chat interface with optional web search and uploads but no shell, filesystem,
+  or host access; they delegate commands to the user and continue by
+  interpreting returned results. Claude and Codex session state, credentials,
+  provider configuration, and project trust remain machine-local and must never
+  be committed. Activation requires `~/.claude`, `~/.codex`, and `~/.omp` to be
+  real directories and restricts them to mode `0700` while leaving their
+  contents writable.
 - **`omp/`** installs oh-my-pi (`omp`) for both Linux profiles on the same
   footing as OpenCode. omp rewrites its global `~/.omp/agent/config.yml` from
   `/settings` and `omp config set`, so Home Manager does not own that file; the
@@ -125,19 +132,20 @@ and installs StyLua's config under `~/.config/stylua`.
   off startup and plugin-update checks and automatic tool-issue reports; points
   `skills.customDirectories` at `~/.claude/skills`; and selects the mix
   dark-medium Gruvbox Material variant as `theme.dark`. The wrapper also strips
-  the OTLP exporter variables omp would otherwise export through. Updates come
-  from the locked Nixpkgs package. Language servers stay enabled because omp
-  resolves them from `PATH` and never downloads one. The module generates the
-  `kernel`, `language`, and `nix-maintainer` task agents under
-  `~/.omp/agent/agents` from the canonical prompts, because omp skips
-  `~/.claude/agents` deliberately, and installs both Gruvbox Material variants
-  under `~/.omp/agent/themes`. `~/.omp` is among the directories the Vim and
-  Emacs secret-state guards exclude. omp's `models.yml`, `mcp.json`, credential
-  store, and sessions under `~/.omp/agent` are machine-local and must never be
-  committed. `omp/check.nix` runs the wrapped omp in an empty home to confirm
-  the overlay and exporter stripping, reads the effective settings back,
-  compares the generated agents with the canonical prompt bodies, and validates
-  both themes against the schema omp ships.
+  the OTLP exporter variables omp would otherwise export through, which
+  `lib/otlp-environment.nix` lists for omp and OpenCode alike. Updates come from
+  the locked Nixpkgs package. Language servers stay enabled because omp resolves
+  them from `PATH` and never downloads one. The module generates the `kernel`,
+  `language`, and `nix-maintainer` task agents under `~/.omp/agent/agents` from
+  the canonical prompts, because omp skips `~/.claude/agents` deliberately, and
+  installs both Gruvbox Material variants under `~/.omp/agent/themes`. `~/.omp`
+  is in `lib/sensitive-paths.nix`, so the Vim and Emacs secret-state guards
+  exclude it. omp's `models.yml`, `mcp.json`, credential store, and sessions
+  under `~/.omp/agent` are machine-local and must never be committed.
+  `omp/check.nix` runs the wrapped omp in an empty home to confirm the overlay
+  and exporter stripping, reads the effective settings back, compares the
+  generated agents with the canonical prompt bodies, and validates both themes
+  against the schema omp ships.
 - **`opencode/`** installs the Nix package for both Linux profiles and owns the
   global provider-neutral configuration. It disables self-updates and session
   sharing, strips inherited OTLP exporter variables only from the OpenCode
@@ -292,9 +300,12 @@ guidance detectable.
   `flake.lock` and the locked Nixpkgs revision determine editor updates. Do not
   run mutable plugin, parser, CoC extension, or vim-go binary update commands.
   Vim and Neovim retain backup, swap, and persistent undo for ordinary files,
-  but exclude known credentials and secret directories when opening local
-  aliases or changing a buffer's filename too. These guards prevent future state
-  copies; they do not erase existing copies.
+  but exclude the credential paths in `lib/sensitive-paths.nix`, also when a
+  name is a local alias of one or a buffer's filename changes. `.aws`, `.gnupg`,
+  `.kube`, `.password-store`, and `.ssh` are matched as a directory at any depth
+  of a path; the other entries are matched under the home directory,
+  `~/.config`, or an absolute `XDG_CONFIG_HOME`. These guards prevent future
+  state copies; they do not erase existing copies.
 - CoC loads in both editors and owns LSP, diagnostics, completion, navigation,
   and format-on-save. `vim/.vim/coc-settings.json` is the sorted language-server
   and format-on-save matrix (keep object keys sorted while preserving semantic
@@ -320,10 +331,11 @@ guidance detectable.
   provider-neutral `opencode acp` client; private provider configuration and
   credentials remain OpenCode-owned host state. Emacs Custom writes to the
   machine-local `~/.config/emacs/custom.el`. No vendored Emacs plugin or legacy
-  package.el tree remains. Its secret-state guard checks local symlink targets
-  and visited-filename changes. Remote names remain lexical to avoid an extra
-  network lookup. Previously written backup, auto-save, or undo files are not
-  retroactively erased.
+  package.el tree remains. Its secret-state guard reads the same
+  `lib/sensitive-paths.nix` list as Vim and checks local symlink targets and
+  visited-filename changes. A remote name is matched as written, wherever an
+  entry appears in it, to avoid an extra network lookup. Previously written
+  backup, auto-save, or undo files are not retroactively erased.
 - Rainbow-delimiter colours come only from `lib/rainbow-delimiters.nix`, one
   entry per nesting depth and at most nine, because Emacs defines no face past
   depth 9. `vim/default.nix` sets it as `g:dotfiles_rainbow_palette` before the

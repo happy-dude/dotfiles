@@ -184,10 +184,20 @@ The same code expanded for readability is:
    - `ref` becomes the node's `ROAM_REFS` value.
    - `title` supplies the node title after whitespace normalization.
    - `body` supplies the selected page text. The reference template inserts it
-     inside an Org quote block and leaves `%?` afterward for additional notes.
+     inside an Org example block and leaves `%?` afterward for additional notes.
 
-   Emacs inserts the title and body as plain text after expanding the template,
-   so page text such as `%(...)` or `${title}` is stored, not run.
+   Emacs inserts the title and body as text after expanding the template, so
+   page text such as `%(...)` or `${title}` is stored, not run. Org reads no
+   structure from them either. A title with line breaks is joined into one
+   `#+TITLE` line. A body line that starts with `*` or `#+` gets a leading
+   comma, the way `org-edit-special` escapes a block's contents, so it cannot
+   end the block or start a heading or another block. The commas show in the
+   note; Org drops them on export and in `org-edit-special`.
+
+   Org Roam writes `ref` into the `ROAM_REFS` property as it arrives, and
+   decodes it once more than org-protocol already has. Emacs therefore refuses a
+   capture whose decoded `ref` holds a line break or another control character:
+   no capture starts and no note is written.
 
 9. If the reference URL and title alone exceed the 8000-character encoded-URI
    budget, the bookmarklet reports the problem and sends no capture. Otherwise,

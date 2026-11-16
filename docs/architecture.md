@@ -48,8 +48,10 @@ what each module deploys.
   advance with `nix flake update`; `rime/default.nix` consumes them. `nixGL` is
   wired up via `targets.genericLinux.nixGL` in `home.nix` so OpenGL apps
   (Ghostty, mesa-demos, solaar) can be wrapped with `config.lib.nixGL.wrap`.
-  Ghostty removes the wrapper's graphics variables before launching Fish so
-  terminal children receive a normal host environment.
+  Ghostty removes the wrapper's graphics variables, named in
+  `lib/nixgl-environment.nix`, before launching Fish so terminal children
+  receive a normal host environment. The `nixgl-environment` check reads the
+  pinned wrapper scripts and fails on an exported name the list lacks.
 - Source-only inputs also lock Prezto, Tide, z, Roswell, RustOwl, virtme-ng, and
   coc-zuban. Nixpkgs supplies bgutil-ytdlp-pot-provider, the Catppuccin Fcitx
   themes, and the autopair, puffer, and spark Fish plugin sources. The same
@@ -110,8 +112,14 @@ what each module deploys.
   integrations; `lib/gruvbox-material.nix` holds the Gruvbox Material palettes
   the OpenCode and oh-my-pi themes share; `lib/rainbow-delimiters.nix` is the
   one list of rainbow-delimiter colours Neovim, Vim, and Emacs cycle through;
-  `lib/homes.nix` returns a value every profile agrees on and otherwise names
-  the profiles that disagree. `scripts/lib/` holds the same for shell.
+  `lib/sensitive-paths.nix` is the one list of credential paths that Vim,
+  Neovim, and Emacs keep no backup, swap, auto-save, or undo copy of;
+  `lib/nixgl-environment.nix` names the variables the nixGL wrappers export,
+  which Ghostty and Zed unset for the host programs they start;
+  `lib/otlp-environment.nix` names the OTLP exporter variables the omp and
+  OpenCode wrappers unset; `lib/homes.nix` returns a value every profile agrees
+  on and otherwise names the profiles that disagree. `scripts/lib/` holds the
+  same for shell.
 - `flatpak/` and `plasma/` are capability-conditional modules: `mkHome` imports
   the flatpak modules where `hasFlatpak` holds and the plasma modules where the
   desktop is Plasma, because their options come from external modules. Modules
