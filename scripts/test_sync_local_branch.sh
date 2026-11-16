@@ -124,7 +124,7 @@ test "$(git -C "$origin" rev-parse refs/heads/main)" = "$remote_head"
 test "$(git -C "$branch_worktree" rev-parse backup-first)" = "$first_backup"
 test "$(git -C "$branch_worktree" rev-parse backup-tip)" = "$tip_backup"
 test "$(git -C "$branch_worktree" config --bool rebase.updateRefs)" = true
-grep -Fq "nix|$branch_worktree|fmt ." "$log"
+grep -Fq "nix|$branch_worktree|fmt --no-update-lock-file ." "$log"
 grep -Fq \
   "nix|$branch_worktree|flake check --show-trace --no-update-lock-file" \
   "$log"

@@ -22,9 +22,11 @@ format_worktree() {
   local worktree=$1
   local status
 
+  # Without the flag, a lock that disagrees with flake.nix is rewritten here
+  # and reported below as a formatting change.
   (
     cd -- "$worktree" || exit 1
-    nix fmt .
+    nix fmt --no-update-lock-file .
   ) || return
   status=$(git -C "$worktree" status --porcelain=v1 --untracked-files=all) ||
     return
