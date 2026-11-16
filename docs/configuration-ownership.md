@@ -185,27 +185,58 @@ and installs StyLua's config under `~/.config/stylua`.
   not a disposable test artifact. OAuth state in `~/.config/rclone/rclone.conf`
   is machine-local and must never enter Git or the Nix store. Setup and recovery
   are documented in `docs/rclone-box-org.md`.
-- **`rime/`** is a native Home Manager module (`rime/default.nix`). Locked
-  schema inputs replace matching snapshot files and `pkgs.rime-zhwiki` supplies
-  Zhwiki. Home Manager owns each immutable Catppuccin and Plasma theme
-  directory; `rime/themes.nix` declares the Catppuccin theme names and the
+- **`rime/`** is a native Home Manager module (`rime/default.nix`). Every
+  deployed Rime data file has exactly one source: a locked schema input,
+  `pkgs.rime-zhwiki`, the generated `lua/reading_tables.lua`, or the tracked
+  tree under `rime/.local/share/fcitx5/rime/`. The tracked tree holds only what
+  no input provides: the Lua, the custom patches, and the Colemak schema. A path
+  with two sources fails evaluation and names both. Evaluation also fails when a
+  deployed schema names an OpenCC config that is neither deployed nor one of
+  OpenCC's stock configs, and when a locked stock schema no longer holds a list
+  that a tracked patch was written against. `rime/opencc.nix` lists the configs
+  that are absent on purpose, and `rime/stock-schemas.nix` holds the stock
+  lists. `zhwiki.dict.yaml` stays installed for lookups, but no schema imports
+  it, because its entries would crowd the candidate list. The emoji filter of
+  the Cantonese schema stays inert: its `emoji_cantonese.json` comes from an
+  add-on that is not installed.
+
+  The annotation filters choose a character's reading in `lua/readings.lua`: the
+  syllable that was typed, then a phrase in `reading_tables`, then the
+  dictionary weight. `rime/reading_tables.py` builds `reading_tables.lua` from
+  the locked terra_pinyin, luna_pinyin, and Cantonese dictionaries, so the file
+  advances with the lock and is not edited by hand. Where no Mandarin dictionary
+  lists a phrase that the Cantonese one does, the generator infers the reading
+  from the phrases both list; its docstring gives the rule and thresholds.
+  `cangjie5_colemak.schema.yaml` includes the stock `cangjie5` schema and
+  patches it. The `rime-lua` check runs every `rime/tests/*.lua` under the Lua
+  that the locked librime links and under `pkgs.lua`.
+
+  Home Manager owns each immutable Catppuccin and Plasma theme directory;
+  `rime/themes.nix` declares the Catppuccin theme names and the
   `rime-theme-names` check holds them against the package at build time, so
-  evaluation never reads the package. Activation materializes the Fcitx profile
-  and host configuration as writable regular files with prior-source snapshots
-  under `~/.local/state/rime/host-config`. It rejects malformed or unmanaged
-  conflicts, except an existing `conf/notifications.conf` on the first deploy,
-  which Fcitx writes itself; it materializes managed static data under
+  evaluation never reads the package. Activation materializes the Fcitx profile,
+  `conf/classicui.conf`, and `conf/rime.conf` as writable regular files with
+  prior-source snapshots under `~/.local/state/rime/host-config`, and rejects
+  malformed or unmanaged conflicts. Updates to those files preserve runtime-only
+  edits, replace an unchanged managed baseline, and fail when both sides
+  changed; the refusal names the snapshot and prints the command for each way
+  out. Fcitx rewrites `conf/notifications.conf` itself, so activation merges the
+  declared `[HiddenNotifications]` entries into that file and keeps no snapshot
+  of it. `rimeValidate` raises every refusal before Home Manager switches any
+  link.
+
+  Activation materializes managed static data under
   `~/.local/share/fcitx5/rime/.home-manager-static`, and leaves generated
-  schemas, learned user databases, and sync state writable beside it. Host-file
-  updates preserve runtime-only edits, replace an unchanged managed baseline,
-  and fail when both sides changed. Source changes invalidate only generated
-  build data and reload Rime; if Fcitx is not running, it rebuilds on its next
-  start. A failed static-tree rollback retains the backup for the next
-  activation; the directory replacement is recoverable, not one atomic swap.
-  Authorized host-file links stay readable until their staged replacement is
-  ready. Edit Rime data in `rime/.local/share/fcitx5/rime/`; edits made through
-  the deployed links land in `.home-manager-static` and are discarded at the
-  next source change.
+  schemas, learned user databases, and sync state writable beside it. Source
+  changes invalidate only generated build data and reload Rime; if Fcitx is not
+  running, it rebuilds on its next start. A failed static-tree rollback retains
+  the backup for the next activation; the directory replacement is recoverable,
+  not one atomic swap, and the next refresh removes a staging tree that an
+  interrupted one left behind. Authorized host-file links stay readable until
+  their staged replacement is ready. Edit Rime data in
+  `rime/.local/share/fcitx5/rime/`; edits made through the deployed links land
+  in `.home-manager-static` and are discarded at the next source change.
+
 - `scripts/update.sh` updates Rime only through the locked flake inputs.
 - **`rime/fcitx.nix`** installs Fcitx 5 with the Rime and GTK addons where
   `hostFcitx` is false. On GNOME, its systemd unit starts the daemon and it sets
@@ -253,7 +284,7 @@ checks/build → `home-manager switch --flake .#$(whoami)` workflow for persiste
 changes. `language.md` also names the exact `home.nix` comment headings
 (`Language agent: translation / dictionary / grammar / OCR / TTS tooling` and
 `Aspell spellcheck-backed word validation for Esperanto/Italian/Polish/Spanish`)
-and the static Rime source tree (`rime/.local/share/fcitx5/rime/`). Update both
+and the deployed Rime data path (`~/.local/share/fcitx5/rime/`). Update both
 prompts when those headings, package names, or paths change; they are maintained
 documentation, not generated files. `docs/software-design.md` is the detailed
 design, testing, and comment reference, while `AGENTS.md`,

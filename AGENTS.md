@@ -11,10 +11,13 @@ README's Stow-first instructions are not the active bootstrap and will be
 updated separately. Immutable inputs may be store links, live-editable sources
 may use guarded out-of-store links, and application-mutated configuration must
 be materialized as writable regular files. Those materialisers do not all guard
-alike, and the difference is deliberate: the Rime host files carry a snapshot
+alike, and the difference is deliberate: three Rime host files carry a snapshot
 and refuse to write when the declaration and the runtime file both changed,
-while the Zed and Codex profiles are expected to be rewritten by the programs
-that own them and reassert only the declared keys.
+while Fcitx's `notifications.conf`, the Zed settings, and the Codex profiles are
+expected to be rewritten by the programs that own them and reassert only the
+declared entries. The Rime, Zed, and Codex materialisers make their refusals
+before Home Manager switches any link, so a refusal leaves the previous
+generation in place.
 
 A separate `macos` branch exists for macOS-specific settings; this repository
 checkout is the Linux branch.
