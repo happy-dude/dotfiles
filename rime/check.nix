@@ -9,6 +9,14 @@
   catppuccinThemeNames = import ./themes.nix {inherit lib;};
   opencc = import ./opencc.nix {inherit lib;};
 
+  # The Lua that librime-lua links, which is the one the filters and the
+  # processor run under where Nix installs Fcitx. It is that package's own
+  # input and an older release than pkgs.lua.
+  rimeLua =
+    lib.findFirst (package: lib.getName package == "lua")
+    (throw "librime-lua no longer propagates a Lua interpreter")
+    pkgs.librime-lua.propagatedBuildInputs;
+
   # Known answers for opencc.problems. The files are written at evaluation
   # time because the function reads them then.
   openccFixture = files:
@@ -474,7 +482,7 @@ in {
     name = "dotfiles-rime-lua-tests";
     tools = [
       pkgs.findutils
-      pkgs.lua
+      pkgs.gnugrep
     ];
     # Only the Lua sources, rooted at the repository so the tests' rime/...
     # package.path still resolves; ./. would copy all of the Rime data too.
@@ -484,11 +492,24 @@ in {
         fileset = lib.fileset.fileFilter (file: file.hasExt "lua") ./.;
       };
     in ''
-      find ${luaSources} -type f -name '*.lua' -exec luac -p {} +
+      # rimeLua has to be the Lua the engine really loads.
+      grep -qF ${rimeLua}/lib ${pkgs.librime}/lib/librime.so
 
+      find ${luaSources} -type f -name '*.lua' \
+        -exec ${rimeLua}/bin/luac -p {} +
+
+      # Every test runs under the engine's Lua. A host that brings its own
+      # Fcitx runs the same files under the Lua its librime-lua was built
+      # with, which nothing here can see, so pkgs.lua, the newest release,
+      # runs them too.
       cd ${luaSources}
-      lua rime/tests/cangjie5_colemak_remap.lua
-      lua rime/tests/romanization.lua
+      for lua in ${rimeLua}/bin/lua ${pkgs.lua}/bin/lua; do
+        "$lua" -v
+        for test in rime/tests/*.lua; do
+          "$lua" "$test"
+          echo "passed: $test"
+        done
+      done
     '';
   };
 }
