@@ -4,6 +4,7 @@
 }: let
   mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
   rimeHostFiles = import ./host-files.nix {inherit pkgs;};
+  rimeReadingTables = import ./reading-tables.nix {inherit pkgs;};
   rimeStateManager = import ./state-manager.nix {inherit pkgs;};
   catppuccinThemeDir = "${pkgs.catppuccin-fcitx5}/share/fcitx5/themes";
   catppuccinThemeNames = import ./themes.nix {inherit lib;};
@@ -478,18 +479,65 @@ in {
         python3 ${./tests/test_failure_recovery.py}
     '';
   };
+  # The generator's unit tests, then the packaged generator on the fixture
+  # dictionaries. Its output has to be the tracked fixture module, which is
+  # what the Lua tests load: the tables the filters are tested with are then
+  # tables the generator really writes.
+  rime-reading-tables = mkCheck {
+    name = "rime-reading-tables-test";
+    tools = [
+      pkgs.diffutils
+      pkgs.python3
+      rimeReadingTables
+    ];
+    script = let
+      sources = lib.fileset.toSource {
+        root = ./.;
+        fileset = lib.fileset.unions [
+          ./reading_tables.py
+          ./tests/test_reading_tables.py
+          ./tests/fixtures
+        ];
+      };
+      generate = command: output: ''
+        ${command} \
+          --pinyin rime/tests/fixtures/terra_pinyin.dict.yaml \
+          --toneless-pinyin rime/tests/fixtures/luna_pinyin.dict.yaml \
+          --jyutping rime/tests/fixtures/jyut6ping3.chars.dict.yaml \
+          --jyutping rime/tests/fixtures/jyut6ping3.words.dict.yaml \
+          --frequency rime/tests/fixtures/essay.txt \
+          --min-frequency 500 \
+          --output ${output}'';
+    in ''
+      PYTHONPATH=${../lib/python}:${sources} \
+        python3 ${sources}/tests/test_reading_tables.py
+
+      mkdir rime
+      ln -s ${sources}/tests rime/tests
+      ${generate "rime-reading-tables" "generated.lua"}
+      if ! diff rime/tests/fixtures/reading_tables.generated generated.lua; then
+        cat >&2 <<'EOF'
+      rime/tests/fixtures/reading_tables.generated is not what the generator writes
+      from the fixture dictionaries. Regenerate it from the repository root:
+      ${generate "PYTHONPATH=lib/python python3 rime/reading_tables.py" "rime/tests/fixtures/reading_tables.generated"}
+      EOF
+        exit 1
+      fi
+    '';
+  };
   rime-lua = mkCheck {
     name = "dotfiles-rime-lua-tests";
     tools = [
       pkgs.findutils
       pkgs.gnugrep
     ];
-    # Only the Lua sources, rooted at the repository so the tests' rime/...
-    # package.path still resolves; ./. would copy all of the Rime data too.
+    # Only the Lua sources and the test fixtures, rooted at the repository so
+    # the tests' rime/... package.path still resolves; ./. would copy all of
+    # the Rime data too.
     script = let
       luaSources = lib.fileset.toSource {
         root = ../.;
-        fileset = lib.fileset.fileFilter (file: file.hasExt "lua") ./.;
+        fileset = lib.fileset.union (lib.fileset.fileFilter (file: file.hasExt "lua") ./.) ./tests/fixtures;
       };
     in ''
       # rimeLua has to be the Lua the engine really loads.

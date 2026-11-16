@@ -6,6 +6,7 @@
   ...
 }: let
   rimeHostFiles = import ./host-files.nix {inherit pkgs;};
+  rimeReadingTables = import ./reading-tables.nix {inherit pkgs;};
   rimeStateManager = import ./state-manager.nix {inherit pkgs;};
   localRimeDataDir = ./.local/share/fcitx5/rime;
   localFcitxThemesDir = ./.local/share/fcitx5/themes;
@@ -27,11 +28,11 @@
   );
 
   # Every deployed Rime data file has exactly one source: a locked schema
-  # input, pkgs.rime-zhwiki, or the tracked tree under localRimeDataDir. The
-  # tracked tree holds only what no input provides (the Lua, the custom
-  # patches, and the Colemak schema); it is not a fallback copy of the inputs,
-  # and a path with two sources fails evaluation below instead of one source
-  # silently winning.
+  # input, pkgs.rime-zhwiki, readingTables below, or the tracked tree under
+  # localRimeDataDir. The tracked tree holds only what no input provides (the
+  # Lua, the custom patches, and the Colemak schema); it is not a fallback
+  # copy of the inputs, and a path with two sources fails evaluation below
+  # instead of one source silently winning.
   schemaSourceNames = [
     "rime_bopomofo"
     "rime_cangjie"
@@ -87,9 +88,32 @@
   localRimeDataOrigin = "rime/.local/share/fcitx5/rime";
   localRimeDataEntries = sourceEntries localRimeDataOrigin localRimeDataDir;
 
+  # The readings lua/readings.lua cannot get from a reverse dictionary,
+  # built from the locked dictionaries so they advance with the lock.
+  # rime/reading_tables.py says what goes in. The floor leaves out phrases
+  # that both essay files count fewer than 500 times: with the dictionaries
+  # locked in November 2026 the module is about 320 KB with it and 1.1 MB
+  # without, and Rime parses it whenever an annotating schema starts.
+  readingTables = pkgs.runCommand "rime-reading-tables.lua" {nativeBuildInputs = [rimeReadingTables];} ''
+    rime-reading-tables \
+      --pinyin ${inputs.rime_terra_pinyin}/terra_pinyin.dict.yaml \
+      --toneless-pinyin ${inputs.rime_luna_pinyin}/luna_pinyin.dict.yaml \
+      --jyutping ${inputs.rime_cantonese}/jyut6ping3.chars.dict.yaml \
+      --jyutping ${inputs.rime_cantonese}/jyut6ping3.words.dict.yaml \
+      --frequency ${inputs.rime_essay}/essay.txt \
+      --frequency ${inputs.rime_cantonese}/essay-cantonese.txt \
+      --min-frequency 500 \
+      --output "$out"
+  '';
+
   providedRimeDataEntries =
     lib.concatMap (name: sourceEntries name inputs.${name}) schemaSourceNames
     ++ [
+      {
+        origin = "rime/reading_tables.py";
+        relative = "lua/reading_tables.lua";
+        path = toString readingTables;
+      }
       # No schema imports this dictionary; it stays installed on purpose.
       {
         origin = "pkgs.rime-zhwiki";

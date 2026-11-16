@@ -1,0 +1,70 @@
+# Rows copied from rime-terra-pinyin's terra_pinyin.dict.yaml for the tests; not deployed.
+---
+name: terra_pinyin
+version: "fixture"
+sort: by_weight
+...
+
+了	le5	95%
+了	liao3	5%
+什	she2	0%
+什	shen2	1%
+什	shi2	99%
+仲	zhong4
+嗯	en1	1%
+嗯	en4	1%
+嗯	en5	95%
+嗯	eng5	3%
+大	da4	99%
+大	dai4	1%
+家	jia1
+市	shi4
+快	kuai4
+成	cheng2
+撂	liao4
+新	xin1
+校	jiao4	25%
+校	xiao4	100%
+樂	le4	80%
+樂	yue4	20%
+爲	wei2	50%
+爲	wei4	50%
+班	ban1
+生	sheng1
+老	lao3
+行	hang2	10%
+行	xing2	90%
+行	xing4	0%
+要	yao1	5%
+要	yao4	95%
+路	lu4
+輩	bei4
+重	chong2	10%
+重	zhong4	90%
+銀	yin2
+長	chang2	90%
+長	zhang3	10%
+難	nan2	80%
+難	nan4	20%
+音	yin1
+麼	ma2
+麼	me5
+麼	mo2
+什麼	she2 me5
+什麼	shen2 me5
+家長	jia1 zhang3
+市長	shi4 zhang3
+快樂	kuai4 le4
+成長	cheng2 zhang3
+校長	xiao4 zhang3
+班長	ban1 zhang3
+生長	sheng1 zhang3
+行爲	xing2 wei2
+行路	xing2 lu4
+行路難	xing2 lu4 nan2
+重新	chong2 xin1
+重要	zhong4 yao4
+銀行	yin2 hang2
+長老	zhang3 lao3
+長輩	zhang3 bei4
+音樂	yin1 yue4

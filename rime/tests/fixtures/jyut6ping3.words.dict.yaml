@@ -1,0 +1,24 @@
+# Rows copied from rime-cantonese's jyut6ping3.words.dict.yaml for the tests; not deployed.
+---
+name: jyut6ping3.words
+version: "fixture"
+sort: by_weight
+...
+
+班長	baan1 zoeng2
+重新	cung4 san1
+快樂	faai3 lok6
+家長	gaa1 zoeng2
+行路	haang4 lou6
+校長	haau6 zoeng2
+行爲	hang4 wai4
+音樂	jam1 ngok6
+銀行	ngan4 hong4
+什麼	sam6 mo1
+生長	sang1 zoeng2
+市長	si5 zoeng2
+成長	sing4 zoeng2
+長輩	zoeng2 bui3
+長大	zoeng2 daai6
+長老	zoeng2 lou5
+重要	zung6 jiu3
