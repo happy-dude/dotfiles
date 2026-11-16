@@ -258,10 +258,12 @@ prompts when those headings, package names, or paths change; they are maintained
 documentation, not generated files. `docs/software-design.md` is the detailed
 design, testing, and comment reference, while `AGENTS.md`,
 `agents/prompts/kernel.md`, and `agents/prompts/kagi-kernel.md` carry condensed
-operational projections that must stay aligned within the `kagi-prompt-budget`
-check. The canonical Markdown is the only source to update: Nix generates Codex
-agents and profile templates during evaluation, so there is no manual
-regeneration step or generated-file drift to commit.
+operational projections of it. No check compares the three, so a convention
+changed in one is changed in the others by hand; the `kagi-prompt-budget` check
+measures only the size of the Kagi prompts. The canonical Markdown is the only
+source to update: Nix generates Codex agents and profile templates during
+evaluation, so there is no manual regeneration step or generated-file drift to
+commit.
 
 `agents/prompts/nix-maintainer.md` is the Nix packaging and review agent for any
 repository, not this one in particular. It carries only Nix-specific guidance

@@ -133,9 +133,9 @@ the document that covers it:
   commit, an imperative `subsystem: summary` subject of at most 72 characters,
   and a self-contained body that explains the problem or ownership constraint
   before the implementation. Commit messages are valid Markdown and ordinary
-  prose never exceeds 80 characters; trailers, URLs, code, paths, and other
-  unbreakable text are exempt. Before committing through oh-my-pi, Claude Code,
-  Codex, or OpenCode, run
+  prose never exceeds 80 characters; the trailer block, fenced or indented code,
+  and a line that is one unbreakable token, such as a URL or a path, are exempt.
+  Before committing through oh-my-pi, Claude Code, Codex, or OpenCode, run
   `~/dotfiles/scripts/lint_commit_message.py <message-file>`. The managed global
   `commit-msg` hook enforces this policy for every commit and preserves any
   initial `Assisted-by:` trailer. See
@@ -360,7 +360,8 @@ the document that covers it:
 - Prefer adding packages to `home.nix`'s `home.packages` list (or to a module's
   `default.nix`) over installing system-wide. Resolve binary collisions
   explicitly with `lib.hiPrio` / `lib.lowPrio` as already done for `gcc` /
-  `clang` / `clang-tools` / `llvm` in `home.nix`.
+  `clang` / `llvm` in `home.nix` and for `clang-tools` in
+  `lib/language-servers.nix`.
 - Prefer Nix for declarations, dependency wiring, and derivations. Put
   nontrivial file or state transformations in typed Python source beside the
   owning module, package them with `pkgs.writers.writePython3Bin`, and pass

@@ -10,12 +10,12 @@ Both are Home Manager-managed; neither uses a separate Stow step. Edit
 directly. Zed and generated Codex and oh-my-pi changes require a validated Home
 Manager switch. Claude prompt changes are live immediately once the out-of-store
 agents symlink has been installed by an initial switch. Those links point into
-`~/dotfiles`, so the checkout must live there. The writable Codex profiles at
-`~/.codex/{kernel,language}.config.toml` are runtime state, not canonical prompt
-sources; do not edit their generated keys manually. Their schema directive
-points editors at Codex's current official `config.toml` schema. Standalone
-custom-agent TOMLs use Codex's separate custom-agent schema and therefore do not
-carry the `config.toml` directive.
+`~/dotfiles`, so the checkout must live there. The writable Codex profiles, one
+per canonical prompt at `~/.codex/<name>.config.toml`, are runtime state, not
+canonical prompt sources; do not edit their generated keys manually. Their
+schema directive points editors at Codex's current official `config.toml`
+schema. Standalone custom-agent TOMLs use Codex's separate custom-agent schema
+and therefore do not carry the `config.toml` directive.
 
 For omp settings, edit `omp/settings.nix` when the value should be shared. Use
 `/settings` or `omp config set` for settings that belong to this machine. The
