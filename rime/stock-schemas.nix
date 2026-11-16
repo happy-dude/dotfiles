@@ -1,10 +1,11 @@
 # The lists in the locked stock schemas that the tracked patches depend on.
 #
-# cangjie5_colemak.schema.yaml inserts its Lua components by list position.
-# Rime applies such a patch to whatever the stock schema holds, so after a
-# lock update that moved an entry the component would land in the wrong place
-# and nothing would report it. rime/default.nix fails evaluation on
-# `problems` instead.
+# cangjie5_colemak.schema.yaml inserts its Lua components by list position,
+# and jyut6ping3.custom.yaml replaces the filter list outright. Rime applies
+# both to whatever the stock schema holds, so after a lock update that moved
+# or added an entry, a component would land in the wrong place or the new
+# entry would be dropped, and nothing would report it. rime/default.nix fails
+# evaluation on `problems` instead.
 {lib}: let
   # What each patch was written against, by deployed file and list.
   writtenAgainst = {
@@ -23,6 +24,16 @@
         "simplifier"
         "uniquifier"
         "single_char_filter"
+      ];
+    };
+    "jyut6ping3.schema.yaml" = {
+      "engine/filters" = [
+        "simplifier@emoji_cantonese_suggestion"
+        "simplifier"
+        "simplifier@variants_hk"
+        "simplifier@trad_tw"
+        "uniquifier"
+        "reverse_lookup_filter@jyut6ping3_reverse_lookup"
       ];
     };
   };

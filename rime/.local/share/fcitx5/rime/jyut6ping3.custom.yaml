@@ -1,15 +1,19 @@
 patch:
-  schema/dependencies:
+  # The dictionary lua/jyutping_pinyin.lua looks readings up in, added to
+  # whatever the stock schema depends on.
+  schema/dependencies/+:
     - terra_pinyin
-    - luna_pinyin
-    - loengfan
-    - stroke
-    - cangjie5
 
   # Comment-writing filters go before the simplifiers: a simplified or variant
   # candidate is a ShadowCandidate, and setting its comment from Lua is a no-op.
   # The reverse lookup goes first because it skips candidates that already
   # carry a comment.
+  #
+  # This replaces the stock list on purpose. The stock list ends with the
+  # reverse lookup and has a plain `simplifier`; moving the one and renaming
+  # the other is more than a positional patch can say. rime/stock-schemas.nix
+  # holds the stock list this one was written against, so a lock update that
+  # changes it fails evaluation instead of losing the change here.
   engine/filters:
     - reverse_lookup_filter@jyut6ping3_reverse_lookup
     - lua_filter@jyutping_pinyin_filter
@@ -19,7 +23,9 @@ patch:
     - simplifier@simplification
     - uniquifier
 
-  # Missing upstream — required for Simplified toggle to work
+  # Settings for simplifier@simplification above: the option and OpenCC config
+  # that the stock schema's plain `simplifier` takes from Rime's defaults,
+  # written out. The tips stay off so that the comment keeps the annotation.
   simplification:
     option_name: simplification
     opencc_config: t2s.json
