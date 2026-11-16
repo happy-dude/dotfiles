@@ -557,6 +557,9 @@ run_home_manager_switch() {
 # Git / submodule helpers
 #--------------------------------------------------------------------------------------------------
 
+# The main branch tracks no .gitmodules, and the submodule stages are
+# retained deliberately: the script accepts any repository directory, and the
+# stages are skipped when no submodule is configured.
 has_configured_submodules() {
   [ -f .gitmodules ] &&
     git config -f .gitmodules --get-regexp '^submodule\..*\.path$' >/dev/null 2>&1
