@@ -26,19 +26,25 @@
     ]
   );
 
-  # Locked schema revisions take precedence over the retained local snapshot.
-  schemaSources = [
-    inputs.rime_bopomofo
-    inputs.rime_cangjie
-    inputs.rime_cantonese
-    inputs.rime_essay
-    inputs.rime_jyutping
-    inputs.rime_luna_pinyin
-    inputs.rime_prelude
-    inputs.rime_stroke
-    inputs.rime_terra_pinyin
-    inputs.rime_loengfan
+  # Every deployed Rime data file has exactly one source: a locked schema
+  # input, pkgs.rime-zhwiki, or the tracked tree under localRimeDataDir. The
+  # tracked tree holds only what no input provides (the Lua, the custom
+  # patches, and the Colemak schema); it is not a fallback copy of the inputs,
+  # and a path with two sources fails evaluation below instead of one source
+  # silently winning.
+  schemaSourceNames = [
+    "rime_bopomofo"
+    "rime_cangjie"
+    "rime_cantonese"
+    "rime_essay"
+    "rime_jyutping"
+    "rime_luna_pinyin"
+    "rime_prelude"
+    "rime_stroke"
+    "rime_terra_pinyin"
+    "rime_loengfan"
   ];
+  schemaSources = map (name: inputs.${name}) schemaSourceNames;
 
   # OpenCC configs live under opencc/; other JSON (editor and language-server
   # settings) is not Rime data.
@@ -52,6 +58,8 @@
       "recipe.yaml"
     ]);
 
+  # Hidden entries are repository metadata and build inputs (.github, .ci,
+  # .build), never Rime data, so the walk skips them at every depth.
   filesRecursively = dir: let
     entries = builtins.readDir dir;
   in
@@ -59,7 +67,9 @@
       name: let
         path = dir + ("/" + name);
       in
-        if entries.${name} == "directory"
+        if lib.hasPrefix "." name
+        then []
+        else if entries.${name} == "directory"
         then filesRecursively path
         else lib.optional (isRimeDataFile dir name) path
     ) (builtins.attrNames entries);
@@ -67,44 +77,45 @@
   relativeTo = source: path:
     builtins.unsafeDiscardStringContext (lib.removePrefix ((toString source) + "/") (toString path));
 
-  sourceEntries = source:
+  # `origin` names the source in the failure messages below.
+  sourceEntries = origin: source:
     map (path: {
-      inherit path;
+      inherit origin path;
       relative = relativeTo source path;
     }) (filesRecursively source);
 
-  externalRimeDataEntries = lib.concatMap sourceEntries schemaSources;
-  externalRimeDataPaths = map (entry: entry.relative) externalRimeDataEntries;
+  localRimeDataOrigin = "rime/.local/share/fcitx5/rime";
+  localRimeDataEntries = sourceEntries localRimeDataOrigin localRimeDataDir;
 
-  localRimeDataEntries =
-    map
-    (path: {
-      inherit path;
-      relative = relativeTo localRimeDataDir path;
-    })
-    (
-      lib.filter (
-        path: let
-          relative = relativeTo localRimeDataDir path;
-        in
-          relative != "zhwiki.dict.yaml" && !(builtins.elem relative externalRimeDataPaths)
-      ) (filesRecursively localRimeDataDir)
-    );
-
-  rimeDataEntries =
-    localRimeDataEntries
-    ++ externalRimeDataEntries
+  providedRimeDataEntries =
+    lib.concatMap (name: sourceEntries name inputs.${name}) schemaSourceNames
     ++ [
+      # No schema imports this dictionary; it stays installed on purpose.
       {
+        origin = "pkgs.rime-zhwiki";
         relative = "zhwiki.dict.yaml";
         path = (toString pkgs.rime-zhwiki) + "/share/rime-data/zhwiki.dict.yaml";
       }
     ];
 
-  rimeDataTargetNames = map (entry: "fcitx5/rime/" + entry.relative) rimeDataEntries;
-  duplicateRimeDataTargetNames = lib.filter (
-    target: builtins.length (lib.filter (name: name == target) rimeDataTargetNames) > 1
-  ) (lib.unique rimeDataTargetNames);
+  rimeDataEntries = localRimeDataEntries ++ providedRimeDataEntries;
+
+  # One line per deployed path that has more than one source, naming each.
+  multiplySourced = entries:
+    lib.mapAttrsToList (
+      relative: sources: "  ${relative}: ${lib.concatMapStringsSep ", " (entry: entry.origin) sources}"
+    ) (
+      lib.filterAttrs (_: sources: builtins.length sources > 1) (
+        lib.groupBy (entry: entry.relative) entries
+      )
+    );
+
+  localRimeDataPaths = map (entry: entry.relative) localRimeDataEntries;
+  shadowedLocalRimeData = multiplySourced (
+    localRimeDataEntries
+    ++ lib.filter (entry: builtins.elem entry.relative localRimeDataPaths) providedRimeDataEntries
+  );
+  duplicateProvidedRimeData = multiplySourced providedRimeDataEntries;
 
   # The link farm declares every discovered source file as a Nix input.
   # Activation materializes it in the writable Rime directory so managed static
@@ -158,7 +169,17 @@
     EOF
   '';
 in
-  assert duplicateRimeDataTargetNames == []; {
+  assert lib.assertMsg (shadowedLocalRimeData == []) ''
+    Tracked Rime data files that a locked input or package also provides:
+    ${lib.concatStringsSep "\n" shadowedLocalRimeData}
+    Only one source can be deployed. Remove the tracked copy with `git rm`; a
+    local change to a file an input provides belongs in a `.custom.yaml` patch
+    or in a file of another name.'';
+  assert lib.assertMsg (duplicateProvidedRimeData == []) ''
+    Rime data files that more than one locked input or package provides:
+    ${lib.concatStringsSep "\n" duplicateProvidedRimeData}
+    Only one source can be deployed; drop one of them from schemaSourceNames
+    in rime/default.nix.''; {
     xdg.dataFile = themeFiles;
 
     home.activation.rimeHostFiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
