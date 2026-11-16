@@ -20,6 +20,12 @@ __patch:
   # The Lua comment already shows the Traditional character; the stock value
   # replaces it with 〔傳統漢字〕.
   - simplifier/tips: none
+  # Pinyin lookup only behind the backtick. The stock schema also offers
+  # Pinyin for plain input and for letters closed with an apostrophe, both of
+  # which reach it remapped: Colemak f, the Cangjie key for 水, would also
+  # list the characters read "e".
+  - abc_segmentor/extra_tags: []
+  - recognizer/patterns/reverse_lookup: "`[a-z]*'?$"
   # Rime adds a schema's own .custom patch only when the schema has no
   # __patch, so name it as the stock schemas that have one do.
   - cangjie5_colemak.custom:/patch?
