@@ -117,6 +117,10 @@
   );
   duplicateProvidedRimeData = multiplySourced providedRimeDataEntries;
 
+  unresolvedOpenccConfigs = (import ./opencc.nix {inherit lib;}).problems {
+    entries = rimeDataEntries;
+  };
+
   # The link farm declares every discovered source file as a Nix input.
   # Activation materializes it in the writable Rime directory so managed static
   # inputs can coexist with generated schemas, learned databases, and sync state.
@@ -181,7 +185,12 @@ in
     Rime data files that more than one locked input or package provides:
     ${lib.concatStringsSep "\n" duplicateProvidedRimeData}
     Only one source can be deployed; drop one of them from schemaSourceNames
-    in rime/default.nix.''; {
+    in rime/default.nix.'';
+  assert lib.assertMsg (unresolvedOpenccConfigs == []) ''
+    OpenCC configs named by the deployed Rime schemas do not resolve:
+    ${lib.concatMapStringsSep "\n" (problem: "  " + problem) unresolvedOpenccConfigs}
+    A simplifier without its config converts nothing. Add the source that
+    provides the config, or record in rime/opencc.nix why it is absent.''; {
     xdg.dataFile = themeFiles;
 
     # Both helpers refuse unmanaged or conflicting files, and their deploy

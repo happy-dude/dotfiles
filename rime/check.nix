@@ -7,6 +7,81 @@
   rimeStateManager = import ./state-manager.nix {inherit pkgs;};
   catppuccinThemeDir = "${pkgs.catppuccin-fcitx5}/share/fcitx5/themes";
   catppuccinThemeNames = import ./themes.nix {inherit lib;};
+  opencc = import ./opencc.nix {inherit lib;};
+
+  # Known answers for opencc.problems. The files are written at evaluation
+  # time because the function reads them then.
+  openccFixture = files:
+    lib.mapAttrsToList (relative: text: {
+      inherit relative;
+      path = builtins.toFile (baseNameOf relative) text;
+    })
+    files;
+  openccCases = [
+    {
+      name = "nested keys, patch paths, comments, and dictionaries";
+      absent = ["absent.json"];
+      entries =
+        openccFixture {
+          "a.schema.yaml" = ''
+            simplifier:
+              opencc_config: t2s.json
+            variants:
+              opencc_config: local.json  # provided below
+            emoji:
+              opencc_config: absent.json
+            gone:
+              opencc_config: gone.json
+            # commented:
+            #   opencc_config: commented.json
+          '';
+          "a.custom.yaml" = ''
+            patch:
+              "variants/opencc_config": 'quoted.json'
+              gone/opencc_config: bare.json
+          '';
+          "opencc/local.json" = "{}";
+        }
+        ++ [
+          # Never read: a dictionary names no configs.
+          {
+            relative = "big.dict.yaml";
+            path = "/nonexistent/big.dict.yaml";
+          }
+        ];
+      expected = [
+        "a.custom.yaml names quoted.json, which no source provides"
+        "a.custom.yaml names bare.json, which no source provides"
+        "a.schema.yaml names gone.json, which no source provides"
+      ];
+    }
+    {
+      name = "an allowance that a source now provides";
+      absent = ["absent.json"];
+      entries = openccFixture {
+        "a.schema.yaml" = "emoji:\n  opencc_config: absent.json\n";
+        "opencc/absent.json" = "{}";
+      };
+      expected = ["absentOnPurpose lists absent.json, which a source now provides"];
+    }
+    {
+      name = "an allowance that nothing names";
+      absent = ["absent.json"];
+      entries = openccFixture {
+        "a.schema.yaml" = "simplifier:\n  opencc_config: t2s.json\n";
+      };
+      expected = ["absentOnPurpose lists absent.json, which no deployed file names any more"];
+    }
+  ];
+  openccFailures =
+    lib.concatMap (
+      case: let
+        actual = opencc.problems {inherit (case) absent entries;};
+      in
+        lib.optional (actual != case.expected)
+        "${case.name}: expected ${builtins.toJSON case.expected}, got ${builtins.toJSON actual}"
+    )
+    openccCases;
 
   # Shell for the validation-mode tests. `listing` prints one line per path
   # that changes when the path is created, removed, replaced, or rewritten.
@@ -49,6 +124,32 @@ in {
         <(find ${catppuccinThemeDir} -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort) \
         <(printf '%s\n' ${lib.concatMapStringsSep " " lib.escapeShellArg catppuccinThemeNames} | sort)
       echo 'themes.nix matches ${pkgs.catppuccin-fcitx5.name}'
+    '';
+  };
+
+  # Check the stock config names in opencc.nix against the installed
+  # package, and opencc.problems against known answers. The deployed files
+  # themselves are checked when rime/default.nix is evaluated.
+  rime-opencc-configs = mkCheck {
+    name = "rime-opencc-configs";
+    tools = [
+      pkgs.coreutils
+      pkgs.diffutils
+      pkgs.findutils
+    ];
+    script = ''
+      diff \
+        <(find ${pkgs.opencc}/share/opencc -maxdepth 1 -name '*.json' -printf '%f\n' | sort) \
+        <(printf '%s\n' ${lib.concatMapStringsSep " " lib.escapeShellArg opencc.stockConfigs} | sort)
+      echo 'opencc.nix matches ${pkgs.opencc.name}'
+      ${
+        if openccFailures == []
+        then "echo 'opencc.problems gives the known answers'"
+        else ''
+          ${lib.concatMapStringsSep "\n" (failure: "echo ${lib.escapeShellArg failure} >&2") openccFailures}
+          exit 1
+        ''
+      }
     '';
   };
 
