@@ -415,22 +415,34 @@ even when the daemon has no graphical frame to copy a display from."
          :unnarrowed t)))
 
 (defun dotfiles/org-roam-insert-ref-fields ()
-  "Insert the browser's title and selection into the new capture verbatim.
+  "Insert the browser's title and selection into the new capture as text.
 They come from the page, so they must not pass through Org Roam's ${} or
-Org's % template expansion. Org Roam adds ROAM_REFS itself."
+Org's % template expansion, and Org must not read structure from them.
+The title stays on its #+TITLE line: line breaks become spaces.  The
+selection goes into the template's example block, escaped the way
+`org-edit-special' escapes a block's contents: a line that starts with
+\"*\" or \"#+\" gets a leading comma, so it stays block text and cannot
+end the block or begin a heading or another block.  The commas show in
+the note; Org drops them on export and in \\[org-edit-special].
+Org Roam adds ROAM_REFS itself."
   (when (org-roam-capture--get :new-file)
     (save-excursion
       (save-restriction
         (widen)
         (goto-char (point-min))
         (re-search-forward "^#\\+TITLE:")
-        (insert " " (org-roam-node-title org-roam-capture--node)))))
+        (insert " " (string-trim
+                     (replace-regexp-in-string
+                      "[\n\r]+" " "
+                      (or (org-roam-node-title org-roam-capture--node) "")))))))
   (save-excursion
-    (re-search-backward "^#\\+end_quote$")
-    (insert (or (plist-get org-roam-capture--info :body) "") "\n")))
+    (re-search-backward "^#\\+end_example$")
+    (insert (org-escape-code-in-string
+             (or (plist-get org-roam-capture--info :body) ""))
+            "\n")))
 
 (setq org-roam-capture-ref-templates
-      `(("r" "ref" plain "#+begin_quote\n#+end_quote\n\n%?"
+      `(("r" "ref" plain "#+begin_example\n#+end_example\n\n%?"
          :target (file+head+olp "%<%Y%m%d>-${slug}.org"
                                 ,(dotfiles/org-roam-note-head "") ("Notes"))
          :hook dotfiles/org-roam-insert-ref-fields

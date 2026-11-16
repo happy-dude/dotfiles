@@ -2,10 +2,16 @@
 
 ;; Loaded after init.el with the check's disposable HOME and XDG directories.
 (require 'cl-lib)
+(require 'org-element)
 (require 'org-protocol)
 
 (defvar dotfiles-test/protocol-evaluated nil
   "Set by the %(...) payload if a capture evaluates it.")
+
+(defconst dotfiles-test/note-headlines
+  '("Summary" "Questions" "Impact" "Purpose (Inspire)" "Values (Guide)"
+    "Habits (Define)" "Notes")
+  "The headings of a new note, which are all a capture may leave in it.")
 
 (defun dotfiles-test/protocol-capture (title body ref)
   "Capture REF with TITLE and BODY through org-protocol and finalize it."
@@ -34,36 +40,79 @@
                                    "\\.org\\'"))))
     (buffer-string)))
 
+(defun dotfiles-test/one-line (text)
+  "Return TEXT as the single line a #+TITLE keyword can hold."
+  (string-trim (replace-regexp-in-string "[\n\r]+" " " text)))
+
 (let* ((fixture (expand-file-name "~/protocol-fixture.txt"))
        (fixture-text "contents of the protocol fixture")
-       (payloads (list "%(ignore (setq dotfiles-test/protocol-evaluated t))"
-                       (format "%%[%s]" fixture))))
+       ;; The structure payloads come first, so a capture that lets page text
+       ;; become Org structure fails on that rather than on a later case.
+       (payloads
+        (list
+         ;; Page text that tries to end its block, in every spelling Org
+         ;; accepts, and then to add headings and a source block.
+         (concat "ordinary text\n"
+                 "#+end_quote\n"
+                 "#+end_example\n"
+                 "  #+END_EXAMPLE\n"
+                 "* Injected heading\n"
+                 "** Injected child\n"
+                 "#+begin_src sh\n"
+                 "touch ~/protocol-ran\n"
+                 "#+end_src\n"
+                 ",* already escaped\n"
+                 "#+begin_example")
+         ;; An ordinary selection: a list copied from a page.
+         "Three points:\n* first\n* second\n* third"
+         "%(ignore (setq dotfiles-test/protocol-evaluated t))"
+         (format "%%[%s]" fixture))))
   (make-directory org-roam-directory t)
   (with-temp-file fixture
     (insert fixture-text))
   (dolist (field '(title body ref))
     (dolist (payload payloads)
-      (let* ((case-name (format "%s %d" field (cl-position payload payloads)))
-             (title (if (eq field 'title) (concat "Case " payload) case-name))
-             (body (if (eq field 'body) payload ""))
-             (ref (concat "https://example.com/" (string-replace " " "-" case-name)
-                          (if (eq field 'ref) (concat "?q=" payload) ""))))
-        (dotfiles-test/protocol-capture title body ref)
-        (when dotfiles-test/protocol-evaluated
-          (error "Protocol %s evaluated its payload" case-name))
-        (with-temp-buffer
-          (insert (dotfiles-test/note-text title))
-          (when (string-search fixture-text (buffer-string))
-            (error "Protocol %s inserted the fixture file" case-name))
-          (unless (string-search (concat "#+TITLE: " title "\n") (buffer-string))
-            (error "Protocol %s changed the title" case-name))
-          (unless (string-search (concat "#+begin_quote\n" body "\n#+end_quote")
-                                 (buffer-string))
-            (error "Protocol %s changed the body" case-name))
-          (org-mode)
-          (unless (member ref (split-string-and-unquote
-                               (org-entry-get (point-min) "ROAM_REFS")))
-            (error "Protocol %s changed the ref" case-name)))))))
+      ;; A ref is one URL; the multi-line payloads apply to the page's text.
+      (unless (and (eq field 'ref) (string-search "\n" payload))
+        (let* ((case-name (format "%s %d" field (cl-position payload payloads)))
+               (title (if (eq field 'title) (concat "Case " payload) case-name))
+               (body (if (eq field 'body) payload ""))
+               (ref (concat "https://example.com/" (string-replace " " "-" case-name)
+                            (if (eq field 'ref) (concat "?q=" payload) ""))))
+          (dotfiles-test/protocol-capture title body ref)
+          (when dotfiles-test/protocol-evaluated
+            (error "Protocol %s evaluated its payload" case-name))
+          (with-temp-buffer
+            (insert (dotfiles-test/note-text title))
+            (when (string-search fixture-text (buffer-string))
+              (error "Protocol %s inserted the fixture file" case-name))
+            (org-mode)
+            (let* ((tree (org-element-parse-buffer))
+                   (headlines (org-element-map tree 'headline
+                                (lambda (headline)
+                                  (org-element-property :raw-value headline))))
+                   (blocks (org-element-map tree 'src-block
+                             (lambda (block)
+                               (org-element-property :language block))))
+                   (quotes (org-element-map tree 'example-block
+                             (lambda (block)
+                               (org-element-property :value block)))))
+              (unless (equal headlines dotfiles-test/note-headlines)
+                (error "Protocol %s changed the note's headings: %S"
+                       case-name headlines))
+              (when blocks
+                (error "Protocol %s added a source block: %S" case-name blocks))
+              ;; Org reads the block back unescaped, so this is the page's
+              ;; text as the browser sent it.
+              (unless (equal quotes (list (concat body "\n")))
+                (error "Protocol %s changed the body: %S" case-name quotes)))
+            (unless (string-search
+                     (concat "#+TITLE: " (dotfiles-test/one-line title) "\n")
+                     (buffer-string))
+              (error "Protocol %s changed the title" case-name))
+            (unless (member ref (split-string-and-unquote
+                                 (org-entry-get (point-min) "ROAM_REFS")))
+              (error "Protocol %s changed the ref" case-name))))))))
 
 ;; A second capture of the same ref goes into the existing note, after the
 ;; first quote under its Notes heading.
@@ -71,8 +120,8 @@
 (dotfiles-test/protocol-capture "Repeat" "second quote" "https://example.com/repeat")
 (let ((note (dotfiles-test/note-text "Repeat")))
   (unless (string-match-p
-           (concat "^\\* Notes\n\\(?:.*\n\\)*?#\\+begin_quote\nfirst quote\n"
-                   "\\(?:.*\n\\)*?#\\+begin_quote\nsecond quote\n")
+           (concat "^\\* Notes\n\\(?:.*\n\\)*?#\\+begin_example\nfirst quote\n"
+                   "\\(?:.*\n\\)*?#\\+begin_example\nsecond quote\n")
            note)
     (error "A repeat capture did not go under the note's Notes heading:\n%s"
            note)))
