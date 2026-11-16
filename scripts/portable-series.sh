@@ -19,6 +19,17 @@ readonly -a origin_main_fetch=(
   fetch --no-prune origin refs/heads/main:refs/remotes/origin/main
 )
 
+# The placeholder identity of a portable worktree, as key and value pairs. It
+# lives in the worktree's own configuration, which git worktree remove and
+# git worktree prune delete, so a branch attached to a new worktree needs it
+# set again.
+readonly -a portable_worktree_config=(
+  user.name "Portable Dotfiles"
+  user.email "portable@localhost"
+  commit.gpgsign false
+  tag.gpgsign false
+)
+
 usage() {
   cat <<'EOF'
 Usage:
@@ -319,6 +330,36 @@ print_origin_main_fetch_command() {
   printf '\n' >&2
 }
 
+# Attaching the branch alone would leave the new worktree committing under
+# the caller's own identity, which export then refuses.
+print_attach_help() {
+  local branch=$1
+  local index
+
+  printf '%s\n' \
+    "Attach the existing branch to a reviewed path and restore the" \
+    "placeholder identity with:" >&2
+  printf '  git -C %q worktree add <path> %q\n' "$repo_root" "$branch" >&2
+  printf '  git -C %q config extensions.worktreeConfig true\n' "$repo_root" >&2
+  for ((index = 0; index < ${#portable_worktree_config[@]}; index += 2)); do
+    printf '  git -C <path> config --worktree %q %q\n' \
+      "${portable_worktree_config[index]}" \
+      "${portable_worktree_config[index + 1]}" >&2
+  done
+}
+
+configure_portable_worktree() {
+  local worktree=$1
+  local index
+
+  git -C "$repo_root" config extensions.worktreeConfig true || return 1
+  for ((index = 0; index < ${#portable_worktree_config[@]}; index += 2)); do
+    git -C "$worktree" config --worktree \
+      "${portable_worktree_config[index]}" \
+      "${portable_worktree_config[index + 1]}" || return 1
+  done
+}
+
 start_series() {
   local name=$1
   local worktree=${2:-"/tmp/dotfiles-portable-$name"}
@@ -338,9 +379,7 @@ start_series() {
         print_worktree_inspection_help
         die "branch already exists with prunable worktree registration: $branch"
       else
-        printf '%s\n' "Attach the existing branch to a reviewed path with:" >&2
-        printf '  git -C %q worktree add <path> %q\n' \
-          "$repo_root" "$branch" >&2
+        print_attach_help "$branch"
         die "branch already exists without a worktree: $branch"
       fi
     fi
@@ -353,11 +392,7 @@ start_series() {
 
   git -C "$repo_root" "${origin_main_fetch[@]}"
   git -C "$repo_root" worktree add -b "$branch" "$worktree" origin/main
-  git -C "$repo_root" config extensions.worktreeConfig true
-  git -C "$worktree" config --worktree user.name "Portable Dotfiles"
-  git -C "$worktree" config --worktree user.email "portable@localhost"
-  git -C "$worktree" config --worktree commit.gpgsign false
-  git -C "$worktree" config --worktree tag.gpgsign false
+  configure_portable_worktree "$worktree"
 
   printf '%s\n' \
     "Portable worktree ready: $worktree" \

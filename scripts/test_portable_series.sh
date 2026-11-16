@@ -245,6 +245,18 @@ grep -Fq \
 printf -v expected_attach '  git -C %q worktree add <path> %q' \
   "$repo" replay/unattached
 grep -Fq "$expected_attach" "$start_error"
+# The placeholder identity went with the removed worktree's own config, so
+# the guidance has to restore it as well.
+printf -v expected_extension '  git -C %q config extensions.worktreeConfig true' \
+  "$repo"
+grep -Fxq "$expected_extension" "$start_error"
+for expected_config in \
+  'user.name Portable\ Dotfiles' \
+  'user.email portable@localhost' \
+  'commit.gpgsign false' \
+  'tag.gpgsign false'; do
+  grep -Fxq "  git -C <path> config --worktree $expected_config" "$start_error"
+done
 git branch -D replay/unattached >/dev/null
 
 prunable_worktree="$temporary_directory/prunable-worktree"
