@@ -12,6 +12,13 @@ IFS=$'\n\t'
 repo_root=$(git rev-parse --show-toplevel)
 readonly repo_root
 
+# Refresh origin/main whatever the caller's fetch.prune is: under that setting
+# the short refspec main:refs/remotes/origin/main deletes origin/main, so keep
+# the source fully qualified and pruning off.
+readonly -a origin_main_fetch=(
+  fetch --no-prune origin refs/heads/main:refs/remotes/origin/main
+)
+
 usage() {
   cat <<'EOF'
 Usage:
@@ -306,6 +313,12 @@ print_worktree_inspection_help() {
   printf '  git -C %q worktree list --porcelain\n' "$repo_root" >&2
 }
 
+print_origin_main_fetch_command() {
+  printf '  git -C %q' "$repo_root" >&2
+  printf ' %q' "${origin_main_fetch[@]}" >&2
+  printf '\n' >&2
+}
+
 start_series() {
   local name=$1
   local worktree=${2:-"/tmp/dotfiles-portable-$name"}
@@ -338,7 +351,7 @@ start_series() {
     return 1
   fi
 
-  git -C "$repo_root" fetch origin refs/heads/main:refs/remotes/origin/main
+  git -C "$repo_root" "${origin_main_fetch[@]}"
   git -C "$repo_root" worktree add -b "$branch" "$worktree" origin/main
   git -C "$repo_root" config extensions.worktreeConfig true
   git -C "$worktree" config --worktree user.name "Portable Dotfiles"
@@ -499,8 +512,7 @@ export_series() (
   [[ -z $worktree_status ]] ||
     { die "portable worktree is not clean" || return 1; }
 
-  git -C "$repo_root" fetch origin refs/heads/main:refs/remotes/origin/main ||
-    return 1
+  git -C "$repo_root" "${origin_main_fetch[@]}" || return 1
   base=$(git -C "$repo_root" rev-parse origin/main) || return 1
   merge_base=$(git -C "$worktree" merge-base HEAD origin/main) || return 1
   [[ $merge_base == "$base" ]] ||
@@ -659,7 +671,9 @@ clean_series() {
     return 1
   }
   git -C "$repo_root" show-ref --verify --quiet refs/remotes/origin/main || {
-    die "origin/main is not fetched; run git fetch origin main first"
+    printf '%s\n' "Fetch origin/main with:" >&2
+    print_origin_main_fetch_command
+    die "origin/main is not fetched"
     return 1
   }
 
@@ -685,7 +699,9 @@ clean_series() {
     return 1
   }
   if grep -q '^+' <<<"$unrepresented"; then
-    die "$branch has commits not represented in origin/main; export and apply them, or git fetch origin main first"
+    printf '%s\n' "If origin/main is stale, refresh it with:" >&2
+    print_origin_main_fetch_command
+    die "$branch has commits not represented in origin/main; export and apply them, or refresh origin/main first"
     return 1
   fi
 

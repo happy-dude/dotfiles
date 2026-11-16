@@ -344,8 +344,9 @@ grep -Fxq 'version=2' "$trip_manifest" ||
 grep -Fxq "tree=$trip_tree" "$trip_manifest" ||
   fail 'round trip: the manifest does not record the validated tree'
 
-# A destination clone of the same origin carrying the settings of the owner's
-# global Git configuration that changed what git am landed.
+# A destination clone of the same origin carrying the settings from
+# git/default.nix that change what git am lands, or that a fetch has to
+# survive.
 make_trip_destination() {
   local repo="$TMPDIR_TEST/$1"
 
@@ -355,6 +356,8 @@ make_trip_destination() {
   git -C "$repo" config user.signingkey 'DEADBEEF'
   git -C "$repo" config gpg.program "$fake_bin/sign"
   git -C "$repo" config apply.whitespace fix
+  git -C "$repo" config fetch.prune true
+  git -C "$repo" config fetch.pruneTags true
   printf '%s' "$repo"
 }
 
@@ -490,5 +493,20 @@ assert_stops_before_main 'conflicting patch' "$destination" \
   "$altered/dotfiles-trip.manifest" 'Application stopped before main'
 [[ $trip_log == *"am --abort"* ]] ||
   fail 'conflicting patch: git am was not left in progress'
+
+# The destination has fetch.prune set, so the refresh of origin/main must
+# neither delete it nor leave it stale once upstream has moved.
+printf 'upstream\n' >"$trip_seed/upstream"
+commit_all "$trip_seed" 'tests: advance upstream past the series base'
+git -C "$trip_seed" push -q origin main
+run_trip_apply "$trip_manifest" "$destination"
+((trip_status != 0)) || fail 'moved upstream: expected a non-zero exit'
+[[ $trip_log == *"must exactly match origin/main"* ]] ||
+  fail "moved upstream: unexpected message: $trip_log"
+upstream=$(git -C "$trip_seed" rev-parse HEAD)
+[[ $(git -C "$destination" rev-parse refs/remotes/origin/main) == "$upstream" ]] ||
+  fail 'moved upstream: origin/main was removed or left stale'
+[[ $(git -C "$destination" rev-parse main) == "$trip_base" ]] ||
+  fail 'moved upstream: main moved'
 
 printf 'apply-portable-series: all cases passed\n'

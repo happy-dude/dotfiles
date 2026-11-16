@@ -279,6 +279,21 @@ if start_series existing-path "$existing_path" 2>"$start_error"; then
 fi
 grep -Fq "worktree path already exists: $existing_path" "$start_error"
 
+# The hint for a missing origin/main is the fetch the scripts run themselves:
+# under fetch.prune, git fetch origin main:refs/remotes/origin/main would
+# delete the ref it was asked to create.
+printf -v expected_fetch \
+  '  git -C %q fetch --no-prune origin refs/heads/main:refs/remotes/origin/main' \
+  "$repo"
+git branch replay/unfetched
+if clean_series unfetched 2>"$start_error"; then
+  printf 'cleaned a series without origin/main\n' >&2
+  exit 1
+fi
+grep -Fq 'origin/main is not fetched' "$start_error"
+grep -Fxq "$expected_fetch" "$start_error"
+git branch -D replay/unfetched >/dev/null
+
 # Sourced callers test these functions in conditions, where set -e is inert,
 # so a rejected name must stop the function itself.
 if start_series 'BadName' "$temporary_directory/bad-name" \
@@ -340,6 +355,10 @@ git fetch --quiet origin refs/heads/main:refs/remotes/origin/main
 git config --unset-all remote.origin.fetch
 git config --add remote.origin.fetch \
   '+refs/heads/unrelated:refs/remotes/origin/unrelated'
+# git/default.nix sets fetch.prune; the refresh of origin/main must neither
+# delete the ref nor leave it stale.
+git config fetch.prune true
+git config fetch.pruneTags true
 printf '%s\n' advanced >upstream-only
 git add upstream-only
 git commit --quiet -m 'tests: advance the portable base'
@@ -347,6 +366,7 @@ git push --quiet origin main
 
 series_worktree="$temporary_directory/series-demo"
 start_series demo "$series_worktree" >/dev/null
+test "$(git rev-parse --verify refs/remotes/origin/main)" = "$(git rev-parse main)"
 test "$(git -C "$series_worktree" rev-parse HEAD)" = "$(git rev-parse main)"
 printf '%s\n' represented >"$series_worktree/represented"
 git -C "$series_worktree" add represented
@@ -382,10 +402,11 @@ staging=("$output_directory"/.dotfiles-demo.*)
   exit 1
 }
 
-if clean_series demo 2>/dev/null; then
+if clean_series demo 2>"$start_error"; then
   printf 'cleaned a series with unrepresented commits\n' >&2
   exit 1
 fi
+grep -Fxq "$expected_fetch" "$start_error"
 test -d "$series_worktree"
 
 # The same patch lands upstream (re-authored, as the apply script does).

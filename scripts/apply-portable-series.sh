@@ -106,7 +106,9 @@ main_status=$(git -C "$repo" status --porcelain=v1 --untracked-files=all) ||
   die "unable to read the main worktree status: $repo"
 [[ -z $main_status ]] || die "main worktree is not clean"
 
-git -C "$repo" fetch origin refs/heads/main:refs/remotes/origin/main
+# Under fetch.prune the short refspec main:refs/remotes/origin/main deletes
+# origin/main, so keep the source fully qualified and pruning off.
+git -C "$repo" fetch --no-prune origin refs/heads/main:refs/remotes/origin/main
 head=$(git -C "$repo" rev-parse HEAD)
 origin_main=$(git -C "$repo" rev-parse origin/main)
 [[ $head == "$origin_main" ]] ||

@@ -283,10 +283,14 @@ grep -q 'empty commit' "$TMPDIR_TEST/export.log" ||
   fail 'empty-commit rejection replaced published artifacts'
 git -C "$worktree" reset --quiet --hard HEAD~1
 
-# A narrow fetch mapping must not leave export validating against a stale base.
+# A narrow fetch mapping must not leave export validating against a stale
+# base, and fetch.prune, which git/default.nix sets, must not make the refresh
+# delete origin/main.
 git -C "$repo" config --unset-all remote.origin.fetch
 git -C "$repo" config --add remote.origin.fetch \
   '+refs/heads/unrelated:refs/remotes/origin/unrelated'
+git -C "$repo" config fetch.prune true
+git -C "$repo" config fetch.pruneTags true
 printf 'new upstream\n' >"$seed/upstream"
 commit_all "$seed" 'tests: advance upstream after starting a series'
 git -C "$seed" push --quiet origin main
