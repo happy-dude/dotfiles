@@ -34,17 +34,10 @@ nnoremap    q/          <nop>
 " Make Y behave like C and D
 nnoremap    Y           y$
 
-" Make cw behave like dw and yw
-" NOTE: This causes some weird behaviour for end-of-line edge cases:
-"   https://asciinema.org/a/9843
-" To compensate for this edge case, use caw
-"onoremap <silent> w :execute 'normal! '.v:count1.'w'<CR>
-
-" From http://www.reddit.com/r/vim/comments/26nut8/why_does_cw_work_like_ce/chsz0pq
-" Operator-pending z uses the normal w motion. The optional cw mapping below
-" is disabled, so cw retains Vim's built-in behaviour.
-onoremap    <silent>z   :<C-U>normal! w<CR>
-"map        cw          cz
+" "cw" stops at the end of the word. To make it include the following white
+" space like "dw", remove the z flag from 'cpoptions' in Vim or the _ flag in
+" Neovim; "caw" does it once. In Vim, removing z also disables the linewise
+" d-special exception. ref: :h cpo-z, :h cpo-_, :h d-special
 
 " From https://stackoverflow.com/posts/3879737/revisions
 " :hs command abbreviation/ alias for :split (horizontal split)
