@@ -12,11 +12,6 @@ noremap     <silent><expr><Down>    (v:count == 0 ? 'gj' : 'j')
 noremap     <silent><expr><Up>      (v:count == 0 ? 'gk' : 'k')
 inoremap    <silent><Up>            <C-o>gk
 inoremap    <silent><Down>          <C-o>gj
-" Home and end keys are dependent on TERM variable and terminfo capabilities
-noremap     <silent><Home>          g<Home>
-noremap     <silent><End>           g<End>
-inoremap    <silent><Home>          <C-o>g<Home>
-inoremap    <silent><End>           <C-o>g<End>
 
 " Optional window-navigation mappings; left disabled.
 "noremap    <C-j>       <C-w>j
