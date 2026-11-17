@@ -1,4 +1,8 @@
 " custom mappings
+"
+" The vimrc runs before plugin scripts, so a key a plugin maps from its
+" plugin/ directory (vim-rsi's Insert-mode emacs keys, for example) replaces
+" a mapping made here. Override those from after/plugin/ instead.
 
 " Default leader: \ (backslash)
 " Local leader: , (comma) -- recommended for conjure and vim REPL environments
@@ -7,16 +11,13 @@ let maplocalleader = ","
 " Delete the previous word when the frontend reports distinct Ctrl-Backspace.
 inoremap <C-BS> <C-w>
 
-" Arrow keys follow screen lines; an explicit count uses buffer lines.
-noremap     <silent><expr><Down>    (v:count == 0 ? 'gj' : 'j')
-noremap     <silent><expr><Up>      (v:count == 0 ? 'gk' : 'k')
-inoremap    <silent><Up>            <C-o>gk
-inoremap    <silent><Down>          <C-o>gj
-" Home and end keys are dependent on TERM variable and terminfo capabilities
-noremap     <silent><Home>          g<Home>
-noremap     <silent><End>           g<End>
-inoremap    <silent><Home>          <C-o>g<Home>
-inoremap    <silent><End>           <C-o>g<End>
+" Arrow keys follow screen lines in Normal, Visual, and Select mode; an
+" explicit count uses buffer lines. After an operator they stay the linewise
+" j and k, because gj and gk are characterwise motions.
+nnoremap    <silent><expr><Down>    (v:count == 0 ? 'gj' : 'j')
+vnoremap    <silent><expr><Down>    (v:count == 0 ? 'gj' : 'j')
+nnoremap    <silent><expr><Up>      (v:count == 0 ? 'gk' : 'k')
+vnoremap    <silent><expr><Up>      (v:count == 0 ? 'gk' : 'k')
 
 " Optional window-navigation mappings; left disabled.
 "noremap    <C-j>       <C-w>j
@@ -24,8 +25,13 @@ inoremap    <silent><End>           <C-o>g<End>
 "noremap    <C-h>       <C-w>h
 "noremap    <C-l>       <C-w>l
 
-" Never "accidentally" enter ex mode
-nnoremap    Q           <nop>
+" Never "accidentally" enter Ex mode. Vim enters it with Q and gQ. Neovim
+" 0.13 (nightly) enters it with [count]q:, which the q: mapping below blocks,
+" and gives Q and gQ to multicursors. ref: :h Q, :h Ex-mode
+if !has('nvim')
+  nnoremap  Q           <nop>
+  nnoremap  gQ          <nop>
+endif
 
 " Command history; use CTRL-F instead while in command mode
 nnoremap    q:          <nop>
@@ -37,17 +43,10 @@ nnoremap    q/          <nop>
 " Make Y behave like C and D
 nnoremap    Y           y$
 
-" Make cw behave like dw and yw
-" NOTE: This causes some weird behaviour for end-of-line edge cases:
-"   https://asciinema.org/a/9843
-" To compensate for this edge case, use caw
-"onoremap <silent> w :execute 'normal! '.v:count1.'w'<CR>
-
-" From http://www.reddit.com/r/vim/comments/26nut8/why_does_cw_work_like_ce/chsz0pq
-" Operator-pending z uses the normal w motion. The optional cw mapping below
-" is disabled, so cw retains Vim's built-in behaviour.
-onoremap    <silent>z   :<C-U>normal! w<CR>
-"map        cw          cz
+" "cw" stops at the end of the word. To make it include the following white
+" space like "dw", remove the z flag from 'cpoptions' in Vim or the _ flag in
+" Neovim; "caw" does it once. In Vim, removing z also disables the linewise
+" d-special exception. ref: :h cpo-z, :h cpo-_, :h d-special
 
 " From https://stackoverflow.com/posts/3879737/revisions
 " :hs command abbreviation/ alias for :split (horizontal split)

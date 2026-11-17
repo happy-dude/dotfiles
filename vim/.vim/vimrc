@@ -75,8 +75,10 @@ if &loadplugins
         \ 'vimtex',
         \ ]
 
-  if !has('nvim')
-    call add(s:package_configs, 'rainbow')
+  if has('nvim')
+    call add(s:package_configs, 'conjure')
+  else
+    call extend(s:package_configs, ['easymotion', 'rainbow'])
   endif
 
   for s:package_config in s:package_configs

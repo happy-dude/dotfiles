@@ -2,7 +2,7 @@
 
 require('hop').setup({
   -- keys default: 'asdghklqwertyuiopzxcvbnmfj'
-  -- use colemak equivalent
+  -- use colemak equivalent; vimrc_dir/packages/easymotion.vim gives Vim the same labels
   keys = 'arstdhneioqwfpgjluyzxcvbkm',
 })
 
