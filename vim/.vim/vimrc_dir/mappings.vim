@@ -7,11 +7,13 @@ let maplocalleader = ","
 " Delete the previous word when the frontend reports distinct Ctrl-Backspace.
 inoremap <C-BS> <C-w>
 
-" Arrow keys follow screen lines; an explicit count uses buffer lines.
-noremap     <silent><expr><Down>    (v:count == 0 ? 'gj' : 'j')
-noremap     <silent><expr><Up>      (v:count == 0 ? 'gk' : 'k')
-inoremap    <silent><Up>            <C-o>gk
-inoremap    <silent><Down>          <C-o>gj
+" Arrow keys follow screen lines in Normal, Visual, and Select mode; an
+" explicit count uses buffer lines. After an operator they stay the linewise
+" j and k, because gj and gk are characterwise motions.
+nnoremap    <silent><expr><Down>    (v:count == 0 ? 'gj' : 'j')
+vnoremap    <silent><expr><Down>    (v:count == 0 ? 'gj' : 'j')
+nnoremap    <silent><expr><Up>      (v:count == 0 ? 'gk' : 'k')
+vnoremap    <silent><expr><Up>      (v:count == 0 ? 'gk' : 'k')
 
 " Optional window-navigation mappings; left disabled.
 "noremap    <C-j>       <C-w>j
