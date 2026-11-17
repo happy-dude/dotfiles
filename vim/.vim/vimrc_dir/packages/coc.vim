@@ -48,7 +48,9 @@ nmap <silent> ]g <Plug>(coc-diagnostic-next)
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gr <Plug>(coc-references)
+" Neovim's gra, gri, grn, grr, grt, and grx defaults would otherwise make gr
+" wait for 'timeoutlen'. ref: :h gr-default
+nmap <silent><nowait> gr <Plug>(coc-references)
 
 " Use K to show documentation in preview window
 nnoremap <silent> K :call ShowDocumentation()<CR>
