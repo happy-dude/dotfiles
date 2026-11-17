@@ -89,9 +89,10 @@
         # Silent Ex mode never queries the terminal, so declare the colour
         # depth the colorscheme guard expects; :cquit fails the check when the
         # expected scheme is not the one in effect, tests/rainbow.vim fails
-        # it when the rainbow plugin does not use the palette, and
+        # it when the rainbow plugin does not use the palette,
         # tests/sensitive-paths.vim when the credential paths did not reach
-        # cache.vim.
+        # cache.vim, and tests/mappings.vim when a key this configuration
+        # owns is mapped from the wrong place.
         DOTFILES_RAINBOW_PALETTE=${rainbowColours} \
         DOTFILES_SENSITIVE_PATHS=${sensitivePaths} \
         HOME="$PWD/home" TERM=xterm-256color vim -es --cmd 'set t_Co=256' \
@@ -99,6 +100,7 @@
           -c 'if get(g:, "colors_name", "") !=# "gruvbox-material" | cquit | endif' \
           -c 'source ${./tests/rainbow.vim}' \
           -c 'source ${./tests/sensitive-paths.vim}' \
+          -c 'source ${./tests/mappings.vim}' \
           -c 'qa!' </dev/null
         test -f messages.txt
         if grep -E '^E[0-9]+' messages.txt; then
