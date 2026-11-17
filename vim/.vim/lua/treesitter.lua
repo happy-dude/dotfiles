@@ -76,16 +76,6 @@ for lhs, capture in pairs({
   end, { desc = 'Select ' .. capture })
 end
 
--- Rename through CoC, falling back to the native LSP client.
-vim.keymap.set('n', 'gs', function()
-  -- Use coc.nvim rename if available, fall back to native LSP
-  if vim.fn.exists('*CocActionAsync') == 1 then
-    vim.fn.CocActionAsync('rename')
-  else
-    vim.lsp.buf.rename()
-  end
-end, { desc = 'Smart rename (LSP)' })
-
 -- rainbow-delimiters settings
 -- The colours come from lib/rainbow-delimiters.nix, which vim/default.nix
 -- sets as g:dotfiles_rainbow_palette. The group names are numbered by depth

@@ -65,6 +65,7 @@ endfunction
 
 " Symbol renaming
 nmap <leader>rn <Plug>(coc-rename)
+nmap <silent> gs <Plug>(coc-rename)
 
 " Formatting selected code
 xmap <leader>f  <Plug>(coc-format-selected)
