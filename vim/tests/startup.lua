@@ -86,3 +86,40 @@ vim.api.nvim_buf_delete(wiped, { force = true })
 vim.wait(50, function()
   return false
 end)
+
+-- lua/qol.lua's dd sends only a plain dd on a blank line to the black-hole
+-- register; a count (1dd included) or a named register keeps the stock dd.
+local function after_dd(lines, keys)
+  local scratch = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_set_current_buf(scratch)
+  vim.api.nvim_buf_set_lines(scratch, 0, -1, false, lines)
+  vim.api.nvim_win_set_cursor(0, { 1, 0 })
+  vim.fn.setreg('"', 'yanked')
+  vim.fn.setreg('a', 'yanked')
+  vim.api.nvim_feedkeys(keys, 'tx', false)
+  local result = {
+    lines = vim.api.nvim_buf_get_lines(scratch, 0, -1, false),
+    unnamed = vim.fn.getreg('"'),
+    a = vim.fn.getreg('a'),
+  }
+  vim.api.nvim_buf_delete(scratch, { force = true })
+  return result
+end
+local function assert_dd(keys, lines, want_lines, register, want_register)
+  local got = after_dd(lines, keys)
+  assert(
+    vim.deep_equal(got.lines, want_lines),
+    string.format('%s left %s, not %s', keys, vim.inspect(got.lines), vim.inspect(want_lines))
+  )
+  assert(
+    got[register] == want_register,
+    string.format('%s left %s = %q, not %q', keys, register, got[register], want_register)
+  )
+end
+-- The clipboard provider is absent here, so the unnamed register is ".
+vim.o.clipboard = ''
+assert_dd('dd', { '', 'keep' }, { 'keep' }, 'unnamed', 'yanked')
+assert_dd('dd', { 'text', 'keep' }, { 'keep' }, 'unnamed', 'text\n')
+assert_dd('1dd', { '', 'keep' }, { 'keep' }, 'unnamed', '\n')
+assert_dd('2dd', { '', 'text', 'keep' }, { 'keep' }, 'unnamed', '\ntext\n')
+assert_dd('"add', { '', 'keep' }, { 'keep' }, 'a', '\n')
