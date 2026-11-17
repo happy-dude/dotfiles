@@ -9,6 +9,9 @@
 let maplocalleader = ","
 
 " Delete the previous word when the frontend reports distinct Ctrl-Backspace.
+" Inside tmux, the root-table binding in tmux/.tmux.conf turns Ctrl-Backspace
+" into Ctrl-W before any application sees it, so this mapping only fires
+" outside tmux.
 inoremap <C-BS> <C-w>
 
 " Arrow keys follow screen lines in Normal, Visual, and Select mode; an
@@ -32,9 +35,9 @@ vnoremap    <silent><expr><Up>      (v:count == 0 ? 'gk' : 'k')
 " ref: :h Q, :h gQ, :h Ex-mode
 if !has('nvim')
   nnoremap  Q           <nop>
-  nnoremap  gQ          <nop>
 endif
 if !has('nvim-0.13')
+  nnoremap  gQ          <nop>
 endif
 
 " Command history; use CTRL-F instead while in command mode
