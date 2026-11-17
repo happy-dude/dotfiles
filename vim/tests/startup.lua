@@ -123,3 +123,10 @@ assert_dd('dd', { 'text', 'keep' }, { 'keep' }, 'unnamed', 'text\n')
 assert_dd('1dd', { '', 'keep' }, { 'keep' }, 'unnamed', '\n')
 assert_dd('2dd', { '', 'text', 'keep' }, { 'keep' }, 'unnamed', '\ntext\n')
 assert_dd('"add', { '', 'keep' }, { 'keep' }, 'a', '\n')
+
+-- The leader mappings that act on a selection are Visual-only: in Select mode
+-- a printable key must replace the selection (:h Select-mode-mapping).
+for _, lhs in ipairs({ '<Leader>C', '<Leader>dh', '<Leader>dp' }) do
+  assert(vim.fn.maparg(lhs, 'x') ~= '', lhs .. ' is not mapped in Visual mode')
+  assert(vim.fn.maparg(lhs, 's') == '', lhs .. ' is mapped in Select mode')
+end

@@ -9,6 +9,9 @@
 let maplocalleader = ","
 
 " Delete the previous word when the frontend reports distinct Ctrl-Backspace.
+" Inside tmux, the root-table binding in tmux/.tmux.conf turns Ctrl-Backspace
+" into Ctrl-W before any application sees it, so this mapping only fires
+" outside tmux.
 inoremap <C-BS> <C-w>
 
 " Arrow keys follow screen lines in Normal, Visual, and Select mode; an
@@ -25,11 +28,15 @@ vnoremap    <silent><expr><Up>      (v:count == 0 ? 'gk' : 'k')
 "noremap    <C-h>       <C-w>h
 "noremap    <C-l>       <C-w>l
 
-" Never "accidentally" enter Ex mode. Vim enters it with Q and gQ. Neovim
-" 0.13 (nightly) enters it with [count]q:, which the q: mapping below blocks,
-" and gives Q and gQ to multicursors. ref: :h Q, :h Ex-mode
+" Never "accidentally" enter Ex mode. Vim enters it with Q and gQ, and Neovim
+" 0.12 and earlier with gQ; there Neovim's Q replays the last recorded
+" register, which stays. Neovim 0.13 (nightly) enters Ex mode with [count]q:,
+" which the q: mapping below blocks, and gives Q and gQ to multicursors.
+" ref: :h Q, :h gQ, :h Ex-mode
 if !has('nvim')
   nnoremap  Q           <nop>
+endif
+if !has('nvim-0.13')
   nnoremap  gQ          <nop>
 endif
 

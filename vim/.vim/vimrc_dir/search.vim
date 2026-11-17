@@ -18,9 +18,14 @@ augroup SearchHighlights
   autocmd ColorScheme * call <SID>ApplySearchHighlights()
 augroup END
 
-" A function restores the search highlight state when it returns, so
-" :nohlsearch has to run from the mapping itself.
-nnoremap <silent> <C-L> <Cmd>nohlsearch<Bar>if &diff<Bar>diffupdate<Bar>endif<CR><C-L>
+" Give Vim Neovim's default CTRL-L: clear the search highlight, update diffs
+" in diff mode, and redraw. A function restores the search highlight state
+" when it returns, so :nohlsearch has to run from the mapping itself. Neovim
+" keeps its own default, which runs :diffupdate unconditionally and also
+" clears multicursors. ref: :h CTRL-L-default
+if !has('nvim')
+  nnoremap <silent> <C-L> <Cmd>nohlsearch<Bar>if &diff<Bar>diffupdate<Bar>endif<CR><C-L>
+endif
 
 if executable('rg')
   let &grepprg = 'rg --color=never --vimgrep --no-heading --smart-case --hidden --glob '

@@ -27,6 +27,11 @@ for s:lhs in ['<C-e>', '<C-f>', '<C-b>']
         \ 'i ' . s:lhs . ' is not mapped from after/plugin/coc.vim')
 endfor
 
+" Vim enters Ex mode with Q and gQ; the configuration must block both.
+for s:lhs in ['Q', 'gQ']
+  call assert_equal('<Nop>', maparg(s:lhs, 'n'), 'n ' . s:lhs . ' is not blocked')
+endfor
+
 if !empty(v:errors)
   call writefile(v:errors, '/dev/stderr')
   cquit
