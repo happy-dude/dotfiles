@@ -31,11 +31,12 @@ function! CheckBackspace() abort
   return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
 
-" Use <c-space> to trigger completion
-if has('nvim')
-  inoremap <silent><expr> <c-space> coc#refresh()
-else
-  inoremap <silent><expr> <c-@> coc#refresh()
+" Use <C-Space> to trigger completion. Vim reads the NUL byte a legacy
+" terminal or tmux sends as <C-@>, and the kitty keyboard protocol's report as
+" <C-Space>; Neovim reads both as <C-Space>.
+inoremap <silent><expr> <C-Space> coc#refresh()
+if !has('nvim')
+  inoremap <silent><expr> <C-@> coc#refresh()
 endif
 
 " Use `[g` and `]g` to navigate diagnostics
