@@ -161,4 +161,5 @@ vim.keymap.set('n', '<leader>p', '<cmd>PasteImage<cr>', { desc = 'Paste image fr
 vim.keymap.set('n', '<leader>C', function()
   require('codecompanion').toggle()
 end, { silent = true, desc = 'CodeCompanion toggle' })
-vim.keymap.set('v', '<leader>C', ':CodeCompanionChat Add<CR>')
+-- 'x' rather than 'v', so typing \C over a Select-mode selection replaces it.
+vim.keymap.set('x', '<leader>C', ':CodeCompanionChat Add<CR>')
