@@ -21,8 +21,13 @@ vnoremap    <silent><expr><Up>      (v:count == 0 ? 'gk' : 'k')
 "noremap    <C-h>       <C-w>h
 "noremap    <C-l>       <C-w>l
 
-" Never "accidentally" enter ex mode
-nnoremap    Q           <nop>
+" Never "accidentally" enter Ex mode. Vim enters it with Q and gQ. Neovim
+" 0.13 (nightly) enters it with [count]q:, which the q: mapping below blocks,
+" and gives Q and gQ to multicursors. ref: :h Q, :h Ex-mode
+if !has('nvim')
+  nnoremap  Q           <nop>
+  nnoremap  gQ          <nop>
+endif
 
 " Command history; use CTRL-F instead while in command mode
 nnoremap    q:          <nop>
