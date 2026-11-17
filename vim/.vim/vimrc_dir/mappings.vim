@@ -1,4 +1,8 @@
 " custom mappings
+"
+" The vimrc runs before plugin scripts, so a key a plugin maps from its
+" plugin/ directory (vim-rsi's Insert-mode emacs keys, for example) replaces
+" a mapping made here. Override those from after/plugin/ instead.
 
 " Default leader: \ (backslash)
 " Local leader: , (comma) -- recommended for conjure and vim REPL environments
