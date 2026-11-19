@@ -43,6 +43,11 @@ call assert_equal([''], getline(1, '$'))
 undo
 call assert_equal(['first', 'middle', 'last'], getline(1, '$'))
 
+" Vim represents a NUL inside a buffer line as an embedded newline.
+call s:Fixture(["a\nb", 'last'])
+1S/z/Z/g
+call assert_equal(["a\nb", 'last'], getline(1, '$'))
+
 " Failed Perl input must not replace the addressed text with diagnostics.
 call s:Fixture(['first', 'middle', 'last'])
 2S/[/invalid/
