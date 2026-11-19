@@ -232,7 +232,7 @@ class FailureRecoveryTests(unittest.TestCase):
             target = root / "runtime.conf"
             target.symlink_to(source)
             snapshot = root / "snapshot"
-            host_files.validate_materialize(source, target, snapshot)
+            action = host_files.file_action(source, target, snapshot)
 
             def fail_copy(input_file, output):
                 output.write(input_file.read(1))
@@ -244,14 +244,14 @@ class FailureRecoveryTests(unittest.TestCase):
                 ),
                 self.assertRaises(OSError),
             ):
-                host_files.materialize(source, target, snapshot)
+                host_files.materialize(source, target, snapshot, action)
 
             self.assertTrue(target.is_symlink())
             self.assertEqual(target.read_bytes(), content)
             self.assertFalse(snapshot.exists())
             self.assertEqual(set(root.iterdir()), {source, target})
 
-            host_files.materialize(source, target, snapshot)
+            host_files.materialize(source, target, snapshot, action)
             self.assertFalse(target.is_symlink())
             self.assertEqual(target.read_bytes(), content)
             self.assertEqual(snapshot.read_bytes(), content)

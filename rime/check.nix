@@ -429,8 +429,11 @@ in {
   };
   rime-host-files = mkCheck {
     name = "rime-host-files-test";
-    tools = [rimeHostFiles];
+    tools = [rimeHostFiles pkgs.fcitx5 pkgs.dbus pkgs.systemd];
     script = ''
+      unset DBUS_SESSION_BUS_ADDRESS
+      export XDG_RUNTIME_DIR="$PWD/no-session"
+      busctl=${pkgs.systemd}/bin/busctl
       source_root="$PWD/source/fcitx5"
       home="$PWD/home"
       state="$PWD/state"
@@ -446,17 +449,17 @@ in {
       # after, so a refusal has to come from validation and write nothing.
       # Both take the home and state directories to act on.
       validate() {
-        HOME="$1" XDG_STATE_HOME="$2" rime-host-files validate "$source_root"
+        HOME="$1" XDG_STATE_HOME="$2" rime-host-files validate "$source_root" "$busctl"
       }
       deploy() {
-        HOME="$1" XDG_STATE_HOME="$2" rime-host-files deploy "$source_root"
+        HOME="$1" XDG_STATE_HOME="$2" rime-host-files deploy "$source_root" "$busctl"
       }
 
       validate "$home" "$state"
       test ! -e "$home"
       test ! -e "$state"
       HOME="$home" XDG_STATE_HOME="$state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       test -f "$home/.config/fcitx5/profile"
       test ! -L "$home/.config/fcitx5/profile"
       test "$(stat -c %a "$home/.config/fcitx5/profile")" = 644
@@ -474,13 +477,13 @@ in {
       relocated="$PWD/relocated-config"
       HOME="$home" XDG_CONFIG_HOME="$relocated" \
         XDG_STATE_HOME="$PWD/relocated-state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       test -f "$relocated/fcitx5/profile"
       mkdir relative-home
       (
         cd relative-home
         HOME="$PWD" XDG_CONFIG_HOME=relative XDG_STATE_HOME=relative-state \
-          rime-host-files deploy "$source_root"
+          rime-host-files deploy "$source_root" "$busctl"
       )
       test -f relative-home/.config/fcitx5/profile
       test -f relative-home/.local/state/rime/host-config/profile
@@ -489,12 +492,12 @@ in {
 
       printf '%s\n' runtime-edit >"$home/.config/fcitx5/profile"
       HOME="$home" XDG_STATE_HOME="$state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       grep -qx runtime-edit "$home/.config/fcitx5/profile"
 
       printf '%s\n' classic-v2 >"$source_root/conf/classicui.conf"
       HOME="$home" XDG_STATE_HOME="$state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       grep -qx classic-v2 "$home/.config/fcitx5/conf/classicui.conf"
 
       printf '%s\n' profile-v2 >"$source_root/profile"
@@ -509,7 +512,7 @@ in {
       test "$keep" = "  cp $source_root/profile $state/rime/host-config/profile"
       eval "$keep"
       HOME="$home" XDG_STATE_HOME="$state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       grep -qx runtime-edit "$home/.config/fcitx5/profile"
 
       # Removing the runtime file takes the declaration.
@@ -519,7 +522,7 @@ in {
       test "$take" = "  rm $home/.config/fcitx5/profile"
       eval "$take"
       HOME="$home" XDG_STATE_HOME="$state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       grep -qx profile-v3 "$home/.config/fcitx5/profile"
       grep -qx profile-v3 "$state/rime/host-config/profile"
 
@@ -549,7 +552,7 @@ in {
       listing "$fresh_home" "$fresh_state" >after
       diff before after
       HOME="$fresh_home" XDG_STATE_HOME="$fresh_state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       printf '%s\n' Top=level '[HiddenNotifications]' 0=hidden-by-fcitx \
         1=wayland-diagnose-gnome "" '[Other]' Key=value >expected
       diff expected "$notifications"
@@ -558,7 +561,7 @@ in {
       # A file that already holds the declared entries is not rewritten.
       inode="$(stat -c %i "$notifications")"
       HOME="$fresh_home" XDG_STATE_HOME="$fresh_state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       test "$(stat -c %i "$notifications")" = "$inode"
       diff expected "$notifications"
 
@@ -568,7 +571,7 @@ in {
       printf '%s\n' '[HiddenNotifications]' 0=wayland-diagnose-kde \
         >"$source_root/conf/notifications.conf"
       HOME="$fresh_home" XDG_STATE_HOME="$fresh_state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       printf '%s\n' Top=level '[HiddenNotifications]' 0=hidden-by-fcitx \
         1=wayland-diagnose-gnome 2=wayland-diagnose-kde "" '[Other]' \
         Key=value >expected
@@ -581,7 +584,7 @@ in {
       cp "$notifications" expected
       inode="$(stat -c %i "$notifications")"
       HOME="$fresh_home" XDG_STATE_HOME="$fresh_state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       test "$(stat -c %i "$notifications")" = "$inode"
       diff expected "$notifications"
       test ! -e "$fresh_state/rime/host-config/notifications.conf"
@@ -589,7 +592,7 @@ in {
       # A file without the section gains it after the existing content.
       printf '%s\n' '[Other]' Key=value >"$notifications"
       HOME="$fresh_home" XDG_STATE_HOME="$fresh_state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       printf '%s\n' '[Other]' Key=value "" '[HiddenNotifications]' \
         0=wayland-diagnose-kde >expected
       diff expected "$notifications"
@@ -601,6 +604,22 @@ in {
       watched=("$other_home" "$PWD/other-state")
       refused_alike "$other_home" "$PWD/other-state"
       grep -q 'Refusing unmanaged Rime host file' err
+
+      # An explicitly configured but unreachable bus is not evidence that
+      # Fcitx has stopped. Refuse it before creating anything in a fresh home.
+      watched=("$PWD/bad-bus-home" "$PWD/bad-bus-state")
+      DBUS_SESSION_BUS_ADDRESS="unix:path=$PWD/not-a-socket" \
+        refused_alike "$PWD/bad-bus-home" "$PWD/bad-bus-state"
+      grep -q 'Cannot check whether Fcitx owns' err
+      touch not-a-runtime-directory
+      XDG_RUNTIME_DIR="$PWD/not-a-runtime-directory" \
+        refused_alike "$PWD/bad-bus-home" "$PWD/bad-bus-state"
+      grep -q 'Cannot check whether Fcitx owns' err
+      XDG_RUNTIME_DIR=relative \
+        refused_alike "$PWD/bad-bus-home" "$PWD/bad-bus-state"
+      grep -q 'XDG_RUNTIME_DIR is not absolute' err
+
+      bash ${./tests/profile-session.sh} "$source_root" ${pkgs.dbus}/share/dbus-1/session.conf
 
       # host_files.py names each file it materializes, while rime/default.nix
       # ships the whole tracked Fcitx tree. A file added to the tree and not

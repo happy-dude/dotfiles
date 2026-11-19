@@ -1,6 +1,9 @@
+import os
 import re
 import shlex
+import subprocess
 import sys
+from enum import Enum, auto
 from pathlib import Path
 from typing import NamedTuple
 
@@ -12,7 +15,13 @@ _SECTION = re.compile(r"^\s*\[(.*)\]\s*$")
 _LIST_ENTRY = re.compile(r"^\s*\d+\s*=(.*)$")
 
 
-def validate_materialize(source: Path, target: Path, snapshot: Path) -> None:
+class Action(Enum):
+    REPLACE = auto()  # Install the declaration as both target and baseline.
+    RECORD = auto()  # Advance only the baseline of an already-matching file.
+    KEEP = auto()  # No new declaration. Keep any runtime edits.
+
+
+def file_action(source: Path, target: Path, snapshot: Path) -> Action:
     if not source.is_file() or source.is_symlink():
         fail(f"Rime source is not a regular file: {source}")
     if snapshot.is_symlink() or (snapshot.exists() and not snapshot.is_file()):
@@ -20,49 +29,48 @@ def validate_materialize(source: Path, target: Path, snapshot: Path) -> None:
     if target.is_symlink():
         if target.resolve(strict=False) != source.resolve(strict=False):
             fail(f"Refusing to replace unmanaged Rime link: {target}")
-    elif target.exists() and not target.is_file():
+        return Action.REPLACE
+    elif not target.exists():
+        return Action.REPLACE
+    elif not target.is_file():
         fail(f"Refusing to replace unmanaged Rime path: {target}")
-    elif target.is_file() and not snapshot.exists():
+    elif not snapshot.exists():
         if not same_content(source, target):
             fail(f"Refusing unmanaged Rime host file: {target}")
-    elif target.is_file() and snapshot.is_file():
-        source_changed = not same_content(source, snapshot)
-        target_changed = not same_content(target, snapshot)
-        target_matches_source = same_content(target, source)
-        if source_changed and target_changed and not target_matches_source:
-            # The two commands rely on materialize(): a snapshot equal to the
-            # source leaves the target alone, and a missing target is written
-            # from the source.
-            fail(
-                "Rime host file changed both declaratively and at runtime: "
-                f"{target}\n"
-                f"The declaration deployed last is recorded in {snapshot}.\n"
-                "To keep the runtime file, record the new declaration as "
-                "deployed:\n"
-                f"  cp {shlex.quote(str(source))} "
-                f"{shlex.quote(str(snapshot))}\n"
-                "To take the new declaration, remove the runtime file:\n"
-                f"  rm {shlex.quote(str(target))}\n"
-                "Then activate again."
-            )
+        return Action.RECORD
+    elif same_content(source, snapshot):
+        return Action.KEEP
+    elif same_content(target, snapshot):
+        return Action.REPLACE
+    elif same_content(target, source):
+        return Action.RECORD
+    else:
+        fail(
+            "Rime host file changed both declaratively and at runtime: "
+            f"{target}\n"
+            f"The declaration deployed last is recorded in {snapshot}.\n"
+            "To keep the runtime file, record the new declaration as "
+            "deployed:\n"
+            f"  cp {shlex.quote(str(source))} {shlex.quote(str(snapshot))}\n"
+            "To take the new declaration, remove the runtime file:\n"
+            f"  rm {shlex.quote(str(target))}\n"
+            "Then activate again."
+        )
 
 
-def materialize(source: Path, target: Path, snapshot: Path) -> None:
+def materialize(
+    source: Path, target: Path, snapshot: Path, action: Action
+) -> None:
+    if file_action(source, target, snapshot) != action:
+        fail(f"Rime host file changed during activation: {target}; retry.")
     target.parent.mkdir(parents=True, exist_ok=True)
     snapshot.parent.mkdir(parents=True, exist_ok=True)
-    if target.is_symlink() or not target.exists():
+    if action == Action.REPLACE:
         copy_file(source, target, 0o644)
         copy_file(source, snapshot, 0o600)
-    elif not snapshot.exists():
-        copy_file(source, snapshot, 0o600)
-        target.chmod(0o644)
-    elif same_content(source, snapshot):
-        target.chmod(0o644)
-    elif same_content(target, snapshot):
-        copy_file(source, target, 0o644)
-        copy_file(source, snapshot, 0o600)
-    elif same_content(target, source):
-        copy_file(source, snapshot, 0o600)
+    else:
+        if action == Action.RECORD:
+            copy_file(source, snapshot, 0o600)
         target.chmod(0o644)
 
 
@@ -167,14 +175,70 @@ def plan_hidden_notifications(source: Path, target: Path) -> str | None:
 class Plan(NamedTuple):
     """What deploy() writes once every refusal has been ruled out."""
 
-    files: tuple[tuple[Path, Path, Path], ...]
-    """(source, target, snapshot), replaced behind the snapshot guard."""
+    files: list[tuple[Path, Path, Path, Action]]
+    """(source, target, snapshot, action) behind the snapshot guard."""
     notifications: Path
     merged: str | None
     """The text notifications should receive, or None when it is current."""
 
 
-def validate(source_dir: Path) -> Plan:
+def check_bus_owner(busctl: str, profile: Path, env: dict[str, str]) -> None:
+    result = subprocess.run(
+        [
+            busctl,
+            "--user",
+            "--timeout=5s",
+            "call",
+            "org.freedesktop.DBus",
+            "/org/freedesktop/DBus",
+            "org.freedesktop.DBus",
+            "NameHasOwner",
+            "s",
+            "org.fcitx.Fcitx5",
+        ],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    if result.returncode == 0 and result.stdout.strip() == "b false":
+        return
+    if result.returncode != 0 or result.stdout.strip() != "b true":
+        fail(
+            f"Cannot check whether Fcitx owns {profile}: "
+            f"{result.stderr.strip() or result.stdout.strip()}. "
+            "Check the user session bus and activate again."
+        )
+    fail(
+        f"Fcitx is running and would write its old groups back to {profile}. "
+        "Stop Fcitx, activate again, then restart Fcitx."
+    )
+
+
+def require_stopped_profile(busctl: str, profile: Path) -> None:
+    # Fcitx saves its in-memory groups on exit. An activation on a private
+    # bus may share a profile with the desktop daemon on the normal user bus.
+    # Ask the bus itself in both places, without starting or stopping Fcitx.
+    env = os.environ.copy()
+    if env.get("DBUS_SESSION_BUS_ADDRESS"):
+        check_bus_owner(busctl, profile, env)
+        del env["DBUS_SESSION_BUS_ADDRESS"]
+    runtime = Path(env.get("XDG_RUNTIME_DIR") or f"/run/user/{os.getuid()}")
+    if not runtime.is_absolute():
+        fail(
+            f"Cannot check whether Fcitx owns {profile}: "
+            f"XDG_RUNTIME_DIR is not absolute: {runtime}"
+        )
+    try:
+        (runtime / "bus").lstat()
+    except FileNotFoundError:
+        return  # No conventional user bus in a headless activation.
+    except OSError as error:
+        fail(f"Cannot check whether Fcitx owns {profile}: {error}")
+    env["XDG_RUNTIME_DIR"] = str(runtime)
+    check_bus_owner(busctl, profile, env)
+
+
+def validate(source_dir: Path, busctl: str) -> Plan:
     """Raise every refusal deploy() can raise, without writing anything.
 
     Activation runs this before Home Manager's write boundary, so a refusal
@@ -220,16 +284,20 @@ def validate(source_dir: Path) -> Plan:
     for path in sorted(source_dir.rglob("*")):
         if not path.is_dir() and path not in declared:
             fail(f"Rime source file is not materialized: {path}")
+    actions = []
     for source, target, snapshot in files:
-        validate_materialize(source, target, snapshot)
+        action = file_action(source, target, snapshot)
+        if target == config_dir / "profile" and action == Action.REPLACE:
+            require_stopped_profile(busctl, target)
+        actions.append((source, target, snapshot, action))
     merged = plan_hidden_notifications(notifications_source, notifications)
-    return Plan(files, notifications, merged)
+    return Plan(actions, notifications, merged)
 
 
-def deploy(source_dir: Path) -> None:
-    plan = validate(source_dir)
-    for source, target, snapshot in plan.files:
-        materialize(source, target, snapshot)
+def deploy(source_dir: Path, busctl: str) -> None:
+    plan = validate(source_dir, busctl)
+    for file in plan.files:
+        materialize(*file)
     if plan.merged is not None:
         write_text(plan.notifications, plan.merged, 0o644)
     # notifications.conf has no snapshot. Remove one left in the state
@@ -242,14 +310,14 @@ def deploy(source_dir: Path) -> None:
 
 
 def main(arguments: list[str]) -> None:
-    if len(arguments) == 2 and arguments[0] == "deploy":
-        deploy(Path(arguments[1]))
+    if len(arguments) == 3 and arguments[0] == "deploy":
+        deploy(Path(arguments[1]), arguments[2])
         return
-    if len(arguments) == 2 and arguments[0] == "validate":
-        validate(Path(arguments[1]))
+    if len(arguments) == 3 and arguments[0] == "validate":
+        validate(Path(arguments[1]), arguments[2])
         return
     raise SystemExit(
-        "usage: rime-host-files (deploy | validate) FCITX_CONFIG_DIR"
+        "usage: rime-host-files (deploy | validate) FCITX_CONFIG_DIR BUSCTL"
     )
 
 
