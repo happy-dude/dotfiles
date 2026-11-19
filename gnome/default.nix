@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }: let
   cursorTheme = "Yaru";
@@ -12,12 +11,16 @@ in {
     # panel. Keep it disabled unless GNOME Shell integration is more important
     # than Classic UI theming. Verify the package metadata supports the host
     # Shell version before enabling it.
+    # With pkgs in the module arguments:
     # programs.gnome-shell = {
     #   enable = true;
     #   extensions = [{package = pkgs.gnomeExtensions.kimpanel;}];
     # };
 
-    home.packages = [pkgs.gnomeExtensions.custom-hot-corners-extended];
+    # Install and enable Custom Hot Corners - Extended through the host's
+    # extension manager so its release matches the running GNOME Shell.
+    # Home Manager owns its preferences, not the extension package or the
+    # session's enabled-extensions list.
 
     dconf.settings = {
       "org/gnome/desktop/interface" = {
