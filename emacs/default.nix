@@ -53,6 +53,13 @@ in {
   xdg.configFile."emacs/sensitive-paths.el".source = sensitivePaths;
 
   home.activation = {
+    # Read-only, including on a dry run: do not retire a working generation
+    # only to have Emacs ignore the new XDG init.
+    checkEmacsInitPaths = lib.hm.dag.entryBefore ["writeBoundary"] ''
+      ${pkgs.bash}/bin/bash ${./check-init-paths.sh} \
+        ${lib.escapeShellArg "${config.xdg.configHome}/emacs"} "''${oldGenPath:-}"
+    '';
+
     createOrgDirectories = lib.hm.dag.entryAfter ["writeBoundary"] ''
       $DRY_RUN_CMD ${pkgs.coreutils}/bin/mkdir -p \
         "$HOME/org/Archive" \
