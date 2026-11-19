@@ -294,21 +294,25 @@ in {
       grep -qx learned home/.local/share/fcitx5/rime/user.yaml
       grep -qx schema-v2 home/.local/share/fcitx5/rime/subdir/schema.yaml
 
-      # A run killed during the copy leaves its staging tree beside the live
-      # one, with the read-only modes of the store path it was copying. The
-      # next deploy removes it and replaces the live tree as usual.
+      # A killed copy can leave read-only directories in the manager's
+      # workspace. Ambiguous siblings from the legacy scheme are not owned.
       staticdir="home/.local/share/fcitx5/rime/.home-manager-static"
       test -d "$staticdir"
-      mkdir -p "$staticdir.killed1/subdir"
-      printf '%s\n' partial >"$staticdir.killed1/subdir/schema.yaml"
-      chmod 555 "$staticdir.killed1/subdir" "$staticdir.killed1"
+      workdir="$(dirname "$staticdir")/.home-manager-rime-work"
+      mkdir -p "$workdir/incoming/subdir" "$staticdir.killed1" "$staticdir.backup"
+      printf '%s\n' partial >"$workdir/incoming/subdir/schema.yaml"
+      chmod 555 "$workdir/incoming/subdir" "$workdir/incoming"
+      printf '%s\n' personal >"$staticdir.killed1/user.yaml"
+      printf '%s\n' personal >"$staticdir.backup/user.yaml"
       printf '%s\n' stamp-v2b >stamp
       printf '%s\n' schema-v2b >source/subdir/schema.yaml
       HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
         rime-state-manager deploy \
           "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
           subdir/schema.yaml
-      test ! -e "$staticdir.killed1"
+      test ! -e "$workdir/incoming"
+      grep -qx personal "$staticdir.killed1/user.yaml"
+      grep -qx personal "$staticdir.backup/user.yaml"
       test ! -e "$staticdir.home-manager-old"
       grep -qx schema-v2b home/.local/share/fcitx5/rime/subdir/schema.yaml
       grep -qx learned home/.local/share/fcitx5/rime/user.yaml
@@ -317,9 +321,9 @@ in {
       # installing the replacement; the next deploy must restore it rather
       # than leave Rime without its managed data. The staging tree that run
       # had finished copying is left behind as well.
-      mv "$staticdir" "$staticdir.home-manager-old"
-      mkdir -p "$staticdir.killed2/subdir"
-      chmod 555 "$staticdir.killed2/subdir" "$staticdir.killed2"
+      mv "$staticdir" "$workdir/previous"
+      mkdir -p "$workdir/incoming/subdir"
+      chmod 555 "$workdir/incoming/subdir" "$workdir/incoming"
       printf '%s\n' stamp-v3 >stamp
       printf '%s\n' schema-v3 >source/subdir/schema.yaml
       HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
@@ -327,10 +331,74 @@ in {
           "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
           subdir/schema.yaml
       test -d "$staticdir"
-      test ! -e "$staticdir.home-manager-old"
-      test ! -e "$staticdir.killed2"
+      test ! -e "$workdir/previous"
+      test ! -e "$workdir/incoming"
       grep -qx schema-v3 home/.local/share/fcitx5/rime/subdir/schema.yaml
       grep -qx learned home/.local/share/fcitx5/rime/user.yaml
+
+      # The current stamp is not proof that every copy or link is intact.
+      installed="$staticdir/subdir/schema.yaml"
+      public="$(dirname "$staticdir")/subdir/schema.yaml"
+      build="$(dirname "$staticdir")/build"
+      mkdir "$build"
+      rm "$installed"
+      listing home state >before
+      validate subdir/schema.yaml
+      listing home state >after
+      diff before after
+      deploy subdir/schema.yaml
+      cmp source/subdir/schema.yaml "$public"
+      test -w "$installed"
+      test ! -e "$build"
+
+      mkdir "$build"
+      printf '%s\n' edited >"$installed"
+      rm "$public"
+      ln -s "$PWD/$staticdir/wrong.yaml" "$public"
+      deploy subdir/schema.yaml
+      test "$(readlink "$public")" = "$PWD/$installed"
+      grep -qx edited "$public"
+      test ! -e "$build"
+      mkdir "$build"
+      listing home state >before
+      deploy subdir/schema.yaml
+      listing home state >after
+      diff before after
+
+      # A link at either transaction root must never be followed, even if
+      # recovery would otherwise move the backup back to the live pathname.
+      mv "$staticdir" "$staticdir.saved"
+      ln -s "$PWD/source" "$staticdir.home-manager-old"
+      watched=(home state source)
+      refused_alike subdir/schema.yaml
+      rm "$staticdir.home-manager-old"
+      # Even without a stamp, the exact legacy rollback name is not proof
+      # of ownership. Leave the user's only copy where it is for inspection.
+      mv state/rime/home-manager-source-stamp saved-stamp
+      mkdir "$staticdir.home-manager-old"
+      printf '%s\n' personal >"$staticdir.home-manager-old/user.yaml"
+      refused_alike subdir/schema.yaml
+      grep -q 'move it to an unused backup name' err
+      grep -qx personal "$staticdir.home-manager-old/user.yaml"
+      mv "$staticdir.home-manager-old" "$staticdir.personal"
+      mv saved-stamp state/rime/home-manager-source-stamp
+      mv "$staticdir.saved" "$staticdir"
+      ln -s "$PWD/source" "$workdir/incoming"
+      refused_alike subdir/schema.yaml
+      rm "$workdir/incoming"
+      mv "$workdir/owner-v1" "$workdir/note"
+      mkdir "$workdir/incoming"
+      refused_alike subdir/schema.yaml
+      grep -q 'unmarked Rime staging' err
+      rmdir "$workdir/incoming"
+      mv "$workdir/note" "$workdir/owner-v1"
+
+      manifest=state/rime/home-manager-schema-links.json
+      mv "$manifest" saved-manifest
+      printf '%s\n' '["../elsewhere"]' >"$manifest"
+      refused_alike subdir/schema.yaml
+      grep -q 'malformed Rime link manifest' err
+      mv -f saved-manifest "$manifest"
 
       # A file the static source lacks is refused before the refresh, not
       # after it.
