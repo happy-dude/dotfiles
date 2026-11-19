@@ -449,9 +449,12 @@ test "$(git -C "$stated_worktree" config --worktree --get user.name)" = \
   'Portable Dotfiles'
 git worktree remove "$stated_worktree"
 git branch -D replay/stated >/dev/null
-printf '%s\n' represented >"$series_worktree/represented"
+printf '%s\n' 'label = "a b";' >"$series_worktree/represented"
 git -C "$series_worktree" add represented
 git -C "$series_worktree" commit --quiet -m 'tests: add represented change'
+printf '%s\n' final >"$series_worktree/represented"
+git -C "$series_worktree" commit --quiet -am 'tests: finalize the change'
+series_tip=$(git -C "$series_worktree" rev-parse HEAD)
 
 # Export fails after staging here (the fixture has no commit-message linter).
 # The caller's own EXIT trap must still run, with the failing status, after
@@ -490,10 +493,45 @@ fi
 grep -Fxq "$expected_fetch" "$start_error"
 test -d "$series_worktree"
 
-# The same patch lands upstream (re-authored, as the apply script does).
-printf '%s\n' represented >"$repo/represented"
+expect_demo_preserved() {
+  if clean_series demo >"$start_error" 2>&1; then
+    fail "clean accepted $1"
+  fi
+  test "$(git rev-parse replay/demo)" = "$series_tip" || fail "clean moved replay/demo: $1"
+  test -d "$series_worktree" || fail "clean removed the worktree: $1"
+}
+
+# Both patch IDs and the final tree agree despite different intermediate bytes.
+fetched_main=$(git rev-parse refs/remotes/origin/main)
+git switch --quiet -c near-miss
+printf '%s\n' 'label = "ab";' >represented
 git add represented
-git commit --quiet -m 'tests: add represented change (upstream copy)'
+git commit --quiet -m 'tests: add represented change'
+printf '%s\n' final >represented
+git commit --quiet -am 'tests: finalize the change'
+git update-ref refs/remotes/origin/main HEAD
+test "$(git rev-parse 'HEAD^{tree}')" = "$(git rev-parse 'replay/demo^{tree}')"
+expect_demo_preserved 'whitespace-different intermediate content'
+git switch --quiet main
+
+# Reproduce the destination author change; do not rely on differing timestamps.
+printf '%s\n' 'label = "a b";' >represented
+git add represented
+git commit --quiet --author='Destination User <destination@example.invalid>' -m 'tests: add represented change'
+git update-ref refs/remotes/origin/main HEAD
+expect_demo_preserved 'an omitted second commit'
+printf '%s\n' final >represented
+git commit --quiet -am 'tests: a different final message'
+git update-ref refs/remotes/origin/main HEAD
+expect_demo_preserved 'different messages with identical trees'
+# Resume the real fetch workflow from the last tip the remote supplied, not
+# the synthetic commit used only for the message-mismatch check.
+git update-ref refs/remotes/origin/main "$fetched_main"
+git commit --quiet --amend -m 'tests: finalize the change'
+test "$(git rev-parse HEAD)" != "$series_tip"
+printf 'later\n' >later
+git add later
+git commit --quiet -m 'tests: advance main after the applied series'
 git push --quiet origin main
 git fetch --quiet origin refs/heads/main:refs/remotes/origin/main
 
@@ -504,6 +542,50 @@ if clean_series demo 2>/dev/null; then
 fi
 rm -- "$series_worktree/dirty"
 
+printf '/ignored-only\n' >>"$(git rev-parse --git-path info/exclude)"
+printf 'keep ignored bytes\n' >"$series_worktree/ignored-only"
+expect_demo_preserved 'an ignored file'
+test "$(<"$series_worktree/ignored-only")" = 'keep ignored bytes'
+rm -- "$series_worktree/ignored-only"
+for flag in assume-unchanged skip-worktree; do
+  git -C "$series_worktree" update-index "--$flag" represented
+  printf 'hidden edit\n' >"$series_worktree/represented"
+  expect_demo_preserved "a $flag file"
+  test "$(<"$series_worktree/represented")" = 'hidden edit'
+  git -C "$series_worktree" update-index "--no-$flag" represented
+  git -C "$series_worktree" restore represented
+done
+
+# Sourced callers can test clean_series in a condition, disabling errexit.
+# A failed removal must not fall through to deleting the branch or reporting success.
+git worktree lock "$series_worktree"
+expect_demo_preserved 'a locked worktree'
+git worktree unlock "$series_worktree"
+
+# Advance the ref after worktree removal and before deletion. Even at this
+# late boundary the newly committed work must still have a branch name.
+race_tip=$(git commit-tree "$series_tip^{tree}" -p "$series_tip" -m 'tests: late commit')
+if (
+  # shellcheck disable=SC2329 # Invoked by the sourced clean_series function.
+  git() {
+    command git "$@" || return 1
+    if [[ ${3:-} == worktree && ${4:-} == remove ]]; then
+      command git update-ref refs/heads/replay/demo "$race_tip" "$series_tip"
+    fi
+  }
+  clean_series demo
+) >"$start_error" 2>&1; then
+  fail 'clean deleted a tip that advanced after the proof'
+fi
+test "$(git rev-parse replay/demo)" = "$race_tip"
+git update-ref refs/heads/replay/demo "$series_tip" "$race_tip"
+# Rebase detaches HEAD, but the operation still owns its branch.
+git worktree add --quiet "$series_worktree" replay/demo
+if git -C "$series_worktree" rebase --force-rebase --exec false HEAD~ >"$start_error" 2>&1; then
+  fail 'fixture rebase did not stop at its exec command'
+fi
+expect_demo_preserved 'an active detached rebase'
+git -C "$series_worktree" rebase --abort
 clean_series demo >/dev/null
 test ! -e "$series_worktree"
 if git show-ref --verify --quiet refs/heads/replay/demo; then
@@ -628,9 +710,8 @@ done
 git -C "$repo" commit -q --amend --allow-empty -m 'diff -u: a subject line'
 reject_patch_break_lines "$repo" "$base"
 
-# The message digest in the manifest is SHA-256 over each stored message,
-# oldest first, each followed by one NUL byte. The apply script carries its
-# own copy of the function, so pin the definition rather than the code.
+# Pin the v3 digest independently: both empty commits have the same tree,
+# but their hashes bind that tree to distinct raw messages in commit order.
 git -C "$repo" commit -q --allow-empty -F - <<'EOF'
 tests: a second message
 
@@ -639,12 +720,12 @@ With a body.
 Assisted-by: example-model:high harness
 EOF
 expected_digest=$(
-  printf '%s\0' \
-    $'diff -u: a subject line\n' \
-    $'tests: a second message\n\nWith a body.\n\nAssisted-by: example-model:high harness\n' |
-    sha256sum | cut -d ' ' -f 1
+  for message in $'diff -u: a subject line\n' \
+    $'tests: a second message\n\nWith a body.\n\nAssisted-by: example-model:high harness\n'; do
+    printf 'tree %s\n%s' "$(git rev-parse 'HEAD^{tree}')" "$message" | sha256sum | cut -d ' ' -f 1
+  done | sha256sum | cut -d ' ' -f 1
 )
-test "$(series_message_digest "$repo" "$base")" = "$expected_digest"
+test "$(series_digest "$repo" "$base")" = "$expected_digest"
 
 # Every attribution trailer is dropped before scanning, not just the last.
 printf '%s\n' \

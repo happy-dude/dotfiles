@@ -27,32 +27,30 @@ read_manifest() {
     count) expected_count=$value ;;
     patch) patch_name=$value ;;
     sha256) expected_patch_sha256=$value ;;
-    tree) expected_tree=$value ;;
-    messages) expected_message_digest=$value ;;
+    series) expected_series=$value ;;
     "") ;;
-    *) die "unknown manifest key: $key" ;;
+    *) unknown_key=$key ;;
     esac
   done <"$manifest"
 }
 
-# Digest of the commit messages in <base>..HEAD: SHA-256 over each message as
-# its commit object stores it (the bytes after the header's blank line),
-# oldest commit first, each followed by one NUL byte. portable-series.sh
-# records the same digest in the manifest with its own copy of this function;
-# keep the two identical.
-series_message_digest() {
+# Version 3: hash each commit's tree header and original message, skipping
+# the identity, parents and signature. Hash the lowercase SHA-256 lines in
+# series order. Fixed-size records preserve boundaries even for unusual
+# message bytes. The exporter carries the same function.
+series_digest() {
   local repository=$1
   local base=$2
   local commits
   local commit
   local digest
 
-  commits=$(git -C "$repository" rev-list --reverse "$base..HEAD") || return 1
+  commits=$(git -C "$repository" rev-list --reverse "$base..${3:-HEAD}") || return 1
   digest=$(
     while IFS= read -r commit; do
       [[ -n $commit ]] || continue
-      git -C "$repository" cat-file commit "$commit" | sed '1,/^$/d' || exit 1
-      printf '\0'
+      git -C "$repository" cat-file commit "$commit" | sed '2,/^$/d' |
+        sha256sum | cut -d ' ' -f 1 || exit 1
     done <<<"$commits" | sha256sum
   ) || return 1
   printf '%s\n' "${digest%% *}"
@@ -71,26 +69,24 @@ expected_base=
 expected_count=
 patch_name=
 expected_patch_sha256=
-expected_tree=
-expected_message_digest=
+expected_series=
+unknown_key=
 read_manifest "$manifest"
 
-# A version 1 manifest records neither the tree nor the messages checked
-# below. Export writes the manifest and this script together, so the remedy
-# is a fresh export.
-[[ $manifest_version != 1 ]] ||
-  die "manifest version 1 records no tree or message digest; export the series again and run the apply script that export writes"
-[[ $manifest_version == 2 ]] ||
-  die "unsupported manifest version; this script applies version 2 only"
+# Diagnose the version before its keys: v2 cannot prove intermediate trees.
+case $manifest_version in
+1 | 2) die "manifest version $manifest_version does not verify every commit tree; export the series again and run its new apply script" ;;
+3) ;;
+*) die "unsupported manifest version; this script applies version 3 only" ;;
+esac
+[[ -z $unknown_key ]] || die "unknown manifest key: $unknown_key"
 [[ $series_name =~ ^[a-z0-9][a-z0-9._-]*$ ]] || die "invalid series name"
 [[ $expected_base =~ ^[0-9a-f]{40}$ ]] || die "invalid base commit"
 [[ $expected_count =~ ^[1-9][0-9]*$ ]] || die "invalid commit count"
 [[ $patch_name == "dotfiles-$series_name.patch" ]] || die "invalid patch name"
 [[ $expected_patch_sha256 =~ ^[0-9a-f]{64}$ ]] ||
   die "invalid patch checksum"
-[[ $expected_tree =~ ^[0-9a-f]{40}$ ]] || die "invalid validated tree"
-[[ $expected_message_digest =~ ^[0-9a-f]{64}$ ]] ||
-  die "invalid commit message digest"
+[[ $expected_series =~ ^[0-9a-f]{64}$ ]] || die "invalid series digest"
 
 patch_path="$manifest_directory/$patch_name"
 [[ -f $patch_path ]] || die "patch file not found: $patch_path"
@@ -130,6 +126,7 @@ signing_key=$(git -C "$repo" config --get user.signingkey || true)
 mail_directory=$(mktemp -d)
 temporary_branch="apply-$series_name-$(date +%Y%m%d%H%M%S)"
 success=false
+temporary_branch_created=false
 
 cleanup() {
   local active_branch
@@ -137,9 +134,8 @@ cleanup() {
 
   rm -rf -- "$mail_directory"
   [[ $success != true ]] || return 0
-  # A failure before switch -c leaves main checked out and nothing to clean.
-  git -C "$repo" show-ref --verify --quiet "refs/heads/$temporary_branch" ||
-    return 0
+  # switch -c may fail because that name already belongs to an unrelated ref.
+  [[ $temporary_branch_created == true ]] || return 0
   active_branch=$(git -C "$repo" branch --show-current || true)
   am_directory=$(
     git -C "$repo" rev-parse --path-format=absolute \
@@ -169,6 +165,7 @@ mail_files=("$mail_directory"/*)
   die "unexpected patch count: ${#mail_files[@]}"
 
 git -C "$repo" switch -c "$temporary_branch"
+temporary_branch_created=true
 for mail_file in "${mail_files[@]}"; do
   # --whitespace=nowarn overrides the destination's apply.whitespace, which
   # would rewrite the content, and --keep-non-patch keeps a leading [token]
@@ -184,12 +181,9 @@ applied_count=$(git -C "$repo" rev-list --count "$expected_base..HEAD")
 # reads parts of a message as mail structure, and the destination's Git
 # configuration is not the exporter's. Compare before the validation below so
 # a different series is never built, and before main moves.
-applied_tree=$(git -C "$repo" rev-parse 'HEAD^{tree}')
-[[ $applied_tree == "$expected_tree" ]] ||
-  die "applied tree does not match the tree the export validated"
-applied_message_digest=$(series_message_digest "$repo" "$expected_base")
-[[ $applied_message_digest == "$expected_message_digest" ]] ||
-  die "applied commit messages do not match the messages the export validated"
+applied_series=$(series_digest "$repo" "$expected_base")
+[[ $applied_series == "$expected_series" ]] ||
+  die "applied commit trees or messages do not match the validated series"
 (
   cd -- "$repo"
   nix fmt --no-update-lock-file .
@@ -206,7 +200,7 @@ applied_message_digest=$(series_message_digest "$repo" "$expected_base")
 )
 
 git -C "$repo" switch main
-git -C "$repo" merge --ff-only "$temporary_branch"
+git -C "$repo" merge --ff-only --no-overwrite-ignore "$temporary_branch"
 success=true
 git -C "$repo" branch -d "$temporary_branch"
 

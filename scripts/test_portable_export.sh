@@ -54,6 +54,7 @@ if [[ ${PORTABLE_TEST_NIX_LOG:-} ]]; then
 fi
 case $1 in
 fmt)
+  [[ $* == 'fmt --no-update-lock-file .' ]] || exit 93
   if [[ ${PORTABLE_TEST_FMT_CREATES:-} ]]; then
     printf 'generated\n' >"$PORTABLE_TEST_FMT_CREATES"
   fi
@@ -152,16 +153,23 @@ if grep -q 'someone@example.invalid' "$TMPDIR_TEST/export.log"; then
   fail 'author rejection echoed the non-portable author email'
 fi
 printf -v expected_reset \
-  "  git -C %q -c commit.gpgsign=false rebase --exec 'git commit --amend --no-edit --author=\"Portable Dotfiles <portable@localhost>\"' origin/main" \
+  "  git -C %q -c commit.gpgsign=false rebase --no-update-refs --no-autosquash --exec 'git commit --amend --no-edit --author=\"Portable Dotfiles <portable@localhost>\"' origin/main" \
   "$worktree"
 grep -Fq "$expected_reset" "$TMPDIR_TEST/export.log" ||
   fail 'author rejection did not print the reset-author recovery command'
 [[ $(<"$TMPDIR_TEST/caller-status") == 1 ]] ||
   fail 'repeated exports did not hand the caller EXIT trap its status'
 git -C "$worktree" config --worktree user.email overridden@example.invalid
-git -C "$worktree" -c commit.gpgsign=false rebase --quiet \
-  --exec 'git commit --amend --no-edit --author="Portable Dotfiles <portable@localhost>"' \
-  origin/main
+git -C "$worktree" config rebase.updateRefs true
+printf 'keep\n' >"$worktree/backup-feature"
+git -C "$worktree" add backup-feature
+git -C "$worktree" commit --quiet -m 'tests: retain the backup tip'
+git -C "$worktree" branch backup-author-recovery
+backup_before=$(git -C "$worktree" rev-parse backup-author-recovery)
+eval "$(grep -Fx "$expected_reset" "$TMPDIR_TEST/export.log")"
+test "$(git -C "$worktree" rev-parse backup-author-recovery)" = "$backup_before" ||
+  fail 'printed author recovery moved an unrelated ref'
+git -C "$worktree" reset --quiet --hard HEAD~1
 git -C "$worktree" config --worktree user.email portable@localhost
 unset PORTABLE_TEST_CHECK_STATUS
 
