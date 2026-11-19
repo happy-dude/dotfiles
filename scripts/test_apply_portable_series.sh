@@ -71,17 +71,15 @@ write_manifest() {
   local checksum=$3
   shift 3
 
-  # The default tree and digest are well formed but name nothing: the cases
-  # using them refuse before either is compared.
+  # Well formed but naming nothing: these cases refuse before the comparison.
   cat >"$directory/dotfiles-probe.manifest" <<EOF
-version=${1:-2}
+version=${1:-3}
 name=probe
 base=$base
 count=1
 patch=dotfiles-probe.patch
 sha256=$checksum
-tree=${2:-$(printf '%040d' 1)}
-messages=${3:-$(printf '%064d' 1)}
+series=${2:-$(printf '%064d' 1)}
 EOF
 }
 
@@ -124,28 +122,24 @@ git -C "$repo" checkout -q -- . 2>/dev/null || true
 make_patch "$repo" "$artifacts"
 checksum=$(sha256sum "$artifacts/dotfiles-probe.patch" | cut -d ' ' -f 1)
 
-write_manifest "$artifacts" "$base" "$checksum" 3
+write_manifest "$artifacts" "$base" "$checksum" 4
 output=$(assert_refuses 'manifest version' "$repo" "$manifest")
 [[ $output == *"unsupported manifest version"* ]] ||
   fail "manifest version: unexpected message: $output"
 
-# A version 1 manifest records neither the tree nor the messages, so it is
-# refused with the remedy rather than applied unverified.
-write_manifest "$artifacts" "$base" "$checksum" 1
-output=$(assert_refuses 'manifest version 1' "$repo" "$manifest")
-[[ $output == *"manifest version 1 records no tree or message digest"* &&
-  $output == *"export the series again"* ]] ||
-  fail "manifest version 1: unexpected message: $output"
+for legacy_version in 1 2; do
+  write_manifest "$artifacts" "$base" "$checksum" "$legacy_version"
+  if [[ $legacy_version == 2 ]]; then
+    printf 'tree=%040d\nmessages=%064d\n' 1 2 >>"$manifest"
+  fi
+  output=$(assert_refuses "manifest version $legacy_version" "$repo" "$manifest")
+  [[ $output == *"manifest version $legacy_version does not verify every commit tree"* &&
+    $output == *"export the series again"* ]] || fail "legacy manifest: unexpected message: $output"
+done
 
-write_manifest "$artifacts" "$base" "$checksum" 2 'not-a-tree'
-output=$(assert_refuses 'malformed tree' "$repo" "$manifest")
-[[ $output == *"invalid validated tree"* ]] ||
-  fail "malformed tree: unexpected message: $output"
-
-write_manifest "$artifacts" "$base" "$checksum" 2 '' 'not-a-digest'
-output=$(assert_refuses 'malformed message digest' "$repo" "$manifest")
-[[ $output == *"invalid commit message digest"* ]] ||
-  fail "malformed message digest: unexpected message: $output"
+write_manifest "$artifacts" "$base" "$checksum" 3 'not-a-digest'
+output=$(assert_refuses 'malformed series digest' "$repo" "$manifest")
+[[ $output == *"invalid series digest"* ]] || fail "malformed digest: unexpected message: $output"
 
 write_manifest "$artifacts" 'not-a-commit' "$checksum"
 output=$(assert_refuses 'malformed base' "$repo" "$manifest")
@@ -251,17 +245,17 @@ set -e
 ((status == 2)) || fail "no arguments: expected exit 2, got $status"
 
 # The apply script cannot source the export script, so each carries its own
-# series_message_digest. The round trip below shows that the two agree on one
+# series_digest. The round trip below shows that the two agree on one
 # series; this holds the two definitions to the same text.
 function_text() {
-  sed -n '/^series_message_digest() {$/,/^}$/p' "$1"
+  sed -n '/^series_digest() {$/,/^}$/p' "$1"
 }
 export_copy=$(function_text "$REPO_DIR/scripts/portable-series.sh")
 apply_copy=$(function_text "$APPLY_SCRIPT")
 [[ $export_copy == *'sha256sum'* && $export_copy == *$'\n}' ]] ||
-  fail 'series_message_digest was not found in portable-series.sh'
+  fail 'series_digest was not found in portable-series.sh'
 [[ $export_copy == "$apply_copy" ]] ||
-  fail 'the two copies of series_message_digest differ'
+  fail 'the two copies of series_digest differ'
 
 # Round trip: a real export applied to a destination whose Git configuration
 # would rewrite the series. Only the Nix boundary and the signing program are
@@ -339,10 +333,8 @@ trip_tree=$(git -C "$trip_series" rev-parse 'HEAD^{tree}')
 ) >"$TMPDIR_TEST/trip-export.log" 2>&1 ||
   fail "round trip: export failed: $(<"$TMPDIR_TEST/trip-export.log")"
 trip_manifest="$trip_output/dotfiles-trip.manifest"
-grep -Fxq 'version=2' "$trip_manifest" ||
-  fail 'round trip: export did not write a version 2 manifest'
-grep -Fxq "tree=$trip_tree" "$trip_manifest" ||
-  fail 'round trip: the manifest does not record the validated tree'
+grep -Fxq 'version=3' "$trip_manifest" || fail 'round trip: not a version 3 manifest'
+grep -Eq '^series=[[:xdigit:]]{64}$' "$trip_manifest" || fail 'round trip: missing series digest'
 
 # A destination clone of the same origin carrying the settings from
 # git/default.nix that change what git am lands, or that a fetch has to
@@ -372,6 +364,21 @@ run_trip_apply() {
   trip_status=$?
   set -e
 }
+
+# A colliding branch belongs to the destination, not the failed application.
+collision=$(make_trip_destination trip-collision)
+collision_ref=apply-trip-20000101120000
+git -C "$collision" branch "$collision_ref" "$trip_base"
+printf '#!%s\nprintf "20000101120000\\n"\n' "$(command -v bash)" >"$fake_bin/date"
+chmod 0755 "$fake_bin/date"
+run_trip_apply "$trip_manifest" "$collision"
+rm -- "$fake_bin/date"
+((trip_status != 0)) || fail 'apply reused a pre-existing branch'
+[[ $trip_log == *"$collision_ref"* && $trip_log != *'branch -D'* ]] ||
+  fail 'apply offered to discard a branch it did not create'
+test "$(git -C "$collision" rev-parse "$collision_ref")" = "$trip_base"
+test "$(git -C "$collision" branch --show-current)" = main
+test ! -s "$nix_log"
 
 destination=$(make_trip_destination trip-destination)
 run_trip_apply "$trip_manifest" "$destination"
@@ -434,6 +441,10 @@ assert_stops_before_main() {
   temporary_branch=$(sed -n 's/^Temporary branch: //p' <<<"$trip_log")
   [[ $(git -C "$repo" branch --show-current) == "$temporary_branch" ]] ||
     fail "$description: not stopped on the temporary branch"
+  if [[ ${5:-} == canceled-edit ]]; then
+    test "$(git -C "$repo" rev-parse 'HEAD^{tree}')" = "$trip_tree" || fail 'hook changed the final tree'
+    test "$(git -C "$repo" show HEAD~:hook-change)" = 'intermediate bytes' || fail 'hook missed the first commit'
+  fi
 
   # git switch refuses while git am is in progress and branch -D refuses the
   # checked-out branch, so the order is part of the contract.
@@ -468,19 +479,32 @@ assert_stops_before_main() {
     fail "$description: the printed commands did not restore a clean main"
 }
 
-# A manifest naming another tree, or other messages, than the series lands.
+# A valid patch must still match the commit sequence named by the manifest.
 destination=$(make_trip_destination trip-mismatch)
 altered="$TMPDIR_TEST/trip-altered"
 mkdir -p "$altered"
 cp -- "$trip_output/dotfiles-trip.patch" "$altered/"
-sed "s/^tree=.*/tree=$(git -C "$destination" rev-parse "$trip_base^{tree}")/" \
-  "$trip_manifest" >"$altered/dotfiles-trip.manifest"
-assert_stops_before_main 'wrong tree' "$destination" \
-  "$altered/dotfiles-trip.manifest" 'applied tree does not match'
-sed "s/^messages=.*/messages=$(printf '%064d' 1)/" \
-  "$trip_manifest" >"$altered/dotfiles-trip.manifest"
-assert_stops_before_main 'wrong message digest' "$destination" \
-  "$altered/dotfiles-trip.manifest" 'applied commit messages do not match'
+sed "s/^series=.*/series=$(printf '%064d' 1)/" "$trip_manifest" >"$altered/dotfiles-trip.manifest"
+assert_stops_before_main 'wrong series digest' "$destination" \
+  "$altered/dotfiles-trip.manifest" 'applied commit trees or messages do not match'
+
+# A destination hook adds a file to the first applied commit, then removes it
+# in the second. The final tree and all messages agree but the series does not.
+hook="$destination/.git/hooks/pre-commit"
+printf '#!%s\n' "$(command -v bash)" >"$hook"
+cat >>"$hook" <<'EOF'
+set -eu
+if [[ -f hook-change ]]; then
+  git rm -q hook-change
+else
+  printf 'intermediate bytes\n' >hook-change
+  git add hook-change
+fi
+EOF
+chmod 0755 "$hook"
+assert_stops_before_main 'canceled hook edit' "$destination" \
+  "$trip_manifest" 'applied commit trees or messages do not match' canceled-edit
+rm -- "$hook"
 
 # A patch that stops git am partway leaves it in progress on the temporary
 # branch, after the first commit was applied.

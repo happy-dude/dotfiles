@@ -28,9 +28,6 @@
     "yaml",
     "zig"
   ],
-  "coc.source.around.filetypes": ["codecompanion"],
-  "coc.source.buffer.filetypes": ["codecompanion"],
-  "coc.source.file.filetypes": ["codecompanion"],
   "diagnostic.checkCurrentLine": true,
   "diagnostic.errorSign": ">>",
   "diagnostic.refreshAfterSave": true,

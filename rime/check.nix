@@ -294,21 +294,25 @@ in {
       grep -qx learned home/.local/share/fcitx5/rime/user.yaml
       grep -qx schema-v2 home/.local/share/fcitx5/rime/subdir/schema.yaml
 
-      # A run killed during the copy leaves its staging tree beside the live
-      # one, with the read-only modes of the store path it was copying. The
-      # next deploy removes it and replaces the live tree as usual.
+      # A killed copy can leave read-only directories in the manager's
+      # workspace. Ambiguous siblings from the legacy scheme are not owned.
       staticdir="home/.local/share/fcitx5/rime/.home-manager-static"
       test -d "$staticdir"
-      mkdir -p "$staticdir.killed1/subdir"
-      printf '%s\n' partial >"$staticdir.killed1/subdir/schema.yaml"
-      chmod 555 "$staticdir.killed1/subdir" "$staticdir.killed1"
+      workdir="$(dirname "$staticdir")/.home-manager-rime-work"
+      mkdir -p "$workdir/incoming/subdir" "$staticdir.killed1" "$staticdir.backup"
+      printf '%s\n' partial >"$workdir/incoming/subdir/schema.yaml"
+      chmod 555 "$workdir/incoming/subdir" "$workdir/incoming"
+      printf '%s\n' personal >"$staticdir.killed1/user.yaml"
+      printf '%s\n' personal >"$staticdir.backup/user.yaml"
       printf '%s\n' stamp-v2b >stamp
       printf '%s\n' schema-v2b >source/subdir/schema.yaml
       HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
         rime-state-manager deploy \
           "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
           subdir/schema.yaml
-      test ! -e "$staticdir.killed1"
+      test ! -e "$workdir/incoming"
+      grep -qx personal "$staticdir.killed1/user.yaml"
+      grep -qx personal "$staticdir.backup/user.yaml"
       test ! -e "$staticdir.home-manager-old"
       grep -qx schema-v2b home/.local/share/fcitx5/rime/subdir/schema.yaml
       grep -qx learned home/.local/share/fcitx5/rime/user.yaml
@@ -317,9 +321,9 @@ in {
       # installing the replacement; the next deploy must restore it rather
       # than leave Rime without its managed data. The staging tree that run
       # had finished copying is left behind as well.
-      mv "$staticdir" "$staticdir.home-manager-old"
-      mkdir -p "$staticdir.killed2/subdir"
-      chmod 555 "$staticdir.killed2/subdir" "$staticdir.killed2"
+      mv "$staticdir" "$workdir/previous"
+      mkdir -p "$workdir/incoming/subdir"
+      chmod 555 "$workdir/incoming/subdir" "$workdir/incoming"
       printf '%s\n' stamp-v3 >stamp
       printf '%s\n' schema-v3 >source/subdir/schema.yaml
       HOME="$PWD/home" XDG_STATE_HOME="$PWD/state" \
@@ -327,10 +331,74 @@ in {
           "$PWD/source" "$PWD/stamp" ${pkgs.coreutils}/bin/true \
           subdir/schema.yaml
       test -d "$staticdir"
-      test ! -e "$staticdir.home-manager-old"
-      test ! -e "$staticdir.killed2"
+      test ! -e "$workdir/previous"
+      test ! -e "$workdir/incoming"
       grep -qx schema-v3 home/.local/share/fcitx5/rime/subdir/schema.yaml
       grep -qx learned home/.local/share/fcitx5/rime/user.yaml
+
+      # The current stamp is not proof that every copy or link is intact.
+      installed="$staticdir/subdir/schema.yaml"
+      public="$(dirname "$staticdir")/subdir/schema.yaml"
+      build="$(dirname "$staticdir")/build"
+      mkdir "$build"
+      rm "$installed"
+      listing home state >before
+      validate subdir/schema.yaml
+      listing home state >after
+      diff before after
+      deploy subdir/schema.yaml
+      cmp source/subdir/schema.yaml "$public"
+      test -w "$installed"
+      test ! -e "$build"
+
+      mkdir "$build"
+      printf '%s\n' edited >"$installed"
+      rm "$public"
+      ln -s "$PWD/$staticdir/wrong.yaml" "$public"
+      deploy subdir/schema.yaml
+      test "$(readlink "$public")" = "$PWD/$installed"
+      grep -qx edited "$public"
+      test ! -e "$build"
+      mkdir "$build"
+      listing home state >before
+      deploy subdir/schema.yaml
+      listing home state >after
+      diff before after
+
+      # A link at either transaction root must never be followed, even if
+      # recovery would otherwise move the backup back to the live pathname.
+      mv "$staticdir" "$staticdir.saved"
+      ln -s "$PWD/source" "$staticdir.home-manager-old"
+      watched=(home state source)
+      refused_alike subdir/schema.yaml
+      rm "$staticdir.home-manager-old"
+      # Even without a stamp, the exact legacy rollback name is not proof
+      # of ownership. Leave the user's only copy where it is for inspection.
+      mv state/rime/home-manager-source-stamp saved-stamp
+      mkdir "$staticdir.home-manager-old"
+      printf '%s\n' personal >"$staticdir.home-manager-old/user.yaml"
+      refused_alike subdir/schema.yaml
+      grep -q 'move it to an unused backup name' err
+      grep -qx personal "$staticdir.home-manager-old/user.yaml"
+      mv "$staticdir.home-manager-old" "$staticdir.personal"
+      mv saved-stamp state/rime/home-manager-source-stamp
+      mv "$staticdir.saved" "$staticdir"
+      ln -s "$PWD/source" "$workdir/incoming"
+      refused_alike subdir/schema.yaml
+      rm "$workdir/incoming"
+      mv "$workdir/owner-v1" "$workdir/note"
+      mkdir "$workdir/incoming"
+      refused_alike subdir/schema.yaml
+      grep -q 'unmarked Rime staging' err
+      rmdir "$workdir/incoming"
+      mv "$workdir/note" "$workdir/owner-v1"
+
+      manifest=state/rime/home-manager-schema-links.json
+      mv "$manifest" saved-manifest
+      printf '%s\n' '["../elsewhere"]' >"$manifest"
+      refused_alike subdir/schema.yaml
+      grep -q 'malformed Rime link manifest' err
+      mv -f saved-manifest "$manifest"
 
       # A file the static source lacks is refused before the refresh, not
       # after it.
@@ -361,8 +429,11 @@ in {
   };
   rime-host-files = mkCheck {
     name = "rime-host-files-test";
-    tools = [rimeHostFiles];
+    tools = [rimeHostFiles pkgs.fcitx5 pkgs.dbus pkgs.systemd];
     script = ''
+      unset DBUS_SESSION_BUS_ADDRESS
+      export XDG_RUNTIME_DIR="$PWD/no-session"
+      busctl=${pkgs.systemd}/bin/busctl
       source_root="$PWD/source/fcitx5"
       home="$PWD/home"
       state="$PWD/state"
@@ -378,17 +449,17 @@ in {
       # after, so a refusal has to come from validation and write nothing.
       # Both take the home and state directories to act on.
       validate() {
-        HOME="$1" XDG_STATE_HOME="$2" rime-host-files validate "$source_root"
+        HOME="$1" XDG_STATE_HOME="$2" rime-host-files validate "$source_root" "$busctl"
       }
       deploy() {
-        HOME="$1" XDG_STATE_HOME="$2" rime-host-files deploy "$source_root"
+        HOME="$1" XDG_STATE_HOME="$2" rime-host-files deploy "$source_root" "$busctl"
       }
 
       validate "$home" "$state"
       test ! -e "$home"
       test ! -e "$state"
       HOME="$home" XDG_STATE_HOME="$state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       test -f "$home/.config/fcitx5/profile"
       test ! -L "$home/.config/fcitx5/profile"
       test "$(stat -c %a "$home/.config/fcitx5/profile")" = 644
@@ -406,13 +477,13 @@ in {
       relocated="$PWD/relocated-config"
       HOME="$home" XDG_CONFIG_HOME="$relocated" \
         XDG_STATE_HOME="$PWD/relocated-state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       test -f "$relocated/fcitx5/profile"
       mkdir relative-home
       (
         cd relative-home
         HOME="$PWD" XDG_CONFIG_HOME=relative XDG_STATE_HOME=relative-state \
-          rime-host-files deploy "$source_root"
+          rime-host-files deploy "$source_root" "$busctl"
       )
       test -f relative-home/.config/fcitx5/profile
       test -f relative-home/.local/state/rime/host-config/profile
@@ -421,12 +492,12 @@ in {
 
       printf '%s\n' runtime-edit >"$home/.config/fcitx5/profile"
       HOME="$home" XDG_STATE_HOME="$state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       grep -qx runtime-edit "$home/.config/fcitx5/profile"
 
       printf '%s\n' classic-v2 >"$source_root/conf/classicui.conf"
       HOME="$home" XDG_STATE_HOME="$state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       grep -qx classic-v2 "$home/.config/fcitx5/conf/classicui.conf"
 
       printf '%s\n' profile-v2 >"$source_root/profile"
@@ -441,7 +512,7 @@ in {
       test "$keep" = "  cp $source_root/profile $state/rime/host-config/profile"
       eval "$keep"
       HOME="$home" XDG_STATE_HOME="$state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       grep -qx runtime-edit "$home/.config/fcitx5/profile"
 
       # Removing the runtime file takes the declaration.
@@ -451,7 +522,7 @@ in {
       test "$take" = "  rm $home/.config/fcitx5/profile"
       eval "$take"
       HOME="$home" XDG_STATE_HOME="$state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       grep -qx profile-v3 "$home/.config/fcitx5/profile"
       grep -qx profile-v3 "$state/rime/host-config/profile"
 
@@ -481,7 +552,7 @@ in {
       listing "$fresh_home" "$fresh_state" >after
       diff before after
       HOME="$fresh_home" XDG_STATE_HOME="$fresh_state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       printf '%s\n' Top=level '[HiddenNotifications]' 0=hidden-by-fcitx \
         1=wayland-diagnose-gnome "" '[Other]' Key=value >expected
       diff expected "$notifications"
@@ -490,7 +561,7 @@ in {
       # A file that already holds the declared entries is not rewritten.
       inode="$(stat -c %i "$notifications")"
       HOME="$fresh_home" XDG_STATE_HOME="$fresh_state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       test "$(stat -c %i "$notifications")" = "$inode"
       diff expected "$notifications"
 
@@ -500,7 +571,7 @@ in {
       printf '%s\n' '[HiddenNotifications]' 0=wayland-diagnose-kde \
         >"$source_root/conf/notifications.conf"
       HOME="$fresh_home" XDG_STATE_HOME="$fresh_state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       printf '%s\n' Top=level '[HiddenNotifications]' 0=hidden-by-fcitx \
         1=wayland-diagnose-gnome 2=wayland-diagnose-kde "" '[Other]' \
         Key=value >expected
@@ -513,7 +584,7 @@ in {
       cp "$notifications" expected
       inode="$(stat -c %i "$notifications")"
       HOME="$fresh_home" XDG_STATE_HOME="$fresh_state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       test "$(stat -c %i "$notifications")" = "$inode"
       diff expected "$notifications"
       test ! -e "$fresh_state/rime/host-config/notifications.conf"
@@ -521,7 +592,7 @@ in {
       # A file without the section gains it after the existing content.
       printf '%s\n' '[Other]' Key=value >"$notifications"
       HOME="$fresh_home" XDG_STATE_HOME="$fresh_state" \
-        rime-host-files deploy "$source_root"
+        rime-host-files deploy "$source_root" "$busctl"
       printf '%s\n' '[Other]' Key=value "" '[HiddenNotifications]' \
         0=wayland-diagnose-kde >expected
       diff expected "$notifications"
@@ -533,6 +604,22 @@ in {
       watched=("$other_home" "$PWD/other-state")
       refused_alike "$other_home" "$PWD/other-state"
       grep -q 'Refusing unmanaged Rime host file' err
+
+      # An explicitly configured but unreachable bus is not evidence that
+      # Fcitx has stopped. Refuse it before creating anything in a fresh home.
+      watched=("$PWD/bad-bus-home" "$PWD/bad-bus-state")
+      DBUS_SESSION_BUS_ADDRESS="unix:path=$PWD/not-a-socket" \
+        refused_alike "$PWD/bad-bus-home" "$PWD/bad-bus-state"
+      grep -q 'Cannot check whether Fcitx owns' err
+      touch not-a-runtime-directory
+      XDG_RUNTIME_DIR="$PWD/not-a-runtime-directory" \
+        refused_alike "$PWD/bad-bus-home" "$PWD/bad-bus-state"
+      grep -q 'Cannot check whether Fcitx owns' err
+      XDG_RUNTIME_DIR=relative \
+        refused_alike "$PWD/bad-bus-home" "$PWD/bad-bus-state"
+      grep -q 'XDG_RUNTIME_DIR is not absolute' err
+
+      bash ${./tests/profile-session.sh} "$source_root" ${pkgs.dbus}/share/dbus-1/session.conf
 
       # host_files.py names each file it materializes, while rime/default.nix
       # ships the whole tracked Fcitx tree. A file added to the tree and not

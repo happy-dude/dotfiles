@@ -54,26 +54,67 @@ require_clean_worktree() {
   fi
 }
 
-report_upstream_equivalent_commits() {
+# Rebase has no --no-overwrite-ignore. Check both the upstream checkout and
+# the paths written by intermediate picks, not just the final rebased tree.
+require_no_ignored_collision() {
+  python3 - "$1" "$2" <<'PY'
+import os
+import subprocess
+import sys
+
+worktree, upstream = sys.argv[1:]
+
+
+def git(*args: str, data: bytes | None = None) -> bytes:
+    return subprocess.check_output(["git", "-C", worktree, *args], input=data)
+
+
+def prefixes(path: bytes):
+    while path:
+        yield path
+        path = path.rpartition(b"/")[0]
+
+
+ignored = {
+    p.rstrip(b"/") for p in git("ls-files", "-oi", "--exclude-standard", "-z").split(b"\0") if p
+}
+if not ignored:
+    sys.exit(0)
+protected = {prefix for path in ignored for prefix in prefixes(path)}
+paths = git("ls-tree", "-rz", "--name-only", upstream)
+commits = git("rev-list", f"{upstream}..HEAD")
+paths += git(
+    "diff-tree", "--stdin", "-r", "--no-renames", "--no-commit-id", "--name-only",
+    "--diff-filter=AMT", "-z", data=commits,
+)
+for path in paths.split(b"\0"):
+    if path in protected or any(prefix in ignored for prefix in prefixes(path)):
+        sys.exit(f"ignored worktree content conflicts with {os.fsdecode(path)!r} in {worktree}")
+PY
+}
+
+report_upstream_patch_matches() {
   local repo=$1
   local upstream=$2
   local branch=$3
+  local cherry_output
   local line
   local marker
   local commit
   local -a equivalent_commits=()
 
+  cherry_output=$(git -C "$repo" cherry "$upstream" "$branch") || return 1
   while IFS= read -r line; do
     marker=${line%% *}
     commit=${line#* }
     if [[ $marker == - ]]; then
       equivalent_commits+=("$commit")
     fi
-  done < <(git -C "$repo" cherry "$upstream" "$branch")
+  done <<<"$cherry_output"
 
   ((${#equivalent_commits[@]} > 0)) || return 0
   printf '%s\n' \
-    "Local commits already represented upstream; rebase is expected to omit:" >&2
+    "Local patches matching upstream when whitespace is ignored; replay decides whether they are empty:" >&2
   for commit in "${equivalent_commits[@]}"; do
     git -C "$repo" show -s --format='  %h %s' "$commit" >&2
   done
@@ -194,9 +235,7 @@ collect_superseded_lock_commits() {
   local branch=$3
   local merge_base
   local diff_status
-  local cherry_output
-  local line
-  local marker
+  local commits
   local commit
 
   merge_base=$(git -C "$repo" merge-base "$upstream" "$branch") || return 1
@@ -208,16 +247,13 @@ collect_superseded_lock_commits() {
     diff_status=$?
   fi
   ((diff_status == 1)) || return "$diff_status"
-  cherry_output=$(git -C "$repo" cherry "$upstream" "$branch") || return 1
-  while IFS= read -r line; do
-    [[ -n $line ]] || continue
-    marker=${line%% *}
-    commit=${line#* }
-    [[ $marker == + ]] || continue
+  commits=$(git -C "$repo" rev-list "$upstream..$branch") || return 1
+  while IFS= read -r commit; do
+    [[ -n $commit ]] || continue
     if is_superseded_lock_commit "$repo" "$upstream" "$commit"; then
       printf '%s\n' "$commit"
     fi
-  done <<<"$cherry_output"
+  done <<<"$commits"
 }
 
 report_superseded_lock_commits() {
@@ -266,18 +302,19 @@ rebase_local_branch() {
   local superseded_lock_commits=$3
   local sequence_editor
 
-  # Sync owns only the named branch, not other refs into its history.
+  # Patch IDs ignore whitespace even inside string literals. Replay first;
+  # only an actually empty result can be omitted without conflict resolution.
+  local -a options=(--no-update-refs --reapply-cherry-picks --empty=drop --no-autosquash)
   if [[ -z $superseded_lock_commits ]]; then
-    git -C "$worktree" -c rebase.updateRefs=false rebase "$upstream"
+    git -C "$worktree" rebase "${options[@]}" "$upstream"
     return
   fi
   printf -v sequence_editor 'bash %q --rewrite-rebase-todo' "$script_path"
   SYNC_DROP_COMMITS=$superseded_lock_commits \
     SYNC_REBASE_WORKTREE=$worktree \
     GIT_SEQUENCE_EDITOR=$sequence_editor \
-    git -C "$worktree" -c rebase.updateRefs=false \
-    -c rebase.autoSquash=false -c rebase.abbreviateCommands=false \
-    rebase -i --empty=drop --no-autosquash "$upstream"
+    git -C "$worktree" -c rebase.abbreviateCommands=false \
+    rebase -i "${options[@]}" "$upstream"
 }
 
 check_flake() {
@@ -418,14 +455,21 @@ main() {
     git -C "$repo" fetch --no-prune origin \
       refs/heads/main:refs/remotes/origin/main
     origin_main=$(git -C "$repo" rev-parse refs/remotes/origin/main)
+    # Even --rebase-merges recreates a merge; it cannot replay changes made
+    # while resolving or completing that merge. Stop before moving either tip.
+    local local_merge
+    local_merge=$(git -C "$repo" rev-list -1 --min-parents=2 "$origin_main..$local_branch_ref")
+    [[ -z $local_merge ]] ||
+      die "$local_branch contains local merge $local_merge; inspect it before syncing"
+    require_no_ignored_collision "$branch_worktree" "$origin_main"
     superseded_lock_commits=$(
       collect_superseded_lock_commits \
         "$repo" "$origin_main" "$local_branch_ref"
     )
-    report_upstream_equivalent_commits \
+    report_upstream_patch_matches \
       "$repo" "$origin_main" "$local_branch_ref"
     report_superseded_lock_commits "$repo" "$superseded_lock_commits"
-    if ! git -C "$main_worktree" merge --ff-only "$origin_main"; then
+    if ! git -C "$main_worktree" merge --ff-only --no-overwrite-ignore "$origin_main"; then
       printf '%s\n' \
         "Local main could not fast-forward to origin/main." \
         "Inspect with:" >&2
@@ -451,11 +495,11 @@ main() {
         "Local main was fast-forwarded to $origin_main." \
         "Resolve conflicts in: $branch_worktree" \
         "Then continue with:" >&2
-      printf '  git -C %q rebase --continue\n' "$branch_worktree" >&2
+      printf '  git -C %q -c rebase.updateRefs=false rebase --continue\n' "$branch_worktree" >&2
       printf '%s\n' "After completion, validate with:" >&2
       print_validation_command
       printf '%s\n' "To restore the prior local branch, run:" >&2
-      printf '  git -C %q rebase --abort\n' "$branch_worktree" >&2
+      printf '  git -C %q -c rebase.updateRefs=false rebase --abort\n' "$branch_worktree" >&2
       return 1
     fi
   fi

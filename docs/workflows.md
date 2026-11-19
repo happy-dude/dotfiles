@@ -62,8 +62,8 @@ patch, manifest, checksum file, and series-qualified `apply-dotfiles-<name>.sh`
 helper to `~/Downloads` by default. It refuses a commit message whose body has a
 line that `git am` reads as the start of a patch (`---`, `--- <name>`, `diff -`,
 or `Index: `), because `git am` drops the rest of the message there, trailers
-included. The manifest, version 2, records the validated tree and a digest of
-the commit messages. If a commit carries a non-portable author identity,
+included. The version 3 manifest records a digest of the validated commit trees
+and messages in order. If a commit carries a non-portable author identity,
 `export` names the commit hash and prints the `git rebase --exec` command to set
 the portable author identity without echoing the offending address. It also
 writes a checksummed `dotfiles-<name>.tar.gz` containing those files for
@@ -77,9 +77,11 @@ fetch mapping nor the caller's `fetch.prune`. `clean` prints that command when
 `origin/main` is missing or may be stale. Failure to enumerate the profiles or
 build any declared profile prevents publication.
 
-`clean` refuses merge commits not reachable from `origin/main`: equivalent
-ordinary patches do not prove that a merge's conflict-resolution content is
-upstream. It preserves that branch and worktree for explicit review.
+`clean` accepts commits reachable from `origin/main`, or a re-authored series
+whose base, ordered trees and commit messages match the applied series. Later
+upstream commits are fine. Squashed, reordered or whitespace-different patches
+are not proof of application. Ignored files and concealed index entries also
+block worktree removal; inspect them rather than forcing cleanup.
 
 Callers may set `PORTABLE_FORBIDDEN_PATTERN` or list one extended regular
 expression per line in
@@ -98,24 +100,25 @@ attribution. Attribution-shaped lines in tracked file content remain subject to
 the policy.
 
 On the destination computer, verify the checksum file and run the transferred
-`apply-dotfiles-<name>.sh <manifest> ~/dotfiles`. It accepts only a version 2
-manifest and requires clean `main` at the recorded `origin/main`. It applies the
-patch with `git am --3way --keep-non-patch --whitespace=nowarn`, so the
-destination's `apply.whitespace` cannot rewrite content and a leading `[token]`
-stays in a subject, then re-authors and signs every commit with destination
-identity. Before validating, it compares the applied tree and commit messages
-with the ones the manifest records and stops if either differs. It then
-validates that profile and fast-forwards only local `main`. Neither script
-pushes. The archive workflow first verifies `dotfiles-<name>.tar.gz.sha256`,
-extracts its `dotfiles-<name>` directory, and runs the included apply script and
-manifest. State explicitly that nothing was pushed and leave review and push to
-the user. If application stops after creating its temporary branch, the failure
-output identifies that branch and the active branch, and prints in order the
-commands that discard the partial application: `git am --abort` when an
-operation is active, `git switch main`, and `git branch -D` for the temporary
-branch. The branch may be kept for inspection instead. If `origin/main` moved,
-update or rebase the isolated series; conflicts are unfinished Git state to
-resolve or abort, never a completed export.
+`apply-dotfiles-<name>.sh <manifest> ~/dotfiles`. It accepts only a version 3
+manifest and requires clean `main` at the recorded `origin/main`. Re-export old
+series rather than mixing helper and manifest versions. It applies the patch
+with `git am --3way --keep-non-patch --whitespace=nowarn`, so the destination's
+`apply.whitespace` cannot rewrite content and a leading `[token]` stays in a
+subject, then re-authors and signs every commit with destination identity.
+Before validating, it compares the ordered trees and messages with the export,
+not just the last tree. A mismatch stops the application. It then validates that
+profile and fast-forwards only local `main`. Neither script pushes. The archive
+workflow first verifies `dotfiles-<name>.tar.gz.sha256`, extracts its
+`dotfiles-<name>` directory, and runs the included apply script and manifest.
+State explicitly that nothing was pushed and leave review and push to the user.
+If application stops after creating its temporary branch, the failure output
+identifies that branch and the active branch, and prints in order the commands
+that discard the partial application: `git am --abort` when an operation is
+active, `git switch main`, and `git branch -D` for the temporary branch. The
+branch may be kept for inspection instead. If `origin/main` moved, update or
+rebase the isolated series; conflicts are unfinished Git state to resolve or
+abort, never a completed export.
 
 After a destination update is available remotely, synchronize another system
 with:
@@ -131,17 +134,17 @@ branch, and validates the selected profile. Under `fetch.prune`, Git 2.56.0
 deletes `origin/main` as stale when the source is the unqualified `main`, and
 then fails to update it.
 
-Before rebasing, sync reports local commits whose patches are already
-represented upstream and, when `origin/main` updated `flake.lock`, standalone
-`nix: update flake.lock` commits that change only upstream-managed entries and
-will therefore be omitted in favor of `origin/main`. An entry is
-upstream-managed when `origin/main`'s lock has the same kind of entry, a node or
-a `follows` reference, at the same input path from the root, such as
-`root -> home-manager -> nixpkgs`. Node names such as `nixpkgs_2` are positional
-labels and identify nothing. A commit that changes, adds, or removes any other
-entry is kept, and so is one whose locks cannot be read. Pins are not compared:
-for an upstream-managed input, `origin/main`'s pin wins even when it is the
-older one.
+Sync refuses local-only merges before moving either local branch. Ordinary
+commits are replayed even when Git reports patch equivalence: whitespace inside
+a string can change its meaning. When `origin/main` updated `flake.lock`, sync
+omits standalone `nix: update flake.lock` commits that change only upstream-
+managed entries. An entry is upstream-managed when `origin/main`'s lock has the
+same kind of entry, a node or a `follows` reference, at the same input path from
+the root, such as `root -> home-manager -> nixpkgs`. Node names such as
+`nixpkgs_2` are positional labels and identify nothing. A commit that changes,
+adds, or removes any other entry is kept, and so is one whose locks cannot be
+read. Pins are not compared: for an upstream-managed input, `origin/main`'s pin
+wins even when it is the older one.
 
 Only the `main` and named local-branch worktrees must be clean; unrelated linked
 worktrees are intentionally ignored. A dirty target refusal identifies its path
@@ -150,10 +153,8 @@ and branches with an upstream, and never pushes or activates. Formatting, flake
 checks, and the profile build are reported as separate phases without a fixed
 timeout. The formatter runs with `--no-update-lock-file`: `nix fmt` evaluates
 the flake, and Nix otherwise rewrites a `flake.lock` that disagrees with
-`flake.nix`. Automated sync rebases and the updater's rebasing pull disable
-Git's automatic updates to other local branch refs. Backup and topic refs retain
-their original commits even when `rebase.updateRefs` is enabled for manual
-rebases.
+`flake.nix`. Sync disables automatic updates to other branch refs. The updater
+only fast-forwards; it does not try to resolve divergent local history.
 
 Validate mode performs no fetch or rebase. It requires local `main` to equal the
 cached `origin/main` tip and the local-only branch to descend from that tip. Use
@@ -196,12 +197,14 @@ locked; the formatter then runs with `--no-update-lock-file` as well, so a lock
 that disagrees with `flake.nix` fails the formatting step instead of being
 rewritten.
 
-Update-mode step order is: repository pull, which stops when Git cannot reapply
-the pull's autostash and leaves conflicts in the index; generic submodule
+Update-mode step order is: fetch the tracking branch and fast-forward if
+possible, stopping on divergence or a conflicting autostash; generic submodule
 handling when `.gitmodules` contains entries; `nix fmt .`; `nix flake update`;
 locked flake validation and Home Manager build; committing the refreshed
 `flake.lock`; optional activation; and the post-activation generation changelog.
-`apply` also commits a dirty `flake.lock` after a successful activation.
+`apply` also commits a dirty `flake.lock` after a successful activation. A lock
+with different staged and unstaged changes is left for manual review: an
+autostashing pull or a path-limited commit could discard the staged version.
 Consecutive lock updates amend the previous `nix: update flake.lock` commit, but
 only while no remote-tracking branch contains it, HEAD is on a branch, and no
 other local branch contains it; every other case, including a containment check

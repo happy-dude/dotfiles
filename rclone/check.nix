@@ -1,6 +1,81 @@
 {pkgs}: let
   mkCheck = import ../lib/mkCheck.nix {inherit pkgs;};
+  inherit (pkgs) lib;
+  units =
+    (import ./default.nix {
+      inherit pkgs lib;
+      config = {
+        home.homeDirectory = "home";
+        xdg = {
+          configHome = "config";
+          cacheHome = "cache";
+          stateHome = "state";
+        };
+      };
+    }).systemd.user;
 in {
+  rclone-bisync-state = mkCheck {
+    name = "rclone-bisync-state-test";
+    tools = [pkgs.rclone];
+    script = let
+      sync = units.services.rclone-box-org-bisync;
+      needsOptIn = unit:
+        lib.all (condition: lib.elem condition unit.Unit.ConditionPathExists) [
+          "config/rclone/rclone.conf"
+          "state/rclone/bisync/org-bisync-ready"
+          "!state/rclone/org-bisync-ready"
+        ];
+    in ''
+      ${lib.optionalString (!(lib.all needsOptIn [sync units.services.rclone-box-org-watch units.paths.rclone-box-org-watch])) ''
+        echo 'The sync, watcher and path must require the state opt-in and reject the legacy opt-in.' >&2
+        exit 1
+      ''}
+      # Both configs define box: as a local alias. Only the one checked by
+      # the unit may receive changes, regardless of the manager's environment.
+      export HOME="$PWD/home" RCLONE_CONFIG="$PWD/other.conf"
+      mkdir -p home/org remote/org config/rclone
+      config=config/rclone/rclone.conf
+      printf '[box]\ntype = alias\nremote = %s\n' "$PWD/remote" >"$config"
+      printf '[box]\ntype = alias\nremote = %s\n' "$PWD/other" >"$RCLONE_CONFIG"
+      filter=config/rclone/org-bisync.filter
+      install -m600 ${./org-bisync.filter} "$filter"
+      touch home/org/{RCLONE_TEST,keep.org,removed.org} remote/org/RCLONE_TEST
+      sync=( ${sync.Service.ExecStart} )
+      rclone bisync home/org box:org --config "$config" --workdir cache/rclone/bisync \
+        --filters-file "$filter" --check-access --compare size,modtime,checksum --resync
+      cp -a remote other
+      cp -a other saved-other
+      cp "$filter.md5" saved.md5
+      rm home/org/removed.org
+      if "''${sync[@]}"; then
+        echo 'A scheduled command accepted an uninitialized state workdir.' >&2
+        exit 1
+      fi
+      test -f remote/org/removed.org
+      rmdir state/rclone/bisync
+      mv -T cache/rclone/bisync state/rclone/bisync
+      printf '\n# changed\n' >>"$filter"
+      if "''${sync[@]}"; then
+        echo 'The filter changed without a reviewed resync.' >&2
+        exit 1
+      fi
+      test -f remote/org/removed.org
+      install -m600 ${./org-bisync.filter} "$filter"
+      mv remote/org/RCLONE_TEST saved-sentinel
+      if "''${sync[@]}"; then
+        echo 'A missing access-check file did not stop bisync.' >&2
+        exit 1
+      fi
+      test -f remote/org/removed.org
+      mv saved-sentinel remote/org/RCLONE_TEST
+      "''${sync[@]}"
+      test ! -e remote/org/removed.org
+      test -f remote/org/keep.org
+      cmp saved.md5 "$filter.md5"
+      diff -qr saved-other other
+    '';
+  };
+
   rclone-org-watcher = mkCheck {
     name = "rclone-org-watcher-test";
     tools = [

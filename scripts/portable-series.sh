@@ -490,24 +490,23 @@ reject_patch_break_lines() {
   fi
 }
 
-# Digest of the commit messages in <base>..HEAD: SHA-256 over each message as
-# its commit object stores it (the bytes after the header's blank line),
-# oldest commit first, each followed by one NUL byte. The manifest records it
-# and apply-portable-series.sh recomputes it with its own copy of this
-# function, which cannot be shared; keep the two identical.
-series_message_digest() {
+# Version 3: hash each commit's tree header and original message, skipping
+# the identity, parents and signature. Hash the lowercase SHA-256 lines in
+# series order. Fixed-size records preserve boundaries even for unusual
+# message bytes. The standalone apply script carries the same function.
+series_digest() {
   local repository=$1
   local base=$2
   local commits
   local commit
   local digest
 
-  commits=$(git -C "$repository" rev-list --reverse "$base..HEAD") || return 1
+  commits=$(git -C "$repository" rev-list --reverse "$base..${3:-HEAD}") || return 1
   digest=$(
     while IFS= read -r commit; do
       [[ -n $commit ]] || continue
-      git -C "$repository" cat-file commit "$commit" | sed '1,/^$/d' || exit 1
-      printf '\0'
+      git -C "$repository" cat-file commit "$commit" | sed '2,/^$/d' |
+        sha256sum | cut -d ' ' -f 1 || exit 1
     done <<<"$commits" | sha256sum
   ) || return 1
   printf '%s\n' "${digest%% *}"
@@ -545,8 +544,7 @@ export_series() (
   local staged_apply_path
   local bundle_directory="dotfiles-$name"
   local patch_sha256
-  local validated_tree
-  local message_digest
+  local validated_series
   local forbidden_pattern
 
   validate_name "$name" || return 1
@@ -602,7 +600,7 @@ export_series() (
       "$(printf '%s\n' "${non_portable_commits[@]}" | paste -sd, -)" >&2
     printf '%s\n' \
       "Reset author metadata in the portable worktree with:" >&2
-    printf "  git -C %q -c commit.gpgsign=false rebase --exec 'git commit --amend --no-edit --author=\"Portable Dotfiles <portable@localhost>\"' origin/main\n" \
+    printf "  git -C %q -c commit.gpgsign=false rebase --no-update-refs --no-autosquash --exec 'git commit --amend --no-edit --author=\"Portable Dotfiles <portable@localhost>\"' origin/main\n" \
       "$worktree" >&2
     die "portable history contains a non-portable author identity"
     return 1
@@ -623,7 +621,7 @@ export_series() (
   lint_commits "$worktree" "$base" "$staging_directory/messages" || return 1
   (
     cd -- "$worktree" || exit 1
-    nix fmt . || exit 1
+    nix fmt --no-update-lock-file . || exit 1
     # Untracked formatter output is drift too, so compare the full status.
     format_status=$(git status --porcelain=v1 --untracked-files=all) || {
       die "unable to read the portable worktree status after formatting"
@@ -666,23 +664,18 @@ export_series() (
     return 1
   patch_sha256=$(sha256sum "$staged_patch_path" | cut -d ' ' -f 1) ||
     return 1
-  # The tree and messages validated above. git am can land something else on
-  # the destination, where apply.whitespace rewrites content and mailinfo
-  # reinterprets a message, so apply compares its result with these.
-  validated_tree=$(git -C "$worktree" rev-parse 'HEAD^{tree}') || return 1
-  message_digest=$(series_message_digest "$worktree" "$base") || return 1
+  validated_series=$(series_digest "$worktree" "$base") || return 1
 
   cat >"$staged_manifest_path" <<EOF || return 1
-version=2
+version=3
 name=$name
 base=$base
 count=$count
 patch=$patch_name
 sha256=$patch_sha256
-tree=$validated_tree
-messages=$message_digest
+series=$validated_series
 EOF
-  cp -- "$worktree/scripts/apply-portable-series.sh" \
+  cp -- "$(dirname -- "${BASH_SOURCE[0]}")/apply-portable-series.sh" \
     "$staged_apply_path" || return 1
   chmod 0755 "$staged_apply_path" || return 1
   (
@@ -717,6 +710,29 @@ EOF
     "Nothing was pushed. Transfer, review, and apply them on the destination computer."
 )
 
+# Re-authoring changes the commit IDs. The apply workflow nevertheless starts
+# at the same base and preserves every tree and stored message in order.
+# Later commits on main need not match the series tip.
+series_is_upstream() {
+  local upstream=$1 branch=$2
+  local base count applied_tip applied_base replay_digest applied_digest
+
+  count=$(git -C "$repo_root" rev-list --count "$upstream..$branch") || return 1
+  ((count > 0)) || return 0
+  base=$(git -C "$repo_root" merge-base "$upstream" "$branch") || return 1
+  applied_tip=$(
+    git -C "$repo_root" rev-list --reverse --first-parent "$base..$upstream" |
+      sed -n "${count}p"
+  ) || return 1
+  [[ -n $applied_tip ]] || return 1
+  applied_base=$(git -C "$repo_root" rev-parse --verify "$applied_tip~$count") || return 1
+  [[ $applied_base == "$base" ]] || return 1
+
+  replay_digest=$(series_digest "$repo_root" "$base" "$branch") || return 1
+  applied_digest=$(series_digest "$repo_root" "$base" "$applied_tip") || return 1
+  [[ $replay_digest == "$applied_digest" ]]
+}
+
 clean_series() {
   local name=$1
   local branch="replay/$name"
@@ -724,13 +740,14 @@ clean_series() {
   local worktree
   local worktree_status
   local lookup_status
+  local branch_tip upstream_tip
 
   validate_name "$name" || return 1
-  git -C "$repo_root" show-ref --verify --quiet "$branch_ref" || {
+  branch_tip=$(git -C "$repo_root" rev-parse --verify "$branch_ref^{commit}") || {
     die "no such series: $branch"
     return 1
   }
-  git -C "$repo_root" show-ref --verify --quiet refs/remotes/origin/main || {
+  upstream_tip=$(git -C "$repo_root" rev-parse --verify 'refs/remotes/origin/main^{commit}') || {
     printf '%s\n' "Fetch origin/main with:" >&2
     print_origin_main_fetch_command
     die "origin/main is not fetched"
@@ -741,7 +758,7 @@ clean_series() {
   local merge_commits
   merge_commits=$(
     git -C "$repo_root" rev-list --min-parents=2 \
-      "refs/remotes/origin/main..$branch_ref"
+      "$upstream_tip..$branch_tip"
   ) || {
     die "could not inspect merge history for $branch"
     return 1
@@ -751,17 +768,10 @@ clean_series() {
     return 1
   fi
 
-  local unrepresented
-  unrepresented=$(
-    git -C "$repo_root" cherry refs/remotes/origin/main "$branch_ref"
-  ) || {
-    die "could not compare $branch against origin/main"
-    return 1
-  }
-  if grep -q '^+' <<<"$unrepresented"; then
+  if ! series_is_upstream "$upstream_tip" "$branch_tip"; then
     printf '%s\n' "If origin/main is stale, refresh it with:" >&2
     print_origin_main_fetch_command
-    die "$branch has commits not represented in origin/main; export and apply them, or refresh origin/main first"
+    die "$branch is not an exact series in origin/main; inspect the branch and base before cleaning"
     return 1
   fi
 
@@ -771,7 +781,8 @@ clean_series() {
       return 1
     fi
     if ! worktree_status=$(
-      git -C "$worktree" status --porcelain=v1 --untracked-files=all
+      git -C "$worktree" -c core.filemode=true status --porcelain=v1 --untracked-files=all --ignored \
+        --ignore-submodules=none
     ); then
       die "unable to read the series worktree status: $worktree"
       return 1
@@ -780,7 +791,19 @@ clean_series() {
       die "series worktree is not clean: $worktree"
       return 1
     fi
-    git -C "$repo_root" worktree remove "$worktree"
+    # These index bits hide tracked edits even from an otherwise clean status.
+    local concealed
+    concealed=$(git -C "$worktree" ls-files -v | sed -n '/^[a-zS] /p') || return 1
+    if [[ -n $concealed ]]; then
+      die "series worktree has assume-unchanged or skip-worktree entries: $worktree"
+      return 1
+    fi
+    [[ $(git -C "$worktree" symbolic-ref -q HEAD) == "$branch_ref" &&
+    $(git -C "$worktree" rev-parse HEAD) == "$branch_tip" ]] || {
+      die "series worktree changed during cleanup; inspect $worktree"
+      return 1
+    }
+    git -C "$repo_root" worktree remove "$worktree" || return 1
   else
     lookup_status=$?
     if ((lookup_status == 2)); then
@@ -789,7 +812,29 @@ clean_series() {
       return 1
     fi
   fi
-  git -C "$repo_root" branch -D "$branch"
+  local attached common gitdir state
+  attached=$(git -C "$repo_root" for-each-ref --format='%(worktreepath)' "$branch_ref") || return 1
+  [[ -z $attached ]] || { die "$branch is still attached to a worktree" || return 1; }
+  # A detached HEAD may still be rebasing or bisecting this branch. Unlike
+  # branch -D, update-ref does not check worktree operation state itself.
+  common=$(git -C "$repo_root" rev-parse --path-format=absolute --git-common-dir) || return 1
+  for gitdir in "$common" "$common"/worktrees/*; do
+    for state in "$gitdir"/rebase-{apply,merge}/head-name \
+      "$gitdir/rebase-merge/update-refs" "$gitdir/BISECT_START"; do
+      [[ -e $state ]] || continue
+      if grep -Fqx -e "$branch_ref" -e "$branch" "$state"; then
+        die "$branch is in use by a worktree operation; inspect before cleaning"
+        return 1
+      else
+        (($? == 1)) || return 1
+      fi
+    done
+  done
+  # Both ends of the upstream proof must still name the commits inspected.
+  git -C "$repo_root" update-ref --no-deref --stdin <<EOF || return 1
+verify refs/remotes/origin/main $upstream_tip
+delete $branch_ref $branch_tip
+EOF
 
   printf 'Removed series %s; nothing was pushed.\n' "$branch"
 }

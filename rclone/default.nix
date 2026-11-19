@@ -6,8 +6,14 @@
 }: let
   rcloneConfig = "${config.xdg.configHome}/rclone/rclone.conf";
   filterFile = "${config.xdg.configHome}/rclone/org-bisync.filter";
-  readyMarker = "${config.xdg.stateHome}/rclone/org-bisync-ready";
-  workDir = "${config.xdg.cacheHome}/rclone/bisync";
+  workDir = "${config.xdg.stateHome}/rclone/bisync";
+  # Opt-in belongs to this baseline. Retire the old opt-in before arming the
+  # new one, so rolling back cannot resume from stale cache listings.
+  readyConditions = [
+    rcloneConfig
+    "${workDir}/org-bisync-ready"
+    "!${config.xdg.stateHome}/rclone/org-bisync-ready"
+  ];
   changeWatcher = import ../lib/python/mkScript.nix {inherit pkgs;} {
     name = "rclone-box-org-watch";
     source = ./watch_org.py;
@@ -28,20 +34,18 @@ in {
   systemd.user.services.rclone-box-org-bisync = {
     Unit = {
       Description = "Synchronize Org files with Box";
-      ConditionPathExists = [
-        rcloneConfig
-        readyMarker
-      ];
+      ConditionPathExists = readyConditions;
     };
 
     Service = {
       Type = "oneshot";
-      ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg workDir}";
       ExecStart = lib.concatStringsSep " " [
         "${lib.getExe pkgs.rclone}"
         "bisync"
         (lib.escapeShellArg "${config.home.homeDirectory}/org")
         "box:org"
+        "--config"
+        (lib.escapeShellArg rcloneConfig)
         # Unlike --filter-from, --filters-file records the filter's MD5 on
         # resync and aborts later runs when it changes: files a new rule
         # hides would otherwise look deleted and be deleted on the far side.
@@ -73,11 +77,7 @@ in {
   systemd.user.services.rclone-box-org-watch = {
     Unit = {
       Description = "Schedule Box synchronization after local Org changes";
-      ConditionPathExists = [
-        rcloneConfig
-        "%h/org"
-        readyMarker
-      ];
+      ConditionPathExists = readyConditions ++ ["%h/org"];
     };
     Service = {
       ExecStart = watcherCommand;
@@ -88,15 +88,12 @@ in {
   };
 
   # systemd checks the watcher's conditions only at start, so this starts it
-  # once ~/org exists. It repeats the other two conditions: a skipped service
+  # once ~/org exists. Repeat its readiness conditions: a skipped service
   # makes a path unit retrigger until it fails with trigger-limit-hit.
   systemd.user.paths.rclone-box-org-watch = {
     Unit = {
       Description = "Start the Org change watcher once ~/org exists";
-      ConditionPathExists = [
-        rcloneConfig
-        readyMarker
-      ];
+      ConditionPathExists = readyConditions;
     };
     Path.PathExists = "%h/org";
     Install.WantedBy = ["default.target"];

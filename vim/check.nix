@@ -123,12 +123,16 @@ in {
       missing=""
       # Extensions start clangd, rust-analyzer, and zuban through their own
       # path keys rather than the languageserver table.
-      for cmd in $(jq -r '
+      jq -er '
+        if (.languageserver | type == "object" and length > 0) then
           [.languageserver[].command, ."clangd.path", ."rust-analyzer.server.path", ."zuban.path"]
-          | .[]
-        ' ${./.vim/coc-settings.json} | sort -u); do
+          | if all(.[]; type == "string" and length > 0) then unique[]
+            else error("expected nonempty server commands") end
+        else error("expected a languageserver table") end
+      ' ${./.vim/coc-settings.json} >commands
+      while IFS= read -r cmd; do
         command -v "$cmd" >/dev/null || missing="$missing $cmd"
-      done
+      done <commands
       [ -z "$missing" ] || {
         echo "coc-settings.json names servers with no matching package:$missing" >&2
         exit 1

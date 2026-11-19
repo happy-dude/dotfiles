@@ -25,8 +25,8 @@
 ###     ./scripts/update.sh [check|apply|update] [options] [directory]
 ###
 ### Notes:
-###     - Dirty top-level repo pull is allowed via:
-###           git pull --rebase --autostash
+###     - Updates fast-forward the configured upstream with --autostash.
+###       Divergent history requires manual reconciliation.
 ###
 ###     - Configured dirty submodules are NOT updated unless either:
 ###           1. you clean them up yourself, or
@@ -121,7 +121,7 @@ Options:
 
   Git / dotfiles:
     --skip-pull
-        Skip `git pull --rebase --autostash`.
+        Skip fetching and fast-forwarding from the configured upstream.
 
     --skip-submodules
         Skip submodule sync/init/check/update steps. These steps are already
@@ -352,6 +352,30 @@ run_validation() {
 # even when the tree carries unrelated changes.
 readonly LOCK_COMMIT_SUBJECT="nix: update flake.lock"
 
+# A path-limited commit reads the working file and replaces the staged blob;
+# a pull's autostash can likewise restore the working file without its index.
+lock_status_for_update() {
+  local status entry
+  entry=$(git -C "$1" ls-files -v -- flake.lock) || return 1
+  if [[ $entry == [a-zS]' '* ]]; then
+    warn "flake.lock has an assume-unchanged or skip-worktree index entry; inspect its staged and working versions"
+    return 1
+  fi
+  status=$(git -C "$1" status --porcelain=v1 --untracked-files=all -- flake.lock) || {
+    warn "cannot inspect the flake.lock index and worktree"
+    return 1
+  }
+  case $status in
+  '' | '?? flake.lock' | ' '[MDTA]' flake.lock' | [MDTA]'  flake.lock')
+    printf '%s' "$status"
+    ;;
+  *)
+    warn "flake.lock has separate staged and unstaged or unresolved changes; leaving the index and working lock alone"
+    return 1
+    ;;
+  esac
+}
+
 # Amend a matching tip lock commit only when no remote-tracking branch and
 # no other local branch contains it. The exact subject identifies lock
 # updates, including hand-made or re-authored commits with that subject.
@@ -363,9 +387,9 @@ commit_flake_lock() {
     return 0
   }
 
-  if [ -z "$(git -C "$target" status --porcelain -- flake.lock)" ]; then
-    return 0
-  fi
+  local lock_status
+  lock_status=$(lock_status_for_update "$target") || return 0
+  [[ -n $lock_status ]] || return 0
 
   # Remote-tracking refs are local evidence, not a query of the server. Stale
   # refs can miss a published commit, so this is not proof it was never pushed.
@@ -863,7 +887,7 @@ stash_dirty_submodules() {
 # Everything below runs only when this file is executed. The test suites
 # source it to exercise the functions above without performing an update.
 main() {
-  local section_result status unmerged repo_top
+  local section_result status unmerged repo_top branch_ref remote remote_ref fetched
 
   # Argument parsing
   #--------------------------------------------------------------------------------------------------
@@ -977,9 +1001,21 @@ main() {
   if [ "$SKIP_PULL" -eq 0 ]; then
     section_start "Pulling latest changes for main repo"
     if git rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; then
+      lock_status_for_update "$PWD" >/dev/null ||
+        die "not pulling with a separately staged or unreadable lock; inspect flake.lock before updating"
       vmsg "Dirty top-level worktree is allowed here via --autostash."
-      # Updating this checkout must not rewrite backup or topic branches.
-      git -c rebase.updateRefs=false pull --rebase --autostash
+      # Rebase's patch equivalence ignores even whitespace in string literals.
+      # Fetch the configured source but never rewrite divergent local history.
+      branch_ref=$(git symbolic-ref HEAD)
+      remote=$(git for-each-ref --format='%(upstream:remotename)' "$branch_ref")
+      remote_ref=$(git for-each-ref --format='%(upstream:remoteref)' "$branch_ref")
+      git fetch --no-prune --no-tags -- "$remote" "$remote_ref"
+      fetched=$(git rev-parse --verify 'FETCH_HEAD^{commit}')
+      if ! git merge-base --is-ancestor HEAD "$fetched" &&
+        ! git merge-base --is-ancestor "$fetched" HEAD; then
+        die "local history diverges from the fetched upstream; reconcile it manually before updating"
+      fi
+      git merge --ff-only --no-overwrite-ignore --autostash "$fetched"
       # Git still exits 0 when it cannot restore the autostash; the conflict
       # is left in the index and the stash is kept.
       unmerged="$(git ls-files --unmerged)" ||
@@ -1063,6 +1099,13 @@ main() {
   #--------------------------------------------------------------------------------------------------
   # 3. Run `nix fmt .`
   #--------------------------------------------------------------------------------------------------
+
+  # Without a pull, the formatter or flake update can be the first command
+  # that overwrites the working side of a separately staged lock.
+  if [ "$SKIP_NIX_FLAKE" -eq 0 ]; then
+    lock_status_for_update "$PWD" >/dev/null ||
+      die "not rewriting a separately staged or unreadable lock; inspect flake.lock before updating"
+  fi
 
   if [ "$SKIP_NIX_FMT" -eq 1 ]; then
     section_start "Skipping nix fmt (--skip-nix-fmt)"

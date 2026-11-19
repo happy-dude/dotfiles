@@ -34,7 +34,8 @@
     (defconst dotfiles-sensitive-paths
       '((any-depth-directories ${lispStrings sensitivePathSet.anyDepthDirectories})
         ${sensitivePathKind "home" sensitivePathSet.home}
-        ${sensitivePathKind "xdg-config" sensitivePathSet.xdgConfig}))
+        ${sensitivePathKind "xdg-config" sensitivePathSet.xdgConfig}
+        ${sensitivePathKind "xdg-data" sensitivePathSet.xdgData}))
 
     (provide 'dotfiles-sensitive-paths)
     ;;; sensitive-paths.el ends here
@@ -53,6 +54,13 @@ in {
   xdg.configFile."emacs/sensitive-paths.el".source = sensitivePaths;
 
   home.activation = {
+    # Read-only, including on a dry run: do not retire a working generation
+    # only to have Emacs ignore the new XDG init.
+    checkEmacsInitPaths = lib.hm.dag.entryBefore ["writeBoundary"] ''
+      ${pkgs.bash}/bin/bash ${./check-init-paths.sh} \
+        ${lib.escapeShellArg "${config.xdg.configHome}/emacs"} "''${oldGenPath:-}"
+    '';
+
     createOrgDirectories = lib.hm.dag.entryAfter ["writeBoundary"] ''
       $DRY_RUN_CMD ${pkgs.coreutils}/bin/mkdir -p \
         "$HOME/org/Archive" \
@@ -77,6 +85,13 @@ in {
   programs.emacs = {
     enable = true;
     package = pkgs.emacs-pgtk;
+    # org-protocol already decoded the browser query. Keep the page's URL
+    # intact in both the note and org-roam's lookup of a previous capture.
+    overrides = _: prev: {
+      org-roam = prev.org-roam.overrideAttrs (old: {
+        patches = (old.patches or []) ++ [./org-roam-literal-refs.patch];
+      });
+    };
     extraPackages = epkgs:
       (with epkgs; [
         agent-shell

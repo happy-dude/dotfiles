@@ -17,6 +17,7 @@ patch:
   engine/filters:
     - reverse_lookup_filter@jyut6ping3_reverse_lookup
     - lua_filter@jyutping_pinyin_filter
+    - lua_filter@jyutping_mandarin_filter
     - simplifier@emoji_cantonese_suggestion
     - simplifier@variants_hk
     - simplifier@trad_tw

@@ -136,4 +136,42 @@
 (unless (equal (getenv "OPENCODE_DISABLE_LSP_DOWNLOAD") "true")
   (error "OpenCode's language-server download guard is missing"))
 
+;; --quick skips normal package activation. Starting a managed workspace,
+;; unlike registering a client, uses lsp-mode's generated autoloads.
+(require 'lsp-mode-autoloads)
+
+;; Bash Language Server scans one rootUri. A shell buffer in a second
+;; repository needs a different workspace, including its unopened files.
+(let ((lsp-auto-guess-root nil)
+      (lsp-keep-workspace-alive nil)
+      (workspaces nil))
+  (dolist (project '("first" "second"))
+    (let* ((root (expand-file-name project "~/bash-projects"))
+           (main (expand-file-name "main.sh" root))
+           (symbol (concat "function_" project)))
+      (make-directory root t)
+      (with-temp-file (expand-file-name "library.sh" root)
+        (insert symbol "() { :; }\n"))
+      (with-temp-file main (insert "#!/bin/bash\n"))
+      (lsp-workspace-folders-add root)
+      (with-current-buffer (find-file-noselect main)
+        (lsp)
+        (let* ((workspace (lsp-find-workspace 'dotfiles-bash main))
+               (deadline (+ (float-time) 30)))
+          (unless (and workspace (not (memq workspace workspaces)))
+            (error "No separate Bash workspace for %s" root))
+          (push workspace workspaces)
+          (while (and (not (eq (lsp--workspace-status workspace) 'initialized))
+                      (< (float-time) deadline))
+            (accept-process-output nil 0.05))
+          (unless (and (eq (lsp--workspace-status workspace) 'initialized)
+                       (cl-loop thereis (seq-some
+                                         (lambda (item)
+                                           (equal (lsp-get item :name) symbol))
+                                         (lsp-request "workspace/symbol" `(:query ,symbol)))
+                                while (< (float-time) deadline)
+                                do (accept-process-output nil 0.05)))
+            (error "Bash workspace %s did not index %s in library.sh" root symbol))))))
+  (mapc #'lsp-workspace-shutdown workspaces))
+
 ;;; runtime-test.el ends here

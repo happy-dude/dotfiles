@@ -59,6 +59,7 @@
   runtimeTest = ./runtime-test.el;
 in
   assert opencodeDisableLspDownload == "true";
+  assert lib.all (home: lib.elem "writeBoundary" home.config.home.activation.checkEmacsInitPaths.before) (lib.attrValues homes);
   assert lib.all (
     home:
       lib.hasPrefix "${home.config.programs.emacs.finalPackage}/bin/emacsclient "
@@ -96,6 +97,7 @@ in
         # which follows XDG_CONFIG_HOME.
         link_companions() {
           mkdir -p "$XDG_CONFIG_HOME/emacs"
+          ln -s ${initEl} "$XDG_CONFIG_HOME/emacs/init.el"
           ln -s ${lspPaths} "$XDG_CONFIG_HOME/emacs/lsp-paths.el"
           ln -s ${lspConfig} "$XDG_CONFIG_HOME/emacs/lsp-servers.el"
           ln -s ${agentShellConfig} "$XDG_CONFIG_HOME/emacs/agent-shell.el"
@@ -104,13 +106,73 @@ in
         }
         link_companions
 
+        # A cache alone can hide the XDG init. Preflight must fail before writing,
+        # it must not move user-owned content itself.
+        check_init() {
+          bash ${./check-init-paths.sh} "$XDG_CONFIG_HOME/emacs" "$TMPDIR/old-generation"
+        }
+        refuses_init() {
+          if check_init >"$TMPDIR/preflight.log" 2>&1; then
+            echo "unexpected Emacs preflight success for $1" >&2
+            exit 1
+          fi
+          grep -F -- "$1" "$TMPDIR/preflight.log"
+        }
+        mkdir -p "$HOME/.emacs.d" "$TMPDIR/old-generation" "$TMPDIR/old-files"
+        printf 'keep\n' >"$HOME/.emacs.d/cache"
+        refuses_init "$HOME/.emacs.d"
+        grep -Fx keep "$HOME/.emacs.d/cache"
+        mv "$HOME/.emacs.d" "$HOME/legacy-emacs-backup"
+        check_init
+        ln -s "$TMPDIR/old-files" "$TMPDIR/old-generation/home-files"
+        ln -s ${initEl} "$TMPDIR/old-files/.emacs"
+        ln -s "$TMPDIR/old-files/.emacs" "$HOME/.emacs"
+        check_init
+        test -L "$HOME/.emacs"
+        # A foreign link to the exact same store file is not the retired link.
+        ln -sfn ${initEl} "$HOME/.emacs"
+        refuses_init "$HOME/.emacs"
+        test -L "$HOME/.emacs"
+        rm "$HOME/.emacs"
+        ln -s "$XDG_CONFIG_HOME/emacs" "$HOME/.emacs.d"
+        check_init
+        ln -s .emacs.d/init.el "$HOME/.emacs"
+        check_init
+        rm "$HOME/.emacs"
+        touch "$HOME/.emacs.el"
+        refuses_init "$HOME/.emacs.el"
+        rm "$HOME/.emacs.el"
+        rm "$HOME/.emacs.d"
+        mkdir -p "$HOME/org/roam" "$TMPDIR/run"
+        chmod 0700 "$TMPDIR/run"
+        printf '(defvar dotfiles-shadow-loaded t)\n' >"$HOME/.emacs.el"
+        emacs -Q --batch -f batch-byte-compile "$HOME/.emacs.el"
+        # Suffixes alone do not select the home-root init on Linux. In the
+        # XDG directory, however, the same bytecode really does win.
+        cp "$HOME/.emacs.elc" "$XDG_CONFIG_HOME/emacs/init.elc"
+        refuses_init "$XDG_CONFIG_HOME/emacs/init.elc"
+        XDG_RUNTIME_DIR="$TMPDIR/run" timeout 60 emacs --fg-daemon=compiled-check \
+          --eval '(kill-emacs (if (bound-and-true-p dotfiles-shadow-loaded) 0 1))'
+        rm "$XDG_CONFIG_HOME/emacs/init.elc"
+        check_init
+        # Start normally after the user has moved the shadowing directory.
+        # --batch --load would succeed even if Emacs ignored the deployed init.
+        XDG_RUNTIME_DIR="$TMPDIR/run" timeout 60 emacs --fg-daemon=xdg-check \
+          --eval '(kill-emacs (if (and user-init-file (not init-file-had-error)
+                                    (not (bound-and-true-p dotfiles-shadow-loaded))
+                                    (file-equal-p user-init-file (expand-file-name "emacs/init.el" (getenv "XDG_CONFIG_HOME")))
+                                    (memq (quote dotfiles/harden-sensitive-buffer) find-file-hook)) 0 1))'
+
         emacs --batch --quick --load ${runtimeTest}
         emacs --batch --quick --load ${initEl} \
           --load ${./org-protocol-test.el}
 
-        # The secret-state test needs a config directory other than
-        # ~/.config: XDG config entries must be guarded in both places.
+        # Old credentials can remain under the standard roots after XDG
+        # relocation. Cover both roots and a credential directory symlink.
         export XDG_CONFIG_HOME="$HOME/relocated-config"
+        export XDG_DATA_HOME="$HOME/relocated-data"
+        mkdir -p "$HOME/private/keys"
+        ln -s "$HOME/private/keys" "$HOME/.ssh"
         link_companions
         emacs --batch --quick --load ${initEl} \
           --load ${./secret-state-test.el}

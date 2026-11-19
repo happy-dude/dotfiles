@@ -1,4 +1,6 @@
 tonal_pinyin_filter = require('tonal_pinyin')
-jyutping_pinyin_filter = require('jyutping_pinyin')
+local jyutping_pinyin = require('jyutping_pinyin')
+jyutping_pinyin_filter = jyutping_pinyin(false)
+jyutping_mandarin_filter = jyutping_pinyin(true)
 colemak_remap = require('cangjie5_colemak_remap')
 cangjie_display = require('cangjie_display')

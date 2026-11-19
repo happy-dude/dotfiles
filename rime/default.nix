@@ -202,6 +202,7 @@
     }
     EOF
   '';
+  hostFileArguments = lib.escapeShellArgs [fcitxConfig "${pkgs.systemd}/bin/busctl"];
 in
   assert lib.assertMsg (shadowedLocalRimeData == []) ''
     Tracked Rime data files that a locked input or package also provides:
@@ -235,7 +236,7 @@ in
     # dry run.
     home.activation.rimeValidate = lib.hm.dag.entryBetween ["writeBoundary"] ["checkLinkTargets"] ''
       ${lib.getExe rimeHostFiles} validate \
-        ${lib.escapeShellArg fcitxConfig}
+        ${hostFileArguments}
       ${lib.getExe rimeStateManager} validate \
         ${lib.escapeShellArg rimeStaticData} \
         ${lib.escapeShellArg rimeDataStamp} \
@@ -244,7 +245,7 @@ in
 
     home.activation.rimeHostFiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
       $DRY_RUN_CMD ${lib.getExe rimeHostFiles} deploy \
-        ${lib.escapeShellArg fcitxConfig}
+        ${hostFileArguments}
     '';
 
     home.activation.rimeSchemaBuild = lib.hm.dag.entryAfter ["rimeHostFiles"] ''

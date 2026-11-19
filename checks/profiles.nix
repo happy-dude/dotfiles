@@ -22,6 +22,23 @@
     "${name}: home.sessionVariables.NIX_PATH and systemd.user.sessionVariables.NIX_PATH disagree";
   problems = lib.concatLists (lib.mapAttrsToList problemsFor homes);
 in {
+  # TOML parsing cannot tell whether this tealdeer build supports a selected
+  # TLS backend. Even an offline invocation processes that setting.
+  tealdeer-config = mkCheck {
+    name = "tealdeer-config";
+    script = lib.concatStringsSep "\n" (lib.mapAttrsToList (name: home: let
+        inherit (home.config) programs xdg;
+        deployed = home.config.home.file."${xdg.configHome}/tealdeer/config.toml".source;
+      in ''
+        export HOME="$TMPDIR/${name}" XDG_CONFIG_HOME="$TMPDIR/${name}/config"
+        mkdir -p "$XDG_CONFIG_HOME/tealdeer"
+        ln -s ${deployed} "$XDG_CONFIG_HOME/tealdeer/config.toml"
+        ${lib.getExe programs.tealdeer.package} --show-paths >paths
+        grep -F "$XDG_CONFIG_HOME/tealdeer/config.toml" paths
+      '')
+      homes);
+  };
+
   profile-invariants = mkCheck {
     name = "profile-invariants";
     script =

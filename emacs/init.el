@@ -43,22 +43,17 @@
 ;; sensitive-paths.el, generated from lib/sensitive-paths.nix, defines
 ;; `dotfiles-sensitive-paths': directory names that are sensitive at any depth
 ;; of a path (`any-depth-directories'), and file and directory names relative
-;; to the home directory (`home') and to the XDG config directory
-;; (`xdg-config').
+;; to home (`home'), the XDG config directory (`xdg-config'), and the XDG
+;; data directory (`xdg-data').
 (load (locate-user-emacs-file "sensitive-paths.el") nil nil t)
 
-(defun dotfiles/xdg-config-roots ()
-  "Return the directories that XDG config entries are looked up under.
-That is ~/.config and, when XDG_CONFIG_HOME is an absolute path, that
-directory as well: a tool that follows the variable writes there, and
-one that ignores it writes to ~/.config."
-  (let ((config-home (getenv "XDG_CONFIG_HOME")))
-    (delete-dups
-     (mapcar #'directory-file-name
-             (cons (expand-file-name "~/.config")
-                   (and config-home
-                        (string-prefix-p "/" config-home)
-                        (list (expand-file-name config-home))))))))
+(defun dotfiles/xdg-roots (variable fallback)
+  "Return FALLBACK and, when absolute, the directory named by VARIABLE."
+  (let ((value (getenv variable)))
+    (delete-dups (mapcar #'directory-file-name
+                         (cons (expand-file-name fallback)
+                               (and value (string-prefix-p "/" value)
+                                    (list (expand-file-name value))))))))
 
 (defun dotfiles/sensitive-local-names (type)
   "Return the local names of the TYPE entries, `files' or `directories'.
@@ -67,21 +62,16 @@ it resolves to, so each entry is listed as written and as its truename."
   (let (names)
     (pcase-dolist (`(,kind . ,roots)
                    `((home ,(expand-file-name "~"))
-                     (xdg-config . ,(dotfiles/xdg-config-roots))))
+                     (xdg-config . ,(dotfiles/xdg-roots "XDG_CONFIG_HOME" "~/.config"))
+                     (xdg-data . ,(dotfiles/xdg-roots "XDG_DATA_HOME" "~/.local/share"))))
       (dolist (root roots)
-        (dolist (entry (alist-get type (alist-get kind dotfiles-sensitive-paths)))
+        (dolist (entry (append (alist-get type (alist-get kind dotfiles-sensitive-paths))
+                               (and (eq kind 'home) (eq type 'directories)
+                                    (alist-get 'any-depth-directories dotfiles-sensitive-paths))))
           (let ((name (expand-file-name entry root)))
             (push name names)
             (push (file-truename name) names)))))
     (delete-dups names)))
-
-(defvar dotfiles/sensitive-files (dotfiles/sensitive-local-names 'files)
-  "Local files whose contents must never be copied into Emacs state.")
-
-(defvar dotfiles/sensitive-directories
-  (mapcar #'file-name-as-directory
-          (dotfiles/sensitive-local-names 'directories))
-  "Local directories whose files must never be copied into Emacs state.")
 
 (defun dotfiles/sensitive-regexp (patterns)
   "Return a regexp matching any of PATTERNS, or nothing when there are none."
@@ -99,7 +89,8 @@ it resolves to, so each entry is listed as written and as its truename."
 ;; remote name is sensitive when any entry appears anywhere in it.
 (defvar dotfiles/sensitive-remote-regexp
   (let ((patterns (list dotfiles/sensitive-anywhere-regexp)))
-    (pcase-dolist (`(,kind . ,prefix) '((home . "/") (xdg-config . "/.config/")))
+    (pcase-dolist (`(,kind . ,prefix) '((home . "/") (xdg-config . "/.config/")
+                                        (xdg-data . "/.local/share/")))
       (let ((entries (alist-get kind dotfiles-sensitive-paths)))
         (dolist (file (alist-get 'files entries))
           (push (concat (regexp-quote (concat prefix file)) "\\'") patterns))
@@ -108,12 +99,10 @@ it resolves to, so each entry is listed as written and as its truename."
     (dotfiles/sensitive-regexp patterns))
   "Matches a remote name that holds a credential path.")
 
-(defun dotfiles/sensitive-local-name-p (name)
-  "Return non-nil when the absolute local NAME is a credential path."
+(defun dotfiles/sensitive-local-name-p (name files directories)
   (or (string-match-p dotfiles/sensitive-anywhere-regexp name)
-      (member name dotfiles/sensitive-files)
-      (seq-some (lambda (directory) (string-prefix-p directory name))
-                dotfiles/sensitive-directories)))
+      (member name files)
+      (seq-some (lambda (directory) (string-prefix-p directory name)) directories)))
 
 (defun dotfiles/sensitive-file-p (name)
   "Return non-nil when NAME or its local target is a known secret path.
@@ -121,39 +110,46 @@ Remote names are matched as written, without extra network access."
   (and name
        (if (file-remote-p name)
            (string-match-p dotfiles/sensitive-remote-regexp name)
-         (let ((name (expand-file-name name)))
-           (or (dotfiles/sensitive-local-name-p name)
-               (dotfiles/sensitive-local-name-p (file-truename name)))))))
+         ;; A credential root may be linked or retargeted during a daemon's
+         ;; lifetime. Do not keep resolved names past this check.
+         (let ((name (expand-file-name name))
+               (files (dotfiles/sensitive-local-names 'files))
+               (dirs (mapcar #'file-name-as-directory (dotfiles/sensitive-local-names 'directories))))
+           (or (dotfiles/sensitive-local-name-p name files dirs)
+               (dotfiles/sensitive-local-name-p (file-truename name) files dirs))))))
 
-;; Suppress numbered/backup copies of secrets.
-(setq backup-enable-predicate
-      (lambda (name)
-        (and (normal-backup-enable-predicate name)
-             (not (dotfiles/sensitive-file-p name)))))
+;; backup-enable-predicate is consulted at visit time. Guard the actual copy
+;; instead: a buffer may become sensitive (or ordinary) while it is open.
+(defun dotfiles/allow-file-state-p (&rest _)
+  (not (dotfiles/sensitive-file-p buffer-file-name)))
+(dolist (function '(backup-buffer undo-tree-save-history-from-hook undo-tree-load-history-from-hook))
+  (advice-add function :before-while #'dotfiles/allow-file-state-p))
 
-;; Suppress the auto-save file and any persisted undo-tree history per buffer.
-;; A major-mode change kills the buffer-local undo-tree setting, so reapply it.
-(defvar-local dotfiles/sensitive-buffer-p nil
-  "Non-nil when the secret guard set this buffer's undo-tree history off.")
-;; Survives a major-mode change, so the guard still knows the override is its
-;; own and can lift it when the buffer is saved under an ordinary name.
-(put 'dotfiles/sensitive-buffer-p 'permanent-local t)
+(defvar-local dotfiles/restore-auto-save nil
+  "Non-nil if this guard disabled auto-save in the current buffer.")
+(put 'dotfiles/restore-auto-save 'permanent-local t)
 
 (defun dotfiles/harden-sensitive-buffer ()
-  "Disable on-disk copies for the current buffer when it visits a secret.
-When it no longer does, lift only the override this guard set, so a
-setting from directory locals or a mode hook is kept."
+  "Update auto-save without enabling it for an unrelated opt-out."
   (cond
    ((dotfiles/sensitive-file-p buffer-file-name)
-    (auto-save-mode -1)
-    (setq-local undo-tree-auto-save-history nil)
-    (setq dotfiles/sensitive-buffer-p t))
-   (dotfiles/sensitive-buffer-p
-    (kill-local-variable 'undo-tree-auto-save-history)
-    (setq dotfiles/sensitive-buffer-p nil))))
+    (when buffer-auto-save-file-name
+      (setq dotfiles/restore-auto-save t)
+      (auto-save-mode -1)))
+   (dotfiles/restore-auto-save
+    (setq dotfiles/restore-auto-save nil)
+    (when (and buffer-file-name auto-save-default) (auto-save-mode 1)))))
 (add-hook 'find-file-hook #'dotfiles/harden-sensitive-buffer)
 (add-hook 'after-set-visited-file-name-hook #'dotfiles/harden-sensitive-buffer)
 (add-hook 'after-change-major-mode-hook #'dotfiles/harden-sensitive-buffer)
+
+;; One auto-save event can save several buffers, not just the current one.
+(defun dotfiles/check-auto-save-buffers ()
+  (dolist (buffer (buffer-list))
+    (with-current-buffer buffer
+      (when (and buffer-file-name (buffer-modified-p))
+        (dotfiles/harden-sensitive-buffer)))))
+(add-hook 'auto-save-hook #'dotfiles/check-auto-save-buffers -90)
 
 ;; Home Manager generates absolute, Nix-store-pinned LSP and Tree-sitter paths.
 ;; lsp-paths.el holds those paths; lsp-servers.el is the Emacs Lisp that uses
@@ -412,9 +408,9 @@ even when the daemon has no graphical frame to copy a display from."
 Org Roam writes the ref into the note's ROAM_REFS property as it
 arrives.  A line break there ends the property line, and Org reads the
 rest of the ref as part of the note: an :END: line closes the drawer and
-a line starting with \"* \" becomes a heading.  Org Roam decodes the
-ref once more than org-protocol already has, so a page whose own URL
-holds \"%0A\" yields a line break too; check what that decoding gives."
+a line starting with \"* \" becomes a heading.  Reject a control
+character in the URL or its decoded form; keep the original URL for
+both the property and repeat capture."
   (when-let* ((ref (plist-get info :ref))
               ((string-match-p "[[:cntrl:]\177]" (org-link-decode ref))))
     (user-error

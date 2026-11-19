@@ -16,6 +16,7 @@ mkdir "$seed" "$fake_bin"
 git init --quiet --bare --initial-branch=main "$origin"
 git -C "$seed" init --quiet --initial-branch=main
 printf 'base\n' >"$seed/tracked"
+printf 'initial lock\n' >"$seed/flake.lock"
 commit_all "$seed" 'tests: create pull base'
 git -C "$seed" remote add origin "$origin"
 git -C "$seed" push --quiet -u origin main
@@ -24,7 +25,7 @@ git -C "$repo" config user.name 'Update Test'
 git -C "$repo" config user.email 'update-test@example.invalid'
 git -C "$repo" config rebase.updateRefs true
 
-printf 'first\n' >"$repo/first"
+printf 'label = "a b";\n' >"$repo/first"
 commit_all "$repo" 'tests: add first local change'
 git -C "$repo" branch backup-first
 first_backup=$(git -C "$repo" rev-parse backup-first)
@@ -32,6 +33,8 @@ printf 'second\n' >"$repo/second"
 commit_all "$repo" 'tests: add second local change'
 git -C "$repo" branch backup-tip
 tip_backup=$(git -C "$repo" rev-parse backup-tip)
+printf 'label = "ab";\n' >"$seed/first"
+commit_all "$seed" 'tests: apply the whitespace-different change'
 printf 'upstream\n' >"$seed/upstream"
 commit_all "$seed" 'tests: advance upstream'
 git -C "$seed" push --quiet origin main
@@ -49,12 +52,43 @@ cat >>"$fake_bin/home-manager" <<'EOF'
 [[ $1 == build ]] || exit 92
 EOF
 chmod 0755 "$fake_bin/nix" "$fake_bin/home-manager"
-PATH="$fake_bin:$PATH" bash "$SCRIPT_DIR/update.sh" update \
+# If pull autostashes first, the staged blob can already be gone when the
+# post-validation lock commit checks the index.
+printf 'staged lock\n' >"$repo/flake.lock"
+git -C "$repo" add flake.lock
+staged_lock=$(git -C "$repo" rev-parse :flake.lock)
+printf 'working lock\n' >"$repo/flake.lock"
+tracking_before=$(git -C "$repo" rev-parse origin/main)
+if PATH="$fake_bin:$PATH" bash "$SCRIPT_DIR/update.sh" update \
   --skip-submodules --skip-nix-fmt --skip-nix-flake --skip-home-manager \
-  "$repo" >"$TMPDIR_TEST/output" 2>&1
+  "$repo" >"$TMPDIR_TEST/output" 2>&1; then
+  fail 'pull autostashed a separately staged lock'
+fi
+grep -q 'not pulling' "$TMPDIR_TEST/output"
+test "$(git -C "$repo" rev-parse HEAD)" = "$tip_backup"
+test "$(git -C "$repo" rev-parse origin/main)" = "$tracking_before"
+test "$(git -C "$repo" rev-parse :flake.lock)" = "$staged_lock"
+test "$(<"$repo/flake.lock")" = 'working lock'
+if PATH="$fake_bin:$PATH" bash "$SCRIPT_DIR/update.sh" update \
+  --skip-pull --skip-submodules --skip-home-manager \
+  "$repo" >"$TMPDIR_TEST/output" 2>&1; then
+  fail 'a mutable flake update accepted a separately staged lock'
+fi
+grep -q 'not rewriting a separately staged' "$TMPDIR_TEST/output"
+test "$(git -C "$repo" rev-parse :flake.lock)" = "$staged_lock"
+test "$(<"$repo/flake.lock")" = 'working lock'
+git -C "$repo" restore --source=HEAD --staged --worktree flake.lock
 
-[[ $(git -C "$repo" merge-base HEAD origin/main) == "$upstream" ]] ||
-  fail 'pull did not rebase onto the fetched upstream'
+if PATH="$fake_bin:$PATH" bash "$SCRIPT_DIR/update.sh" update \
+  --skip-submodules --skip-nix-fmt --skip-nix-flake --skip-home-manager \
+  "$repo" >"$TMPDIR_TEST/output" 2>&1; then
+  fail 'updater rebased a divergent local branch'
+fi
+grep -q 'local history diverges' "$TMPDIR_TEST/output"
+git -C "$repo" cherry origin/main main | grep -Fx -- "- $first_backup" >/dev/null ||
+  fail 'fixture did not exercise a whitespace patch-ID collision'
+test "$(git -C "$repo" rev-parse HEAD)" = "$tip_backup"
+test "$(<"$repo/first")" = 'label = "a b";'
 [[ $(git -C "$repo" rev-parse backup-first) == "$first_backup" ]] ||
   fail 'pull rewrote the backup of an intermediate commit'
 [[ $(git -C "$repo" rev-parse backup-tip) == "$tip_backup" ]] ||
@@ -64,9 +98,16 @@ PATH="$fake_bin:$PATH" bash "$SCRIPT_DIR/update.sh" update \
 [[ $(git -C "$origin" rev-parse main) == "$upstream" ]] ||
   fail 'pull changed the remote branch'
 [[ $(<"$repo/tracked") == $'base\nuncommitted' ]] ||
-  fail 'pull did not restore autostashed edits'
-[[ $(<"$repo/first") == first && $(<"$repo/second") == second ]] ||
-  fail 'pull lost local commits'
+  fail 'divergence refusal changed a dirty file'
+
+# A fast-forward still preserves an unrelated dirty edit.
+git -C "$repo" switch -qc ff-fixture "$tracking_before"
+git -C "$repo" branch -u origin/main ff-fixture
+PATH="$fake_bin:$PATH" bash "$SCRIPT_DIR/update.sh" update \
+  --skip-submodules --skip-nix-fmt --skip-nix-flake --skip-home-manager \
+  "$repo" >"$TMPDIR_TEST/output" 2>&1
+test "$(git -C "$repo" rev-parse HEAD)" = "$upstream"
+test "$(<"$repo/tracked")" = $'base\nuncommitted'
 
 # Git reports success when its autostash cannot be restored and leaves the
 # conflict in the index. Validation and the lock commit must not run on that.

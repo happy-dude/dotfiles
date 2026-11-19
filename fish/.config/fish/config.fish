@@ -170,8 +170,8 @@ if command -q eza
 
     # specialty views
     alias lS='eza -a1' # one column, just names
-    alias lt='eza -labGF --tree --level=2' # tree
-    alias lg='eza -labGd --git --sort=modified --tree --level=2' # tree w/ git
+    alias lt='eza -labF --tree --level=2' # tree
+    alias lg='eza -lab --git --sort=modified --tree --level=2' # tree w/ git
 end
 
 # --path keeps this in the session PATH; without it fish_add_path writes the

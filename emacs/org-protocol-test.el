@@ -129,7 +129,7 @@
 (let ((notes (directory-files org-roam-directory nil "\\.org\\'")))
   (dolist (ref (list "https://example.com/a\n* Injected via ref\n:END:\n* Another"
                      ;; What the bookmarklet sends for a page whose own URL
-                     ;; holds an encoded line break: Org Roam decodes it.
+                     ;; holds an encoded line break: the guard checks it too.
                      "https://example.com/g%0A:END:%0A* Injected"
                      "https://example.com/b\r:END:"
                      "https://example.com/c\td"
@@ -145,18 +145,50 @@
     (unless (equal notes (directory-files org-roam-directory nil "\\.org\\'"))
       (error "A refused ref wrote a note: %S" ref))))
 
-;; A ref that is one line still captures, encoded query string included.
-;; ROAM_REFS holds it as Org Roam decodes it.
-(let ((ref "https://example.com/search?q=two%20words&next=%2Fa&n=1#frag"))
-  (dotfiles-test/protocol-capture "Query" "selection" ref)
+;; The transport decodes each field once. A percent escape belonging to
+;; the page is literal text, even when the reference index uses a decoded key.
+(let* ((title "Query %20 and %25")
+       (body "Literal %20, %26, %2F and %0A")
+       (ref "https://example.com/search?q=a%26b&next=%2Fpath%20here")
+       (distinct "https://example.com/search?q=a&b&next=%2Fpath%20here"))
+  (dotfiles-test/protocol-capture title body ref)
+  (dotfiles-test/protocol-capture "Different query" "other page" distinct)
+  (dotfiles-test/protocol-capture "Repeat query" "same page" ref)
   (with-temp-buffer
-    (insert (dotfiles-test/note-text "Query"))
+    (insert (dotfiles-test/note-text title))
     (org-mode)
-    (unless (member (org-link-decode ref)
-                    (split-string-and-unquote
-                     (org-entry-get (point-min) "ROAM_REFS")))
-      (error "A ref with a query string was not kept: %s"
-             (org-entry-get (point-min) "ROAM_REFS")))))
+    (unless (and (equal (org-entry-get (point-min) "ROAM_REFS") ref)
+                 (string-search (concat "#+TITLE: " title "\n") (buffer-string))
+                 (string-search (concat "#+begin_example\n" body "\n") (buffer-string))
+                 (string-search "same page" (buffer-string))
+                 (not (string-search "other page" (buffer-string))))
+      (error "Encoded ref, title, body or repeated capture changed:\n%s" (buffer-string))))
+  (with-temp-buffer
+    (insert (dotfiles-test/note-text "Different query"))
+    (org-mode)
+    (unless (and (equal (org-entry-get (point-min) "ROAM_REFS") distinct)
+                 (string-search "other page" (buffer-string))
+                 (not (string-search "same page" (buffer-string))))
+      (error "Distinct query strings shared a note:\n%s" (buffer-string)))))
+
+;; Existing notes may have Org bracket links in ROAM_REFS. Match their
+;; targets, not the surrounding brackets or a description.
+(dolist (style '(bare described))
+  (let* ((title (format "Bracket %s" style))
+         (ref (format "https://example.org/%s?q=a%%26b" style))
+         (entry (if (eq style 'bare) (format "[[%s]]" ref)
+                  (format "[[%s][description]]" ref)))
+         (file (expand-file-name (concat (downcase (symbol-name style)) ".org")
+                                 org-roam-directory)))
+    (with-temp-file file
+      (insert ":PROPERTIES:\n:ID: " (org-id-new) "\n:ROAM_REFS: " entry
+              "\n:END:\n#+TITLE: " title "\n\n* Notes\n"))
+    (org-roam-db-sync)
+    (dotfiles-test/protocol-capture "Reuse bracket" "existing note" ref)
+    (with-temp-buffer
+      (insert-file-contents file)
+      (unless (string-search "existing note" (buffer-string))
+        (error "Capture did not reuse %s" entry)))))
 
 ;; A second capture of the same ref goes into the existing note, after the
 ;; first quote under its Notes heading.

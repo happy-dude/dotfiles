@@ -194,10 +194,10 @@ The same code expanded for readability is:
    end the block or start a heading or another block. The commas show in the
    note; Org drops them on export and in `org-edit-special`.
 
-   Org Roam writes `ref` into the `ROAM_REFS` property as it arrives, and
-   decodes it once more than org-protocol already has. Emacs therefore refuses a
-   capture whose decoded `ref` holds a line break or another control character:
-   no capture starts and no note is written.
+   Org protocol decodes the browser's query once. The configured Org Roam
+   package preserves percent escapes in the page URL when storing and looking up
+   `ROAM_REFS`; encoded separators are not new query parameters. Emacs rejects
+   unsafe control characters before opening a capture frame.
 
 9. If the reference URL and title alone exceed the 8000-character encoded-URI
    budget, the bookmarklet reports the problem and sends no capture. Otherwise,

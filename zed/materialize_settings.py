@@ -6,7 +6,7 @@ from typing import NoReturn, TypeAlias, cast
 
 import json5
 
-from dotfiles_files import write_text
+from dotfiles_files import guard_current_file, write_bytes
 
 JsonValue: TypeAlias = (
     bool
@@ -30,7 +30,7 @@ def fail(message: str, error: Exception | None = None) -> NoReturn:
 def read_text(path: Path, description: str) -> str:
     try:
         return path.read_text(encoding="utf-8")
-    except OSError as error:
+    except (OSError, UnicodeError) as error:
         fail(f"Unable to read {description} {path}", error)
 
 
@@ -39,6 +39,11 @@ def parse_json(
 ) -> JsonValue:
     try:
         value = json5.loads(text) if json5_enabled else json.loads(text)
+        if json5_enabled and "\\u" in text:
+            # json5 can leave escaped non-BMP characters as two surrogate
+            # code units. Join valid pairs in keys as well as values before
+            # merging; a lone surrogate still fails strict UTF-8 encoding.
+            value = json.loads(json.dumps(value))
         return cast("JsonValue", value)
     except ValueError as error:
         fail(f"Unable to read {description} {path}", error)
@@ -56,11 +61,10 @@ def merge(dynamic: JsonValue, static: JsonValue) -> JsonValue:
 def materialize(static_path: Path, target: Path, *, check_only: bool) -> None:
     """Merge the managed settings into target, or refuse and leave it alone.
 
-    With check_only, make every refusal a real run would make and write
-    nothing. Activation calls this before Home Manager switches any link, so
-    a settings file it cannot merge stops the switch while the previous
-    generation is still in place.
+    Check mode parses and encodes the same output without writing. A real
+    run reloads the client file rather than publishing the preflight's copy.
     """
+    unchanged = guard_current_file(target)
     if target.is_symlink():
         fail(f"Refusing symlinked Zed settings: {target}")
     if target.exists() and not target.is_file():
@@ -77,6 +81,8 @@ def materialize(static_path: Path, target: Path, *, check_only: bool) -> None:
         static_description,
         json5_enabled=False,
     )
+    if not isinstance(static, dict):
+        fail(f"Managed Zed settings are not a JSON object: {static_path}")
     description = "existing Zed settings"
     current = read_text(target, description) if target.exists() else None
     dynamic = (
@@ -87,7 +93,14 @@ def materialize(static_path: Path, target: Path, *, check_only: bool) -> None:
     if not isinstance(dynamic, dict):
         fail(f"Refusing Zed settings that are not a JSON object: {target}")
     merged = merge(dynamic, static)
-    rendered = json.dumps(merged, ensure_ascii=False, indent=2) + "\n"
+    try:
+        rendered = (
+            json.dumps(merged, ensure_ascii=False, allow_nan=False, indent=2)
+            + "\n"
+        )
+        data = rendered.encode("utf-8")
+    except ValueError as error:
+        fail(f"Cannot serialize Zed settings as UTF-8 JSON: {target}", error)
     if check_only:
         return
     # Activation runs this on every switch.
@@ -96,7 +109,7 @@ def materialize(static_path: Path, target: Path, *, check_only: bool) -> None:
         and stat.S_IMODE(target.stat().st_mode) == SETTINGS_MODE
     ):
         return
-    write_text(target, rendered, SETTINGS_MODE)
+    write_bytes(target, data, SETTINGS_MODE, before_replace=unchanged)
 
 
 def main(arguments: list[str]) -> None:

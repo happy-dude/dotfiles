@@ -8,21 +8,22 @@
   palette = import ../lib/gruvbox-material.nix;
   json = pkgs.formats.json {};
   opencode = import ./package.nix {inherit pkgs;};
+  adopter = import ./adopter.nix {inherit pkgs;};
+  adoptCli = ''${lib.getExe adopter} ${lib.escapeShellArg "${config.xdg.configHome}/opencode/cli.json"} "''${oldGenPath:-}" ${builtins.storeDir}'';
   settings = {
     "$schema" = "https://opencode.ai/config.json";
     update = "disable";
+    # 2.2.6 normalizes LSP configuration but has no edit/write diagnostics
+    # runtime. Keep the declaration for clients that implement it.
     lsp = false;
     share = "disabled";
+    # Config permissions are appended after built-in agent permissions.
+    # A global edit/allow would override Plan's workspace edit/deny.
     permissions = [
       {
         action = "shell";
         resource = "*";
         effect = "ask";
-      }
-      {
-        action = "edit";
-        resource = "*";
-        effect = "allow";
       }
       {
         action = "external_directory";
@@ -42,10 +43,6 @@
         system = prompt.body;
       })
       prompts;
-  };
-  cliSettings = {
-    "$schema" = "https://opencode.ai/v2/cli.json";
-    theme.name = "gruvbox-material-mix-dark-medium";
   };
   gruvboxMaterialTheme = {
     "$schema" = "https://opencode.ai/theme.json";
@@ -115,10 +112,16 @@ in {
     OPENCODE_DISABLE_LSP_DOWNLOAD = config.home.sessionVariables.OPENCODE_DISABLE_LSP_DOWNLOAD;
     OPENCODE_CONFIG = config.home.sessionVariables.OPENCODE_CONFIG;
   };
+  # Convert only the outgoing generation's cli.json before HM removes
+  # obsolete links. An already displaced link belongs to the client.
+  home.activation.checkOpenCodeCli = lib.hm.dag.entryBefore ["writeBoundary"] ''
+    ${adoptCli} --check
+  '';
+  home.activation.adoptOpenCodeCli = lib.hm.dag.entryBetween ["retireAgentDirectoryLinks" "linkGeneration"] ["writeBoundary"] ''
+    $DRY_RUN_CMD ${adoptCli}
+  '';
   xdg.configFile."opencode/opencode.json".source =
     json.generate "opencode.json" settings;
-  xdg.configFile."opencode/cli.json".source =
-    json.generate "opencode-cli.json" cliSettings;
   xdg.configFile."opencode/themes/gruvbox-material.json".source =
     json.generate "opencode-gruvbox-material.json" gruvboxMaterialTheme;
   xdg.configFile."opencode/themes/gruvbox-material-mix-dark-medium.json".source =

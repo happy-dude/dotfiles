@@ -202,8 +202,8 @@ then
 
     # specialty views
     alias lS='eza -a1'                                                      # one column, just names
-    alias lg='eza -labGd --git --sort=modified --tree --level=2'            # tree w/ git
-    alias lt='eza -labGF --tree --level=2'                                  # tree
+    alias lg='eza -lab --git --sort=modified --tree --level=2'              # tree w/ git
+    alias lt='eza -labF --tree --level=2'                                   # tree
 fi
 
 # fzf key bindings and completion. prezto's editor module ran `bindkey -d`

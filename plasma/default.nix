@@ -47,6 +47,32 @@
   ];
   touchpads = machine.touchpads ++ sharedTouchpads;
   mice = machine.mice ++ sharedMice;
+  # plasma-manager's mouse and touchpad options expand omitted preferences
+  # to null, which its writer treats as a request to delete the saved key.
+  # Translate only fields present in a device record.
+  inputKeys = {
+    pointerSpeed = "PointerAcceleration";
+    acceleration = "PointerAcceleration";
+    naturalScroll = "NaturalScroll";
+    scrollSpeed = "ScrollFactor";
+    scrollMethod = "ScrollMethod";
+  };
+  deviceConfig = device: let
+    decimal = hex: toString (lib.fromHexString hex);
+    group = "Libinput/${decimal device.vendorId}/${decimal device.productId}/${device.name}";
+    settings = removeAttrs device ["vendorId" "productId" "name"];
+  in
+    assert lib.assertMsg (!(settings ? acceleration && settings ? pointerSpeed))
+    "${device.name}: acceleration and pointerSpeed both set PointerAcceleration"; {
+      ${group} = lib.mapAttrs' (key: lib.nameValuePair (inputKeys.${key} or (throw "${device.name}: unknown input setting ${key}"))) settings;
+    };
+  okularPart = {
+    "Core Performance".TextHinting = "Enabled";
+    "Main View".ShowLeftPanel = false;
+    PageView.MouseMode = "TextSelect";
+  };
+  okularAppId = "org.kde.okular";
+  hasFlatpakOkular = lib.any (app: (app.appId or null) == okularAppId) (config.services.flatpak.packages or []);
   # Dolphin view properties, in the .directory format of Dolphin 25.12
   # (src/views/viewproperties.cpp). With GlobalViewProps off, a folder
   # without saved settings of its own falls back to view_properties/global;
@@ -100,24 +126,17 @@ in {
         inherit cursor;
       };
 
-      input = {
-        keyboard = {
-          numlockOnStartup = "on";
-          layouts = [
-            {
-              layout = "us";
-              variant = "colemak";
-            }
-          ];
-        };
-        inherit touchpads;
-        mice = map (m: removeAttrs m ["scrollMethod"]) mice;
+      input.keyboard = {
+        numlockOnStartup = "on";
+        layouts = [
+          {
+            layout = "us";
+            variant = "colemak";
+          }
+        ];
       };
 
-      # plasma-manager has no scroll-method option for mice.
-      configFile.kcminputrc = lib.mkMerge (map (m: {
-        "Libinput/${toString (lib.fromHexString m.vendorId)}/${toString (lib.fromHexString m.productId)}/${m.name}".ScrollMethod = m.scrollMethod;
-      }) (lib.filter (m: m ? scrollMethod) mice));
+      configFile.kcminputrc = lib.mkMerge (map deviceConfig (touchpads ++ mice));
 
       kwin.edgeBarrier = 500;
 
@@ -307,11 +326,7 @@ in {
           Search.Location = "Everywhere";
         };
 
-        okularpartrc = {
-          "Core Performance".TextHinting = "Enabled";
-          "Main View".ShowLeftPanel = false;
-          PageView.MouseMode = "TextSelect";
-        };
+        okularpartrc = okularPart;
 
         kded5rc."Module-device_automounter".autoload = false;
 
@@ -324,6 +339,10 @@ in {
 
         plasma-localerc.Formats.LANG = "en_US.UTF-8";
       };
+
+      # Flatpak gives Okular its own XDG_CONFIG_HOME. As with the native
+      # part, merge just the declared keys into Okular's writable file.
+      file.".var/app/${okularAppId}/config/okularpartrc" = lib.mkIf hasFlatpakOkular okularPart;
 
       # Written in place, like configFile; activation resets the declared
       # keys. Dolphin stores a folder's own changes in its

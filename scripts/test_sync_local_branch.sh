@@ -151,7 +151,7 @@ commit_work work-only unique-change
 advance_origin equivalent same-change
 run_sync work test-profile "$main_worktree"
 grep -Fq \
-  'Local commits already represented upstream; rebase is expected to omit:' \
+  'Local patches matching upstream when whitespace is ignored' \
   "$output"
 equivalent_summary=$(git -C "$branch_worktree" show -s \
   --format='%h %s' "$equivalent_commit")
@@ -159,6 +159,41 @@ grep -Fq "  $equivalent_summary" "$output"
 test "$(git -C "$branch_worktree" rev-list --count origin/main..work)" = 1
 test "$(<"$branch_worktree/equivalent")" = same-change
 test "$(<"$branch_worktree/work-only")" = unique-change
+
+# Patch IDs ignore the significant space in a string. Replaying these two
+# additions must surface the conflict rather than silently dropping ours.
+create_fixture whitespace-collision
+commit_work shared 'label = "a b";'
+local_tip=$(git -C "$branch_worktree" rev-parse work)
+git -C "$branch_worktree" branch backup-whitespace
+git -C "$branch_worktree" config rebase.updateRefs true
+advance_origin shared 'label = "ab";'
+if run_sync work test-profile "$main_worktree"; then
+  fail 'sync discarded a whitespace-different patch'
+fi
+test "$(git -C "$branch_worktree" show :3:shared)" = 'label = "a b";'
+test "$(git -C "$branch_worktree" rev-parse work)" = "$local_tip"
+test "$(git -C "$branch_worktree" rev-parse backup-whitespace)" = "$local_tip"
+test ! -s "$log"
+
+create_fixture local-merge
+git -C "$branch_worktree" switch -qc side
+commit_work side-change side
+git -C "$branch_worktree" switch -q work
+commit_work first-change first
+git -C "$branch_worktree" merge --quiet --no-ff --no-commit side
+commit_work merge-only unique
+merge_tip=$(git -C "$branch_worktree" rev-parse work)
+main_before=$(git -C "$main_worktree" rev-parse main)
+advance_origin upstream-only upstream
+if run_sync work test-profile "$main_worktree"; then
+  fail 'sync flattened the local merge'
+fi
+grep -Fq "$merge_tip" "$output"
+test "$(git -C "$branch_worktree" rev-parse work)" = "$merge_tip"
+test "$(git -C "$main_worktree" rev-parse main)" = "$main_before"
+test "$(<"$branch_worktree/merge-only")" = unique
+test ! -s "$log"
 
 write_lock_json() {
   local path=$1
@@ -246,6 +281,8 @@ write_lock_json "$branch_worktree/flake.lock" 2 local-1
 git -C "$branch_worktree" add flake.lock
 git -C "$branch_worktree" commit --quiet -m 'nix: update flake.lock'
 first_lock_commit=$(git -C "$branch_worktree" rev-parse HEAD)
+git -C "$branch_worktree" config rebase.updateRefs true
+git -C "$branch_worktree" branch backup-lock "$first_lock_commit"
 commit_work work-only kept-change
 write_lock_json "$branch_worktree/flake.lock" 3 local-1
 git -C "$branch_worktree" add flake.lock
@@ -278,6 +315,7 @@ if grep -Fq "$local_bump_commit" "$output"; then
   exit 1
 fi
 test "$(git -C "$branch_worktree" rev-list --count origin/main..work)" = 4
+test "$(git -C "$branch_worktree" rev-parse backup-lock)" = "$first_lock_commit"
 test "$(<"$branch_worktree/flake.nix")" = 'inputs=base+local'
 grep -Fq '"rev": "9"' "$branch_worktree/flake.lock"
 grep -Fq '"rev": "local-2"' "$branch_worktree/flake.lock"
@@ -467,6 +505,36 @@ expect_lock_commit kept 'an input that names a node the lock lacks' \
 ((classifier_failures == 0)) ||
   fail "misclassified $classifier_failures of $classifier_cases lock commits"
 
+# Only overlapping ignored paths block the checkouts. Test main, the local
+# branch, and a path that exists only in an intermediate local commit.
+for where in main work intermediate; do
+  create_fixture "ignored-$where"
+  main_before=$(git -C "$main_worktree" rev-parse main)
+  target=$branch_worktree
+  if [[ $where == main ]]; then target=$main_worktree; fi
+  if [[ $where == intermediate ]]; then
+    commit_work notes.orig temporary
+    git -C "$branch_worktree" rm -q notes.orig
+    git -C "$branch_worktree" commit -qm 'tests: remove intermediate file'
+    advance_origin different upstream
+  else
+    advance_origin notes.orig upstream
+  fi
+  local_before=$(git -C "$branch_worktree" rev-parse work)
+  printf '*.orig\n' >>"$main_worktree/.git/info/exclude"
+  printf 'ignored local bytes\n' >"$target/notes.orig"
+  if run_sync work test-profile "$main_worktree"; then
+    fail "sync overwrote ignored $where content"
+  fi
+  test "$(<"$target/notes.orig")" = 'ignored local bytes'
+  test "$(git -C "$main_worktree" rev-parse main)" = "$main_before"
+  test "$(git -C "$branch_worktree" rev-parse work)" = "$local_before"
+  test ! -s "$log"
+  mv -- "$target/notes.orig" "$target/unrelated.orig"
+  run_sync work test-profile "$main_worktree"
+  test "$(<"$target/unrelated.orig")" = 'ignored local bytes'
+done
+
 create_fixture dirty-main
 advance_origin upstream-only upstream
 old_tracking=$(git -C "$main_worktree" rev-parse origin/main)
@@ -509,8 +577,8 @@ fi
 test "$(git -C "$main_worktree" rev-parse main)" = "$remote_head"
 test -d "$(git -C "$branch_worktree" rev-parse \
   --path-format=absolute --git-path rebase-merge)"
-printf -v expected_continue 'git -C %q rebase --continue' "$branch_worktree"
-printf -v expected_abort 'git -C %q rebase --abort' "$branch_worktree"
+printf -v expected_continue 'git -C %q -c rebase.updateRefs=false rebase --continue' "$branch_worktree"
+printf -v expected_abort 'git -C %q -c rebase.updateRefs=false rebase --abort' "$branch_worktree"
 printf -v expected_validate '  %q --validate %q %q %q' \
   "$sync_script" work test-profile "$main_worktree"
 grep -Fq "$expected_continue" "$output"
@@ -518,7 +586,7 @@ grep -Fq "$expected_abort" "$output"
 grep -Fq "$expected_validate" "$output"
 printf '%s\n' resolved >"$branch_worktree/shared"
 git -C "$branch_worktree" add shared
-GIT_EDITOR=true git -C "$branch_worktree" rebase --continue >/dev/null
+GIT_EDITOR=true eval "$expected_continue" >/dev/null
 test "$(git -C "$branch_worktree" rev-parse backup-conflict)" = "$conflict_backup"
 run_sync --validate work test-profile "$main_worktree"
 test "$(git -C "$branch_worktree" merge-base work origin/main)" = \

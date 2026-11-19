@@ -26,9 +26,16 @@
   # safe and before anything is written.
   profileCheckPrecedesWrites = lib.all (
     home: let
-      entry = home.config.home.activation.checkCodexProfiles;
+      inherit (home.config.home) activation;
     in
-      lib.elem "checkLinkTargets" entry.after && lib.elem "writeBoundary" entry.before
+      lib.elem "checkLinkTargets" activation.checkAgentStateDirectories.before
+      && lib.elem "checkLinkTargets" activation.checkCodexProfiles.after
+      && lib.elem "writeBoundary" activation.checkCodexProfiles.before
+      && lib.elem "writeBoundary" activation.secureAgentStateDirectories.after
+      && lib.elem "secureAgentStateDirectories" activation.ensureCodexProfiles.after
+      && lib.elem "linkGeneration" activation.ensureCodexProfiles.before
+      && lib.elem "ensureCodexProfiles" activation.retireAgentDirectoryLinks.after
+      && lib.elem "linkGeneration" activation.retireAgentDirectoryLinks.before
   ) (lib.attrValues homes);
 
   agentDirectoryMigration = mkPythonScript {
@@ -44,87 +51,120 @@
 
   agentDirectoryMigrationCheck = mkCheck {
     name = "codex-agent-directory-migration-test";
-    tools = [agentDirectoryMigration];
+    tools = [
+      agentDirectoryMigration
+      profileMaterializer
+      (pkgs.python3.withPackages (ps: [ps.tomlkit (import ../lib/python {inherit pkgs;})]))
+    ];
     script = ''
-      mkdir -p \
-        work/legacy \
-        work/store/old-home-manager-files/.codex/agents
-      touch \
-        work/store/codex-agent-kernel.toml \
-        work/store/codex-agent-language.toml \
-        work/store/old-codex-agent-kernel.toml
-      ln -s \
-        "$PWD/work/store/old-codex-agent-kernel.toml" \
-        work/store/old-home-manager-files/.codex/agents/kernel.toml
-      touch work/legacy/kagi-kernel.toml
-      ln -s \
-        "$PWD/work/store/old-home-manager-files/.codex/agents/kernel.toml" \
-        work/legacy/kernel.toml
-      ln -s \
-        "$PWD/work/store/codex-agent-language.toml" \
-        work/legacy/language.toml
-      ln -s "$PWD/work/legacy" work/agents
+      mkdir -p homes
+      ln -s "$PWD/homes" home-alias
+      export HOME="$PWD/home-alias/user"
+      store="$PWD/store"
+      gen="$store/old-generation"
+      files="$store/old-home-manager-files"
+      mkdir -p "$gen" "$files"/{.claude,.codex} "$HOME"/{.claude,.codex} prompts
+      chmod 0755 "$HOME/.claude"
+      ln -s "$files" "$gen/home-files"
+      printf 'tracked prompt\n' >prompts/kernel.md
+      ln -s "$PWD/prompts" "$files/.claude/agents"
+      ln -s "$files/.claude/agents" "$HOME/.claude/agents"
+      ln -s "$PWD/missing-codex-agents" "$files/.codex/agents"
+      ln -s "$files/.codex/agents" "$HOME/.codex/agents"
 
-      migrate-codex-agent-directory \
-        "$PWD/work/legacy" \
-        "$PWD/work/agents" \
-        "kernel=$PWD/work/store/codex-agent-kernel.toml" \
-        "language=$PWD/work/store/codex-agent-language.toml"
-
-      [[ ! -e work/agents && ! -L work/agents ]]
-      [[ ! -e work/legacy/kernel.toml && ! -L work/legacy/kernel.toml ]]
-      [[ ! -e work/legacy/language.toml && ! -L work/legacy/language.toml ]]
-      [[ -f work/legacy/kagi-kernel.toml ]]
-
-
-      # Former Claude whole-directory links (dangling claude/.claude/agents or
-      # live agents/prompts with tracked regular files) are unlinked without
-      # touching the tracked prompt files.
-      mkdir -p \
-        work/prompts \
-        work/store/old-claude-home-manager-files/.claude
-      touch work/prompts/kernel.md work/prompts/language.md
-      ln -s \
-        "$PWD/work/deleted-claude-agents" \
-        work/store/old-claude-home-manager-files/.claude/agents
-      ln -s \
-        "$PWD/work/store/old-claude-home-manager-files/.claude/agents" \
-        work/claude-agents
-      migrate-codex-agent-directory \
-        "$PWD/work/deleted-claude-agents:$PWD/work/prompts" \
-        "$PWD/work/claude-agents"
-      [[ ! -e work/claude-agents && ! -L work/claude-agents ]]
-
-      ln -s "$PWD/work/prompts" work/claude-agents
-      migrate-codex-agent-directory \
-        "$PWD/work/deleted-claude-agents:$PWD/work/prompts" \
-        "$PWD/work/claude-agents"
-      [[ ! -e work/claude-agents && ! -L work/claude-agents ]]
-      [[ -f work/prompts/kernel.md && -f work/prompts/language.md ]]
-      mkdir work/agents
-      migrate-codex-agent-directory \
-        "$PWD/work/legacy" \
-        "$PWD/work/agents" \
-        "kernel=$PWD/work/store/codex-agent-kernel.toml" \
-        "language=$PWD/work/store/codex-agent-language.toml"
-
-      ln -s "$PWD/work/store" work/unrelated
-      if migrate-codex-agent-directory \
-        "$PWD/work/legacy" \
-        "$PWD/work/unrelated" \
-        "kernel=$PWD/work/store/codex-agent-kernel.toml"; then
-        echo "Migration accepted an unrelated agent directory" >&2
+      # A later profile refusal cannot strand the still-active generation.
+      migrate-codex-agent-directory check "$store" "$gen"
+      printf 'developer_instructions = "new"\n' >"$store/template"
+      printf 'broken = "\n' >"$HOME/.codex/kernel.config.toml"
+      if materialize-codex-profile --check --old-generation "$gen" "$store/template" "$HOME/.codex/kernel.config.toml"; then
         exit 1
       fi
+      test -L "$HOME/.claude/agents"
+      test -L "$HOME/.codex/agents"
+      test "$(cat "$HOME/.claude/agents/kernel.md")" = 'tracked prompt'
+      test "$(stat -c %a "$HOME/.claude")" = 755
+      test ! -e "$HOME/.omp"
 
-      touch work/legacy/kernel.toml
-      if migrate-codex-agent-directory \
-        "$PWD/work/legacy" \
-        "$PWD/work/agents" \
-        "kernel=$PWD/work/store/codex-agent-kernel.toml"; then
-        echo "Migration accepted an unmanaged legacy agent file" >&2
-        exit 1
-      fi
+      # A direct link to the very same repository is not proof of ownership.
+      ln -sfnT "$PWD/prompts" "$HOME/.claude/agents"
+      for phase in check secure retire; do
+        if migrate-codex-agent-directory "$phase" "$store" "$gen"; then exit 1; fi
+        test -L "$HOME/.codex/agents"
+        test ! -e "$HOME/.omp"
+      done
+      ln -sfnT "$files/.claude/agents" "$HOME/.claude/agents"
+      migrate-codex-agent-directory secure "$store" "$gen"
+      test -L "$HOME/.claude/agents"
+      test -L "$HOME/.codex/agents"
+      test "$(cat prompts/kernel.md)" = 'tracked prompt'
+      for dir in .claude .codex .omp; do test "$(stat -c %a "$HOME/$dir")" = 700; done
+
+      # A client save after profile staging aborts the write phase. Both
+      # agent directory links must still be readable as links at that point.
+      python3 - ${./materialize_codex_profile.py} "$store/template" <<'PYTHON'
+      import runpy
+      import sys
+      from pathlib import Path
+      from unittest.mock import patch
+
+      profile = Path.home() / ".codex/kernel.config.toml"
+      profile.write_text('service_tier = "old"\n')
+      materialize = runpy.run_path(sys.argv[1])["materialize"]
+      def client_save(_fd):
+          saved = profile.with_suffix(".new")
+          saved.write_text('service_tier = "saved"\n')
+          saved.replace(profile)
+      with patch("os.fsync", side_effect=client_save):
+          try:
+              materialize(Path(sys.argv[2]), profile, check_only=False, old_generation=Path())
+          except SystemExit:
+              pass
+          else:
+              raise AssertionError("overwrote Codex's concurrent save")
+      assert profile.read_text() == 'service_tier = "saved"\n'
+      PYTHON
+      test -L "$HOME/.claude/agents"
+      test -L "$HOME/.codex/agents"
+      test "$(cat "$HOME/.claude/agents/kernel.md")" = 'tracked prompt'
+
+      # The supported immutable link carries runtime keys as well as the
+      # old generated keys. An identical terminal payload via a different
+      # generation/slot, mutable hop, or missing leaf is not sufficient.
+      profile="$HOME/.codex/kernel.config.toml"
+      entry="$files/.codex/kernel.config.toml"
+      payload="$store/old-profile.toml"
+      printf 'developer_instructions = "old"\nservice_tier = "fast"\n' >"$payload"
+      ln -s "$payload" "$entry"
+      ln -s "$payload" "$files/.codex/other.config.toml"
+      mkdir -p "$store/other-home-manager-files/.codex"
+      ln -s "$payload" "$store/other-home-manager-files/.codex/kernel.config.toml"
+      for link in "$payload" "$files/.codex/other.config.toml" "$store/other-home-manager-files/.codex/kernel.config.toml"; do
+        ln -sfnT "$link" "$profile"
+        for mode in --check ""; do
+          if materialize-codex-profile $mode --old-generation "$gen" "$store/template" "$profile"; then exit 1; fi
+          test "$(readlink "$profile")" = "$link"
+        done
+      done
+      ln -sfnT "$entry" "$profile"
+      ln -s "$payload" mutable-link
+      for link in "$PWD/mutable-link" "$store/missing"; do
+        ln -sfnT "$link" "$entry"
+        if materialize-codex-profile --check --old-generation "$gen" "$store/template" "$profile"; then exit 1; fi
+        test -L "$profile"
+      done
+      ln -sfnT "$payload" "$entry"
+      materialize-codex-profile --check --old-generation "$gen" "$store/template" "$profile"
+      test -L "$profile"
+      materialize-codex-profile --old-generation "$gen" "$store/template" "$profile"
+      test ! -L "$profile"
+      test "$(stat -c %a "$profile")" = 600
+      grep -Fx 'developer_instructions = "new"' "$profile"
+      grep -Fx 'service_tier = "fast"' "$profile"
+      grep -Fx 'developer_instructions = "old"' "$payload"
+      migrate-codex-agent-directory retire "$store" "$gen"
+      test ! -L "$HOME/.claude/agents"
+      test ! -L "$HOME/.codex/agents"
+      test "$(cat prompts/kernel.md)" = 'tracked prompt'
     '';
   };
 
@@ -136,7 +176,7 @@
     ];
     script = ''
       ${lib.optionalString (!profileCheckPrecedesWrites) ''
-        echo "checkCodexProfiles must run after checkLinkTargets and before writeBoundary" >&2
+        echo "Agent validation must precede writeBoundary, adoption must precede linkGeneration" >&2
         exit 1
       ''}
       mkdir work

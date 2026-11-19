@@ -1,15 +1,15 @@
-import filecmp
-import glob
+import fcntl
+import json
 import os
 import shutil
 import stat
 import subprocess
 import sys
-import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 
 import dotfiles_files
-from dotfiles_files import copy_file, fail
+from dotfiles_files import copy_file, fail, same_content, write_text
 
 
 def lexists(path: Path) -> bool:
@@ -32,52 +32,104 @@ def validate_regular(path: Path, description: str) -> None:
         fail(f"Refusing malformed Rime {description}: {path}")
 
 
-def iter_symlinks(root: Path, excluded: Path) -> list[Path]:
-    links: list[Path] = []
-    if not root.is_dir():
-        return links
-    for directory, names, files in os.walk(root, followlinks=False):
-        current = Path(directory)
-        retained_names: list[str] = []
-        for name in names:
-            candidate = current / name
-            if candidate == excluded:
-                continue
-            if candidate.is_symlink():
-                links.append(candidate)
-            else:
-                retained_names.append(name)
-        names[:] = retained_names
-        links.extend(
-            current / name for name in files if (current / name).is_symlink()
-        )
-    return links
+def validate_directory(directory: Path) -> None:
+    if directory.is_symlink() or (
+        directory.exists() and not directory.is_dir()
+    ):
+        fail(f"Refusing malformed Rime path: {directory}")
 
 
-def resolves_below(path: Path, root: Path) -> bool:
-    try:
-        path.resolve(strict=False).relative_to(root.resolve(strict=False))
-    except ValueError:
-        return False
-    return True
+def staging(static_dir: Path) -> Path:
+    # Stay on the live tree's filesystem for rename. The old random siblings
+    # have no ownership record; even a name shaped like mkdtemp's may be a
+    # user backup. Never enumerate or migrate them.
+    return static_dir.parent / ".home-manager-rime-work" / "incoming"
 
 
-def validate_schema_target(
-    target: Path, expected: Path, static_dir: Path, data_dir: Path
-) -> None:
-    for parent in target.relative_to(data_dir).parents[:-1]:
-        directory = data_dir / parent
+def validate_workspace(incoming: Path) -> None:
+    workspace = incoming.parent
+    validate_directory(workspace)
+    if not workspace.exists():
+        return
+    marker = workspace / "owner-v1"
+    validate_regular(marker, "staging marker")
+    if marker.exists() and marker.stat().st_size != 0:
+        fail(f"Refusing malformed Rime staging marker: {marker}")
+    if not marker.exists() and any(workspace.iterdir()):
+        fail(f"Refusing unmarked Rime staging directory: {workspace}")
+    validate_directory(incoming)
+    validate_directory(workspace / "previous")
+
+
+def managed_destination(link: Path, static_dir: Path) -> Path | None:
+    # Inspect the immediate link, not a chain through someone else's link.
+    # Accept a direct relative spelling as well as our own absolute one.
+    raw = link.readlink()
+    dest = Path(os.path.normpath(link.parent / raw))
+    if dest.is_relative_to(static_dir) and (
+        raw == dest or raw == Path(os.path.relpath(dest, link.parent))
+    ):
+        return dest
+    return None
+
+
+def unmanaged_parent(root: Path, relative: Path) -> Path | None:
+    directory = root
+    for name in relative.parts[:-1]:
+        directory /= name
         if directory.is_symlink() or (
             directory.exists() and not directory.is_dir()
         ):
-            fail(f"Refusing unmanaged Rime path: {directory}")
-    if target.is_symlink():
-        if target.resolve(strict=False) != expected.resolve(
-            strict=False
-        ) and not resolves_below(target, static_dir):
-            fail(f"Refusing to replace unmanaged Rime link: {target}")
-    elif target.exists():
-        fail(f"Refusing to replace unmanaged Rime path: {target}")
+            return directory
+    return None
+
+
+def valid_name(name: str) -> bool:
+    path = Path(name)
+    return (
+        bool(path.parts)
+        and not path.is_absolute()
+        and str(path) == name
+        and "\0" not in name
+        and not any(part.startswith(".") for part in path.parts)
+    )
+
+
+def declared_links(manifest: Path) -> set[str] | None:
+    validate_regular(manifest, "link manifest")
+    if not manifest.exists():
+        return None
+    try:
+        names = json.loads(manifest.read_text(encoding="utf-8"))
+        if isinstance(names, list) and all(
+            isinstance(name, str) and valid_name(name) for name in names
+        ):
+            return set(names)
+    except (UnicodeError, ValueError):
+        pass
+    fail(f"Refusing malformed Rime link manifest: {manifest}")
+
+
+def legacy_names(tree: Path) -> set[str]:
+    # Before there was a manifest only surviving payloads in an owned tree
+    # supply evidence. Never search the user's data directory for aliases.
+    return {
+        name
+        for directory, _, files in os.walk(tree, followlinks=False)
+        for file in files
+        if valid_name(name := str((Path(directory) / file).relative_to(tree)))
+    }
+
+
+def retire_link(static_dir: Path, relative: Path) -> None:
+    data_dir = static_dir.parent
+    if unmanaged_parent(data_dir, relative):
+        return
+    link = data_dir / relative
+    if link.is_symlink() and managed_destination(link, static_dir) == (
+        static_dir / relative
+    ):
+        link.unlink()
 
 
 def make_user_writable(root: Path) -> None:
@@ -98,52 +150,31 @@ def remove_staging(root: Path) -> None:
     contents are copied. The source is a read-only store path, so an
     interrupted copy leaves directories that cannot be emptied as they are.
     """
-    for directory, _, _ in os.walk(root):
-        path = Path(directory)
-        path.chmod(stat.S_IMODE(path.stat().st_mode) | stat.S_IRWXU)
+    for _, _, _, fd in os.fwalk(root, follow_symlinks=False):
+        os.fchmod(fd, stat.S_IMODE(os.fstat(fd).st_mode) | stat.S_IRWXU)
     shutil.rmtree(root)
 
 
-def remove_stale_staging(static_dir: Path, backup: Path) -> None:
-    """Remove the staging trees that killed runs left beside static_dir.
-
-    A staging tree is named after static_dir with a random suffix. The
-    backup's name starts the same way, and recovery below still needs it, so
-    it is skipped.
-    """
-    pattern = glob.escape(static_dir.name) + ".*"
-    for sibling in static_dir.parent.glob(pattern):
-        if sibling == backup or sibling.is_symlink() or not sibling.is_dir():
-            continue
-        remove_staging(sibling)
-
-
-def refresh_static(static_source: Path, static_dir: Path) -> None:
-    backup = static_dir.with_name(static_dir.name + ".home-manager-old")
-    # A run killed during the copy, or between the two renames below, leaves
-    # its staging tree behind; no later run would reuse or remove it.
-    remove_stale_staging(static_dir, backup)
-    # Recover from a previous run that was killed mid-swap: the live tree was
-    # moved aside but the replacement was never installed. Restore the backup
-    # if the live tree is gone, otherwise discard a stale backup.
-    if lexists(backup):
-        if lexists(static_dir):
-            shutil.rmtree(backup)
-        else:
-            os.replace(backup, static_dir)
-
-    temporary = Path(
-        tempfile.mkdtemp(dir=static_dir.parent, prefix=".home-manager-static.")
-    )
+def refresh_static(
+    static_source: Path, static_dir: Path, backup: Path, stamp: Path
+) -> None:
+    temporary = staging(static_dir)
+    workspace = temporary.parent
+    workspace.mkdir(mode=0o700, exist_ok=True)
+    marker = workspace / "owner-v1"
+    if not marker.exists():
+        marker.touch(mode=0o600, exist_ok=False)
     moved = False
     try:
         shutil.copytree(
             static_source,
             temporary,
-            dirs_exist_ok=True,
             symlinks=False,
         )
         make_user_writable(temporary)
+        # With no old tree, a leftover stamp identifies nothing.
+        if not static_dir.exists():
+            stamp.unlink(missing_ok=True)
         if lexists(static_dir):
             # Keep the old tree for rollback if installation fails. The two
             # renames are not one atomic swap: static_dir is absent between
@@ -156,20 +187,21 @@ def refresh_static(static_source: Path, static_dir: Path) -> None:
             if moved and not lexists(static_dir):
                 os.replace(backup, static_dir)
             raise
-        else:
-            if moved:
-                shutil.rmtree(backup)
+        # Until both renames succeed the stamp still belongs to the backup.
+        # Invalidate it before editing any visible links or deleting any
+        # part of that backup. Publish the new one only after cleanup.
+        stamp.unlink(missing_ok=True)
     finally:
         if temporary.exists():
             remove_staging(temporary)
 
 
-def validate(
+def plan_deployment(
     static_source: Path,
     stamp_source: Path,
     relatives: list[str],
-) -> None:
-    """Raise every refusal deploy() can raise, without writing anything.
+) -> tuple[Path, set[str] | None]:
+    """Select the recovery tree and outgoing link names without writing.
 
     Activation runs this before Home Manager's write boundary, so a refusal
     stops it while the previous generation is still intact.
@@ -180,19 +212,55 @@ def validate(
         fail(f"Rime stamp source is not a regular file: {stamp_source}")
     data_dir, static_dir, state_dir, stamp = state_paths()
     for directory in (data_dir.parent, data_dir, static_dir, state_dir):
-        if directory.is_symlink() or (
-            directory.exists() and not directory.is_dir()
-        ):
-            fail(f"Refusing malformed Rime path: {directory}")
+        validate_directory(directory)
+    incoming = staging(static_dir)
+    validate_workspace(incoming)
     validate_regular(stamp, "source stamp")
 
-    for relative in relatives:
+    live = static_dir
+    previous = incoming.with_name("previous")
+    if previous.exists() and (not live.exists() or stamp.exists()):
+        live = previous
+    elif not live.exists():
+        # An interrupted legacy swap and a personal backup have the same
+        # unmarked name. Its contents cannot prove which one it is.
+        legacy = static_dir.with_name(static_dir.name + ".home-manager-old")
+        if lexists(legacy):
+            fail(
+                f"Refusing ambiguous legacy Rime backup: {legacy}. "
+                "Inspect it and move it to an unused backup name, then "
+                "activate again. Keep the backup for manual recovery."
+            )
+    for name in relatives:
+        relative = Path(name)
+        if not valid_name(name):
+            fail(f"Invalid Rime static relative path: {name}")
         source = static_source / relative
-        if not source.exists():
-            fail(f"Rime static source does not exist: {source}")
-        validate_schema_target(
-            data_dir / relative, static_dir / relative, static_dir, data_dir
-        )
+        if not source.is_file():
+            fail(f"Rime static source does not exist as a file: {source}")
+        for root in (data_dir, live):
+            parent = unmanaged_parent(root, relative)
+            if parent is not None:
+                fail(f"Refusing unmanaged Rime path: {parent}")
+        validate_regular(live / relative, "materialized file")
+        target = data_dir / relative
+        if target.is_symlink():
+            if managed_destination(target, static_dir) is None:
+                fail(f"Refusing to replace unmanaged Rime link: {target}")
+        elif target.exists():
+            fail(f"Refusing to replace unmanaged Rime path: {target}")
+    return live, declared_links(state_dir / "home-manager-schema-links.json")
+
+
+@contextmanager
+def lock_directory(directory: Path):
+    # Two activations must not recover or remove each other's staging tree.
+    fd = os.open(directory, os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        yield
+    finally:
+        os.close(fd)
 
 
 def deploy(
@@ -201,45 +269,101 @@ def deploy(
     busctl: str,
     relatives: list[str],
 ) -> None:
-    validate(static_source, stamp_source, relatives)
     data_dir, static_dir, state_dir, stamp = state_paths()
-    changed = (
-        not static_dir.is_dir()
-        or not stamp.exists()
-        or not filecmp.cmp(stamp_source, stamp, shallow=False)
-    )
-    if changed:
-        print("Refreshing generated Rime schemas...")
+    validate_directory(data_dir.parent)
+    validate_directory(data_dir)
+    if not data_dir.is_dir():
+        plan_deployment(static_source, stamp_source, relatives)
         data_dir.mkdir(parents=True, exist_ok=True)
-        # Replace the tree before dropping the old links: a failed copy then
-        # leaves the previous deployment reachable under its usual names.
-        refresh_static(static_source, static_dir)
-        for link in iter_symlinks(data_dir, static_dir):
-            if resolves_below(link, static_dir):
-                link.unlink()
-        build = data_dir / "build"
-        if build.is_symlink() or build.is_file():
-            build.unlink()
-        elif build.is_dir():
-            shutil.rmtree(build)
-        state_dir.mkdir(parents=True, exist_ok=True)
-        copy_file(stamp_source, stamp, 0o644)
+    with lock_directory(data_dir):
+        live, recorded = plan_deployment(
+            static_source, stamp_source, relatives
+        )
+        temporary = staging(static_dir)
+        backup = temporary.with_name("previous")
+        old = recorded
+        if old is None:
+            old = legacy_names(live) | legacy_names(backup)
+        wanted = set(relatives)
+        obsolete = old - wanted
+        if temporary.exists():
+            remove_staging(temporary)
+        if live != static_dir:
+            # The old stamp identifies the backup, not an interrupted
+            # replacement. Its writable edits survive a same-source retry.
+            if static_dir.exists():
+                remove_staging(static_dir)
+            os.replace(live, static_dir)
+        elif backup.exists():
+            # Installation succeeded; this backup is no longer the live tree.
+            remove_staging(backup)
+        refresh = not static_dir.is_dir() or not same_content(
+            stamp_source, stamp
+        )
+        if refresh:
+            print("Refreshing generated Rime schemas...")
+            refresh_static(static_source, static_dir, backup, stamp)
 
-    for relative in relatives:
-        source = static_dir / relative
-        target = data_dir / relative
-        if not source.exists():
-            fail(f"Rime static source does not exist: {source}")
-        target.parent.mkdir(parents=True, exist_ok=True)
-        if not target.is_symlink():
-            target.symlink_to(source)
-            changed = True
+        missing = [
+            name for name in relatives if not (static_dir / name).exists()
+        ]
+        links = [
+            name
+            for name in relatives
+            if not (data_dir / name).is_symlink()
+            or (data_dir / name).readlink() != static_dir / name
+        ]
+        changed = bool(refresh or missing or links or obsolete)
 
-    if changed:
+        # Invalidate before repairing: even an interrupted repair cannot
+        # leave the old compiled schema looking current on the next run.
+        if changed:
+            build = data_dir / "build"
+            if build.is_symlink() or build.is_file():
+                build.unlink()
+            elif build.is_dir():
+                shutil.rmtree(build)
+        for name in obsolete:
+            retire_link(static_dir, Path(name))
+        # Forget an outgoing name only after retiring its exact link; record
+        # incoming names before installing links. A killed run is retryable
+        # on either side of the atomic manifest replacement.
+        if recorded != wanted:
+            write_text(
+                state_dir / "home-manager-schema-links.json",
+                json.dumps(sorted(wanted)) + "\n",
+                0o600,
+            )
+        if not changed:
+            return
+        for name in missing:
+            copy_file(static_source / name, static_dir / name, 0o644)
+        for name in links:
+            target = data_dir / name
+            parent = unmanaged_parent(data_dir, Path(name))
+            if parent is not None:
+                fail(f"Refusing unmanaged Rime path: {parent}")
+            target.parent.mkdir(parents=True, exist_ok=True)
+            # Copying a generation can take time. Don't unlink a regular
+            # file or a foreign link installed since preflight.
+            if target.is_symlink():
+                if managed_destination(target, static_dir) is None:
+                    fail(f"Refusing to replace unmanaged Rime link: {target}")
+                target.unlink()
+            try:
+                target.symlink_to(static_dir / name)
+            except FileExistsError:
+                fail(f"Refusing to replace unmanaged Rime path: {target}")
+        if backup.exists():
+            remove_staging(backup)
+        if refresh:
+            state_dir.mkdir(parents=True, exist_ok=True)
+            copy_file(stamp_source, stamp, 0o644)
         result = subprocess.run(
             [
                 busctl,
                 "--user",
+                "--auto-start=no",
                 "call",
                 "org.fcitx.Fcitx5",
                 "/controller",
@@ -267,7 +391,7 @@ def main(arguments: list[str]) -> None:
         )
         return
     if len(arguments) >= 4 and arguments[0] == "validate":
-        validate(Path(arguments[1]), Path(arguments[2]), arguments[3:])
+        plan_deployment(Path(arguments[1]), Path(arguments[2]), arguments[3:])
         return
     raise SystemExit(
         "usage: rime-state-manager deploy STATIC STAMP BUSCTL RELATIVE...\n"

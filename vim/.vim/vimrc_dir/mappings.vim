@@ -9,9 +9,6 @@
 let maplocalleader = ","
 
 " Delete the previous word when the frontend reports distinct Ctrl-Backspace.
-" Inside tmux, the root-table binding in tmux/.tmux.conf turns Ctrl-Backspace
-" into Ctrl-W before any application sees it, so this mapping only fires
-" outside tmux.
 inoremap <C-BS> <C-w>
 
 " Arrow keys follow screen lines in Normal, Visual, and Select mode; an

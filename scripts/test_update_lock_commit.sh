@@ -25,6 +25,33 @@ git -C "$repo" config user.email 'update-test@example.invalid'
 # Without this, Git falls back to $EMAIL and the failure cases below commit.
 git -C "$repo" config user.useConfigOnly true
 
+expect_split_lock_preserved() {
+  local before index_blob
+  before=$(git -C "$repo" rev-parse HEAD)
+  printf 'staged only\n' >"$repo/flake.lock"
+  git -C "$repo" add flake.lock
+  index_blob=$(git -C "$repo" rev-parse :flake.lock)
+  printf 'working only\n' >"$repo/flake.lock"
+  commit_flake_lock "$repo" 2>"$TMPDIR_TEST/warn.log"
+  grep -q 'staged and unstaged' "$TMPDIR_TEST/warn.log" || fail 'no warning about the split lock'
+  test "$(git -C "$repo" rev-parse HEAD)" = "$before" || fail 'split lock moved HEAD'
+  test "$(git -C "$repo" rev-parse :flake.lock)" = "$index_blob" || fail 'split lock lost its index blob'
+  test "$(<"$repo/flake.lock")" = 'working only' || fail 'split lock changed on disk'
+  for flag in assume-unchanged skip-worktree; do
+    git -C "$repo" update-index "--$flag" flake.lock
+    commit_flake_lock "$repo" 2>"$TMPDIR_TEST/warn.log"
+    grep -q 'assume-unchanged or skip-worktree' "$TMPDIR_TEST/warn.log"
+    test "$(git -C "$repo" rev-parse HEAD)" = "$before"
+    test "$(git -C "$repo" rev-parse :flake.lock)" = "$index_blob"
+    test "$(<"$repo/flake.lock")" = 'working only'
+    git -C "$repo" update-index "--no-$flag" flake.lock
+  done
+  git -C "$repo" restore --source=HEAD --staged --worktree flake.lock
+}
+
+# Exercise the refusal on both a fresh commit and a foldable lock tip.
+expect_split_lock_preserved
+
 # A validated update leaves a dirty lock; the helper commits just it.
 printf 'lock-v2\n' >"$repo/flake.lock"
 printf 'unrelated\n' >"$repo/unrelated"
@@ -37,6 +64,7 @@ test -n "$(git -C "$repo" status --porcelain -- unrelated)" ||
   fail 'unrelated file was swept into the commit'
 test "$(git -C "$repo" show --stat --format='' HEAD | grep -c '|')" -eq 1 ||
   fail 'commit touched more than flake.lock'
+expect_split_lock_preserved
 
 # A clean lock is a no-op.
 before="$(git -C "$repo" rev-parse HEAD)"

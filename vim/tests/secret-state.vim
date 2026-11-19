@@ -2,12 +2,30 @@ set nomore
 " The default patterns cover the temporary directory this test runs in;
 " only the entries cache.vim adds are under test.
 set backupskip=
+" Silent Ex mode can disable swap creation. Exercise it just as in an
+" interactive edit, including the positive on-disk control below.
+set updatecount=200
 " DOTFILES_SENSITIVE_PATHS names lib/sensitive-paths.nix as JSON. It stands in
 " for the Home Manager preamble here, and is the list of paths to probe; the
 " startup checks compare the real preamble with the same file.
 let s:paths = json_decode(join(readfile($DOTFILES_SENSITIVE_PATHS), "\n"))
 let g:dotfiles_sensitive_paths = deepcopy(s:paths)
+let $XDG_DATA_HOME = $HOME . '/relocated-data'
+let s:keys = $HOME . '/private/keys'
+call mkdir(s:keys, 'p')
+if getftype($HOME . '/.ssh') ==# ''
+  call system(['ln', '-s', s:keys, $HOME . '/.ssh'])
+  call assert_equal(0, v:shell_error, 'link ~/.ssh before sourcing cache.vim')
+endif
+call assert_equal(s:keys, resolve($HOME . '/.ssh'))
 execute 'source ' . fnameescape($DOTFILES_CACHE_VIM)
+
+if has('nvim')
+  " Plugins enter unnamed scratch buffers through the API, without <afile>.
+  let s:scratch = nvim_create_buf(v:false, v:true)
+  call nvim_set_current_buf(s:scratch)
+  call assert_equal('', bufname('%'))
+endif
 
 " Vim skips the backup when any 'backupskip' pattern matches the buffer
 " name as given, without resolving symlinks.
@@ -45,9 +63,10 @@ call assert_notequal($HOME . '/.config', s:config,
 for [s:kind, s:roots] in [
       \ ['home', [$HOME]],
       \ ['xdgConfig', [$HOME . '/.config', s:config]],
+      \ ['xdgData', [$HOME . '/.local/share', $XDG_DATA_HOME]],
       \ ]
   call assert_notequal([], s:paths[s:kind].files, s:kind . ' files')
-  call assert_notequal([], s:paths[s:kind].directories, s:kind . ' directories')
+  call assert_true(has_key(s:paths[s:kind], 'directories'), s:kind . ' directories')
   for s:root in s:roots
     for s:name in s:paths[s:kind].files
       call s:AssertState(s:root . '/' . s:name, 0)
@@ -76,18 +95,57 @@ for s:name in s:paths.anyDepthDirectories
   endfor
 endfor
 
-" Vim itself must leave no copy there: writing a file under a credential
-" directory outside the home directory gains no backup and no undo file.
+" Overwrite existing files so a backup can actually be made. Use a fresh
+" basename per fixture, with an ordinary sibling as a positive control.
 let s:backup_dir = substitute(&backupdir, '/*$', '', '')
-for s:path in [s:elsewhere . '/.ssh/id_ed25519', $HOME . '/project/.aws/credentials']
-  execute 'edit! ' . fnameescape(s:path)
-  call assert_false(&l:swapfile, s:path . ' swap file')
-  call setline(1, 'token')
+function! s:AssertWrite(path, kept) abort
+  call mkdir(fnamemodify(a:path, ':h'), 'p')
+  call writefile(['initial fixture'], a:path)
+  execute 'edit! ' . fnameescape(a:path)
+  call setline(1, 'updated fixture')
+  call assert_equal(a:kept, &l:swapfile, a:path . ' swap')
+  if a:kept
+    preserve
+    call assert_true(filereadable(swapname('%')), a:path . ' swap on disk')
+  else
+    call assert_equal('', swapname('%'), a:path . ' swap on disk')
+  endif
   write
-  call assert_true(empty(glob(s:backup_dir . '/*' . fnamemodify(s:path, ':t') . '~', 0, 1)),
-        \ s:path . ' backup')
-  call assert_false(filereadable(undofile(s:path)), s:path . ' undo file')
-endfor
+  let l:copies = glob(s:backup_dir . '/*' . fnamemodify(a:path, ':t') . '~', 0, 1)
+  call assert_equal(a:kept, len(l:copies), a:path . ' backup')
+  if !empty(l:copies)
+    call assert_equal(['initial fixture'], readfile(l:copies[0]), a:path . ' backup contents')
+  endif
+  call assert_equal(a:kept, filereadable(undofile(a:path)), a:path . ' undo')
+endfunction
+call s:AssertWrite(s:elsewhere . '/.ssh/id_ed25519', 0)
+call s:AssertWrite($HOME . '/project/.aws/credentials', 0)
+call s:AssertWrite(s:keys . '/canonical-key', 0)
+call s:AssertWrite(s:keys . '-notes/ordinary-key', 1)
+call s:AssertWrite($XDG_DATA_HOME . '/opencode/auth.json', 0)
+call s:AssertWrite($HOME . '/project/.local/share/opencode/auth.json', 1)
+
+" Move the home credential link after opening the real path. The write
+" must recheck it, and the next ordinary write must still gain a backup.
+let s:rotated = $HOME . '/rotated-keys'
+call mkdir(s:rotated, 'p')
+let s:open_key = s:rotated . '/already-open-key'
+call writefile(['initial fixture'], s:open_key)
+execute 'edit! ' . fnameescape(s:open_key)
+call assert_true(&l:swapfile)
+let s:skip_before = &backupskip
+call system(['ln', '-sfn', s:rotated, $HOME . '/.ssh'])
+call assert_equal(0, v:shell_error)
+call setline(1, 'updated fixture')
+write
+call assert_equal('', swapname('%'))
+call assert_false(filereadable(undofile(s:open_key)))
+call assert_equal([], glob(s:backup_dir . '/*already-open-key~', 0, 1))
+call s:AssertWrite(s:rotated . '/new-visit-key', 0)
+call s:AssertWrite(s:keys . '/released-key', 1)
+call assert_equal(s:skip_before, &backupskip, 'aliases accumulated in backupskip')
+call system(['ln', '-sfn', s:keys, $HOME . '/.ssh'])
+call assert_equal(0, v:shell_error)
 
 " The other entries are anchored: a directory of the same name elsewhere,
 " such as a project's own .claude or .config, keeps its state.
@@ -179,6 +237,7 @@ call assert_false(filereadable(undofile(s:rclone . '/from-ordinary.conf')))
 " A relative XDG_CONFIG_HOME names no config directory, so it adds no entry:
 " a file below it keeps its state, and ~/.config is still guarded.
 let $XDG_CONFIG_HOME = 'relative-config'
+let $XDG_DATA_HOME = 'relative-data'
 set backupskip=
 execute 'source ' . fnameescape($DOTFILES_CACHE_VIM)
 for s:name in s:paths.xdgConfig.directories
@@ -186,6 +245,8 @@ for s:name in s:paths.xdgConfig.directories
   call s:AssertState($HOME . '/.config/' . s:name . '/second.txt', 0)
   call s:AssertState(s:config . '/' . s:name . '/unguarded.txt', 1)
 endfor
+call s:AssertState(getcwd() . '/relative-data/opencode/auth.json', 1)
+call s:AssertState($HOME . '/.local/share/opencode/auth.json', 0)
 
 " Sourced without the Home Manager preamble, cache.vim has no paths to guard
 " and must say so.
