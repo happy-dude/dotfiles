@@ -100,8 +100,8 @@ in {
         followTags = true;
       };
       fetch = {
+        # Only remote-tracking branches belong to this remote; tags are shared.
         prune = true;
-        pruneTags = true;
         all = true;
       };
       help.autocorrect = "prompt";
