@@ -113,7 +113,7 @@ in {
   zed-settings-materializer = mkCheck {
     name = "zed-settings-materializer-test";
     tools = [
-      pkgs.python3
+      (pkgs.python3.withPackages (ps: [ps.json5 (import ../lib/python {inherit pkgs;})]))
       zedSettingsMaterializer
     ];
     script = ''
@@ -198,6 +198,46 @@ in {
       cp work/invalid.json work/invalid.before
       refuses "malformed runtime settings" work/invalid.json
       cmp work/invalid.before work/invalid.json
+
+      printf '%s\n' '{dynamic: "\ud83d\ude80",}' >work/unicode.json
+      materialize-zed-settings --check work/static.json work/unicode.json
+      materialize-zed-settings work/static.json work/unicode.json
+      python3 -c 'import json; assert json.load(open("work/unicode.json"))["dynamic"] == "\U0001f680"'
+
+      # JSON5 admits values that cannot be written as strict UTF-8 JSON.
+      for value in '"\ud800"' NaN Infinity; do
+        printf '{"dynamic":%s}\n' "$value" >work/unencodable.json
+        cp work/unencodable.json work/unencodable.before
+        refuses "unencodable runtime settings" work/unencodable.json
+        cmp work/unencodable.before work/unencodable.json
+      done
+
+      # Inject a client rename after the merge has staged its bytes. This
+      # checks best-effort detection, not serialization with a running Zed.
+      python3 - ${./materialize_settings.py} <<'PYTHON'
+      import os
+      import runpy
+      import sys
+      from pathlib import Path
+      from unittest.mock import patch
+
+      materialize = runpy.run_path(sys.argv[1])["materialize"]
+      target = Path("work/settings.json")
+      def client_save(fd):
+          saved = Path("work/client-save")
+          saved.write_bytes(b'{"from_client": true}\n')
+          os.replace(saved, target)
+      target.write_bytes(b'{}\n')
+      with patch("os.fsync", side_effect=client_save):
+          try:
+              materialize(Path("work/static.json"), target, check_only=False)
+          except SystemExit:
+              pass
+          else:
+              raise AssertionError("overwrote a concurrent client save")
+      assert target.read_bytes() == b'{"from_client": true}\n'
+      assert not list(target.parent.glob(".settings.json.*"))
+      PYTHON
 
       # Neither a valid nor a dangling link grants ownership of its target.
       cp work/settings.json work/external.json
