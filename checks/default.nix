@@ -38,6 +38,7 @@ in
     (import ../emacs/check.nix {inherit homes lib pkgs self;})
     (import ../ghostty/check.nix {inherit homes lib pkgs;})
     (import ../git/check.nix {inherit pkgs;})
+    (import ../mail/check.nix {inherit homes lib pkgs;})
     (import ../rclone/check.nix {inherit pkgs;})
     (import ../rime/check.nix {inherit lib pkgs;})
     (import ../vim/check.nix {inherit homes lib pkgs self;})

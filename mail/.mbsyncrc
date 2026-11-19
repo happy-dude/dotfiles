@@ -18,5 +18,6 @@ Far :lostsanctum-remote:
 Near :lostsanctum-local:
 Patterns *
 Create Both
+# Deletions on either side propagate to the other on the next sync.
 Expunge Both
 SyncState *
