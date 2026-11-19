@@ -1,17 +1,22 @@
-{lib, ...}: let
+{
+  config,
+  lib,
+  ...
+}: let
   lessFlags = import ../lib/less-flags.nix;
-  # The tracked template files are the source; the blank lines around
-  # their text are trimmed so the deployed templates keep their shape.
-  template = name:
-    lib.trim (builtins.readFile (./.config/aerc/templates + "/${name}")) + "\n";
+  queryMap = "aerc/notmuch-map.conf";
 in {
-  xdg.configFile."aerc/notmuch-map.conf".source = ./.config/aerc/notmuch-map.conf;
+  xdg.configFile.${queryMap}.source = ./.config/aerc/notmuch-map.conf;
 
   programs.aerc = {
     enable = true;
 
-    # accounts.conf is read from aerc's own file, which is its only copy.
-    extraAccounts = builtins.readFile ./.config/aerc/accounts.conf;
+    # aerc expands ~ in query-map, not XDG variables. Use the same path
+    # Home Manager deploys even when configHome is not ~/.config.
+    extraAccounts =
+      builtins.replaceStrings ["~/.config/${queryMap}"]
+      ["${config.xdg.configHome}/${queryMap}"]
+      (builtins.readFile ./.config/aerc/accounts.conf);
 
     # aerc.conf stays an attribute set: Home Manager reads
     # general.unsafe-accounts-conf from it to decide whether aerc will start
@@ -42,14 +47,14 @@ in {
         no-attachment-warning = "^[^>]*attach(ed|ment)";
       };
 
-      # Only filters needs raw string format due to duplicate text/html entries
+      # aerc uses the first matching MIME glob. Keep specific filters ahead
+      # of text/* rather than allowing an attribute set to sort the keys.
       filters = ''
         text/plain=colorize
         text/calendar=calendar
         message/delivery-status=colorize
         message/rfc822=colorize
-        text/html=pandoc -f html -t plain | colorize
-        text/html=html | colorize
+        text/html=pandoc --sandbox -f html -t plain | colorize
         text/*=bat -fP --file-name="$AERC_FILENAME"
         .headers=colorize
       '';
@@ -66,9 +71,10 @@ in {
       "gruvbox_material_dark_soft"
     ] (name: builtins.readFile (./.config/aerc/stylesets + "/${name}"));
 
-    templates = {
-      thanks = template "thanks";
-      quoted_thanks = template "quoted_thanks";
-    };
+    # In a headerless template the initial blank line separates the empty
+    # headers from the body; do not trim it.
+    templates =
+      lib.genAttrs ["thanks" "quoted_thanks"] (name:
+        builtins.readFile (./.config/aerc/templates + "/${name}"));
   };
 }
