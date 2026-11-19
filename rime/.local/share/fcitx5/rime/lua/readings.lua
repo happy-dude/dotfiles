@@ -22,6 +22,8 @@
 -- dictionaries and holds only what changes an answer. Its resolve() mirrors
 -- steps 2 and 3 to decide what to leave out; change the two together.
 
+local romanization = require('romanization')
+
 local M = {}
 
 M.placeholder = '?'
@@ -176,6 +178,31 @@ function M.join(readings, count, render)
     end
   end
   return any and table.concat(shown, ' ') or nil
+end
+
+-- luna_pinyin has more readings than terra_pinyin but no tones. If only
+-- Luna lists the spelling the user typed, show it without inventing a tone.
+function M.mandarin(resolver, luna, chars, typed)
+  local tonal = resolver:resolve(chars, typed)
+  local shown = {}
+  for position, char in ipairs(chars) do
+    local syllable = typed and typed[position]
+    local code = tonal[position]
+    if code and (not syllable or M.toneless(code) == syllable) then
+      shown[position] = romanization.convert_tones(code)
+    else
+      local plain = M.codes(luna, char)
+      local spelled = syllable and M.spelled(plain, syllable)
+      if spelled then
+        shown[position] = spelled:gsub('v', 'ü')
+      elseif code then
+        shown[position] = romanization.convert_tones(code)
+      elseif plain[1] then
+        shown[position] = plain[1]:gsub('v', 'ü')
+      end
+    end
+  end
+  return M.join(shown, #chars)
 end
 
 -- The generated tables, or an empty table when they cannot be loaded: the

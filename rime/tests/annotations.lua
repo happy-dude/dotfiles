@@ -42,9 +42,21 @@ check(tonal_pinyin, {
   { '重要', 'zhong yao', '~', '~ zhòng yào [zung6 jiu3]' },
 })
 
--- The Cantonese schema: the Jyutping comment is the stock schema's, and the
--- Pinyin in brackets was not typed.
-check(jyutping_pinyin, {
+-- Only the backtick lookup uses Mandarin; e.g. "hang" in ordinary
+-- Cantonese input must not override the Mandarin dictionary's choice.
+local ordinary = jyutping_pinyin(false)
+local reverse = jyutping_pinyin(true)
+for _, tag in ipairs({ 'abc', 'luna_pinyin', 'stroke', 'loengfan', 'cangjie5' }) do
+  local segment = {
+    has_tag = function(_, name)
+      return name == tag
+    end,
+  }
+  support.equal(ordinary.tags_match(segment), tag ~= 'luna_pinyin', tag)
+  support.equal(reverse.tags_match(segment), tag == 'luna_pinyin', tag)
+end
+check(ordinary, {
+  { '行', 'hang', 'hang4', 'hang4 [xíng]' },
   { '重要', 'zung jiu', 'zung6 jiu3', 'zung6 jiu3 [zhòng yào]' },
   { '音樂', 'jam ngok', 'jam1 ngok6', 'jam1 ngok6 [yīn yuè]' },
   { '長大', 'zoeng daai', 'zoeng2 daai6', 'zoeng2 daai6 [zhǎng dà]' },
@@ -55,4 +67,11 @@ check(jyutping_pinyin, {
   { '長', 'coeng', 'coeng4', 'coeng4 [cháng]' },
   { '長a', nil, '', 'cháng ?' },
   { 'ab', nil, 'kept', 'kept' },
+})
+
+check(reverse, {
+  { '行', 'hang', 'haang4', 'haang4 [háng]' },
+  { '行', 'xing', 'haang4', 'haang4 [xíng]' },
+  { '長大', 'chang da', 'zoeng2 daai6', 'zoeng2 daai6 [cháng dà]' },
+  { '撂', 'lüe', 'liu1', 'liu1 [lüe]' },
 })
