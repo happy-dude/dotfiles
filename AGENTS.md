@@ -15,9 +15,10 @@ alike, and the difference is deliberate: three Rime host files carry a snapshot
 and refuse to write when the declaration and the runtime file both changed,
 while Fcitx's `notifications.conf`, the Zed settings, and the Codex profiles are
 expected to be rewritten by the programs that own them and reassert only the
-declared entries. The Rime, Zed, and Codex materialisers make their refusals
-before Home Manager switches any link, so a refusal leaves the previous
-generation in place.
+declared entries. Read-only preflight catches existing conflicts before links
+change. A later write can still fail if a client saves new settings or Fcitx
+starts during activation. Quiesce the writer and retry; the whole activation is
+not a transaction.
 
 A separate `macos` branch exists for macOS-specific settings; this repository
 checkout is the Linux branch.

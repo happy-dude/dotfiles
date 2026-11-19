@@ -9,16 +9,19 @@ migration is intentionally deferred. `karabiner/` remains tracked because the
 macOS branch consumes the same state; Linux does not deploy it. `gdb/gdbinit` is
 linked to `~/.config/gdb/gdbinit`, and `emacs/init.el` is linked to
 `~/.config/emacs/init.el`. Emacs Custom writes machine-local state to
-`~/.config/emacs/custom.el` and loads it after the declarative defaults.
-`emacs/default.nix` also links `emacs/org-dir-locals.el`, creates the mutable
-`~/org/Archive` and `~/org/roam` directories during activation, starts the Emacs
-daemon with the graphical user session, and associates `org-protocol://` URLs
-with the dedicated URL-aware `emacs-org-protocol.desktop`. Protocol captures
-reuse one graphical client frame instead of Org's split-window display action.
-The canonical Firefox bookmarklet, optional `org` keyword, Flatpak portal flow,
-and validation steps are documented in `docs/emacs-org-protocol.md`. The derived
-Org Roam database and undo-tree history stay under the local XDG cache and must
-not be synchronized with the authoritative `~/org` files. Roswell itself remains
+`~/.config/emacs/custom.el` and loads it after the declarative defaults. If a
+cache-only `~/.emacs.d` or a legacy init would hide the XDG init, quit Emacs and
+archive the conflicting path under an unused name before switching. Activation
+reports it; it does not delete old packages or caches. `emacs/default.nix` also
+links `emacs/org-dir-locals.el`, creates the mutable `~/org/Archive` and
+`~/org/roam` directories during activation, starts the Emacs daemon with the
+graphical user session, and associates `org-protocol://` URLs with the dedicated
+URL-aware `emacs-org-protocol.desktop`. Protocol captures reuse one graphical
+client frame instead of Org's split-window display action. The canonical Firefox
+bookmarklet, optional `org` keyword, Flatpak portal flow, and validation steps
+are documented in `docs/emacs-org-protocol.md`. The derived Org Roam database
+and undo-tree history stay under the local XDG cache and must not be
+synchronized with the authoritative `~/org` files. Roswell itself remains
 Nix-built, but the copied helper and standalone `ros_swank` launcher are not
 deployed; Nix-installed SLIME starts Swank through `ros -Q run`.
 
@@ -28,9 +31,18 @@ Manager keeps the first three at the home-directory locations their tools search
 and installs StyLua's config under `~/.config/stylua`.
 
 - **`aerc/`** configures aerc alone. GnuPG lives in `gpg/`, and mbsync and
-  notmuch in `mail/`.
+  notmuch in `mail/`. On a new mail setup, run `mail-bootstrap` before opening
+  the account. It initializes an empty local index without sync or hooks.
+  Inspect an existing unindexed mail root manually. `Expunge Both` is
+  intentional: the next sync can remove messages already marked deleted,
+  including flags from other clients. Activation does not fetch mail or change
+  historical tags.
 - **`bat/`** is a module (`bat/default.nix`, `programs.bat`); enabling the
   program owns the package, so do not duplicate `bat` in `home.packages`.
+- **`tmux/`** leaves Ctrl-Backspace to the focused application. Re-sourcing
+  `.tmux.conf` does not remove a binding from a running server. Check
+  `tmux list-keys -T root C-BSpace`; if it still shows the old `send-keys C-w`,
+  run `tmux unbind-key -T root C-BSpace`. A fresh server needs no migration.
 - **`fzf/`** enables Home Manager's FZF package, its Fish integration, and the
   default command; do not duplicate `fzf` in `home.packages` or shell startup.
   The Zsh bindings are sourced at the end of the tracked `.zshrc`, after
@@ -118,7 +130,13 @@ and installs StyLua's config under `~/.config/stylua`.
   provider configuration, and project trust remain machine-local and must never
   be committed. Activation requires `~/.claude`, `~/.codex`, and `~/.omp` to be
   real directories and restricts them to mode `0700` while leaving their
-  contents writable.
+  contents writable. Quit clients before switching when they may be saving Zed
+  settings or Codex profiles. A freshness check can refuse an observed
+  concurrent save; a rename alone does not serialize activation with the
+  application's writer. On rollback to a store-linked profile or `cli.json`,
+  close the client and move the adopted regular file to an unused private backup
+  name. Do not overwrite it: it can now contain settings written since the
+  migration.
 - **`omp/`** installs oh-my-pi (`omp`) for both Linux profiles on the same
   footing as OpenCode. omp rewrites its global `~/.omp/agent/config.yml` from
   `/settings` and `omp config set`, so Home Manager does not own that file; the
@@ -152,19 +170,19 @@ and installs StyLua's config under `~/.config/stylua`.
   process, asks before shell commands and external-directory access, and reuses
   the canonical agent prompts. OpenCode permissions are approval gates rather
   than a security sandbox; use process isolation for untrusted repositories.
-  Global LSP feedback remains disabled. The repository-root `opencode.json`
-  enables LSP feedback only for this checkout, invokes the Nix-managed server
-  commands, and disables overlapping Oxlint diagnostics. The LSP permission and
-  `OPENCODE_DISABLE_LSP_DOWNLOAD=true` guard remain configured, and the same
-  guard and `OPENCODE_CONFIG` reach systemd user services such as the Emacs
+  Global LSP feedback is disabled. The repository-root `opencode.json` declares
+  the intended server commands and disables overlapping Oxlint diagnostics. The
+  pinned 2.2.6 edit/write paths do not dispatch LSP diagnostics; resolving the
+  config and finding the binaries is not evidence of feedback. The LSP
+  permission and `OPENCODE_DISABLE_LSP_DOWNLOAD=true` remain configured, and the
+  same guard and `OPENCODE_CONFIG` reach systemd user services such as the Emacs
   daemon through `systemd.user.sessionVariables`; the user manager reads that
   `environment.d` file when it starts, so a running daemon sees a changed value
   after `systemctl --user daemon-reexec` and a restart, or the next login. The
-  module also owns `cli.json`, retains the Gruvbox Material material dark-medium
-  theme, and selects the separately generated mix dark-medium variant by
-  default. `OPENCODE_CONFIG` points to the optional mode-0600
-  `~/.config/opencode/local.json` for private MCP definitions and other
-  host-only extensions. Machine-local commands belong under
+  package supplies the CLI theme separately from the writable `cli.json` and
+  installs both Gruvbox variants. `OPENCODE_CONFIG` points to the optional
+  mode-0600 `~/.config/opencode/local.json` for private MCP definitions and
+  other host-only extensions. Machine-local commands belong under
   `~/.config/opencode/commands`; OpenCode also discovers compatible skills from
   `~/.claude/skills` without copying them into this repository. Provider
   credentials and client-specific state remain outside generated Nix paths.
@@ -175,16 +193,17 @@ and installs StyLua's config under `~/.config/stylua`.
 - **`rclone/`** installs the pinned rclone client and schedules guarded bisync
   between `~/org` and `box:org`. A recursive inotify watcher batches local
   changes five minutes after the first event; a 15-minute timer catches remote
-  and missed changes. The services remain inert until a manually reviewed
-  initial resync creates `~/.local/state/rclone/org-bisync-ready`. Its filter
-  keeps legacy and derived Org Roam databases, Home Manager links, locks, and
-  editor backups out of Box. bisync reads it through `--filters-file`, which
-  records its hash on each real `--resync` and stops later runs once the filter
-  changes, so a filter edit needs a reviewed manual resync. The matching
-  `RCLONE_TEST` access-check file is a permanent safety sentinel on both sides,
-  not a disposable test artifact. OAuth state in `~/.config/rclone/rclone.conf`
-  is machine-local and must never enter Git or the Nix store. Setup and recovery
-  are documented in `docs/rclone-box-org.md`.
+  and missed changes. The services remain inert until the durable workdir is
+  armed with `~/.local/state/rclone/bisync/org-bisync-ready` and the old marker
+  is absent. Existing users must follow the migration runbook before rearming.
+  Its filter keeps legacy and derived Org Roam databases, Home Manager links,
+  locks, and editor backups out of Box. bisync reads it through
+  `--filters-file`, which records its hash on each real `--resync` and stops
+  later runs once the filter changes, so a filter edit needs a reviewed manual
+  resync. The matching `RCLONE_TEST` access-check file is a permanent safety
+  sentinel on both sides, not a disposable test artifact. OAuth state in
+  `~/.config/rclone/rclone.conf` is machine-local and must never enter Git or
+  the Nix store. Setup and recovery are documented in `docs/rclone-box-org.md`.
 - **`rime/`** is a native Home Manager module (`rime/default.nix`). Every
   deployed Rime data file has exactly one source: a locked schema input,
   `pkgs.rime-zhwiki`, the generated `lua/reading_tables.lua`, or the tracked
@@ -223,19 +242,22 @@ and installs StyLua's config under `~/.config/stylua`.
   out. Fcitx rewrites `conf/notifications.conf` itself, so activation merges the
   declared `[HiddenNotifications]` entries into that file and keeps no snapshot
   of it. `rimeValidate` raises every refusal before Home Manager switches any
-  link.
+  link. If the Fcitx profile itself needs replacement, stop Fcitx before
+  switching; otherwise the running daemon can write its old input groups back on
+  exit.
 
   Activation materializes managed static data under
   `~/.local/share/fcitx5/rime/.home-manager-static`, and leaves generated
   schemas, learned user databases, and sync state writable beside it. Source
   changes invalidate only generated build data and reload Rime; if Fcitx is not
-  running, it rebuilds on its next start. A failed static-tree rollback retains
-  the backup for the next activation; the directory replacement is recoverable,
-  not one atomic swap, and the next refresh removes a staging tree that an
-  interrupted one left behind. Authorized host-file links stay readable until
-  their staged replacement is ready. Edit Rime data in
-  `rime/.local/share/fcitx5/rime/`; edits made through the deployed links land
-  in `.home-manager-static` and are discarded at the next source change.
+  running, it rebuilds on its next start. Only marked staging transactions are
+  recovered automatically. Legacy `.home-manager-static.*` backups are not
+  cleanup targets. If the live tree is absent and an unmarked legacy rollback
+  directory exists, inspect it and move it to an unused backup name before
+  retrying; do not discard it. Host-file links stay readable until their
+  replacement is ready. Edit Rime data in `rime/.local/share/fcitx5/rime/`;
+  edits made through the deployed links land in `.home-manager-static` and are
+  discarded at the next source change.
 
 - `scripts/update.sh` updates Rime only through the locked flake inputs.
 - **`rime/fcitx.nix`** installs Fcitx 5 with the Rime and GTK addons where
@@ -246,7 +268,9 @@ and installs StyLua's config under `~/.config/stylua`.
   Both desktops share the Rime files from `rime/`.
 - **`gnome/`** manages stable GNOME preferences only when `desktop = "gnome"`.
   DConf values remain writable during the session and return to the declared
-  baseline on a later Home Manager activation.
+  baseline on a later Home Manager activation. Install and enable a release of
+  Custom Hot Corners – Extended compatible with the host's GNOME Shell. The
+  profile supplies the corner actions, not the extension.
 - **`plasma/`** manages Plasma preferences for every Plasma profile through the
   pinned plasma-manager module, with `schan`'s session as the reference.
   Built-in touchpads, mice, and the Xwayland scale differ per machine, so they
@@ -261,6 +285,9 @@ and installs StyLua's config under `~/.config/stylua`.
   panel edits made in the session are lost; turn it on only when Home Manager
   should own the whole panel. Cursor and icon themes are declared here, and
   Plasma copies them to GTK itself, so Home Manager's `gtk` module stays off.
+  Only declared libinput keys are reset. When Okular is installed as a user
+  Flatpak, its declared preferences also merge into
+  `~/.var/app/org.kde.okular/config/okularpartrc`; other app settings survive.
   Dolphin's folder views are written to
   `~/.local/share/dolphin/view_properties/global/.directory` and
   `~/Downloads/.directory`, as regular files Dolphin can update; activation

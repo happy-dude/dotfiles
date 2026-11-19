@@ -14,9 +14,11 @@ what each module deploys.
   `homeConfigurations."stachan"` is the work GNOME profile at `/home/stachan`.
   Both are `x86_64-linux` Home Manager configurations for generic Linux rather
   than NixOS. `schan` sets `nixPackage = null` so Home Manager retains the
-  host-provided Determinate Nix installation; `stachan` uses the Nix package
-  from the locked Nixpkgs input. Each machine switches its own output (`.#schan`
-  / `.#stachan`); `scripts/update.sh` defaults to `.#$(whoami)`.
+  host-provided Determinate Nix installation. On `stachan`, Home Manager uses
+  the selected Nix package to validate settings and supply completions; that
+  selection does not replace the host's `nix` executable. Each machine switches
+  its own output (`.#schan` / `.#stachan`); `scripts/update.sh` defaults to
+  `.#$(whoami)`.
 - On Kinoite, Determinate Nix runs natively on the host. Its persistent store at
   `/var/home/nix` is mounted at `/nix` before the daemon starts, while the
   OSTree/composefs root remains read-only. The former `nix-toolbox-42` container
