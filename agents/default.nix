@@ -47,11 +47,11 @@
   # without writing.
   materializeProfile = options: name: ''
     ${lib.escapeShellArgs ([(lib.getExe codex.profileMaterializer)] ++ options)} \
+      --old-generation "''${oldGenPath:-}" \
       ${profileFiles.${name}} \
       "$HOME/.codex/${name}.config.toml"
   '';
-  legacyClaudeDirectories = "${repo}/claude/.claude/agents:${repo}/agents/prompts";
-  legacyCodexDirectory = "${repo}/agents/generated/codex-agents";
+  prepareAgentState = phase: ''${lib.getExe codex.agentDirectoryMigration} ${phase} ${builtins.storeDir} "''${oldGenPath:-}"'';
 in {
   # Claude Code registers a subagent only from a prompt carrying YAML
   # frontmatter, so link the canonical prompts individually rather than the
@@ -77,46 +77,32 @@ in {
     )
     profileFiles;
 
-  # Validate the agent state parents before anything writes through them. A
-  # symlinked or non-directory ~/.claude, ~/.codex, or ~/.omp must be rejected
-  # before the migration removes legacy links there and before linkGeneration
-  # creates links inside it, otherwise a redirected parent is followed before
-  # activation refuses it.
-  home.activation.secureAgentStateDirectories = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
-    for directory in "$HOME/.claude" "$HOME/.codex" "$HOME/.omp"; do
-      if [[ -L $directory || (-e $directory && ! -d $directory) ]]; then
-        echo "Refusing malformed agent state directory: $directory" >&2
-        exit 1
-      fi
-      $DRY_RUN_CMD ${pkgs.coreutils}/bin/mkdir -p -- "$directory"
-      $DRY_RUN_CMD ${pkgs.coreutils}/bin/chmod 0700 -- "$directory"
-    done
+  # Check before HM follows the incoming agents' parent links. Do not
+  # unlink, mkdir or chmod until *all* preflight checks have succeeded.
+  home.activation.checkAgentStateDirectories = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
+    ${prepareAgentState "check"}
+  '';
+  home.activation.secureAgentStateDirectories = lib.hm.dag.entryBetween ["linkGeneration"] ["writeBoundary"] ''
+    $DRY_RUN_CMD ${prepareAgentState "secure"}
   '';
 
-  home.activation.migrateCodexAgentDirectory = lib.hm.dag.entryBetween ["checkLinkTargets"] ["secureAgentStateDirectories"] ''
-    $DRY_RUN_CMD ${lib.getExe codex.agentDirectoryMigration} \
-      ${lib.escapeShellArg legacyClaudeDirectories} \
-      "$HOME/.claude/agents"
-    $DRY_RUN_CMD ${lib.getExe codex.agentDirectoryMigration} \
-      ${lib.escapeShellArg legacyCodexDirectory} \
-      "$HOME/.codex/agents" \
-      ${lib.escapeShellArg "kernel=${agentFiles.kernel}"} \
-      ${lib.escapeShellArg "language=${agentFiles.language}"}
-  '';
-
-  # Run on every activation, not on a template change, so the next switch
-  # retries a refresh that failed. A current profile is left untouched.
-  home.activation.ensureCodexProfiles = lib.hm.dag.entryAfter ["linkGeneration"] (
+  # Adopt an outgoing store profile *before* HM cleans obsolete links. A
+  # regular replacement is no longer HM's link and survives its cleanup.
+  home.activation.ensureCodexProfiles = lib.hm.dag.entryBetween ["linkGeneration"] ["secureAgentStateDirectories"] (
     lib.concatMapStrings (name: ''
       $DRY_RUN_CMD ${materializeProfile [] name}
     '')
     agentNames
   );
 
-  # The materializer refuses a profile it cannot merge. By the time it runs,
-  # linkGeneration has switched the links, so a refusal there would leave the
-  # new generation half applied. Make the same refusals here, where nothing
-  # has been written yet; this entry only reads, so a dry run makes them too.
+  # Until HM is ready to install the new per-file links, leave the old
+  # directory links reachable even if a profile or CLI save aborts adoption.
+  home.activation.retireAgentDirectoryLinks = lib.hm.dag.entryBetween ["linkGeneration"] ["ensureCodexProfiles" "checkFilesChanged"] ''
+    $DRY_RUN_CMD ${prepareAgentState "retire"}
+  '';
+
+  # The later write reruns the merge on current bytes. A refusal here,
+  # including in dry-run mode, leaves the previous generation in place.
   home.activation.checkCodexProfiles = lib.hm.dag.entryBetween ["writeBoundary"] ["checkLinkTargets"] (
     lib.concatMapStrings (materializeProfile ["--check"]) agentNames
   );

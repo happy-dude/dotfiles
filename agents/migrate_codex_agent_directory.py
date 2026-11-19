@@ -1,80 +1,61 @@
-import os
+"""Retire only outgoing HM directory links; never edit their referents."""
+
+import argparse
 import sys
 from pathlib import Path
-from typing import NoReturn
+
+from dotfiles_files import fail, outgoing_entry
 
 
-def fail(message: str, status: int = 1) -> NoReturn:
-    print(message, file=sys.stderr)
-    raise SystemExit(status)
+def prepare(store: Path, generation: Path, phase: str) -> None:
+    home = Path.home()
+    directories = [home / name for name in (".claude", ".codex", ".omp")]
+    for directory in directories:
+        if directory.is_symlink() or (
+            directory.exists() and not directory.is_dir()
+        ):
+            fail(
+                f"Refusing malformed state directory: {directory}. Back it "
+                "up privately and restore it as a real directory; retry."
+            )
 
-
-def main(arguments: list[str]) -> None:
-    if len(arguments) < 2:
-        fail(
-            "usage: migrate-codex-agent-directory "
-            "LEGACY[:LEGACY...] TARGET [NAME=SOURCE...]",
-            2,
+    links = []
+    for relative in (Path(".claude/agents"), Path(".codex/agents")):
+        target = home / relative
+        if not target.is_symlink():
+            if target.exists() and not target.is_dir():
+                fail(f"Move non-directory {target} aside and retry activation")
+            continue
+        entry = outgoing_entry(target, relative, generation, store)
+        recovery = (
+            f"Inspect {target}, move the link itself (not its contents) to "
+            "an unused backup name and retry; restore any personal agents "
+            "beside the new managed files."
         )
+        if entry is None or not entry.is_symlink():
+            fail(f"Unverified agent directory link. {recovery}")
+        if phase == "check":
+            # HM checks the incoming children through the still-live link.
+            # A real collision must not require a destructive preflight.
+            print(
+                f"If HM reports a collision under {target}: {recovery}",
+                file=sys.stderr,
+            )
+        links.append(target)
 
-    legacy_roots = [
-        Path(part).resolve(strict=False)
-        for part in arguments[0].split(":")
-        if part
-    ]
-    if not legacy_roots:
-        fail("No legacy agent directory supplied", 2)
-    legacy = legacy_roots[0]
-    target = Path(arguments[1])
-    remove_target = False
-    legacy_links: list[Path] = []
-
-    if target.is_symlink():
-        if target.resolve(strict=False) not in legacy_roots:
-            fail(f"Refusing unrelated Codex agent directory link: {target}")
-        remove_target = True
-    elif target.exists() and not target.is_dir():
-        fail(f"Refusing non-directory Codex agent path: {target}")
-    for mapping in arguments[2:]:
-        if "=" not in mapping:
-            fail(f"Invalid Codex agent migration mapping: {mapping}", 2)
-        name, source_text = mapping.split("=", 1)
-        if not name or "/" in name:
-            fail(f"Invalid Codex agent migration mapping: {mapping}", 2)
-
-        source = Path(source_text)
-        legacy_path = legacy / f"{name}.toml"
-        if legacy_path.is_symlink():
-            if legacy_path.resolve(strict=False) != source.resolve(
-                strict=False
-            ):
-                link_target = os.readlink(legacy_path)
-                suffix = f"/.codex/agents/{name}.toml"
-                if not link_target.endswith(suffix):
-                    fail(
-                        "Refusing unrelated legacy Codex agent link: "
-                        f"{legacy_path}"
-                    )
-                home_files = Path(link_target.removesuffix(suffix))
-                store_dir = source.parent
-                if (
-                    not remove_target
-                    or home_files.parent != store_dir
-                    or not home_files.name.endswith("-home-manager-files")
-                ):
-                    fail(
-                        "Refusing unrelated legacy Codex agent link: "
-                        f"{legacy_path}"
-                    )
-            legacy_links.append(legacy_path)
-        elif legacy_path.exists():
-            fail(f"Refusing unmanaged legacy Codex agent file: {legacy_path}")
-
-    for legacy_path in legacy_links:
-        legacy_path.unlink()
-    if remove_target:
-        target.unlink()
+    if phase == "secure":
+        for directory in directories:
+            directory.mkdir(mode=0o700, exist_ok=True)
+            directory.chmod(0o700)
+    elif phase == "retire":
+        for link in links:
+            link.unlink()
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("phase", choices=("check", "secure", "retire"))
+    parser.add_argument("store", type=Path)
+    parser.add_argument("generation", type=Path)
+    args = parser.parse_args()
+    prepare(args.store, args.generation, args.phase)
