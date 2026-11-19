@@ -1,0 +1,66 @@
+--- a/extensions/org-roam-protocol.el
++++ b/extensions/org-roam-protocol.el
+@@ -122,11 +122,8 @@
+         encodeURIComponent(window.getSelection())"
+   (unless (plist-get info :ref)
+     (user-error "No ref key provided"))
+-  (org-roam-plist-map! (lambda (k v)
+-                         (org-link-decode
+-                          (if (equal k :ref)
+-                              (org-protocol-sanitize-uri v)
+-                            v))) info)
++  ;; Query values have already been decoded by org-protocol.  In particular,
++  ;; %26 within the page URL is not an ampersand separating two parameters.
+   (when org-roam-protocol-store-links
+     (push (list (plist-get info :ref)
+                 (plist-get info :title)) org-stored-links))
+--- a/org-roam-node.el
++++ b/org-roam-node.el
+@@ -297,17 +297,36 @@
+        ((string-prefix-p "@" ref)
+         (setq type "cite"
+               path (substring ref 1))))
+-      (when (and type path)
+-        (when-let* ((id (caar (org-roam-db-query
+-                               [:select [nodes:id]
+-                                :from refs
+-                                :left-join nodes
+-                                :on (= refs:node-id nodes:id)
+-                                :where (= refs:type $s1)
+-                                :and (= refs:ref $s2)
+-                                :limit 1]
+-                               type path))))
+-          (org-roam-populate (org-roam-node-create :id id)))))))
++      (if (member type '("http" "https"))
++          ;; The refs table holds a decoded search key.  The node properties
++          ;; retain the original URL, so distinguish ?q=a%26b from ?q=a&b
++          ;; even when both are already in the cache.
++          (cl-loop for (id properties) in
++                   (org-roam-db-query
++                    [:select [nodes:id nodes:properties] :from refs
++                     :inner-join nodes :on (= refs:node-id nodes:id)
++                     :where (= refs:type $s1) :and (= refs:ref $s2)]
++                    type (org-link-decode path))
++                   when (cl-some
++                         (lambda (entry)
++                           (let ((link (org-link-encode entry '(#x20))))
++                             (and (string-match org-link-any-re link)
++                                  (equal ref (or (match-string 2 link)
++                                                 (match-string 0 link))))))
++                         (split-string-and-unquote
++                          (or (cdr (assoc "ROAM_REFS" properties)) "")))
++                   return (org-roam-populate (org-roam-node-create :id id)))
++        (when (and type path)
++          (when-let* ((id (caar (org-roam-db-query
++                                 [:select [nodes:id]
++                                  :from refs
++                                  :left-join nodes
++                                  :on (= refs:node-id nodes:id)
++                                  :where (= refs:type $s1)
++                                  :and (= refs:ref $s2)
++                                  :limit 1]
++                                 type path))))
++            (org-roam-populate (org-roam-node-create :id id))))))))
+ 
+ (cl-defmethod org-roam-populate ((node org-roam-node))
+   "Populate NODE from database.

@@ -85,6 +85,13 @@ in {
   programs.emacs = {
     enable = true;
     package = pkgs.emacs-pgtk;
+    # org-protocol already decoded the browser query. Keep the page's URL
+    # intact in both the note and org-roam's lookup of a previous capture.
+    overrides = _: prev: {
+      org-roam = prev.org-roam.overrideAttrs (old: {
+        patches = (old.patches or []) ++ [./org-roam-literal-refs.patch];
+      });
+    };
     extraPackages = epkgs:
       (with epkgs; [
         agent-shell

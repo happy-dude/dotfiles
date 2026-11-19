@@ -408,9 +408,9 @@ even when the daemon has no graphical frame to copy a display from."
 Org Roam writes the ref into the note's ROAM_REFS property as it
 arrives.  A line break there ends the property line, and Org reads the
 rest of the ref as part of the note: an :END: line closes the drawer and
-a line starting with \"* \" becomes a heading.  Org Roam decodes the
-ref once more than org-protocol already has, so a page whose own URL
-holds \"%0A\" yields a line break too; check what that decoding gives."
+a line starting with \"* \" becomes a heading.  Reject a control
+character in the URL or its decoded form; keep the original URL for
+both the property and repeat capture."
   (when-let* ((ref (plist-get info :ref))
               ((string-match-p "[[:cntrl:]\177]" (org-link-decode ref))))
     (user-error
