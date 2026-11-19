@@ -42,6 +42,7 @@ in
     (import ../plasma/check.nix {inherit homes lib pkgs self;})
     (import ../rclone/check.nix {inherit pkgs;})
     (import ../rime/check.nix {inherit lib pkgs;})
+    (import ../virtme-ng/check.nix {inherit homes lib pkgs;})
     (import ../vim/check.nix {inherit homes lib pkgs self;})
     (import ../yt-dlp/check.nix {inherit homes lib pkgs;})
     (import ../zed/check.nix {inherit homes lib pkgs;})

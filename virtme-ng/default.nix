@@ -3,6 +3,12 @@
   pkgs,
   ...
 }: let
+  # virtme needs a static BusyBox for its guest initramfs. Expose only the
+  # executable: the kdir preparation helper needs GNU ln -r and host kmod,
+  # not the applets alongside busybox in the static package's bin directory.
+  initramfsBusybox = pkgs.linkFarm "virtme-initramfs-busybox" {
+    "bin/busybox-static" = pkgs.lib.getExe pkgs.pkgsStatic.busybox;
+  };
   virtme-ng = pkgs.python3Packages.buildPythonApplication {
     pname = "virtme-ng";
     version = "unstable-${builtins.substring 0 8 inputs.virtme_ng_src.lastModifiedDate}";
@@ -23,10 +29,9 @@
       "--prefix"
       "PATH"
       ":"
-      # virtme-run takes only a busybox that `file -L` reports as static.
       (pkgs.lib.makeBinPath [
         pkgs.file
-        pkgs.pkgsStatic.busybox
+        initramfsBusybox
         pkgs.openssh
         pkgs.qemu
         pkgs.socat
