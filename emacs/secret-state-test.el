@@ -27,10 +27,18 @@
 ;; Loaded after init.el with the check's disposable HOME and XDG directories.
 (require 'cl-lib)
 
-(defun dotfiles-test/exercise-file-state (file sensitive &optional renamed-file mode)
+;; All fixtures live under TMPDIR, which Emacs excludes independently of
+;; the credential guard. Isolate that policy; use actual visits, saves and
+;; the configured numbered backup directory below.
+(advice-add 'normal-backup-enable-predicate :override #'always)
+
+(defun dotfiles-test/backup-files ()
+  (directory-files (expand-file-name "backup" dotfiles/data-home) nil
+                   directory-files-no-dot-files-regexp))
+
+(defun dotfiles-test/exercise-file-state (file sensitive &optional renamed-file after-visit)
   "Edit FILE and check actual state copies.
-Rename the buffer to RENAMED-FILE and then switch to major MODE first, when
-given."
+Rename the buffer to RENAMED-FILE and call AFTER-VISIT first, when given."
   ;; Batch visits otherwise skip the normal auto-save initialization.
   (let ((buffer (let ((noninteractive nil))
                   (find-file-noselect file))))
@@ -38,11 +46,11 @@ given."
         (with-current-buffer buffer
           (when renamed-file
             (set-visited-file-name renamed-file t))
-          (when mode
-            (funcall mode))
+          (when after-visit
+            (funcall after-visit))
           (let ((auto-save-file (make-auto-save-file-name))
                 (history-file (undo-tree-make-history-save-file-name buffer-file-name))
-                (backup-file (make-backup-file-name buffer-file-name)))
+                (before (dotfiles-test/backup-files)))
             (goto-char (point-max))
             (insert "updated fixture\n")
             (undo-boundary)
@@ -52,8 +60,10 @@ given."
             (save-buffer)
             (unless (eq (file-exists-p history-file) (not sensitive))
               (error "Wrong undo history behavior for fixture: %s" buffer-file-name))
-            (when (and sensitive (file-expand-wildcards (concat backup-file "*")))
-              (error "Sensitive fixture gained a backup: %s" buffer-file-name))))
+            (let ((new (seq-difference (dotfiles-test/backup-files) before)))
+              (unless (if sensitive (null new)
+                        (and (= (length new) 1) (string-match-p "\\.~[0-9]+~\\'" (car new))))
+                (error "Wrong backup behavior for %s: new files %S" buffer-file-name new)))))
       (when (buffer-live-p buffer)
         (kill-buffer buffer)))))
 
@@ -72,23 +82,30 @@ given."
 (when (or (not (string-prefix-p "/" dotfiles-test/config-home))
           (equal dotfiles-test/config-home (expand-file-name "~/.config")))
   (error "The check did not relocate XDG_CONFIG_HOME"))
+(defconst dotfiles-test/data-home (getenv "XDG_DATA_HOME"))
+(when (or (not (string-prefix-p "/" dotfiles-test/data-home))
+          (equal dotfiles-test/data-home (expand-file-name "~/.local/share")))
+  (error "The check did not relocate XDG_DATA_HOME"))
 
 (defconst dotfiles-test/roots
   `((home ,(expand-file-name "~"))
-    (xdgConfig ,(expand-file-name "~/.config") ,dotfiles-test/config-home))
+    (xdgConfig ,(expand-file-name "~/.config") ,dotfiles-test/config-home)
+    (xdgData ,(expand-file-name "~/.local/share") ,dotfiles-test/data-home))
   "The directories each kind of entry is looked up under.")
 
 (defun dotfiles-test/entries (kind type)
-  "Return the TYPE entries of KIND, failing when there are none."
-  (or (alist-get type (alist-get kind dotfiles-test/sensitive-paths))
-      (error "The sensitive path list has no %s %s" kind type)))
+  "Return the TYPE entries of KIND, including an explicitly empty list."
+  (cdr (or (assq type (alist-get kind dotfiles-test/sensitive-paths))
+           (error "The sensitive path list lacks %s %s" kind type))))
 
 (defun dotfiles-test/check-sensitive (file)
   "Check that the guard recognizes FILE and refuses it a backup."
   (unless (dotfiles/sensitive-file-p file)
     (error "Sensitive path is not guarded: %s" file))
-  (when (funcall backup-enable-predicate file)
-    (error "Sensitive path may be backed up: %s" file)))
+  (with-temp-buffer
+    (setq buffer-file-name file)
+    (when (backup-buffer)
+      (error "Sensitive path may be backed up: %s" file))))
 
 (defun dotfiles-test/check-sensitive-state (file)
   "Check that FILE is guarded and that editing it leaves no state copy."
@@ -140,6 +157,32 @@ given."
         (dotfiles-test/check-ordinary
          (expand-file-name "ordinary.txt" (concat directory "-notes")))))))
 
+;; ~/.ssh was linked to this otherwise ordinary name before init.el loaded.
+;; Use text-mode for both: the default mode for extensionless files is Org,
+;; whose auto-save hook saves the visited file itself instead of a copy.
+(let ((target (expand-file-name "~/private/keys/id.txt"))
+      (sibling (expand-file-name "~/private/keys-notes/id.txt")))
+  (unless (file-symlink-p (expand-file-name "~/.ssh"))
+    (error "Missing symlinked credential root fixture"))
+  (dotfiles-test/check-sensitive-state target)
+  (make-directory (file-name-directory sibling) t)
+  (with-temp-file sibling (insert "initial fixture\n"))
+  (dotfiles-test/exercise-file-state sibling nil))
+
+;; Retarget the link while the direct path is already visited. Exercise
+;; that write, a new visit, and a newly ordinary file under the old root.
+(let* ((root (expand-file-name "~/rotated-keys"))
+       (link (expand-file-name "~/.ssh"))
+       (open (expand-file-name "already-open.txt" root))
+       (released (expand-file-name "~/private/keys/released.txt")))
+  (make-directory root t)
+  (dolist (file (list open released))
+    (with-temp-file file (insert "initial fixture\n")))
+  (dotfiles-test/exercise-file-state
+   open t nil (lambda () (make-symbolic-link root link t)))
+  (dotfiles-test/check-sensitive-state (expand-file-name "new-visit.txt" root))
+  (dotfiles-test/exercise-file-state released nil))
+
 ;; The other local entries are anchored: a directory of the same name
 ;; elsewhere, such as a project's own .claude or .config, keeps its state.
 (dolist (entry (dotfiles-test/entries 'home 'directories))
@@ -148,6 +191,8 @@ given."
 (dolist (entry (dotfiles-test/entries 'xdgConfig 'directories))
   (dotfiles-test/check-ordinary
    (expand-file-name (concat "project/.config/" entry "/ordinary.txt") "~")))
+(dotfiles-test/check-ordinary (expand-file-name "opencode/projects.json" dotfiles-test/data-home))
+(dotfiles-test/check-ordinary (expand-file-name "~/project/.local/share/opencode/auth.json"))
 (let ((project-file (expand-file-name "~/project/.claude/ordinary.txt")))
   (make-directory (file-name-directory project-file) t)
   (with-temp-file project-file
@@ -168,17 +213,20 @@ given."
   (dolist (entry (dotfiles-test/entries 'xdgConfig 'files))
     (dotfiles-test/check-sensitive
      (concat "/ssh:host.invalid:/srv/user/.config/" entry)))
+  (dolist (entry (dotfiles-test/entries 'xdgData 'files))
+    (dotfiles-test/check-sensitive
+     (concat "/ssh:host.invalid:/srv/user/.local/share/" entry)))
   (dolist (entry (dotfiles-test/entries 'xdgConfig 'directories))
     (dotfiles-test/check-sensitive
      (concat "/ssh:host.invalid:/srv/user/.config/" entry "/credential.txt")))
   (dotfiles-test/check-ordinary "/ssh:host.invalid:/srv/user/ordinary.txt"))
 
-;; A relative XDG_CONFIG_HOME names no config directory.
-(let ((process-environment
-       (cons "XDG_CONFIG_HOME=relative-config" process-environment)))
-  (unless (equal (dotfiles/xdg-config-roots)
-                 (list (expand-file-name "~/.config")))
-    (error "A relative XDG_CONFIG_HOME was taken as a config directory")))
+;; A relative XDG variable names no additional root.
+(dolist (setting '(("XDG_CONFIG_HOME" "~/.config") ("XDG_DATA_HOME" "~/.local/share")))
+  (let ((process-environment (cons (concat (car setting) "=relative") process-environment)))
+    (unless (equal (apply #'dotfiles/xdg-roots setting)
+                   (list (expand-file-name (cadr setting))))
+      (error "A relative %s was taken as an XDG directory" (car setting)))))
 
 ;; Symlinks, renamed buffers, and major-mode changes, for one directory
 ;; entry under the relocated root.
@@ -187,9 +235,10 @@ given."
        (alias (expand-file-name "~/secret-alias.txt"))
        (directory-alias (expand-file-name "~/rclone-alias"))
        (ordinary (expand-file-name "~/ordinary.txt"))
-       (renamed (expand-file-name "~/renamed.txt")))
+       (renamed (expand-file-name "~/renamed.txt"))
+       (declassified (expand-file-name "~/declassified.txt")))
   (make-directory secret-dir t)
-  (dolist (file (list secret ordinary renamed))
+  (dolist (file (list secret ordinary renamed declassified))
     (with-temp-file file
       (insert "initial fixture\n")))
   (make-symbolic-link secret alias)
@@ -200,8 +249,7 @@ given."
   (dotfiles-test/exercise-file-state
    (expand-file-name "credential.txt" directory-alias) t)
   (dotfiles-test/exercise-file-state renamed t secret)
-  (dotfiles-test/exercise-file-state
-   secret nil (expand-file-name "~/declassified.txt"))
+  (dotfiles-test/exercise-file-state secret nil declassified)
   (dotfiles-test/exercise-file-state secret t nil #'fundamental-mode)
   ;; Visiting secrets must not disable state for subsequent ordinary buffers.
   (dotfiles-test/exercise-file-state ordinary nil))

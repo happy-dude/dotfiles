@@ -167,9 +167,12 @@ in
         emacs --batch --quick --load ${initEl} \
           --load ${./org-protocol-test.el}
 
-        # The secret-state test needs a config directory other than
-        # ~/.config: XDG config entries must be guarded in both places.
+        # Old credentials can remain under the standard roots after XDG
+        # relocation. Cover both roots and a credential directory symlink.
         export XDG_CONFIG_HOME="$HOME/relocated-config"
+        export XDG_DATA_HOME="$HOME/relocated-data"
+        mkdir -p "$HOME/private/keys"
+        ln -s "$HOME/private/keys" "$HOME/.ssh"
         link_companions
         emacs --batch --quick --load ${initEl} \
           --load ${./secret-state-test.el}

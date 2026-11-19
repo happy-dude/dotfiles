@@ -17,10 +17,11 @@
 # - anyDepthDirectories hold credentials wherever they are found: in another
 #   user's home, on a mounted backup, or copied into a project. A path is
 #   sensitive when one of these names is a directory anywhere in it.
-# - home and xdgConfig entries are an application's state, and the same names
-#   are ordinary elsewhere: a project's own .claude or .config/gh directory
-#   keeps its backup, swap, and undo files. These are matched only under the
-#   home directory or the XDG config directory.
+#   Both editors also resolve its current home instance: if ~/.ssh is a
+#   symlink to ~/private/keys, opening ~/private/keys/id directly is sensitive.
+# - home, xdgConfig and xdgData entries are an application's state, and the
+#   same names are ordinary elsewhere. A project's own .claude, .config/gh
+#   or .local/share/opencode/auth.json keeps its state copies.
 #
 # Add the state directory of any tool that stores a token or key in plain
 # text. A file Home Manager links from the store needs no entry.
@@ -66,5 +67,18 @@
       "opencode"
       "rclone"
     ];
+  };
+
+  # The stable OpenCode CLI reads auth.json into the credential table without
+  # removing the old file. SQLite's database and sidecars stay private too.
+  xdgData = {
+    files = [
+      "opencode/auth.json"
+      "opencode/opencode.db"
+      "opencode/opencode.db-journal"
+      "opencode/opencode.db-shm"
+      "opencode/opencode.db-wal"
+    ];
+    directories = [];
   };
 }

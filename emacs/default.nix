@@ -34,7 +34,8 @@
     (defconst dotfiles-sensitive-paths
       '((any-depth-directories ${lispStrings sensitivePathSet.anyDepthDirectories})
         ${sensitivePathKind "home" sensitivePathSet.home}
-        ${sensitivePathKind "xdg-config" sensitivePathSet.xdgConfig}))
+        ${sensitivePathKind "xdg-config" sensitivePathSet.xdgConfig}
+        ${sensitivePathKind "xdg-data" sensitivePathSet.xdgData}))
 
     (provide 'dotfiles-sensitive-paths)
     ;;; sensitive-paths.el ends here
