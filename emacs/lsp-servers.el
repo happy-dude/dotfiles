@@ -50,7 +50,7 @@
 
 (cl-defun dotfiles/lsp-register (server-id major-modes
                                            &key add-on activation-fn
-                                           initialization-options initialized-fn
+                                           initialization-options initialized-fn multi-root
                                            notification-handlers priority)
   (lsp-register-client
    (make-lsp-client
@@ -60,7 +60,9 @@
     :server-id server-id
     :priority (or priority 0)
     :add-on? add-on
-    :multi-root t
+    ;; Reuse a process across projects only for clients that handle folder
+    ;; changes. Bash Language Server indexes just the initial rootUri.
+    :multi-root multi-root
     :notification-handlers (or notification-handlers
                                (make-hash-table :test 'equal))
     :initialized-fn initialized-fn
@@ -171,7 +173,7 @@ Perl::LanguageServer starts its background symbol indexer."
 (dotfiles/lsp-register 'dotfiles-fish '(fish-mode))
 (dotfiles/lsp-register 'dotfiles-gopls '(go-mode go-ts-mode go-mod-ts-mode))
 (dotfiles/lsp-register 'dotfiles-haskell '(haskell-mode haskell-ts-mode literate-haskell-mode))
-(dotfiles/lsp-register 'dotfiles-json '(js-json-mode json-ts-mode))
+(dotfiles/lsp-register 'dotfiles-json '(js-json-mode json-ts-mode) :multi-root t)
 (dotfiles/lsp-register 'dotfiles-kotlin '(kotlin-mode kotlin-ts-mode))
 (dotfiles/lsp-register 'dotfiles-lua '(lua-mode lua-ts-mode)
                        :initialized-fn #'dotfiles/lua-language-server-trim)
