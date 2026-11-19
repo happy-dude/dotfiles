@@ -47,6 +47,22 @@ in
       '';
     };
 
+    shell-tree-listing = mkCheck {
+      name = "dotfiles-shell-tree-listing";
+      tools = [pkgs.fish pkgs.zsh pkgs.eza];
+      script = ''
+        export HOME="$TMPDIR/home"
+        mkdir -p "$HOME" tree/sub
+        touch tree/sub/nested-file
+        for alias in lt lg; do
+          fish --no-config -c "source ${self}/fish/.config/fish/config.fish; $alias tree" >listing
+          grep -Fq nested-file listing
+          zsh -dfc "typeset -a POWERLEVEL9K_LEFT_PROMPT_ELEMENTS; source ${self}/zsh/.config/zsh/.zshrc; eval '$alias tree'" >listing
+          grep -Fq nested-file listing
+        done
+      '';
+    };
+
     fish-syntax = mkCheck {
       name = "dotfiles-fish-syntax";
       tools = [pkgs.fish];
