@@ -89,6 +89,12 @@
       thinkingMax = "orange";
       bashMode = "green";
       pythonMode = "yellow";
+      # omp 19 requires this border color; 18 rejects unknown keys.
+      ${
+        if lib.versionAtLeast pkgs.omp.version "19.0.0"
+        then "btwMode"
+        else null
+      } = "aqua";
       statusLineBg = "bgStatusline2";
       statusLineSep = "bg5";
       statusLineModel = "purple";
