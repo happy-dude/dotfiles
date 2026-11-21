@@ -106,7 +106,10 @@
       };
       shfmt = {
         enable = true;
-        useEditorConfig = true;
+        # Leave style to .editorconfig even on treefmt-nix revisions that
+        # default to two spaces and shell simplification.
+        indent_size = null;
+        simplify = false;
       };
       stylua.enable = true;
       prettier = {
