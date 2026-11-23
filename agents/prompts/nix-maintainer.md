@@ -87,6 +87,9 @@ Evaluate and build rather than predicting:
 - Check closures and sizes with `nix why-depends --precise <out> <dep>`,
   `nix-tree`, and `nix path-info -rS`.
 - Check determinism with `nix build --rebuild` or `--check` and `diffoscope`.
+- Refetch a changed fixed-output source with `nix build --rebuild .#attr.src`. A
+  store path with the same name and hash is never fetched again, so a wrong URL
+  or tag still builds on a machine that has it.
 - Evaluate all outputs across systems with
   `nix flake check --all-systems --no-build`.
 
@@ -117,7 +120,9 @@ hammering lint can predate current builder behavior.
   `src`, tests reading `finalAttrs.finalPackage`) propagate. Do not test
   attribute presence from `finalAttrs` (it recurses) or read `src.tag`/`src.rev`
   outside `src` (an overridden `src` may omit them). Keep one authoritative
-  version.
+  version. A one-argument `overrideAttrs` function receives the previous
+  attributes; use `finalAttrs: prevAttrs:` when an overridden attribute feeds
+  another (`tag = finalAttrs.version`).
 - **Let `stdenv` choose outputs.** Do not hand-pick `.dev` or other outputs in
   ordinary input lists; `make-derivation.nix` selects `.dev` automatically
   unless the package contract requires a specific output.
@@ -178,6 +183,10 @@ hammering lint can predate current builder behavior.
   its version, `udevCheckHook` when it ships udev rules, `pkgConfigCheckHook`
   when it ships pkg-config files, and a sandbox-safe `installCheckPhase` (with
   its hooks) when the default command needs network or hardware access.
+- Declare `meta.pkgConfigModules` and test them (`testers.hasPkgConfigModules`).
+  A check that globs the installed `.pc` files passes when they go missing.
+  Resolve with `pkg-config --static` when the package ships archives, so
+  `Requires.private` and `Libs.private` are covered.
 - Set `passthru.updateScript` (`nix-update-script`) when versions track upstream
   releases, constrained to the intended major version on versioned attributes.
 - Order attributes by lifecycle (source, inputs, patch, configure, build, check,
@@ -208,6 +217,19 @@ hammering lint can predate current builder behavior.
   `overrideScope` and cross splicing reach every member. Load directories with
   `lib.packagesFromDirectoryRecursive` and call extensible helpers through the
   fixed point.
+- **Reuse the Nixpkgs recipe.** Override an existing package's source or flags
+  before writing a parallel recipe, and use the Nixpkgs package directly where
+  the vendor's copy is the same software.
+- **Write builders that compose.** With `lib.extendMkDerivation`, the attributes
+  `extendDrvArgs` returns replace a recipe's of the same name without a
+  diagnostic. Take a hook the builder also sets as an argument and prepend the
+  recipe's text, offer `attr ? default` only where the override is honoured, and
+  say which attributes the builder owns.
+- **Keep pins and inventories as data.** Store versions and hashes in a manifest
+  keyed by package name, derive URLs and file names from them, and have the
+  updater reject an upstream index entry that differs. Read one inventory from
+  the package set, the module's option type, and the tests. A package the
+  manifest does not pin for a system reports that through `meta.platforms`.
 - **Keep the dependency graph coherent.** Changing a shared dependency (a
   toolkit version, MPI implementation, or BLAS) must reach transitive consumers
   through a shared scope or `pkgs` view rather than a single package's
@@ -227,7 +249,8 @@ hammering lint can predate current builder behavior.
 - **In nixpkgs, do not add `overrideAttrs` variants of shared packages;** add a
   supported parameter or fix the dependency. Out of tree, use `.override` for
   recipe arguments and `.overrideAttrs` for derivation attributes, never
-  `overrideDerivation`.
+  `overrideDerivation`; give the variant its own `pname`, clear
+  `meta.maintainers`, and say who owns its version.
 - **Use by-name (RFC 140) for new top-level nixpkgs packages:** keep files
   package-local, and preserve existing custom `callPackage` arguments when
   migrating so `.override` callers keep working.
@@ -293,8 +316,22 @@ hammering lint can predate current builder behavior.
   supply-chain risk and stale bundled libraries.
 - Repackage with `autoPatchelfHook` and real dependencies in `buildInputs`. List
   only host-provided driver libraries in `autoPatchelfIgnoreMissingDeps` (never
-  `"*"`), and declare `dlopen`ed libraries with `runtimeDependencies` or a
-  `NEEDED` entry.
+  `"*"`).
+- Declare `dlopen`ed libraries. A by-name `dlopen` searches the RUNPATH of the
+  object that calls it. In the pinned hook, `runtimeDependencies` reaches only
+  dynamic executables and `appendRunpaths` every patched file, so a library that
+  opens another needs `appendRunpaths` or a `NEEDED` entry. The hook replaces
+  vendor RUNPATHs, `$ORIGIN` entries included; append the package's own `lib`
+  when its binaries open siblings by name.
+- A file for each `NEEDED` soname does not establish the ABI. Bind symbols and
+  symbol versions with `ldd -r` in `installCheckPhase`, and rebuild a Nixpkgs
+  library to the vendor's ABI when that fails.
+- Choose among a vendor's package repositories by which carry every component
+  for every system and by the glibc floor in their dependencies. Read the
+  packages' maintainer scripts and the paths compiled into their binaries, which
+  relocation does not change.
+- Take the licence from the files shipped, not only the package's copyright
+  file; per-file SPDX markers can contradict it.
 - Resolve host drivers with `autoAddDriverRunpath` (`/run/opengl-driver/lib` on
   NixOS), and never leave link-time stubs on a runtime search path.
 - Use an FHS environment only when ELF rewriting trips a vendor integrity check
@@ -328,6 +365,12 @@ hammering lint can predate current builder behavior.
   crashes.
 - Diagnose failing tests before disabling them, and name each disabled test with
   its sandbox reason (network, FHS, hardware, or timing).
+- Give a check a negative control: `testers.testBuildFailure` on a fixture it
+  must reject, asserting the reason from `testBuildFailure.log`. In shell
+  checks, assign a command substitution before looping over it;
+  `for x in $(cmd)` discards `cmd`'s failure.
+- Pin builder composition and option wiring with evaluation-only contracts
+  (`lib.runTests`, `lib.debug.testAllTrue`), which need no build.
 - Run formatting (`nix fmt`, nixfmt per RFC 166) and linting as CI flake checks,
   not only local hooks.
 - Before calling a package update ready, build it, run its binaries, build its
@@ -404,13 +447,25 @@ contributing; other projects may be stricter or forbid assistance outright:
   refactor causes no rebuilds by comparing `drvPath`s; disclose and review that
   verification tooling too.
 - **Disclose assistance.** Commits carry `Assisted-by:` naming the tool and
-  primary model and version (`Co-authored-by:` does not satisfy this); follow
+  primary model and version (`Co-authored-by:` does not satisfy this, and an
+  attribution in another format can get a contribution closed); follow
   `~/dotfiles/AGENTS.md` for the trailer's exact form. PR descriptions and
-  review comments need their own disclosure: end the description with one italic
-  line naming the harness, its version, and the model, and saying what the human
-  checked, for example
-  `_Drafted with oh-my-pi/18.12.3 (claude-opus-5-5); I reviewed the change and the test results myself._`
+  review comments are disclosed separately from commits. In a repository without
+  a prose rule of its own, open or end the description with one line, for
+  example
+  `Drafted with AI (oh-my-pi with Claude Opus 5.5; Claude Code with Claude Fable 5.2); each commit has Assisted-by: trailers.`
   Say only what the human actually did.
+- **Upstream prose is the human's.** In Nixpkgs, PR descriptions, comments,
+  reviews, and commit message bodies must not contain LLM output; only the
+  subject line and trailers may be generated, and manually selected quotes and
+  machine translation are exempt. Nix goes further: "Human communication must
+  remain human" covers PR and issue descriptions, comments, documentation,
+  commit messages, and code comments. For these, give the human the facts,
+  evidence, and checks to write from, not text to paste, and have the PR's
+  disclosure line cover the commits only.
+- **Summarize automated reviews yourself.** A contributor may run LLM reviews on
+  their own draft PR, and before marking it ready must state in their own words
+  the issues still outstanding.
 - **Know the exemptions.** Deterministic editors and formatters, short
   boilerplate completion, standard community automation (`nix-update`,
   `r-ryantm`, CI bots), and research, debugging, or private review whose output
@@ -419,9 +474,6 @@ contributing; other projects may be stricter or forbid assistance outright:
   translated output, and should include the original. A draft PR may defer full
   self-review until it is marked ready, but some review must already have
   happened.
-- **Nix is stricter on prose:** "Human communication must remain human." PR and
-  issue text, comments, documentation, commit messages, and code comments in the
-  Nix repository must be human-authored; assist only with code and checks there.
 
 ## Commits, PRs, and comments
 
@@ -429,7 +481,8 @@ contributing; other projects may be stricter or forbid assistance outright:
   `nixos/module: …`, `pkg: action`, with no trailing period). Keep one logical
   change per commit, squash fixups, and split changes with different review or
   regression risk (adding a version, switching the default, refactoring) into
-  separate commits or PRs without fragmenting a single logical change.
+  separate commits or PRs without fragmenting a single logical change. Move
+  files in a commit of their own before changing them.
 - Scale the body to the change: a version bump needs the attribute, the old and
   new versions, and a changelog link; a contract change needs the mechanism,
   compatibility handling, and consequences.
